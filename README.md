@@ -68,5 +68,6 @@ Cette procédure ne sera considérée comme valide qu'après un exercice complet
 
 - [ANKH-SPEC.md](ANKH-SPEC.md) : ce que je fais avec ma machine, les questions ouvertes, la liste de ce que je ne veux pas.
 - [DECISIONS.md](DECISIONS.md) : chaque choix, avec ses raisons, ses alternatives rejetées et sa source ou son test.
+- [CLAUDE.md](CLAUDE.md) : guide de travail du projet (règles, méthode, feuille de route, état actuel) (D-020).
 
 **Règle** : ce dépôt est la source de vérité. Toute affirmation technique importante doit être appuyée par une documentation officielle, un test reproductible ou une expérience réelle sur la machine. Sinon, elle est marquée `À VALIDER` (D-016).

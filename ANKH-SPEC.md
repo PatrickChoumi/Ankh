@@ -4,7 +4,7 @@
 >
 > Ce document décrit **ce que je fais avec ma machine**. C'est lui qui dicte l'architecture.
 > Les choix et leurs justifications sont dans [DECISIONS.md](DECISIONS.md) (référencés `D-xxx`).
-> La vue d'ensemble et la récupération après panne sont dans [README.md](README.md).
+> La vue d'ensemble et la récupération après panne sont dans [README.md](README.md). Les règles et la feuille de route sont dans [CLAUDE.md](CLAUDE.md).
 
 ## Légende
 
@@ -76,20 +76,7 @@ Pour Q6, vérifier chaque jeu sur <https://areweanticheatyet.com> et <https://ww
 
 ## 3. Architecture envisagée (`À VALIDER`)
 
-```text
-┌────────────────────────────────────────────────────────────┐
-│ Applications : Flatpak (Steam, navigateur, …)        D-011 │
-├────────────────────┬────────────────────┬──────────────────┤
-│ Dev                │ Cyber              │ Labs / malware   │
-│ conteneur          │ Kali, Podman       │ VMs isolées      │
-│ D-012              │ rootless   D-013   │ libvirt/KVM D-014│
-├────────────────────┴────────────────────┴──────────────────┤
-│ Hôte immuable : Fedora Kinoite / Atomic + bootc      D-004 │
-│ Image de base exacte : À DÉCIDER                     D-005 │
-├────────────────────────────────────────────────────────────┤
-│ Secure Boot (D-006) · LUKS (D-007)                         │
-└────────────────────────────────────────────────────────────┘
-```
+Le schéma d'ensemble est dans [README.md](README.md#architecture-générale-envisagée).
 
 Points ouverts dans cette architecture :
 

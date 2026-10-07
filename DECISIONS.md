@@ -33,10 +33,11 @@
 | D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ |
 | D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
 | D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
-| D-016 | Le dépôt est la source de vérité, toute affirmation importante est prouvée | DÉCIDÉ |
+| D-016 | Le dépôt est la source de vérité, toute affirmation importante est prouvée | DÉCIDÉ (complétée par D-020) |
 | D-017 | Version de Fedora figée, montée de version délibérée | PROPOSÉE — À VALIDER |
 | D-018 | Construction, publication et signature de l'image | PROPOSÉE — À VALIDER |
 | D-019 | Sauvegarde et récupération : OS / configuration / données / secrets | PROPOSÉE — À VALIDER |
+| D-020 | CLAUDE.md, guide de travail du projet | DÉCIDÉ |
 
 ---
 
@@ -257,6 +258,7 @@
 - **Raisons** : éviter de bâtir sur une erreur. Éviter les informations contradictoires dans plusieurs fichiers.
 - **Alternatives rejetées** : documentation éclatée (architecture, feuille de route, etc. dans des fichiers séparés).
 - **Vérification** : revue de chaque modification de ces fichiers.
+- **Complétée par** : D-020 (ajout de CLAUDE.md).
 
 ## D-017 — Version de Fedora figée, montée de version délibérée
 
@@ -304,3 +306,20 @@
 - **Raisons** : la machine peut mourir sans que mon environnement meure avec elle.
 - **Alternatives rejetées** : sauvegarde du disque entier comme seul mécanisme.
 - **Vérification** : un exercice complet de récupération en VM avant de considérer la procédure comme valide (non exécuté).
+
+## D-020 — CLAUDE.md, guide de travail du projet
+
+- **Statut** : DÉCIDÉ (2026-10-07, à ma demande). Complète D-016.
+- **Contexte** : il faut un guide unique pour tout le projet, que Claude Code lit automatiquement au début de chaque session. D-016 limitait la documentation à trois fichiers, et la feuille de route n'y avait pas de place.
+- **Décision** : un quatrième fichier, `CLAUDE.md`, contient :
+  - les règles non négociables ;
+  - les règles de travail pour Claude Code ;
+  - la feuille de route par phases ;
+  - l'état actuel du projet.
+
+  Il résume et renvoie (`D-xxx`, sections de ANKH-SPEC.md), sans recopier le détail des besoins ni des choix.
+- **Raisons** : les règles et la méthode s'appliquent à chaque session sans avoir à les répéter. La feuille de route a une place unique.
+- **Alternatives rejetées** :
+  - Fichier `ROADMAP.md` séparé (contraire à D-016).
+  - Guide conservé hors du dépôt (contraire à « le dépôt est la source de vérité »).
+- **Vérification** : à chaque modification, le détail d'un besoin ou d'un choix reste dans son fichier de référence. CLAUDE.md n'en contient qu'un résumé et un renvoi.
