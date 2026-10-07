@@ -25,7 +25,7 @@
 ## 2. État actuel
 
 - **Phase en cours : 1 — Base et chaîne de build** (depuis le 2026-10-07). Les décisions D-005, D-017, D-018 et le bureau (KDE) sont tranchés.
-- **Ce qui bloque l'avancement** : de mon côté, la clé de signature cosign (`cosign.pub` à commiter, `SIGNING_SECRET` à créer) et la protection de `main`.
+- **Ce qui bloque l'avancement** : rien de mon côté. `main` existe et est protégée (ruleset `protection-main`). La signature se fait sans clé dans la CI (D-022). Prochaine étape : la PR du squelette de build (Containerfile + CI).
 - **Questions matérielles** : elles ne bloquent pas la phase 1 (D-021). Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
 - **Branches** : `main` reçoit les changements uniquement par PR.
 - **Langue du projet** : français (documents, messages de commit, échanges).
