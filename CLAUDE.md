@@ -24,17 +24,14 @@
 
 ## 2. État actuel
 
-- **Phase en cours : 2 — Premier démarrage en VM, dans le cloud** (depuis le 2026-10-07).
-- **Phase 1 terminée le 2026-10-07** : son critère est rempli (voir §5). Seul reste en suivi : Renovate n'a encore laissé aucune trace sur le dépôt (installation à vérifier de mon côté).
-- **Où en est la phase 1** : le squelette de build est écrit (`Containerfile`, `bases.env`, `Justfile`, `renovate.json`, `.github/workflows/build.yml`). `main` est protégée (ruleset `protection-main`), et la signature se fait sans clé dans la CI (D-022).
-- **Pour clore la phase 1** :
-  1. ✅ La CI de la PR est verte sur les deux variantes ([#1](https://github.com/PatrickChoumi/Ankh/pull/1)).
-  2. ✅ La PR est fusionnée.
-  3. ✅ Les images sont publiées sur `main`, signées et vérifiées, et publiques : `ghcr.io/patrickchoumi/ankh` (4,3 Go compressés) et `ghcr.io/patrickchoumi/ankh-nvidia` (5,2 Go).
-  4. ⏳ J'installe l'application Renovate (suivi hors critère de phase : aucune trace au 2026-10-07).
-  5. ✅ Les tests « Construire ankh » et « Construire ankh-nvidia » sont obligatoires dans `protection-main`.
-  6. ✅ Une PR volontairement cassée est bloquée ([#2](https://github.com/PatrickChoumi/Ankh/pull/2) : CI rouge et fusion bloquée sur le paquet inexistant, puis verte et fusionnable après le retrait du test).
-- **Phase 2** : se fait entièrement dans le cloud, car ma connexion est lente (D-027). Test : `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml`.
+- **Phase en cours : 3 — Applications et dev**, à démarrer après la fusion de [#3](https://github.com/PatrickChoumi/Ankh/pull/3). Avant de commencer, je dois trancher l'interface des mises à jour système (D-025).
+- **Phase 2 terminée le 2026-10-07** : son critère est rempli.
+  - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
+  - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).
+- **Phase 1 terminée le 2026-10-07** :
+  - Les images sont construites, testées, signées sans clé (D-022) et publiées par la CI : `ghcr.io/patrickchoumi/ankh` (4,3 Go compressés) et `ghcr.io/patrickchoumi/ankh-nvidia` (5,2 Go).
+  - `main` est protégée (ruleset `protection-main`, tests « Construire ankh » et « Construire ankh-nvidia » obligatoires). Une PR cassée est bien bloquée ([#2](https://github.com/PatrickChoumi/Ankh/pull/2)).
+  - Seul suivi : Renovate n'a encore laissé aucune trace sur le dépôt (installation à vérifier de mon côté).
 - **Construire et tester en local** : `just build ankh` puis `just test ankh` (nécessite podman et just).
 - **Questions matérielles** : elles ne bloquent pas la phase 1 (D-021). Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
 - **Branches** : `main` reçoit les changements uniquement par PR.
@@ -117,8 +114,8 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 |---|---|---|
 | **0. Spécification** *(terminée le 2026-10-07)* | Décrire ma machine et mes usages | ANKH-SPEC.md §6 « Avant la phase 1 » entièrement coché |
 | **1. Base et chaîne de build** *(terminée le 2026-10-07)* | Images génériques construites automatiquement | D-005, D-017 et D-018 tranchées. Chaque variante de D-021 est construite par la CI, testée, signée et publiée, sans toucher ma machine |
-| **2. Premier démarrage en VM, dans le cloud** *(en cours)* | Prouver le modèle image-based sans rien télécharger chez moi (D-027) | Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, puis basculement vers une autre version, retour arrière (`bootc rollback`) et retour à l'image de base, tous réussis automatiquement. Résultats notés dans D-004. La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI |
-| **3. Applications et dev** | Le quotidien et le dev fonctionnent sans terminal pour le quotidien (D-025) | Chrome par défaut et Firefox retiré (D-023). VLC, OnlyOffice, Claude et GitHub présents (D-024). Mises à jour par l'interface. VS Code et le conteneur dev se recréent depuis le dépôt (D-012). Tests en CI et en VM cloud |
+| **2. Premier démarrage en VM, dans le cloud** *(terminée le 2026-10-07)* | Prouver le modèle image-based sans rien télécharger chez moi (D-027) | Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, puis basculement vers une autre version, retour arrière (`bootc rollback`) et retour à l'image de base, tous réussis automatiquement. Résultats notés dans D-004. La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI |
+| **3. Applications et dev** *(prochaine)* | Le quotidien et le dev fonctionnent sans terminal pour le quotidien (D-025) | Chrome par défaut et Firefox retiré (D-023). VLC, OnlyOffice, Claude et GitHub présents (D-024). Mises à jour par l'interface. VS Code et le conteneur dev se recréent depuis le dépôt (D-012). Tests en CI et en VM cloud |
 | **4. Protection** | safezone adapté et intégré (D-026) | Conception tranchée dans DECISIONS.md. Les tests de safezone passent sur l'image Ankh. Les contournements propres au modèle image-based (`bootc switch`, retour arrière, `/etc`) sont traités ou documentés |
 | **5. Gaming** | Mes jeux fonctionnent | Chaque jeu de ANKH-SPEC Q6 testé. Manettes, VRR et multi-écran vérifiés si concernés (D-011). Test final sur la vraie machine en phase 9 |
 | **6. Cyber** | Kali isolé | Test d'isolation réussi : le `~/.ssh` de l'hôte est inaccessible depuis le conteneur. Solution « réseau bas niveau » tranchée (D-013) |

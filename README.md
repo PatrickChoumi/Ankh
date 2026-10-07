@@ -2,7 +2,7 @@
 
 **Mon OS personnel immuable pour coder, jouer et faire de la cybersécurité.** Il est générique (le maximum de PC) et s'appuie sur l'isolation forte, la virtualisation et le retour arrière.
 
-> **État actuel : phase 2 — premier démarrage en VM, dans le cloud.** Les images sont construites, signées et publiées par la CI (phase 1).
+> **État actuel : phases 1 et 2 terminées, phase 3 (applications et dev) à venir.** Les images sont construites, signées et publiées par la CI. Elles démarrent en VM, et le retour arrière y fonctionne (D-004).
 > Les procédures de récupération décrites ici sont des **cibles** : aucune n'a encore été testée sur une vraie machine.
 
 ## Ce qu'est Ankh
@@ -48,8 +48,8 @@ Rien ne s'installe sur l'hôte en dehors de l'image (D-009).
 
 | Situation | Action prévue | Statut |
 |---|---|---|
-| Une mise à jour casse quelque chose | `sudo bootc rollback` puis redémarrer, ou choisir l'entrée précédente dans le menu de démarrage | À VALIDER (test en VM) |
-| L'image Ankh elle-même est défectueuse | `sudo bootc switch` vers l'image de base (D-005), sans réinstaller | À VALIDER (test en VM) |
+| Une mise à jour casse quelque chose | `sudo bootc rollback` puis redémarrer, ou choisir l'entrée précédente dans le menu de démarrage | `bootc rollback` vérifié en VM (D-004) ; menu de démarrage et vraie machine À VALIDER |
+| L'image Ankh elle-même est défectueuse | `sudo bootc switch` vers l'image de base (D-005), sans réinstaller | Vérifié en VM (D-004) ; vraie machine À VALIDER |
 | Disque perdu ou réinstallation complète | Procédure ci-dessous | À CONSTRUIRE puis TESTER |
 | Compte GitHub ou registre d'images inaccessible | Copie de la dernière image saine sur le support de sauvegarde | PROPOSÉ (D-019) |
 
