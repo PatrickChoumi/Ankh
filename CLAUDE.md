@@ -27,12 +27,12 @@
 - **Phase en cours : 1 — Base et chaîne de build** (depuis le 2026-10-07). Les décisions D-005, D-017, D-018 et le bureau (KDE) sont tranchés.
 - **Où en est la phase 1** : le squelette de build est écrit (`Containerfile`, `bases.env`, `Justfile`, `renovate.json`, `.github/workflows/build.yml`). `main` est protégée (ruleset `protection-main`), et la signature se fait sans clé dans la CI (D-022).
 - **Pour clore la phase 1** :
-  1. La CI de la PR est verte sur les deux variantes.
-  2. Je fusionne la PR.
-  3. Les images sont publiées et signées sur `main`, et rendues publiques.
-  4. J'installe l'application Renovate.
-  5. La règle « les tests doivent passer » est ajoutée à `protection-main`.
-  6. Une PR volontairement cassée est bloquée.
+  1. ✅ La CI de la PR est verte sur les deux variantes ([#1](https://github.com/PatrickChoumi/Ankh/pull/1)).
+  2. ✅ La PR est fusionnée.
+  3. ✅ Les images sont publiées sur `main`, signées et vérifiées, et publiques : `ghcr.io/patrickchoumi/ankh` (4,3 Go compressés) et `ghcr.io/patrickchoumi/ankh-nvidia` (5,2 Go).
+  4. ⏳ J'installe l'application Renovate.
+  5. ✅ Les tests « Construire ankh » et « Construire ankh-nvidia » sont obligatoires dans `protection-main`.
+  6. ⏳ Une PR volontairement cassée est bloquée.
 - **Construire et tester en local** : `just build ankh` puis `just test ankh` (nécessite podman et just).
 - **Questions matérielles** : elles ne bloquent pas la phase 1 (D-021). Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
 - **Branches** : `main` reçoit les changements uniquement par PR.

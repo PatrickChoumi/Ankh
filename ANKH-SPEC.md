@@ -1,6 +1,6 @@
 # ANKH-SPEC — Spécification de mon poste personnel
 
-> Version 0.1 (brouillon) — 2026-10-07
+> Version 0.2 (brouillon) — 2026-10-07
 >
 > Ce document décrit **ce que je fais avec ma machine**. C'est lui qui dicte l'architecture.
 > Les choix et leurs justifications sont dans [DECISIONS.md](DECISIONS.md) (référencés `D-xxx`).
@@ -15,6 +15,17 @@
 | `UNKNOWN` | Information à mesurer sur la machine |
 | `À VALIDER` | Hypothèse à prouver par une documentation officielle, un test reproductible ou une expérience réelle sur ma machine |
 | `À DÉCIDER` | Choix ouvert, dépend d'une réponse de ce document |
+| `EXIGÉ` | Besoin que j'ai formulé. La façon de le réaliser reste à décider (DECISIONS.md) |
+
+---
+
+## Exigences générales
+
+- **Incassable et extrêmement stable, mais à la pointe** — EXIGÉ.
+  - Ce qui touche au démarrage du système avance prudemment.
+  - Les applications restent à jour.
+- **Usage du terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ. Chantier séparé, voir 4.7.
+- **Accès au contenu pour adultes extrêmement difficile** — EXIGÉ, voir 4.8.
 
 ---
 
@@ -106,9 +117,11 @@ Points ouverts dans cette architecture :
 ### 4.2 Dev
 
 - **Langages** : TODO
-- **IDE / éditeur** : TODO
+- **IDE / éditeur** : Visual Studio Code, installé par défaut — EXIGÉ. Mode d'installation (Flatpak, image ou conteneur dev) : À DÉCIDER en phase 3
 - **Git / GitHub** (comptes, clés SSH, signature des commits) : TODO
+- **Client GitHub installé par défaut** — EXIGÉ. Outil exact : À DÉCIDER (GitHub ne publie pas d'application de bureau pour Linux)
 - **IA / CLI** (assistants, outils en ligne de commande) : TODO
+- **Claude installé par défaut** — EXIGÉ. Forme exacte : À DÉCIDER (application de bureau officielle sous Linux en bêta pour Ubuntu/Debian seulement, à vérifier pour Fedora)
 - **Conteneurs** : besoin d'une compatibilité Docker (socket, compose) ? TODO
 - **Bases de données** : TODO
 - **Autres outils** : TODO
@@ -139,12 +152,12 @@ Points ouverts dans cette architecture :
 
 ### 4.5 Vie quotidienne
 
-- **Navigateur** : TODO
+- **Navigateur** : Google Chrome, navigateur par défaut, pas Firefox — EXIGÉ
 - **Communication** : TODO
 - **Musique** : TODO
 - **Cloud / synchronisation** : TODO
-- **Multimédia** (vidéo, photo) : TODO
-- **Bureautique** : TODO
+- **Multimédia** (vidéo, photo) : VLC, installé par défaut — EXIGÉ. Photo : TODO
+- **Bureautique** : OnlyOffice, installé par défaut — EXIGÉ
 
 ### 4.6 Sécurité, sauvegarde et secrets
 
@@ -158,6 +171,16 @@ Points ouverts dans cette architecture :
 
 - **Langue et disposition du clavier** : TODO
 - **Bureau** : KDE Plasma (via Kinoite) — DÉCIDÉ (D-004)
+- **Terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ. Chantier séparé. Sens exact : TODO
+  - (a) Tout le quotidien se fait sans terminal (mises à jour, applications, réglages par l'interface) ?
+  - (b) L'accès au terminal et aux droits administrateur est restreint, par exemple pour ne pas pouvoir contourner la protection de 4.8 ?
+  - Ou les deux ?
+
+### 4.8 Protection contre le contenu pour adultes
+
+- **Exigence** : accès au contenu pour adultes extrêmement difficile — EXIGÉ.
+- **Référence** : mon projet safezone, <https://github.com/PatrickChoumi/safezone> (« blocker-adulte »). Il comporte huit composants : résolveur DNS filtrant avec SafeSearch forcé, pare-feu nftables, politiques navigateur, hook initramfs, surveillance croisée, auto-réparation, auditd.
+- **Adaptation à un système image-based** : À DÉCIDER. safezone est conçu pour des distributions classiques (`install.sh`, `chattr +i`, regénération locale de l'initramfs) et ne gère pas encore ostree/bootc.
 
 ---
 
