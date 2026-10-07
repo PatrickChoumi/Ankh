@@ -35,10 +35,11 @@
 | D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
 | D-016 | Le dépôt est la source de vérité, toute affirmation importante est prouvée | DÉCIDÉ (complétée par D-020) |
 | D-017 | Version de Fedora figée, montée de version délibérée | DÉCIDÉ |
-| D-018 | Construction, publication et signature de l'image | DÉCIDÉ (méthode d'imposition de la signature À VALIDER) |
+| D-018 | Construction, publication et signature de l'image | DÉCIDÉ (signature modifiée par D-022) |
 | D-019 | Sauvegarde et récupération : OS / configuration / données / secrets | PROPOSÉE — À VALIDER |
 | D-020 | CLAUDE.md, guide de travail du projet | DÉCIDÉ |
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
+| D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
 
 ---
 
@@ -188,6 +189,7 @@
 - **Alternatives rejetées** : mises à jour appliquées avec redémarrage automatique.
 - **À VALIDER** : quels services de mise à jour sont réellement actifs sur l'image de base choisie (D-005). Par exemple, `kinoite-main` active `rpm-ostreed-automatic.timer` en mode « staged » (voir sources de D-005).
 - **Vérification** : test `systemctl list-timers --all` sur l'image construite. Aucun timer de mise à jour ne doit déclencher de redémarrage (non exécuté).
+- **Mise en œuvre (phase 1)** : `build_files/build.sh` masque `bootc-fetch-apply-updates.timer`, comme le recommande la documentation Fedora bootc. Le test `just test` vérifie ce masquage dans chaque image. Le comportement réel de `rpm-ostreed-automatic` (téléchargement sans redémarrage) reste À VALIDER en VM (phase 2).
 
 ## D-011 — Applications en Flatpak, gaming via Steam Flatpak
 
@@ -283,6 +285,10 @@
 - **Raisons** : aucun changement majeur sans décision de ma part.
 - **Alternatives rejetées** : suivre automatiquement la dernière version (`latest`).
 - **Vérification** : la référence de base dans le dépôt contient une version et un digest. Aucun changement de version majeure sans modification relue.
+- **Mise en œuvre (phase 1)** :
+  - Les deux références (tag `44` + digest) sont dans `bases.env`.
+  - Renovate (`renovate.json`) propose les nouveaux digests dans une seule PR, et n'a pas le droit de changer de version de Fedora.
+  - Renovate ne fonctionne qu'une fois son application GitHub installée sur le dépôt (action à faire par moi).
 
 ## D-018 — Construction, publication et signature de l'image
 
@@ -300,6 +306,12 @@
 - **Alternatives rejetées** : construire l'image localement sur la machine elle-même.
 - **À VALIDER** : la façon exacte d'imposer la vérification de signature avec bootc (option et fichiers de politique), à confirmer dans la documentation officielle.
 - **Vérification** : à définir avec le premier pipeline.
+- **Modifiée par** : D-022 (2026-10-07). La signature se fait sans paire de clés, donc il n'y a plus de `cosign.key` ni de secret `SIGNING_SECRET`.
+- **Mise en œuvre (phase 1)** : `.github/workflows/build.yml`.
+  - Sur une PR : construction et tests des deux variantes, sans publication.
+  - Sur `main` : construction, tests, publication de `ghcr.io/patrickchoumi/ankh` et `ghcr.io/patrickchoumi/ankh-nvidia` (tags `latest` et `AAAAMMJJ`), signature sans clé, puis `cosign verify`.
+  - Les recettes de construction et de test (`just build`, `just test`) sont les mêmes en local et en CI.
+  - Pas de « rechunk » tant que l'image n'ajoute presque rien à sa base : les couches de la base sont conservées telles quelles. À réévaluer quand on ajoutera des paquets.
 
 ## D-019 — Sauvegarde et récupération : OS / configuration / données / secrets
 
@@ -373,3 +385,26 @@
   - Les anciennes AMD GCN 1.0/1.1 passent par défaut au pilote `amdgpu` depuis Linux 6.19 : <https://phoronix.com/news/Linux-6.19-AMDGPU-GCN-1.0-1.1>
   - Matériel couvert par le pilote NVIDIA open : liste officielle <https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus> — À VALIDER.
   - Tests réels : un test de démarrage par variante en CI (Mesa), des contrôles statiques pour NVIDIA, et des tests sur chaque matériel réel disponible.
+
+## D-022 — Signature sans clé (keyless) dans GitHub Actions
+
+- **Statut** : DÉCIDÉ (2026-10-07, choix délégué à Claude). Modifie D-018.
+- **Contexte** :
+  - Ma connexion internet ne me permet pas d'installer cosign et de générer la paire de clés sur ma machine.
+  - Je délègue la signature au cloud.
+  - Générer la clé privée dans la session de Claude l'aurait fait transiter par la conversation, puisque Claude n'a aucun outil pour écrire un secret GitHub. C'est contraire à CLAUDE.md §4.
+- **Décision** :
+  - Les images sont signées par cosign en mode « keyless », directement dans GitHub Actions.
+  - Le workflow s'authentifie auprès de Sigstore avec l'identité OIDC que GitHub lui fournit. La signature est rattachée à l'identité du workflow de ce dépôt.
+  - Il n'existe **aucune clé privée** à générer, stocker ou sauvegarder.
+- **Raisons** :
+  - Rien à installer ni à télécharger de mon côté.
+  - Aucun secret à gérer, donc aucun secret à perdre ou à faire fuiter.
+- **Alternatives rejetées** :
+  - Paire de clés générée par moi (D-018 initiale) : impossible avec ma connexion actuelle.
+  - Paire de clés générée par Claude : la clé privée transiterait par la conversation.
+  - Pas de signature du tout : on perd la preuve de provenance.
+- **À VALIDER** : imposer cette signature **sur la machine**, via `/etc/containers/policy.json` et le type `sigstoreSigned` avec Fulcio. Le dépôt de test d'un mainteneur Fedora Atomic indiquait que la vérification keyless d'une identité GitHub Actions par podman/containers-image « ne fonctionne pas encore ». Il renvoie à containers/image#2235, dont l'état en 2026 reste à vérifier. Source : <https://github.com/travier/cosign-test>
+  - En attendant, la vérification se fait avec `cosign verify` (identité du workflow + émetteur `https://token.actions.githubusercontent.com`).
+  - Si l'imposition sur la machine s'avère impossible, on rouvrira une décision : retour à une paire de clés quand ma connexion le permettra.
+- **Vérification** : `cosign verify` réussit sur chaque image publiée (test à ajouter dans la CI, en phase 1).

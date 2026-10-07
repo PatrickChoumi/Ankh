@@ -56,7 +56,7 @@ Rien ne s'installe sur l'hôte en dehors de l'image (D-009).
 ### Réinstallation complète (ordre cible, D-019)
 
 1. Réinstaller Fedora Atomic (Kinoite) avec le chiffrement LUKS activé.
-2. Basculer sur l'image Ankh, publiée sur GHCR, avec `bootc switch` (D-018). Le nom exact de l'image et du tag sera fixé en phase 1.
+2. Basculer sur l'image Ankh avec `bootc switch` (D-018) : `ghcr.io/patrickchoumi/ankh:latest` (AMD, Intel) ou `ghcr.io/patrickchoumi/ankh-nvidia:latest` (NVIDIA récent). Les tags datés `AAAAMMJJ` permettent de revenir à une version précise.
 3. Restaurer les **secrets** depuis la sauvegarde chiffrée. C'est nécessaire avant de cloner des dépôts privés.
 4. Cloner ce dépôt : il contient la configuration.
 5. Recréer les applications Flatpak, les conteneurs et les VMs depuis les définitions du dépôt. Les recettes `just` sont à construire (D-015).

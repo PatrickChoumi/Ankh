@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:best-practices"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Images de base des variantes Ankh, épinglées par digest (D-005, D-017)",
+      "managerFilePatterns": ["/^bases\\.env$/"],
+      "matchStrings": [
+        "=(?<depName>[^:\\s]+):(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Les images de base avancent ensemble, dans une seule PR",
+      "matchFileNames": ["bases.env"],
+      "groupName": "images de base Ankh"
+    },
+    {
+      "description": "Changer de version de Fedora est une décision délibérée, jamais une mise à jour automatique (D-017)",
+      "matchFileNames": ["bases.env"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "enabled": false
+    }
+  ]
+}

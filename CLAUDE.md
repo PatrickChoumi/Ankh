@@ -25,7 +25,15 @@
 ## 2. État actuel
 
 - **Phase en cours : 1 — Base et chaîne de build** (depuis le 2026-10-07). Les décisions D-005, D-017, D-018 et le bureau (KDE) sont tranchés.
-- **Ce qui bloque l'avancement** : de mon côté, la clé de signature cosign (`cosign.pub` à commiter, `SIGNING_SECRET` à créer) et la protection de `main`.
+- **Où en est la phase 1** : le squelette de build est écrit (`Containerfile`, `bases.env`, `Justfile`, `renovate.json`, `.github/workflows/build.yml`). `main` est protégée (ruleset `protection-main`), et la signature se fait sans clé dans la CI (D-022).
+- **Pour clore la phase 1** :
+  1. La CI de la PR est verte sur les deux variantes.
+  2. Je fusionne la PR.
+  3. Les images sont publiées et signées sur `main`, et rendues publiques.
+  4. J'installe l'application Renovate.
+  5. La règle « les tests doivent passer » est ajoutée à `protection-main`.
+  6. Une PR volontairement cassée est bloquée.
+- **Construire et tester en local** : `just build ankh` puis `just test ankh` (nécessite podman et just).
 - **Questions matérielles** : elles ne bloquent pas la phase 1 (D-021). Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
 - **Branches** : `main` reçoit les changements uniquement par PR.
 - **Langue du projet** : français (documents, messages de commit, échanges).
