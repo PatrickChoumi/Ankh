@@ -99,6 +99,17 @@
   - Documentation officielle : <https://docs.fedoraproject.org/en-US/bootc/>
   - Test à faire en VM (non exécuté) : `bootc status`, puis appliquer une mise à jour, puis `sudo bootc rollback` et redémarrer. Le déploiement précédent doit démarrer.
 - **Bureau** : KDE Plasma, fourni par Kinoite — confirmé le 2026-10-07.
+- **Mise en œuvre (phase 2, 2026-10-07)** : test automatique `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` sur les machines de GitHub (D-027).
+  - Le disque de la VM est créé par `bootc install to-disk --via-loopback`, la méthode officielle de bootc pour démarrer une image en VM : <https://github.com/bootc-dev/bootc/blob/main/docs/src/bootc-installation.7.md>. Aucun outil externe.
+  - La VM démarre en UEFI avec Secure Boot actif et les clés Microsoft, comme un vrai PC.
+  - L'accès SSH de test (clé de root et argument du noyau `systemd.wants=sshd.service`) est posé à l'installation. Ce sont des réglages locaux de la machine, conservés à chaque basculement d'image. Source : <https://github.com/bootc-dev/bootc/blob/main/docs/src/building/bootc-kernel-arguments.7.md>.
+  - Étapes vérifiées :
+    1. démarrage complet de l'image construite par la PR ;
+    2. basculement vers une autre version (`ghcr.io/patrickchoumi/ankh:latest`) ;
+    3. `bootc rollback`, qui doit redémarrer la version installée ;
+    4. `bootc switch` vers l'image de base épinglée dans `bases.env` (D-005, D-018).
+  - À chaque démarrage : Secure Boot actif (D-006), SELinux en mode enforcing et pare-feu actif (D-008). Sur les images Ankh, le timer de redémarrage automatique est masqué (D-010).
+  - **Résultat** : en attente de la première exécution en CI.
 
 ## D-005 — Image de base exacte
 

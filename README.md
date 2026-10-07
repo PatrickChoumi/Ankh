@@ -2,8 +2,8 @@
 
 **Mon OS personnel immuable pour coder, jouer et faire de la cybersécurité.** Il est générique (le maximum de PC) et s'appuie sur l'isolation forte, la virtualisation et le retour arrière.
 
-> **État actuel : phase 1 — base et chaîne de build.** Aucune image n'est encore construite.
-> Les procédures décrites ici sont des **cibles** : aucune n'a encore été testée.
+> **État actuel : phase 2 — premier démarrage en VM, dans le cloud.** Les images sont construites, signées et publiées par la CI (phase 1).
+> Les procédures de récupération décrites ici sont des **cibles** : aucune n'a encore été testée sur une vraie machine.
 
 ## Ce qu'est Ankh
 

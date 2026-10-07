@@ -1,0 +1,59 @@
+---
+# Phase 2 (D-004, D-027) : démarre l'image ankh dans une VM sur les machines
+# de GitHub, puis teste basculement, retour arrière et retour à la base.
+# Rien n'est téléchargé chez moi. Détails : tests/vm/run.sh.
+# La variante NVIDIA ne se teste pas en VM (pas de GPU NVIDIA) : elle a
+# seulement les contrôles statiques de build.yml.
+name: Tester le démarrage en VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  vm:
+    name: Démarrer ankh en VM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+
+    steps:
+      # Versions des actions épinglées par commit, tenues à jour par Renovate.
+      - name: Récupérer le dépôt
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+
+      - name: Libérer de l'espace disque
+        uses: ublue-os/remove-unwanted-software@695eb75bc387dbcd9685a8e72d23439d8686cba6
+
+      - name: Installer just
+        uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3  # v4.0.0
+
+      # KVM est disponible sur les machines Linux de GitHub :
+      # https://github.blog/changelog/2024-04-02-github-actions-hardware-accelerated-android-virtualization-now-available/
+      - name: Installer QEMU et le micrologiciel UEFI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 ovmf
+          ls -l /dev/kvm /usr/share/OVMF/
+
+      # En root : bootc install lit l'image dans le stockage podman de root.
+      - name: Construire l'image ankh
+        run: sudo env "PATH=${PATH}" just build ankh
+
+      - name: Démarrer, basculer, revenir en arrière, revenir à la base
+        run: sudo tests/vm/run.sh localhost/ankh:latest
