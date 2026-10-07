@@ -32,7 +32,7 @@
   3. ✅ Les images sont publiées sur `main`, signées et vérifiées, et publiques : `ghcr.io/patrickchoumi/ankh` (4,3 Go compressés) et `ghcr.io/patrickchoumi/ankh-nvidia` (5,2 Go).
   4. ⏳ J'installe l'application Renovate.
   5. ✅ Les tests « Construire ankh » et « Construire ankh-nvidia » sont obligatoires dans `protection-main`.
-  6. ⏳ Une PR volontairement cassée est bloquée.
+  6. ✅ Une PR volontairement cassée est bloquée ([#2](https://github.com/PatrickChoumi/Ankh/pull/2) : CI rouge et fusion bloquée sur le paquet inexistant, puis verte et fusionnable après le retrait du test).
 - **Construire et tester en local** : `just build ankh` puis `just test ankh` (nécessite podman et just).
 - **Questions matérielles** : elles ne bloquent pas la phase 1 (D-021). Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
 - **Branches** : `main` reçoit les changements uniquement par PR.
