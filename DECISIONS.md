@@ -189,6 +189,7 @@
 - **Alternatives rejetées** : mises à jour appliquées avec redémarrage automatique.
 - **À VALIDER** : quels services de mise à jour sont réellement actifs sur l'image de base choisie (D-005). Par exemple, `kinoite-main` active `rpm-ostreed-automatic.timer` en mode « staged » (voir sources de D-005).
 - **Vérification** : test `systemctl list-timers --all` sur l'image construite. Aucun timer de mise à jour ne doit déclencher de redémarrage (non exécuté).
+- **Mise en œuvre (phase 1)** : `build_files/build.sh` masque `bootc-fetch-apply-updates.timer`, comme le recommande la documentation Fedora bootc. Le test `just test` vérifie ce masquage dans chaque image. Le comportement réel de `rpm-ostreed-automatic` (téléchargement sans redémarrage) reste À VALIDER en VM (phase 2).
 
 ## D-011 — Applications en Flatpak, gaming via Steam Flatpak
 
@@ -284,6 +285,10 @@
 - **Raisons** : aucun changement majeur sans décision de ma part.
 - **Alternatives rejetées** : suivre automatiquement la dernière version (`latest`).
 - **Vérification** : la référence de base dans le dépôt contient une version et un digest. Aucun changement de version majeure sans modification relue.
+- **Mise en œuvre (phase 1)** :
+  - Les deux références (tag `44` + digest) sont dans `bases.env`.
+  - Renovate (`renovate.json`) propose les nouveaux digests dans une seule PR, et n'a pas le droit de changer de version de Fedora.
+  - Renovate ne fonctionne qu'une fois son application GitHub installée sur le dépôt (action à faire par moi).
 
 ## D-018 — Construction, publication et signature de l'image
 
@@ -302,6 +307,11 @@
 - **À VALIDER** : la façon exacte d'imposer la vérification de signature avec bootc (option et fichiers de politique), à confirmer dans la documentation officielle.
 - **Vérification** : à définir avec le premier pipeline.
 - **Modifiée par** : D-022 (2026-10-07). La signature se fait sans paire de clés, donc il n'y a plus de `cosign.key` ni de secret `SIGNING_SECRET`.
+- **Mise en œuvre (phase 1)** : `.github/workflows/build.yml`.
+  - Sur une PR : construction et tests des deux variantes, sans publication.
+  - Sur `main` : construction, tests, publication de `ghcr.io/patrickchoumi/ankh` et `ghcr.io/patrickchoumi/ankh-nvidia` (tags `latest` et `AAAAMMJJ`), signature sans clé, puis `cosign verify`.
+  - Les recettes de construction et de test (`just build`, `just test`) sont les mêmes en local et en CI.
+  - Pas de « rechunk » tant que l'image n'ajoute presque rien à sa base : les couches de la base sont conservées telles quelles. À réévaluer quand on ajoutera des paquets.
 
 ## D-019 — Sauvegarde et récupération : OS / configuration / données / secrets
 
