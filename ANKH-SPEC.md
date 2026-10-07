@@ -79,11 +79,11 @@ Le schéma d'ensemble est dans [README.md](README.md#architecture-générale-env
 
 Points ouverts dans cette architecture :
 
-- **Image de base exacte** : `À DÉCIDER`. Dépend de la couverture matérielle (D-021), recommandation dans D-005.
-- **Bureau** : Kinoite fournit KDE Plasma. `TODO` : confirmer KDE (sinon, une autre variante Fedora Atomic).
+- **Image de base exacte** : DÉCIDÉ. `kinoite-main` (Mesa) et `kinoite-nvidia` (NVIDIA récent), Fedora 44 (D-005).
+- **Bureau** : KDE Plasma — DÉCIDÉ (D-004).
 - **Outil du conteneur dev** (distrobox, toolbx ou Podman seul) : `À DÉCIDER` (D-012).
 - **Besoins réseau bas niveau** (scan SYN, ARP, mode monitor) : probablement impossibles en conteneur rootless (`À VALIDER`). Solution (VM ou conteneur rootful éphémère) : `À DÉCIDER` (D-013).
-- **Version de Fedora** (D-017), **construction et publication de l'image** (D-018), **sauvegarde et récupération** (D-019) : décisions `PROPOSÉES`, à valider.
+- **Version de Fedora** (D-017) et **construction et publication de l'image** (D-018) : DÉCIDÉ. **Sauvegarde et récupération** (D-019) : `PROPOSÉE`, à valider.
 
 ---
 
@@ -157,7 +157,7 @@ Points ouverts dans cette architecture :
 ### 4.7 Système
 
 - **Langue et disposition du clavier** : TODO
-- **Bureau** : KDE Plasma (via Kinoite) — TODO : à confirmer
+- **Bureau** : KDE Plasma (via Kinoite) — DÉCIDÉ (D-004)
 
 ---
 
@@ -182,9 +182,9 @@ Points ouverts dans cette architecture :
 ## 6. Prêt à avancer quand
 
 Avant la phase 1 (base et chaîne de build) :
-- [ ] Bureau confirmé (4.7)
-- [ ] Image de base choisie (D-005)
-- [ ] D-017 et D-018 validées ou rejetées
+- [x] Bureau confirmé (4.7)
+- [x] Image de base choisie (D-005)
+- [x] D-017 et D-018 validées
 
 Avant les phases 4 à 6 (gaming, cyber, labs) :
 - [ ] Questions 6 à 9 remplies

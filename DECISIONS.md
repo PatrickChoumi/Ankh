@@ -22,7 +22,7 @@
 | D-002 | Une seule machine, un seul GPU en V1 | REMPLACÉE par D-021 |
 | D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
 | D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe) |
-| D-005 | Image de base exacte | À DÉCIDER |
+| D-005 | Image de base exacte : `kinoite-main` + `kinoite-nvidia` (Fedora 44) | DÉCIDÉ |
 | D-006 | Secure Boot activé | DÉCIDÉ |
 | D-007 | Chiffrement LUKS | DÉCIDÉ |
 | D-008 | Aucune sécurité désactivée pour faire marcher un outil | DÉCIDÉ |
@@ -34,8 +34,8 @@
 | D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
 | D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
 | D-016 | Le dépôt est la source de vérité, toute affirmation importante est prouvée | DÉCIDÉ (complétée par D-020) |
-| D-017 | Version de Fedora figée, montée de version délibérée | PROPOSÉE — À VALIDER |
-| D-018 | Construction, publication et signature de l'image | PROPOSÉE — À VALIDER |
+| D-017 | Version de Fedora figée, montée de version délibérée | DÉCIDÉ |
+| D-018 | Construction, publication et signature de l'image | DÉCIDÉ (méthode d'imposition de la signature À VALIDER) |
 | D-019 | Sauvegarde et récupération : OS / configuration / données / secrets | PROPOSÉE — À VALIDER |
 | D-020 | CLAUDE.md, guide de travail du projet | DÉCIDÉ |
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
@@ -92,11 +92,11 @@
 - **Vérification** :
   - Documentation officielle : <https://docs.fedoraproject.org/en-US/bootc/>
   - Test à faire en VM (non exécuté) : `bootc status`, puis appliquer une mise à jour, puis `sudo bootc rollback` et redémarrer. Le déploiement précédent doit démarrer.
-- **Note** : Kinoite fournit KDE Plasma. Le choix du bureau reste à confirmer (ANKH-SPEC 4.7).
+- **Bureau** : KDE Plasma, fourni par Kinoite — confirmé le 2026-10-07.
 
 ## D-005 — Image de base exacte
 
-- **Statut** : À DÉCIDER. Débloqué par ANKH-SPEC Q3 (GPU) et Q7 (CUDA/ROCm).
+- **Statut** : DÉCIDÉ (2026-10-07). Était : À DÉCIDER.
 - **Contexte** : l'image de base détermine le pilote GPU, les codecs, les services de mise à jour et la dépendance éventuelle à Universal Blue.
 - **Faits vérifiés le 2026-10-07** :
   - `ghcr.io/ublue-os/kinoite-main:44` et `ghcr.io/ublue-os/kinoite-nvidia:44` sont publiées, en version `44.20261002.0`. Source : métadonnées du registre GHCR.
@@ -115,8 +115,12 @@
   | C | `ghcr.io/ublue-os/kinoite-nvidia:44` | Pilote NVIDIA open déjà intégré et signé | Matériel NVIDIA récent seulement, dépendance à Universal Blue |
   | D | Image NVIDIA ancien assemblée soi-même (`akmods-nvidia-lts`) | Couvre le matériel NVIDIA ancien | Partie la plus fragile du projet |
 
-- **Décision** : à prendre. Depuis D-021, le critère principal n'est plus mon GPU mais la couverture du maximum de PC.
-- **Recommandation (2026-10-07, suite à D-021)** : options **B + C**.
+- **Décision (2026-10-07)** : options **B + C**.
+  - Variante `ankh` (Mesa : AMD, Intel) : à partir de `ghcr.io/ublue-os/kinoite-main:44`.
+  - Variante `ankh-nvidia` (NVIDIA récent) : à partir de `ghcr.io/ublue-os/kinoite-nvidia:44`.
+  - Chaque base est épinglée par digest (D-017).
+- **Contexte de la décision** : depuis D-021, le critère principal n'est plus mon GPU mais la couverture du maximum de PC.
+- **Recommandation qui a mené à la décision** : options **B + C**.
   - `kinoite-main` pour la variante Mesa (AMD, Intel), `kinoite-nvidia` pour la variante NVIDIA récent.
   - Les deux viennent de la même lignée Universal Blue. Les variantes ne diffèrent donc que par le pilote.
   - L'option A seule ne permet pas de variante NVIDIA sans compiler le pilote soi-même.
@@ -269,26 +273,28 @@
 
 ## D-017 — Version de Fedora figée, montée de version délibérée
 
-- **Statut** : PROPOSÉE — À VALIDER
+- **Statut** : DÉCIDÉ (2026-10-07). Était : PROPOSÉE.
 - **Contexte** : Fedora sort une version majeure environ tous les six mois. Fedora 45 est annoncée par la presse pour fin octobre 2026 (`À VALIDER` sur le calendrier officiel Fedora).
-- **Proposition** :
+- **Décision** :
+  - Ankh démarre sur **Fedora 44**.
   - L'image de base est référencée par sa version majeure et par son empreinte (digest) exacte.
   - Une nouvelle version de Fedora n'arrive que par une modification délibérée de ce dépôt, testée d'abord en VM.
+  - Le passage à Fedora 45 se fera après sa publication par Universal Blue (D-005) et quelques semaines de rodage.
 - **Raisons** : aucun changement majeur sans décision de ma part.
 - **Alternatives rejetées** : suivre automatiquement la dernière version (`latest`).
 - **Vérification** : la référence de base dans le dépôt contient une version et un digest. Aucun changement de version majeure sans modification relue.
 
 ## D-018 — Construction, publication et signature de l'image
 
-- **Statut** : PROPOSÉE — À VALIDER
+- **Statut** : DÉCIDÉ (2026-10-07). Était : PROPOSÉE. La méthode d'imposition de la signature reste À VALIDER.
 - **Contexte** : l'image doit être construite et testée avant d'arriver sur la machine. La machine doit pouvoir vérifier qu'elle vient bien de moi.
 - **Faits vérifiés le 2026-10-07** :
   - Le dépôt `PatrickChoumi/Ankh` est public. Source : API GitHub.
   - GitHub Actions est gratuit pour les dépôts publics avec les runners standards. Source : <https://github.com/resources/insights/2026-pricing-changes-for-github-actions>
-- **Proposition** :
+- **Décision** :
   - Construction par GitHub Actions.
-  - Publication sur un registre (GHCR proposé).
-  - Signature avec cosign.
+  - Publication sur GHCR (registre d'images de GitHub).
+  - Signature avec cosign. La paire de clés est générée par moi, sur ma machine. La clé privée est stockée uniquement dans le secret GitHub `SIGNING_SECRET` et dans ma sauvegarde de secrets. La clé publique `cosign.pub` est commitée dans le dépôt.
   - Politique de vérification de signature configurée sur la machine.
 - **Raisons** : image testée avant le déploiement, provenance vérifiable.
 - **Alternatives rejetées** : construire l'image localement sur la machine elle-même.

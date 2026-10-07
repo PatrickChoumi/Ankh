@@ -24,8 +24,10 @@
 
 ## 2. État actuel
 
-- **Phase en cours : 0 — Spécification.** Aucun code, aucune image, aucun Containerfile, aucun CLI.
-- **Ce qui bloque la phase 1** : D-005, D-017, D-018 et la confirmation du bureau (ANKH-SPEC.md §6). Depuis D-021, les questions matérielles ne bloquent plus la phase 1. Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
+- **Phase en cours : 1 — Base et chaîne de build** (depuis le 2026-10-07). Les décisions D-005, D-017, D-018 et le bureau (KDE) sont tranchés.
+- **Ce qui bloque l'avancement** : de mon côté, la clé de signature cosign (`cosign.pub` à commiter, `SIGNING_SECRET` à créer) et la protection de `main`.
+- **Questions matérielles** : elles ne bloquent pas la phase 1 (D-021). Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
+- **Branches** : `main` reçoit les changements uniquement par PR.
 - **Langue du projet** : français (documents, messages de commit, échanges).
 
 > Mettre cette section à jour à chaque changement de phase.
@@ -103,8 +105,8 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 
 | Phase | Objectif | Terminée quand |
 |---|---|---|
-| **0. Spécification** *(en cours)* | Décrire ma machine et mes usages | ANKH-SPEC.md §6 entièrement coché |
-| **1. Base et chaîne de build** | Images génériques construites automatiquement | D-005, D-017 et D-018 tranchées. Chaque variante de D-021 est construite par la CI, testée, signée et publiée, sans toucher ma machine |
+| **0. Spécification** *(terminée le 2026-10-07)* | Décrire ma machine et mes usages | ANKH-SPEC.md §6 « Avant la phase 1 » entièrement coché |
+| **1. Base et chaîne de build** *(en cours)* | Images génériques construites automatiquement | D-005, D-017 et D-018 tranchées. Chaque variante de D-021 est construite par la CI, testée, signée et publiée, sans toucher ma machine |
 | **2. Premier démarrage en VM** | Prouver le modèle image-based | Dans une VM, avec la variante Mesa : basculement sur l'image, puis retour arrière (`bootc rollback`), puis retour à l'image de base, tous réussis. Résultats notés dans DECISIONS.md (D-004). La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI |
 | **3. Dev** | Environnement de dev reconstructible | Le conteneur dev se supprime et se recrée depuis le dépôt, fonctionnel (D-012) |
 | **4. Gaming** | Mes jeux fonctionnent | Chaque jeu de ANKH-SPEC Q6 testé. Manettes, VRR et multi-écran vérifiés si concernés (D-011). Test final sur la vraie machine en phase 8 |
@@ -129,4 +131,4 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 3. **Proposer**, si la tâche touche l'architecture. J'arbitre, puis on écrit la décision.
 4. **Réaliser** sur une branche, sans contourner les règles du §3.
 5. **Vérifier** : tests, CI, VM. Noter ce qui n'a pas pu être testé.
-6. **Rendre compte** (§4, « Après »). Commit et push seulement sur demande.
+6. **Rendre compte** (§4, « Après »), avec le commit poussé sur la branche de travail.

@@ -2,7 +2,7 @@
 
 **Mon OS personnel immuable pour coder, jouer et faire de la cybersécurité.** Il est générique (le maximum de PC) et s'appuie sur l'isolation forte, la virtualisation et le retour arrière.
 
-> **État actuel : étape de spécification.** Aucun code, aucune image, aucun Containerfile.
+> **État actuel : phase 1 — base et chaîne de build.** Aucune image n'est encore construite.
 > Les procédures décrites ici sont des **cibles** : aucune n'a encore été testée.
 
 ## Ce qu'est Ankh
@@ -30,7 +30,7 @@ La liste complète est dans [ANKH-SPEC.md, section 5](ANKH-SPEC.md#5-ce-que-je-n
 │ D-012              │ rootless   D-013   │ libvirt/KVM D-014│
 ├────────────────────┴────────────────────┴──────────────────┤
 │ Hôte immuable : Fedora Kinoite / Atomic + bootc      D-004 │
-│ Image de base exacte : À DÉCIDER                     D-005 │
+│ Base : kinoite-main / kinoite-nvidia, Fedora 44      D-005 │
 ├────────────────────────────────────────────────────────────┤
 │ Secure Boot (D-006) · LUKS (D-007)                         │
 └────────────────────────────────────────────────────────────┘
@@ -56,7 +56,7 @@ Rien ne s'installe sur l'hôte en dehors de l'image (D-009).
 ### Réinstallation complète (ordre cible, D-019)
 
 1. Réinstaller Fedora Atomic (Kinoite) avec le chiffrement LUKS activé.
-2. Basculer sur l'image Ankh avec `bootc switch`. Le registre et le tag restent à décider (D-018).
+2. Basculer sur l'image Ankh, publiée sur GHCR, avec `bootc switch` (D-018). Le nom exact de l'image et du tag sera fixé en phase 1.
 3. Restaurer les **secrets** depuis la sauvegarde chiffrée. C'est nécessaire avant de cloner des dépôts privés.
 4. Cloner ce dépôt : il contient la configuration.
 5. Recréer les applications Flatpak, les conteneurs et les VMs depuis les définitions du dépôt. Les recettes `just` sont à construire (D-015).
