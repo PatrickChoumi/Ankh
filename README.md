@@ -1,0 +1,72 @@
+# Ankh
+
+**Mon OS personnel immuable pour coder, jouer et faire de la cybersécurité**, sur une seule machine. Il s'appuie sur l'isolation forte, la virtualisation et le retour arrière.
+
+> **État actuel : étape de spécification.** Aucun code, aucune image, aucun Containerfile.
+> Les procédures décrites ici sont des **cibles** : aucune n'a encore été testée.
+
+## Ce qu'est Ankh
+
+- Le système d'**un seul PC** et d'**un seul utilisateur** (D-001, D-002).
+- Un système **image-based** : l'OS est une image immuable, mise à jour d'un bloc, avec retour à la version précédente (D-004).
+- Un hôte minimal et protégé : Secure Boot (D-006), chiffrement LUKS (D-007), aucune sécurité désactivée pour faire marcher un outil (D-008).
+
+## Ce qu'Ankh n'est pas
+
+- Pas une distribution publique, ni un produit, ni un projet multi-matériel.
+- Pas de branding ni d'ISO custom en V1.
+- Pas un hôte où l'on installe des outils offensifs ou où l'on manipule du malware.
+
+La liste complète est dans [ANKH-SPEC.md, section 5](ANKH-SPEC.md#5-ce-que-je-ne-veux-pas).
+
+## Architecture générale (envisagée)
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│ Applications : Flatpak (Steam, navigateur, …)        D-011 │
+├────────────────────┬────────────────────┬──────────────────┤
+│ Dev                │ Cyber              │ Labs / malware   │
+│ conteneur          │ Kali, Podman       │ VMs isolées      │
+│ D-012              │ rootless   D-013   │ libvirt/KVM D-014│
+├────────────────────┴────────────────────┴──────────────────┤
+│ Hôte immuable : Fedora Kinoite / Atomic + bootc      D-004 │
+│ Image de base exacte : À DÉCIDER                     D-005 │
+├────────────────────────────────────────────────────────────┤
+│ Secure Boot (D-006) · LUKS (D-007)                         │
+└────────────────────────────────────────────────────────────┘
+```
+
+Règle de placement :
+- **Dans l'image** : seulement ce qui doit faire partie du système.
+- **En Flatpak** : les applications.
+- **En conteneur** : le dev et les outils cyber.
+- **En VM** : tout ce qui est dangereux ou non fiable.
+
+Rien ne s'installe sur l'hôte en dehors de l'image (D-009).
+
+## Récupération après une panne
+
+| Situation | Action prévue | Statut |
+|---|---|---|
+| Une mise à jour casse quelque chose | `sudo bootc rollback` puis redémarrer, ou choisir l'entrée précédente dans le menu de démarrage | À VALIDER (test en VM) |
+| L'image Ankh elle-même est défectueuse | `sudo bootc switch` vers l'image de base (D-005), sans réinstaller | À VALIDER (test en VM) |
+| Disque perdu ou réinstallation complète | Procédure ci-dessous | À CONSTRUIRE puis TESTER |
+| Compte GitHub ou registre d'images inaccessible | Copie de la dernière image saine sur le support de sauvegarde | PROPOSÉ (D-019) |
+
+### Réinstallation complète (ordre cible, D-019)
+
+1. Réinstaller Fedora Atomic (Kinoite) avec le chiffrement LUKS activé.
+2. Basculer sur l'image Ankh avec `bootc switch`. Le registre et le tag restent à décider (D-018).
+3. Restaurer les **secrets** depuis la sauvegarde chiffrée. C'est nécessaire avant de cloner des dépôts privés.
+4. Cloner ce dépôt : il contient la configuration.
+5. Recréer les applications Flatpak, les conteneurs et les VMs depuis les définitions du dépôt. Les recettes `just` sont à construire (D-015).
+6. Restaurer les données.
+
+Cette procédure ne sera considérée comme valide qu'après un exercice complet réussi en VM (D-016, D-019).
+
+## Documents
+
+- [ANKH-SPEC.md](ANKH-SPEC.md) : ce que je fais avec ma machine, les questions ouvertes, la liste de ce que je ne veux pas.
+- [DECISIONS.md](DECISIONS.md) : chaque choix, avec ses raisons, ses alternatives rejetées et sa source ou son test.
+
+**Règle** : ce dépôt est la source de vérité. Toute affirmation technique importante doit être appuyée par une documentation officielle, un test reproductible ou une expérience réelle sur la machine. Sinon, elle est marquée `À VALIDER` (D-016).

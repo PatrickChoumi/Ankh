@@ -1,0 +1,306 @@
+# DECISIONS — Journal des décisions d'Ankh
+
+> Chaque entrée contient : **Statut**, **Contexte**, **Décision**, **Raisons**, **Alternatives rejetées**, **Vérification** (source ou test).
+>
+> **Statuts :**
+> - `DÉCIDÉ` : choix acté.
+> - `À DÉCIDER` : choix ouvert. Ce qui le débloque est indiqué.
+> - `PROPOSÉE — À VALIDER` : proposition issue du brainstorming, pas encore acceptée.
+>
+> Dans une entrée, toute affirmation marquée `À VALIDER` n'est pas encore prouvée. Elle ne doit pas être traitée comme un fait.
+> « Vérifié le 2026-10-07 » veut dire : consulté dans la source citée à cette date. Ça peut changer depuis.
+>
+> **Règle :** on ne supprime pas une entrée. On la remplace par une nouvelle qui la cite (« remplace D-00X »).
+>
+> Les besoins sont dans [ANKH-SPEC.md](ANKH-SPEC.md), la vue d'ensemble dans [README.md](README.md).
+
+## Index
+
+| ID | Décision | Statut |
+|---|---|---|
+| D-001 | Poste personnel, pas une distribution | DÉCIDÉ |
+| D-002 | Une seule machine, un seul GPU en V1 | DÉCIDÉ |
+| D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
+| D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe) |
+| D-005 | Image de base exacte | À DÉCIDER |
+| D-006 | Secure Boot activé | DÉCIDÉ |
+| D-007 | Chiffrement LUKS | DÉCIDÉ |
+| D-008 | Aucune sécurité désactivée pour faire marcher un outil | DÉCIDÉ |
+| D-009 | Hôte reproductible : pas de `rpm-ostree install`, pas de `curl \| bash` | DÉCIDÉ |
+| D-010 | Pas de redémarrage automatique | DÉCIDÉ |
+| D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ |
+| D-012 | Environnement dev en conteneur | DÉCIDÉ (outil exact À DÉCIDER) |
+| D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ |
+| D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
+| D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
+| D-016 | Le dépôt est la source de vérité, toute affirmation importante est prouvée | DÉCIDÉ |
+| D-017 | Version de Fedora figée, montée de version délibérée | PROPOSÉE — À VALIDER |
+| D-018 | Construction, publication et signature de l'image | PROPOSÉE — À VALIDER |
+| D-019 | Sauvegarde et récupération : OS / configuration / données / secrets | PROPOSÉE — À VALIDER |
+
+---
+
+## D-001 — Poste personnel, pas une distribution
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : le premier brainstorming visait une distribution grand public : installateur, plusieurs variantes matérielles, support d'utilisateurs. C'est une charge de maintenance démesurée pour une seule personne.
+- **Décision** : Ankh est l'OS d'une seule machine et d'un seul utilisateur. Pas de distribution publique, pas de branding, pas d'ISO custom en V1.
+- **Raisons** : réduire le périmètre (matériel, tests, documentation, support) à ce qui sert réellement.
+- **Alternatives rejetées** :
+  - Distribution publique dérivée de Fedora Atomic.
+  - Plusieurs variantes pour plusieurs profils d'utilisateurs.
+- **Vérification** : décision de périmètre, pas technique. Critère d'application : tout ajout qui ne sert qu'à du matériel ou à des usages absents d'ANKH-SPEC.md est refusé.
+
+## D-002 — Une seule machine, un seul GPU en V1
+
+- **Statut** : DÉCIDÉ (2026-10-07). La machine et le GPU restent à renseigner (ANKH-SPEC Q1 à Q5).
+- **Contexte** : supporter plusieurs GPU demande une image par famille de pilotes, et autant de builds et de tests.
+- **Décision** : la V1 cible uniquement mon PC et son GPU.
+- **Raisons** : un seul artefact à construire, tester et maintenir, sur du matériel que je peux réellement tester.
+- **Alternatives rejetées** : trois variantes dès la V1 (Mesa, NVIDIA récent, NVIDIA ancien). Rejetée parce que je ne peux pas tester sur du vrai matériel ce que je ne possède pas.
+- **Vérification** : ANKH-SPEC Q1 à Q5 renseignées. Hypothèse : ajouter une variante plus tard resterait possible sans réinstallation (via `bootc switch`) — `À VALIDER`.
+
+## D-003 — Linux uniquement, pas de dual boot
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : la machine est aujourd'hui entièrement sous Linux.
+- **Décision** : aucun Windows installé en natif, pas de dual boot. Une VM Windows reste possible pour le lab (D-014).
+- **Raisons** :
+  - Simplicité du démarrage.
+  - En dual boot, les mises à jour Windows ont déjà empêché Linux de démarrer : mise à jour SBAT de Microsoft, août 2024.
+- **Alternatives rejetées** : dual boot Windows pour les jeux à anticheat incompatible.
+- **Conséquence** : un jeu dont l'anticheat refuse Linux sera injouable. À contrôler pour chaque jeu (ANKH-SPEC Q6).
+- **Vérification** :
+  - Incident SBAT : <https://www.bleepingcomputer.com/news/microsoft/microsoft-confirms-august-updates-break-linux-boot-in-dual-boot-systems/>
+  - Compatibilité anticheat : <https://areweanticheatyet.com>
+
+## D-004 — Système image-based : Fedora Atomic (Kinoite) + bootc
+
+- **Statut** : DÉCIDÉ (principe, 2026-10-07). L'image exacte relève de D-005.
+- **Contexte** : je veux des mises à jour qui s'appliquent entièrement ou pas du tout, et un retour arrière simple.
+- **Décision** : l'hôte est une image système immuable de la famille Fedora Atomic (Kinoite), gérée avec bootc. Le système de fichiers système reste en lecture seule. Les mises à jour et les retours arrière se font par image entière.
+- **Raisons** :
+  - Mises à jour atomiques.
+  - Retour au déploiement précédent.
+  - Image construite et testée avant d'arriver sur la machine.
+- **Alternatives rejetées** :
+  - Distribution classique à paquets (mises à jour en place, sans retour arrière natif).
+  - NixOS (autre modèle, non retenu pour ce projet).
+- **Vérification** :
+  - Documentation officielle : <https://docs.fedoraproject.org/en-US/bootc/>
+  - Test à faire en VM (non exécuté) : `bootc status`, puis appliquer une mise à jour, puis `sudo bootc rollback` et redémarrer. Le déploiement précédent doit démarrer.
+- **Note** : Kinoite fournit KDE Plasma. Le choix du bureau reste à confirmer (ANKH-SPEC 4.7).
+
+## D-005 — Image de base exacte
+
+- **Statut** : À DÉCIDER. Débloqué par ANKH-SPEC Q3 (GPU) et Q7 (CUDA/ROCm).
+- **Contexte** : l'image de base détermine le pilote GPU, les codecs, les services de mise à jour et la dépendance éventuelle à Universal Blue.
+- **Faits vérifiés le 2026-10-07** :
+  - `ghcr.io/ublue-os/kinoite-main:44` et `ghcr.io/ublue-os/kinoite-nvidia:44` sont publiées, en version `44.20261002.0`. Source : métadonnées du registre GHCR.
+  - Le Containerfile d'Universal Blue construit à partir de `quay.io/fedora-ostree-desktops/kinoite`. Pour la variante NVIDIA, il installe le pilote depuis l'image `akmods-nvidia-open`. Source : <https://github.com/ublue-os/main/blob/main/Containerfile>
+  - D'après Universal Blue, le pilote NVIDIA « open » couvre le matériel récent, et le pilote fermé est requis pour le matériel plus ancien. Une image `akmods-nvidia-lts` existe pour Fedora 44, mais je n'ai trouvé aucune image Kinoite prête à l'emploi qui l'utilise. Source : <https://github.com/ublue-os/akmods>
+  - `kinoite-main` ajoute notamment des codecs (ffmpeg), `distrobox`, `just` et `tmux`. Elle active aussi des timers de mise à jour : `rpm-ostreed-automatic` en mode « staged » et les mises à jour Flatpak. Sources :
+    - <https://github.com/ublue-os/main/blob/main/packages.json>
+    - <https://github.com/ublue-os/main/blob/main/build_files/post-install.sh>
+  - **Non vérifié** : la référence exacte de l'image officielle Fedora Kinoite sur quay.io (registre inaccessible depuis mon environnement de travail) — `À VALIDER`.
+- **Options** :
+
+  | Option | Image | Pour | Contre |
+  |---|---|---|---|
+  | A | Fedora Kinoite officiel (référence `À VALIDER`) | Aucune dépendance tierce | Codecs à gérer, pas de pilote NVIDIA |
+  | B | `ghcr.io/ublue-os/kinoite-main:44` | Codecs et outils inclus | Dépendance à Universal Blue |
+  | C | `ghcr.io/ublue-os/kinoite-nvidia:44` | Pilote NVIDIA open déjà intégré et signé | Matériel NVIDIA récent seulement, dépendance à Universal Blue |
+  | D | Image NVIDIA ancien assemblée soi-même (`akmods-nvidia-lts`) | Couvre le matériel NVIDIA ancien | Partie la plus fragile du projet |
+
+- **Décision** : à prendre après Q3 et Q7.
+- **Vérification** : la référence choisie existe et démarre en VM (test non exécuté).
+
+## D-006 — Secure Boot activé
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : Secure Boot n'autorise au démarrage que des composants signés.
+- **Décision** : Secure Boot reste activé, quel que soit le GPU.
+- **Raisons** : protection de la chaîne de démarrage. Cohérent avec D-008.
+- **Alternatives rejetées** : désactiver Secure Boot pour simplifier l'usage d'un pilote tiers.
+- **Conséquences selon le GPU (Q3)** :
+  - Pilotes intégrés au noyau (AMD, Intel) : aucune clé supplémentaire attendue — `À VALIDER`.
+  - NVIDIA via une image Universal Blue : leur clé de signature est à enregistrer une fois par la procédure MOK (`/etc/pki/akmods/certs/akmods-ublue.der`). Source : <https://universal-blue.discourse.group/t/secure-boot-key-mok-management/4310>
+- **Vérification** : test `mokutil --sb-state` → « SecureBoot enabled ». Ensuite, session graphique avec accélération GPU fonctionnelle (non exécuté).
+
+## D-007 — Chiffrement LUKS
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : la machine contiendra des données personnelles, des secrets et des données de cybersécurité.
+- **Décision** : disque système chiffré avec LUKS, activé à l'installation.
+- **Raisons** : protection des données en cas de perte ou de vol.
+- **Alternatives rejetées** : pas de chiffrement.
+- **Question ouverte** : déverrouillage par TPM2 en plus de la phrase de passe (ANKH-SPEC 4.6).
+- **Vérification** : test `lsblk -f` → partition de type `crypto_LUKS` (non exécuté). L'option de chiffrement dans l'installateur Fedora est `À VALIDER` au moment de l'installation.
+
+## D-008 — Aucune sécurité désactivée pour faire marcher un outil
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : certains outils (pilotes, outils réseau, jeux) poussent à désactiver une protection.
+- **Décision** : on ne désactive jamais Secure Boot, le pare-feu, le chiffrement ni SELinux pour contourner un problème. On cherche une autre façon d'intégrer l'outil : conteneur, VM, signature, règle de pare-feu ciblée et temporaire. Sinon, on renonce à l'outil.
+- **Raisons** : une architecture affaiblie pour un outil l'est pour tout le reste.
+- **Alternatives rejetées** : exceptions au cas par cas sans trace.
+- **Vérification** : tests à exécuter sur la machine installée :
+
+  ```bash
+  mokutil --sb-state      # SecureBoot enabled
+  firewall-cmd --state    # running
+  getenforce              # Enforcing
+  lsblk -f                # crypto_LUKS
+  ```
+
+## D-009 — Hôte reproductible : pas de `rpm-ostree install`, pas de `curl | bash`
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : sur un système image-based, l'ajout local de paquets (`rpm-ostree install`) fait diverger la machine de son image. Exécuter des scripts téléchargés fait tourner du code non relu sur l'hôte.
+- **Décision** : rien ne s'installe sur l'hôte en dehors de l'image. Un logiciel va :
+  - dans l'image, via une modification relue dans ce dépôt ;
+  - ou en Flatpak ;
+  - ou dans un conteneur ou une VM.
+- **Raisons** : la machine reste égale à son image, donc reconstructible. Tout code système passe par une relecture.
+- **Alternatives rejetées** :
+  - Ajout local de paquets.
+  - Scripts d'installation téléchargés et exécutés sur l'hôte.
+- **Vérification** : test `rpm-ostree status` → aucune ligne `LayeredPackages` ni `LocalPackages` (non exécuté).
+
+## D-010 — Pas de redémarrage automatique
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : selon la documentation Fedora bootc, le timer `bootc-fetch-apply-updates.timer` peut télécharger, appliquer et **redémarrer** automatiquement. Il peut être masqué. Source : <https://docs.fedoraproject.org/en-US/bootc/auto-updates/>
+- **Décision** : une mise à jour peut être téléchargée et préparée, mais elle ne s'applique qu'au redémarrage que je choisis.
+- **Raisons** : ne pas perdre une session de jeu ou de travail.
+- **Alternatives rejetées** : mises à jour appliquées avec redémarrage automatique.
+- **À VALIDER** : quels services de mise à jour sont réellement actifs sur l'image de base choisie (D-005). Par exemple, `kinoite-main` active `rpm-ostreed-automatic.timer` en mode « staged » (voir sources de D-005).
+- **Vérification** : test `systemctl list-timers --all` sur l'image construite. Aucun timer de mise à jour ne doit déclencher de redémarrage (non exécuté).
+
+## D-011 — Applications en Flatpak, gaming via Steam Flatpak
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : les applications évoluent plus vite que le système et n'ont pas besoin d'être dans l'image.
+- **Décision** : les applications de bureau (Steam, navigateur, communication, …) sont installées en Flatpak. Le gaming passe principalement par Steam en Flatpak (`com.valvesoftware.Steam`).
+- **Raisons** : applications mises à jour indépendamment de l'image, image plus petite.
+- **Alternatives rejetées** : Steam installé dans l'image (paquet natif).
+- **À VALIDER** :
+  - Mes jeux (Q6) fonctionnent avec Steam Flatpak.
+  - Aucune bibliothèque 32 bits n'est nécessaire sur l'hôte.
+  - Les manettes sont reconnues (des règles udev sur l'hôte pourraient être nécessaires).
+- **Vérification** : test réel sur la machine avec la liste de jeux de Q6 (non exécuté).
+
+## D-012 — Environnement dev en conteneur
+
+- **Statut** : DÉCIDÉ (principe, 2026-10-07). L'outil exact est À DÉCIDER : distrobox, toolbx ou Podman seul.
+- **Contexte** : les dépendances des projets ne doivent pas polluer l'hôte.
+- **Décision** : langages, SDK et outils de développement vivent dans un ou plusieurs conteneurs. Leur définition est versionnée dans ce dépôt pour être recréée à l'identique.
+- **Raisons** : hôte propre, environnement jetable et reconstructible.
+- **Alternatives rejetées** : installation des outils de dev sur l'hôte (contraire à D-009).
+- **Note** : distrobox privilégie l'intégration avec l'hôte, pas l'isolation. C'est acceptable pour le dev, pas pour la cybersécurité (D-013).
+- **Vérification** : test futur. Supprimer le conteneur, le recréer depuis sa définition, retrouver un environnement fonctionnel (non exécuté).
+
+## D-013 — Outils offensifs hors de l'hôte, Kali via Podman rootless
+
+- **Statut** : DÉCIDÉ (2026-10-07). La solution pour les besoins réseau bas niveau est À DÉCIDER.
+- **Contexte** : les outils offensifs ne doivent pas tourner directement sur la machine où je joue et stocke mes données. Distrobox indique que l'isolation et le sandboxing ne sont pas ses objectifs : il partage le dossier personnel et d'autres ressources de l'hôte.
+- **Décision** :
+  - Aucun outil offensif dans l'image ni sur l'hôte.
+  - Kali tourne dans un conteneur Podman **rootless**, lancé directement avec Podman (pas via distrobox ni toolbx).
+  - Seul un dossier de travail dédié est monté dans ce conteneur.
+- **Raisons** : limiter ce que les outils et le code exécuté peuvent atteindre sur l'hôte (clés SSH, données personnelles).
+- **Alternatives rejetées** :
+  - Kali installé sur l'hôte.
+  - Kali dans distrobox ou toolbx (intégration, pas isolation).
+- **À VALIDER** : les opérations réseau bas niveau (scan SYN, ARP, mode monitor) ne fonctionnent probablement pas en rootless. Solution `À DÉCIDER` : VM (D-014) ou conteneur rootful éphémère.
+- **Vérification** :
+  - Distrobox : <https://distrobox.it/> et <https://wiki.archlinux.org/title/Distrobox>
+  - Comportements de Kali sans root : <https://www.kali.org/docs/general-use/nonroot-behavioral-differences-in-packages/>
+  - Tests à écrire (non exécutés) :
+    1. Depuis le conteneur, le `~/.ssh` de l'hôte est inaccessible.
+    2. `nmap -sS` en rootless : résultat à constater.
+
+## D-014 — Malware et labs dans des VMs isolées (libvirt/KVM)
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : un conteneur partage le noyau de l'hôte. Le code malveillant et les labs offensifs demandent une frontière plus forte.
+- **Décision** :
+  - Toute analyse de malware et tout lab cyber se font dans des VMs libvirt/KVM.
+  - Les réseaux de lab sont isolés de l'hôte et du réseau local.
+  - Pas de dossier ni de presse-papier partagé avec une VM d'analyse de malware.
+  - Snapshot avant chaque analyse.
+- **Raisons** : une VM est une frontière d'isolation plus forte qu'un conteneur.
+- **Alternatives rejetées** : analyse de malware dans un conteneur ou sur l'hôte.
+- **À VALIDER** :
+  - Virtualisation matérielle disponible et activée (Q2).
+  - Passthrough USB d'un adaptateur Wi-Fi vers une VM, si Q9 = oui.
+  - Sur Fedora Atomic, l'ajout de l'utilisateur au groupe `libvirt` demande de copier la ligne du groupe depuis `/usr/lib/group` vers `/etc/group`. Source : <https://discussion.fedoraproject.org/t/how-can-i-add-myself-to-the-libvirt-group-in-fedora-silverblue/1412>
+- **Vérification** : tests futurs (non exécutés). Depuis une VM de lab, l'hôte et le réseau local sont injoignables. La restauration d'un snapshot fonctionne.
+
+## D-015 — Recettes `just` plutôt qu'un CLI maison
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : le brainstorming envisageait une commande `ankh` riche. Un vrai programme serait un projet logiciel de plus à maintenir.
+- **Décision** : les automatisations sont des recettes `just`, versionnées dans ce dépôt. Un programme dédié ne sera envisagé que si une recette devient difficile à lire ou à tester.
+- **Raisons** : maintenance minimale, rien à compiler.
+- **Alternatives rejetées** : CLI dédié (Python, Go, Rust) dès la V1.
+- **Vérification** : revue à chaque ajout de recette.
+
+## D-016 — Le dépôt est la source de vérité, toute affirmation importante est prouvée
+
+- **Statut** : DÉCIDÉ (2026-10-07)
+- **Contexte** : le brainstorming s'est fait avec plusieurs assistants. Plusieurs affirmations techniques se sont révélées fausses et ont dû être corrigées.
+- **Décision** :
+  - La documentation tient en trois fichiers : `ANKH-SPEC.md` (besoins), `DECISIONS.md` (choix), `README.md` (vue d'ensemble et récupération).
+  - Chaque affirmation technique importante est appuyée par une documentation officielle, un test reproductible ou une expérience réelle sur ma machine.
+  - Sinon, elle est marquée `À VALIDER`.
+- **Raisons** : éviter de bâtir sur une erreur. Éviter les informations contradictoires dans plusieurs fichiers.
+- **Alternatives rejetées** : documentation éclatée (architecture, feuille de route, etc. dans des fichiers séparés).
+- **Vérification** : revue de chaque modification de ces fichiers.
+
+## D-017 — Version de Fedora figée, montée de version délibérée
+
+- **Statut** : PROPOSÉE — À VALIDER
+- **Contexte** : Fedora sort une version majeure environ tous les six mois. Fedora 45 est annoncée par la presse pour fin octobre 2026 (`À VALIDER` sur le calendrier officiel Fedora).
+- **Proposition** :
+  - L'image de base est référencée par sa version majeure et par son empreinte (digest) exacte.
+  - Une nouvelle version de Fedora n'arrive que par une modification délibérée de ce dépôt, testée d'abord en VM.
+- **Raisons** : aucun changement majeur sans décision de ma part.
+- **Alternatives rejetées** : suivre automatiquement la dernière version (`latest`).
+- **Vérification** : la référence de base dans le dépôt contient une version et un digest. Aucun changement de version majeure sans modification relue.
+
+## D-018 — Construction, publication et signature de l'image
+
+- **Statut** : PROPOSÉE — À VALIDER
+- **Contexte** : l'image doit être construite et testée avant d'arriver sur la machine. La machine doit pouvoir vérifier qu'elle vient bien de moi.
+- **Faits vérifiés le 2026-10-07** :
+  - Le dépôt `PatrickChoumi/Ankh` est public. Source : API GitHub.
+  - GitHub Actions est gratuit pour les dépôts publics avec les runners standards. Source : <https://github.com/resources/insights/2026-pricing-changes-for-github-actions>
+- **Proposition** :
+  - Construction par GitHub Actions.
+  - Publication sur un registre (GHCR proposé).
+  - Signature avec cosign.
+  - Politique de vérification de signature configurée sur la machine.
+- **Raisons** : image testée avant le déploiement, provenance vérifiable.
+- **Alternatives rejetées** : construire l'image localement sur la machine elle-même.
+- **À VALIDER** : la façon exacte d'imposer la vérification de signature avec bootc (option et fichiers de politique), à confirmer dans la documentation officielle.
+- **Vérification** : à définir avec le premier pipeline.
+
+## D-019 — Sauvegarde et récupération : OS / configuration / données / secrets
+
+- **Statut** : PROPOSÉE — À VALIDER
+- **Contexte** : objectif « disque détruit → réinstallation → récupération complète ».
+- **Proposition** :
+
+  | Élément | Où il vit | Comment le récupérer |
+  |---|---|---|
+  | OS | Reconstructible depuis ce dépôt et le registre d'images | Réinstallation, puis basculement sur l'image |
+  | Configuration | Git (ce dépôt) | Clone du dépôt |
+  | Données | Sauvegarde | Restauration |
+  | Secrets | Sauvegarde chiffrée, séparée | Restaurés **avant** de cloner des dépôts privés |
+
+  - Une copie de la dernière image saine est conservée hors de GitHub (sur le support de sauvegarde), au cas où le compte serait inaccessible — `À VALIDER`.
+  - Outil de sauvegarde : `À DÉCIDER`. Destination : TODO (ANKH-SPEC 4.6).
+- **Raisons** : la machine peut mourir sans que mon environnement meure avec elle.
+- **Alternatives rejetées** : sauvegarde du disque entier comme seul mécanisme.
+- **Vérification** : un exercice complet de récupération en VM avant de considérer la procédure comme valide (non exécuté).
