@@ -9,7 +9,3 @@ set -euo pipefail
 # recommande de le masquer pendant la construction de l'image pour l'éviter.
 # https://docs.fedoraproject.org/en-US/bootc/auto-updates/
 systemctl mask bootc-fetch-apply-updates.timer
-
-# TEST VOLONTAIRE (phase 1) : un nom de paquet erroné doit faire échouer la CI
-# et bloquer la fusion. Ce bloc sera retiré dans le commit suivant.
-dnf5 -y install ankh-paquet-inexistant-test-pr-cassee
