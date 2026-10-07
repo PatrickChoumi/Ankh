@@ -44,7 +44,7 @@
 | D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER |
-| D-027 | Connexion internet limitée : tests dans le cloud, mises à jour rares et légères | PROPOSÉE — À VALIDER |
+| D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
 
 ---
 
@@ -504,7 +504,11 @@
 
 ## D-027 — Connexion internet limitée : tests dans le cloud, mises à jour rares et légères
 
-- **Statut** : PROPOSÉE — À VALIDER (2026-10-07).
+- **Statut** : DÉCIDÉ (2026-10-07), ajusté selon ma réponse. Ma connexion est **lente**, mais je peux faire les mises à jour. En conséquence :
+  - Point 1 (phase 2 dans le cloud) : **retenu**.
+  - Points 2 et 3 : pas de calendrier imposé. Les mises à jour de la base arrivent par des PR Renovate, que je fusionne au rythme que je choisis. Je les espace pour limiter le volume (environ 2 Go chacune).
+  - Point 4 (ISO d'installation hors ligne) : **abandonné**. L'installation se fera en ligne, même lentement. D-001 reste inchangée.
+- **Proposition initiale** (conservée pour l'historique) : voir ci-dessous.
 - **Contexte** :
   - Télécharger 4,3 Go chez moi n'est « pas vraiment possible ». Le débit, la limite de données et la stabilité sont TODO (ANKH-SPEC Q12).
   - **Mesures du 2026-10-07 sur GHCR** :
