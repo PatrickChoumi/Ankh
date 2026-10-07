@@ -24,7 +24,7 @@
 - **Incassable et extrêmement stable, mais à la pointe** — EXIGÉ.
   - Ce qui touche au démarrage du système avance prudemment.
   - Les applications restent à jour.
-- **Usage du terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ. Chantier séparé, voir 4.7.
+- **Usage du terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ, sens « confort » (D-025), voir 4.7.
 - **Accès au contenu pour adultes extrêmement difficile** — EXIGÉ, voir 4.8.
 
 ---
@@ -46,6 +46,7 @@ Ces réponses peuvent modifier l'architecture. Depuis D-021 (image générique),
 | 9 | Wi-Fi offensif : oui/non ? Adaptateur USB déjà possédé (modèle) ? | TODO | Achat d'un adaptateur, passthrough USB vers une VM (D-014) |
 | 10 | Distro actuelle, et ce qu'il faut conserver (outils, données, comportements) ? | Distro : UNKNOWN — Outils : TODO — Données : TODO — Comportements : TODO | Liste de migration, volume à sauvegarder avant l'installation |
 | 11 | Temps disponible pour le projet chaque semaine ? | TODO | Périmètre de la V1 |
+| 12 | Connexion internet : débit, limite de données, stabilité ? | Télécharger 4,3 Go chez moi : « pas vraiment possible » (2026-10-07). Débit, limite et stabilité : TODO | Où et comment installer, fréquence des mises à jour (D-027) |
 
 ### Comment trouver les réponses `UNKNOWN`
 
@@ -119,9 +120,9 @@ Points ouverts dans cette architecture :
 - **Langages** : TODO
 - **IDE / éditeur** : Visual Studio Code, installé par défaut — EXIGÉ. Mode d'installation (Flatpak, image ou conteneur dev) : À DÉCIDER en phase 3
 - **Git / GitHub** (comptes, clés SSH, signature des commits) : TODO
-- **Client GitHub installé par défaut** — EXIGÉ. Outil exact : À DÉCIDER (GitHub ne publie pas d'application de bureau pour Linux)
+- **Client GitHub installé par défaut** — EXIGÉ. Application web github.com dans Chrome, plus Git dans VS Code — DÉCIDÉ (D-024)
 - **IA / CLI** (assistants, outils en ligne de commande) : TODO
-- **Claude installé par défaut** — EXIGÉ. Forme exacte : À DÉCIDER (application de bureau officielle sous Linux en bêta pour Ubuntu/Debian seulement, à vérifier pour Fedora)
+- **Claude installé par défaut** — EXIGÉ. Application web claude.ai dans Chrome — DÉCIDÉ (D-024)
 - **Conteneurs** : besoin d'une compatibilité Docker (socket, compose) ? TODO
 - **Bases de données** : TODO
 - **Autres outils** : TODO
@@ -152,12 +153,12 @@ Points ouverts dans cette architecture :
 
 ### 4.5 Vie quotidienne
 
-- **Navigateur** : Google Chrome, navigateur par défaut, pas Firefox — EXIGÉ
+- **Navigateur** : Google Chrome, navigateur par défaut, installé dans l'image ; Firefox retiré — DÉCIDÉ (D-023)
 - **Communication** : TODO
 - **Musique** : TODO
 - **Cloud / synchronisation** : TODO
-- **Multimédia** (vidéo, photo) : VLC, installé par défaut — EXIGÉ. Photo : TODO
-- **Bureautique** : OnlyOffice, installé par défaut — EXIGÉ
+- **Multimédia** (vidéo, photo) : VLC en Flatpak préinstallé — DÉCIDÉ (D-024). Photo : TODO
+- **Bureautique** : OnlyOffice en Flatpak préinstallé — DÉCIDÉ (D-024)
 
 ### 4.6 Sécurité, sauvegarde et secrets
 
@@ -171,16 +172,13 @@ Points ouverts dans cette architecture :
 
 - **Langue et disposition du clavier** : TODO
 - **Bureau** : KDE Plasma (via Kinoite) — DÉCIDÉ (D-004)
-- **Terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ. Chantier séparé. Sens exact : TODO
-  - (a) Tout le quotidien se fait sans terminal (mises à jour, applications, réglages par l'interface) ?
-  - (b) L'accès au terminal et aux droits administrateur est restreint, par exemple pour ne pas pouvoir contourner la protection de 4.8 ?
-  - Ou les deux ?
+- **Terminal limité au strict nécessaire** (dev et hacking) — DÉCIDÉ (D-025). Sens « confort » : tout le quotidien se fait sans terminal, et l'accès au terminal n'est pas restreint.
 
 ### 4.8 Protection contre le contenu pour adultes
 
 - **Exigence** : accès au contenu pour adultes extrêmement difficile — EXIGÉ.
 - **Référence** : mon projet safezone, <https://github.com/PatrickChoumi/safezone> (« blocker-adulte »). Il comporte huit composants : résolveur DNS filtrant avec SafeSearch forcé, pare-feu nftables, politiques navigateur, hook initramfs, surveillance croisée, auto-réparation, auditd.
-- **Adaptation à un système image-based** : À DÉCIDER. safezone est conçu pour des distributions classiques (`install.sh`, `chattr +i`, regénération locale de l'initramfs) et ne gère pas encore ostree/bootc.
+- **Adaptation à un système image-based** : safezone adapté et intégré à l'image — DÉCIDÉ (principe, D-026). Conception détaillée : À DÉCIDER en phase 4. safezone est conçu pour des distributions classiques (`install.sh`, `chattr +i`, regénération locale de l'initramfs) et ne gère pas encore ostree/bootc.
 
 ---
 
@@ -209,8 +207,8 @@ Avant la phase 1 (base et chaîne de build) :
 - [x] Image de base choisie (D-005)
 - [x] D-017 et D-018 validées
 
-Avant les phases 4 à 6 (gaming, cyber, labs) :
+Avant les phases 5 à 7 (gaming, cyber, labs) :
 - [ ] Questions 6 à 9 remplies
 
-Avant la phase 8 (bascule sur ma machine) :
-- [ ] Questions 1 à 5, 10 et 11 remplies
+Avant la phase 9 (bascule sur ma machine) :
+- [ ] Questions 1 à 5 et 10 à 12 remplies

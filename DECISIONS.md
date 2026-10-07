@@ -40,6 +40,11 @@
 | D-020 | CLAUDE.md, guide de travail du projet | DÉCIDÉ |
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
 | D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
+| D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
+| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
+| D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ |
+| D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER |
+| D-027 | Connexion internet limitée : tests dans le cloud, mises à jour rares et légères | PROPOSÉE — À VALIDER |
 
 ---
 
@@ -408,3 +413,113 @@
   - En attendant, la vérification se fait avec `cosign verify` (identité du workflow + émetteur `https://token.actions.githubusercontent.com`).
   - Si l'imposition sur la machine s'avère impossible, on rouvrira une décision : retour à une paire de clés quand ma connexion le permettra.
 - **Vérification** : `cosign verify` réussit sur chaque image publiée (test à ajouter dans la CI, en phase 1).
+
+## D-023 — Chrome navigateur par défaut, installé dans l'image ; Firefox retiré
+
+- **Statut** : DÉCIDÉ (2026-10-07).
+- **Contexte** :
+  - ANKH-SPEC exige Chrome comme navigateur par défaut.
+  - La protection de D-026 s'appuie sur les politiques de Chrome, que Chrome lit dans `/etc/opt/chrome/policies/managed/`. Source : <https://chromium.googlesource.com/chromium/src/+/HEAD/docs/enterprise/policies.md>
+  - Je n'ai pas pu vérifier que Chrome en Flatpak lit ces politiques système.
+  - D'après la documentation de safezone, Firefox n'a aucun équivalent au filtrage d'URL de Chrome (`SafeSitesFilterBehavior`).
+- **Décision** :
+  - Google Chrome (paquet officiel de Google) est installé **dans l'image** et devient le navigateur par défaut.
+  - Firefox est **retiré** de l'image.
+- **Raisons** :
+  - Politiques de filtrage appliquées de façon fiable.
+  - Un seul navigateur, donc une seule porte d'entrée à protéger.
+- **Alternatives rejetées** :
+  - Chrome en Flatpak : lecture des politiques non vérifiée.
+  - Garder Firefox à côté : porte de sortie du filtrage.
+- **Conséquence** : Chrome ne se met à jour qu'avec l'image. Une reconstruction automatique périodique de l'image est donc nécessaire pour ses correctifs de sécurité (fréquence : voir D-027).
+- **À VALIDER** :
+  - L'installation de Chrome dans `/opt` d'une image bootc. Le modèle Universal Blue signale que `/opt` pointe vers `/var/opt` et cite Chrome en exemple.
+  - L'association « navigateur par défaut » dans KDE.
+  - Le retrait propre de Firefox.
+- **Vérification** : tests CI à écrire — Chrome présent, Firefox absent, politiques présentes.
+
+## D-024 — Applications par défaut
+
+- **Statut** : DÉCIDÉ (2026-10-07). Les mécanismes d'installation restent À VALIDER.
+- **Contexte** : ANKH-SPEC exige VLC, VS Code, OnlyOffice, Claude et un client GitHub installés par défaut.
+- **Décision** :
+
+  | Application | Forme |
+  |---|---|
+  | VLC | Flatpak `org.videolan.VLC`, préinstallé |
+  | OnlyOffice | Flatpak `org.onlyoffice.desktopeditors`, préinstallé |
+  | Claude | Application web claude.ai installée dans Chrome (fenêtre dédiée et icône) |
+  | GitHub | Application web github.com installée dans Chrome, plus l'intégration Git de VS Code |
+  | VS Code | Préinstallé ; forme exacte décidée en phase 3 avec l'environnement de dev (D-012) |
+
+- **Raisons** :
+  - Des applications officielles ou du code des éditeurs eux-mêmes.
+  - Aucun paquet tiers qui manipulerait mes comptes.
+- **Alternatives rejetées** :
+  - Paquets Claude Desktop non officiels pour Fedora : l'application officielle Linux n'est qu'en bêta pour Ubuntu/Debian. Source : <https://code.claude.com/docs/en/desktop-linux>
+  - Fork communautaire de GitHub Desktop sur Flathub, marqué non vérifié. Source : <https://flathub.org/en/apps/io.github.shiftey.Desktop>
+- **À VALIDER** :
+  - La préinstallation des Flatpaks (`/usr/share/flatpak/preinstall.d/`) demande une version récente de Flatpak dans la base. Source : <https://www.mankier.com/1/flatpak-preinstall>
+  - L'installation automatique des applications web par la politique Chrome `WebAppInstallForceList`.
+  - Le volume téléchargé au premier démarrage (contrainte D-027).
+- **Vérification** : tests CI pour les fichiers de préinstallation et la politique ; test réel au premier démarrage.
+
+## D-025 — Terminal : le quotidien se fait sans terminal
+
+- **Statut** : DÉCIDÉ (2026-10-07).
+- **Contexte** : ANKH-SPEC exige de limiter le terminal au strict nécessaire. J'ai choisi le sens « confort » (option a).
+- **Décision** :
+  - Tout le quotidien doit se faire par l'interface graphique : mises à jour, installation d'applications, réglages, état du système.
+  - Le terminal reste réservé au dev et au hacking.
+  - Son accès n'est **pas** restreint, et les droits administrateur restent sur mon compte.
+- **Raisons** : confort, sans complexité supplémentaire.
+- **Alternatives rejetées** : restreindre l'accès au terminal ou aux droits administrateur (option b).
+- **Conséquences** :
+  - Il faut une interface pour les mises à jour du système : `kinoite-main` retire le module de mise à jour système de Discover (voir les sources de D-005). La solution est À DÉCIDER.
+  - La protection de D-026 reste une protection par friction, pas une impossibilité.
+- **Vérification** : à chaque phase, liste des actions quotidiennes faisables sans terminal (test réel).
+
+## D-026 — Protection contre le contenu pour adultes : safezone adapté et intégré
+
+- **Statut** : DÉCIDÉ (principe, 2026-10-07). La conception détaillée est À DÉCIDER au début de la phase concernée.
+- **Contexte** :
+  - ANKH-SPEC exige un accès au contenu pour adultes extrêmement difficile.
+  - Mon projet safezone (<https://github.com/PatrickChoumi/safezone>) fait ce travail sur les distributions classiques, avec huit composants testés et une philosophie de friction assumée.
+  - safezone ne gère pas ostree/bootc.
+- **Décision** :
+  - safezone est adapté aux systèmes image-based et intégré à l'image Ankh, à une version figée, comme les images de base.
+  - safezone reste un projet séparé, avec ses propres tests.
+- **Ce qu'apporte le modèle image-based** :
+  - Composants en lecture seule dans `/usr`, ce qui réduit le besoin de `chattr +i` et d'auto-réparation.
+  - Initramfs construit dans la CI.
+  - Tout retrait passe par une modification visible de ce dépôt.
+- **Nouvelles portes de sortie à traiter** :
+  - `bootc switch` vers une autre image, ou retour à une image sans filtre. Parades : filtre présent dans toutes les images Ankh, et imposition de la signature sur la machine (À VALIDER, D-022).
+  - Modifications locales de `/etc`.
+  - Droits administrateur conservés (D-025) : on garde le modèle « friction contre l'impulsion » de safezone.
+- **Alternatives rejetées** :
+  - Installer safezone après coup avec son `install.sh` : impossible sur un système image-based (D-009).
+  - Réécrire un filtre de zéro.
+- **Vérification** : à définir avec la phase dédiée ; reprendre la suite de tests de safezone (`tests/run_all.sh`).
+
+## D-027 — Connexion internet limitée : tests dans le cloud, mises à jour rares et légères
+
+- **Statut** : PROPOSÉE — À VALIDER (2026-10-07).
+- **Contexte** :
+  - Télécharger 4,3 Go chez moi n'est « pas vraiment possible ». Le débit, la limite de données et la stabilité sont TODO (ANKH-SPEC Q12).
+  - **Mesures du 2026-10-07 sur GHCR** :
+    - L'image `ankh` pèse 4,28 Go compressés, `ankh-nvidia` 5,19 Go.
+    - Entre deux versions de la base `kinoite-main:44`, il faut retélécharger 1,7 Go pour 1 jour d'écart (46 couches sur 259), 2,2 Go pour 3 jours et 2,3 Go pour une semaine.
+- **Proposition** :
+  1. **Phase 2 dans le cloud** : les tests de démarrage et de retour arrière se font dans une VM sur les machines de GitHub. Rien n'est téléchargé chez moi.
+  2. **Mises à jour de la base rares** : les PR Renovate sur `bases.env` ne sont fusionnées qu'une fois par mois environ, sauf correctif de sécurité urgent. Chacune coûte environ 2 Go.
+  3. **Mises à jour légères fréquentes** : la reconstruction périodique pour Chrome (D-023) garde la base identique. Seules les couches propres à Ankh changent, ce qui devrait représenter quelques centaines de Mo au plus (À VALIDER par mesure).
+  4. **Installation hors ligne** : l'installation sur ma machine se fait depuis une clé USB préparée là où la connexion le permet, à partir d'une ISO d'installation qui contient l'image. Cela **modifierait D-001** (« pas d'ISO custom en V1 ») : une ISO technique, sans branding.
+- **Raisons** : rendre Ankh utilisable avec ma connexion sans renoncer aux mises à jour.
+- **Alternatives rejetées** :
+  - Mises à jour quotidiennes de la base : environ 1,7 Go à chaque fois.
+- **À VALIDER** :
+  - Les points 2 à 4 (mes réponses).
+  - La taille réelle des mises à jour légères.
+  - Une réduction possible du volume par un découpage plus stable des couches (« rechunk »).
+- **Vérification** : mesurer la taille téléchargée à chaque mise à jour pendant la phase 10.
