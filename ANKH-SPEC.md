@@ -20,13 +20,13 @@
 
 ## 1. Questions prioritaires
 
-Ces réponses peuvent modifier l'architecture. **Aucune ligne de code tant qu'elles ne sont pas remplies.**
+Ces réponses peuvent modifier l'architecture. Depuis D-021 (image générique), elles ne bloquent plus la phase 1. Elles restent nécessaires avant les phases indiquées au §6.
 
 | # | Question | Réponse | Ce que la réponse peut changer |
 |---|---|---|---|
 | 1 | Desktop ou laptop ? | TODO | Veille/réveil, GPU hybride, batterie, Wi-Fi interne |
 | 2 | CPU (modèle exact) ? | UNKNOWN | Virtualisation matérielle et IOMMU, nombre de VMs simultanées |
-| 3 | GPU (modèle exact) ? | UNKNOWN | Image de base (D-005), Secure Boot avec un pilote tiers (D-006), CUDA/ROCm |
+| 3 | GPU (modèle exact) ? | UNKNOWN | Variante d'Ankh que j'installerai (D-021), Secure Boot avec un pilote tiers (D-006), CUDA/ROCm |
 | 4 | RAM ? | UNKNOWN | Nombre de VMs et de conteneurs en parallèle d'un jeu |
 | 5 | Stockage disponible (disques, tailles, espace libre) ? | UNKNOWN | Place pour les VMs, images de conteneurs, jeux, sauvegardes locales |
 | 6 | Jeux principaux + anticheat de chacun ? | TODO | Un jeu dont l'anticheat refuse Linux est injouable : ni Windows ni dual boot (D-003) |
@@ -59,8 +59,7 @@ Pour Q6, vérifier chaque jeu sur <https://areweanticheatyet.com> et <https://ww
 |---|---|
 | Ankh est strictement personnel. Pas de distribution publique | D-001 |
 | Pas de branding ni d'ISO custom en V1 | D-001 |
-| Un seul PC cible | D-002 |
-| Un seul GPU cible en V1 | D-002 |
+| Image générique, pour le maximum de PC (couverture matérielle proposée dans D-021) | D-021 |
 | Linux uniquement, pas de dual boot | D-003 |
 | Système immuable / image-based | D-004 |
 | Secure Boot activé | D-006 |
@@ -80,7 +79,7 @@ Le schéma d'ensemble est dans [README.md](README.md#architecture-générale-env
 
 Points ouverts dans cette architecture :
 
-- **Image de base exacte** : `À DÉCIDER`, dépend de Q3 et Q7 (D-005).
+- **Image de base exacte** : `À DÉCIDER`. Dépend de la couverture matérielle (D-021), recommandation dans D-005.
 - **Bureau** : Kinoite fournit KDE Plasma. `TODO` : confirmer KDE (sinon, une autre variante Fedora Atomic).
 - **Outil du conteneur dev** (distrobox, toolbx ou Podman seul) : `À DÉCIDER` (D-012).
 - **Besoins réseau bas niveau** (scan SYN, ARP, mode monitor) : probablement impossibles en conteneur rootless (`À VALIDER`). Solution (VM ou conteneur rootful éphémère) : `À DÉCIDER` (D-013).
@@ -166,7 +165,7 @@ Points ouverts dans cette architecture :
 
 - Pas de distribution publique.
 - Pas de branding ni d'ISO custom en V1.
-- Pas de multi-GPU en V1.
+- Pas de réglage propre à une seule machine dans l'image (D-021).
 - Pas de dual boot ni de Windows installé en natif (une VM Windows reste possible, voir Q8).
 - Pas d'outils offensifs sur l'hôte.
 - Pas de malware sur l'hôte.
@@ -180,9 +179,15 @@ Points ouverts dans cette architecture :
 
 ---
 
-## 6. Prêt à coder quand
+## 6. Prêt à avancer quand
 
-- [ ] Questions 1 à 11 remplies
+Avant la phase 1 (base et chaîne de build) :
 - [ ] Bureau confirmé (4.7)
 - [ ] Image de base choisie (D-005)
 - [ ] D-017 et D-018 validées ou rejetées
+
+Avant les phases 4 à 6 (gaming, cyber, labs) :
+- [ ] Questions 6 à 9 remplies
+
+Avant la phase 8 (bascule sur ma machine) :
+- [ ] Questions 1 à 5, 10 et 11 remplies

@@ -1,19 +1,19 @@
 # Ankh
 
-**Mon OS personnel immuable pour coder, jouer et faire de la cybersécurité**, sur une seule machine. Il s'appuie sur l'isolation forte, la virtualisation et le retour arrière.
+**Mon OS personnel immuable pour coder, jouer et faire de la cybersécurité.** Il est générique (le maximum de PC) et s'appuie sur l'isolation forte, la virtualisation et le retour arrière.
 
 > **État actuel : étape de spécification.** Aucun code, aucune image, aucun Containerfile.
 > Les procédures décrites ici sont des **cibles** : aucune n'a encore été testée.
 
 ## Ce qu'est Ankh
 
-- Le système d'**un seul PC** et d'**un seul utilisateur** (D-001, D-002).
+- Mon système **personnel**, en image **générique** : il doit fonctionner sur le maximum de PC x86_64 sans réglage propre à une machine (D-001, D-021).
 - Un système **image-based** : l'OS est une image immuable, mise à jour d'un bloc, avec retour à la version précédente (D-004).
 - Un hôte minimal et protégé : Secure Boot (D-006), chiffrement LUKS (D-007), aucune sécurité désactivée pour faire marcher un outil (D-008).
 
 ## Ce qu'Ankh n'est pas
 
-- Pas une distribution publique, ni un produit, ni un projet multi-matériel.
+- Pas une distribution publique ni un produit : pas d'utilisateurs à servir, pas de support.
 - Pas de branding ni d'ISO custom en V1.
 - Pas un hôte où l'on installe des outils offensifs ou où l'on manipule du malware.
 

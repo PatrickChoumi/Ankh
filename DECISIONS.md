@@ -18,8 +18,8 @@
 
 | ID | Décision | Statut |
 |---|---|---|
-| D-001 | Poste personnel, pas une distribution | DÉCIDÉ |
-| D-002 | Une seule machine, un seul GPU en V1 | DÉCIDÉ |
+| D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021) |
+| D-002 | Une seule machine, un seul GPU en V1 | REMPLACÉE par D-021 |
 | D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
 | D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe) |
 | D-005 | Image de base exacte | À DÉCIDER |
@@ -38,6 +38,7 @@
 | D-018 | Construction, publication et signature de l'image | PROPOSÉE — À VALIDER |
 | D-019 | Sauvegarde et récupération : OS / configuration / données / secrets | PROPOSÉE — À VALIDER |
 | D-020 | CLAUDE.md, guide de travail du projet | DÉCIDÉ |
+| D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
 
 ---
 
@@ -51,10 +52,11 @@
   - Distribution publique dérivée de Fedora Atomic.
   - Plusieurs variantes pour plusieurs profils d'utilisateurs.
 - **Vérification** : décision de périmètre, pas technique. Critère d'application : tout ajout qui ne sert qu'à du matériel ou à des usages absents d'ANKH-SPEC.md est refusé.
+- **Modifiée par** : D-021 (2026-10-07). « Une seule machine » est remplacé par « une image générique pour le maximum de PC ». Le caractère personnel et non public reste inchangé.
 
 ## D-002 — Une seule machine, un seul GPU en V1
 
-- **Statut** : DÉCIDÉ (2026-10-07). La machine et le GPU restent à renseigner (ANKH-SPEC Q1 à Q5).
+- **Statut** : REMPLACÉE par D-021 (2026-10-07). Était : DÉCIDÉ (2026-10-07).
 - **Contexte** : supporter plusieurs GPU demande une image par famille de pilotes, et autant de builds et de tests.
 - **Décision** : la V1 cible uniquement mon PC et son GPU.
 - **Raisons** : un seul artefact à construire, tester et maintenir, sur du matériel que je peux réellement tester.
@@ -113,7 +115,12 @@
   | C | `ghcr.io/ublue-os/kinoite-nvidia:44` | Pilote NVIDIA open déjà intégré et signé | Matériel NVIDIA récent seulement, dépendance à Universal Blue |
   | D | Image NVIDIA ancien assemblée soi-même (`akmods-nvidia-lts`) | Couvre le matériel NVIDIA ancien | Partie la plus fragile du projet |
 
-- **Décision** : à prendre après Q3 et Q7.
+- **Décision** : à prendre. Depuis D-021, le critère principal n'est plus mon GPU mais la couverture du maximum de PC.
+- **Recommandation (2026-10-07, suite à D-021)** : options **B + C**.
+  - `kinoite-main` pour la variante Mesa (AMD, Intel), `kinoite-nvidia` pour la variante NVIDIA récent.
+  - Les deux viennent de la même lignée Universal Blue. Les variantes ne diffèrent donc que par le pilote.
+  - L'option A seule ne permet pas de variante NVIDIA sans compiler le pilote soi-même.
+  - Prix : dépendance à Universal Blue.
 - **Vérification** : la référence choisie existe et démarre en VM (test non exécuté).
 
 ## D-006 — Secure Boot activé
@@ -323,3 +330,40 @@
   - Fichier `ROADMAP.md` séparé (contraire à D-016).
   - Guide conservé hors du dépôt (contraire à « le dépôt est la source de vérité »).
 - **Vérification** : à chaque modification, le détail d'un besoin ou d'un choix reste dans son fichier de référence. CLAUDE.md n'en contient qu'un résumé et un renvoi.
+
+## D-021 — Image générique pour le maximum de PC (remplace D-002)
+
+- **Statut** :
+  - Principe : DÉCIDÉ (2026-10-07, à ma demande).
+  - Couverture matérielle : PROPOSÉE — À VALIDER.
+- **Remplace** : D-002. **Modifie** : D-001 sur le point « une seule machine ».
+- **Contexte** : je préfère commencer par une version d'Ankh qui fonctionne sur le maximum de PC, plutôt que sur ma seule machine.
+- **Décision (principe)** :
+  - L'image ne contient rien de propre à une machine particulière.
+  - Ankh doit fonctionner sur le maximum de PC x86_64.
+  - Il reste personnel, et ce n'est pas une distribution publique (D-001).
+- **Couverture proposée pour la V1** :
+
+  | Matériel | Variante | Statut |
+  |---|---|---|
+  | AMD (GCN et plus récent) | `ankh` (Mesa) | Inclus — À VALIDER sur matériel réel |
+  | Intel (iGPU, Arc) | `ankh` (Mesa) | Inclus — À VALIDER sur matériel réel |
+  | NVIDIA récent (pilote « open ») | `ankh-nvidia` | Inclus — À VALIDER sur matériel réel |
+  | Portables hybrides (iGPU + NVIDIA) | `ankh-nvidia` | À VALIDER |
+  | NVIDIA ancien (GTX 900/1000, pilote fermé) | — | Hors V1 : aucune image prête, assemblage fragile (D-005, option D) |
+  | NVIDIA antérieur (avant GTX 900) | `ankh`, pilote libre, bureau seulement | Au mieux — À VALIDER |
+
+- **Raisons** :
+  - Une image générique ne dépend pas de réponses matérielles pour démarrer la phase 1.
+  - Deux variantes de la même lignée couvrent AMD, Intel et NVIDIA récent avec un seul Containerfile.
+- **Coûts acceptés** :
+  - Deux images à construire et à tester.
+  - La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI.
+  - Une variante non possédée reste « non testée sur matériel réel ».
+- **Alternatives rejetées** :
+  - Une seule machine et un seul GPU (D-002).
+  - Trois variantes incluant le NVIDIA ancien dès la V1.
+- **Vérification** :
+  - Les anciennes AMD GCN 1.0/1.1 passent par défaut au pilote `amdgpu` depuis Linux 6.19 : <https://phoronix.com/news/Linux-6.19-AMDGPU-GCN-1.0-1.1>
+  - Matériel couvert par le pilote NVIDIA open : liste officielle <https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus> — À VALIDER.
+  - Tests réels : un test de démarrage par variante en CI (Mesa), des contrôles statiques pour NVIDIA, et des tests sur chaque matériel réel disponible.

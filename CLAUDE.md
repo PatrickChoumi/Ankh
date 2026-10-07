@@ -16,7 +16,7 @@
 
 ## 1. Ankh en cinq lignes
 
-- Mon OS **personnel**, pour **une seule machine** et **un seul utilisateur** : dev, gaming, cybersécurité (D-001, D-002).
+- Mon OS **personnel** (pas une distribution publique) pour le dev, le gaming et la cybersécurité. Image **générique**, conçue pour fonctionner sur le maximum de PC x86_64 (D-001, D-021).
 - Système **image-based** : Fedora Atomic (Kinoite) + bootc, mises à jour d'un bloc, retour arrière (D-004).
 - Hôte minimal et protégé : Secure Boot, LUKS, rien d'installé en dehors de l'image (D-006 à D-009).
 - Applications en Flatpak, dev en conteneur, Kali en Podman rootless, malware et labs en VMs isolées (D-011 à D-014).
@@ -25,7 +25,7 @@
 ## 2. État actuel
 
 - **Phase en cours : 0 — Spécification.** Aucun code, aucune image, aucun Containerfile, aucun CLI.
-- **Ce qui bloque la suite** : les réponses de ANKH-SPEC.md §1 (questions 1 à 11) et la checklist de ANKH-SPEC.md §6.
+- **Ce qui bloque la phase 1** : D-005, D-017, D-018 et la confirmation du bureau (ANKH-SPEC.md §6). Depuis D-021, les questions matérielles ne bloquent plus la phase 1. Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
 - **Langue du projet** : français (documents, messages de commit, échanges).
 
 > Mettre cette section à jour à chaque changement de phase.
@@ -38,7 +38,7 @@ Elles valent pour moi comme pour tout assistant. Elles ne se contournent pas : s
 
 ### Périmètre
 1. Pas de distribution publique, pas de branding, pas d'ISO custom en V1 (D-001).
-2. Une seule machine, un seul GPU en V1. Pas de multi-GPU (D-002).
+2. Image générique : rien de propre à une machine particulière dans l'image. Couverture matérielle et variantes : D-021.
 3. Linux uniquement, pas de dual boot, pas de Windows natif. Une VM Windows reste possible (D-003).
 
 ### Hôte
@@ -83,13 +83,13 @@ Elles valent pour moi comme pour tout assistant. Elles ne se contournent pas : s
 - Ne jamais demander, lire ni manipuler une clé privée (cosign, SSH, GPG, MOK). Je les génère et les stocke moi-même.
 
 ### Git
-- Travailler sur une branche dédiée. Pas de push direct sur `main`.
-- **Commit et push uniquement quand je le demande.**
+- Travailler sur une branche dédiée. Pas de push direct sur `main`, pas de force-push.
+- **Claude commite et pousse sur la branche de travail sans demander mon avis** (autorisé le 2026-10-07). Un commit par changement cohérent.
 - Messages de commit en français, qui décrivent le pourquoi.
 
 ### Après
 - Rendre compte de :
-  - ce qui a changé ;
+  - ce qui a changé, avec le commit poussé ;
   - ce qui est vérifié ;
   - ce qui reste `À VALIDER` ;
   - ce que **je** dois faire physiquement (VM, BIOS, matériel, clés).
@@ -104,8 +104,8 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | Phase | Objectif | Terminée quand |
 |---|---|---|
 | **0. Spécification** *(en cours)* | Décrire ma machine et mes usages | ANKH-SPEC.md §6 entièrement coché |
-| **1. Base et chaîne de build** | Image minimale construite automatiquement | D-005, D-017 et D-018 tranchées. Une image minimale (base + presque rien) est construite par la CI et publiée, sans toucher ma machine |
-| **2. Premier démarrage en VM** | Prouver le modèle image-based | Dans une VM : basculement sur l'image, puis retour arrière (`bootc rollback`), puis retour à l'image de base, tous réussis. Résultats notés dans DECISIONS.md (D-004) |
+| **1. Base et chaîne de build** | Images génériques construites automatiquement | D-005, D-017 et D-018 tranchées. Chaque variante de D-021 est construite par la CI, testée, signée et publiée, sans toucher ma machine |
+| **2. Premier démarrage en VM** | Prouver le modèle image-based | Dans une VM, avec la variante Mesa : basculement sur l'image, puis retour arrière (`bootc rollback`), puis retour à l'image de base, tous réussis. Résultats notés dans DECISIONS.md (D-004). La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI |
 | **3. Dev** | Environnement de dev reconstructible | Le conteneur dev se supprime et se recrée depuis le dépôt, fonctionnel (D-012) |
 | **4. Gaming** | Mes jeux fonctionnent | Chaque jeu de ANKH-SPEC Q6 testé. Manettes, VRR et multi-écran vérifiés si concernés (D-011). Test final sur la vraie machine en phase 8 |
 | **5. Cyber** | Kali isolé | Test d'isolation réussi : le `~/.ssh` de l'hôte est inaccessible depuis le conteneur. Solution « réseau bas niveau » tranchée (D-013) |
@@ -114,9 +114,11 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | **8. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Installation avec LUKS. Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux. Une semaine d'usage sans retour arrière définitif |
 | **9. Vivre avec Ankh** | Corriger selon mes vraies irritations | Plusieurs semaines d'usage. Irritations notées, puis traitées une par une. → **Ankh V1** |
 
-**Repoussé hors V1** : multi-GPU, distribution publique, branding, ISO custom, CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
+**Repoussé hors V1** : le matériel exclu par D-021 (NVIDIA ancien), distribution publique, branding, ISO custom, CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
 
 **Règle de bascule** : Ankh ne remplace pas ma distro actuelle tant que la récupération (phase 7) n'a pas été testée.
+
+**Règle de test matériel** : une variante n'est dite « testée » que sur du matériel réel. Les variantes que je ne possède pas restent marquées « non testées sur matériel réel ».
 
 ---
 
