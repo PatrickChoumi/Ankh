@@ -26,6 +26,18 @@ ovmf=/usr/share/OVMF
 qemu_pid=
 boot_id=
 
+# Échecs de services propres à la VM de test, avec le message qui les prouve.
+# Tout autre service en échec fait échouer le test.
+# - mcelog s'arrête sur les processeurs AMD récents (« CPU is unsupported »,
+#   https://github.com/andikleen/mcelog/blob/master/mcelog.c). Sur un vrai
+#   PC AMD, son unité est ignorée car le module edac_mce_amd est chargé
+#   (https://github.com/andikleen/mcelog/blob/master/mcelog.service) ; ce
+#   module ne se charge pas dans la VM, dont le processeur est celui de la
+#   machine GitHub.
+declare -A known_failures=(
+    [mcelog.service]='CPU is unsupported'
+)
+
 log() { printf '\n==> %s\n' "$*"; }
 die() {
     printf '\nÉCHEC : %s\n' "$*" >&2
@@ -46,7 +58,7 @@ trap cleanup EXIT
 
 # Commande dans la VM, en root, par SSH.
 vm() {
-    ssh -i "$work/id_ed25519" -p "$port" \
+    ssh -n -i "$work/id_ed25519" -p "$port" \
         -o BatchMode=yes -o ConnectTimeout=5 -o LogLevel=ERROR \
         -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
@@ -78,11 +90,29 @@ booted() {
     vm bootc status --format=json | jq -er ".status.booted.image.$1"
 }
 
+# Accepte un état « degraded » seulement si chaque service en échec est un
+# échec connu de la VM, prouvé par son journal.
+check_failed_units() {
+    local units line unit journal
+    local -a names=()
+    units=$(vm systemctl list-units --state=failed --plain --no-legend)
+    while read -r line; do
+        if [[ -n ${line} ]]; then names+=("${line%% *}"); fi
+    done <<< "${units}"
+    for unit in "${names[@]}"; do
+        journal=$(vm journalctl -b -u "${unit}" --no-pager -n 50)
+        printf 'Service en échec : %s\n%s\n' "${unit}" "${journal}"
+        [[ -n ${known_failures[${unit}]:-} && ${journal} == *"${known_failures[${unit}]}"* ]] ||
+            die "service en échec non expliqué : ${unit}"
+        echo "Échec connu, propre à la VM de test : ${unit}"
+    done
+}
+
 check_boot() {
     local state ref digest
     if ! state=$(vm timeout 900 systemctl is-system-running --wait); then
-        vm systemctl --failed --no-pager
-        die "démarrage incomplet (état : ${state:-inconnu})"
+        [[ ${state} == degraded ]] || die "démarrage incomplet (état : ${state:-inconnu})"
+        check_failed_units
     fi
     [[ $(vm od -An -t u1 -j 4 -N 1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c) =~ ^[[:space:]]*1$ ]] ||
         die "Secure Boot inactif"

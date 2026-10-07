@@ -109,7 +109,17 @@
     3. `bootc rollback`, qui doit redémarrer la version installée ;
     4. `bootc switch` vers l'image de base épinglée dans `bases.env` (D-005, D-018).
   - À chaque démarrage : Secure Boot actif (D-006), SELinux en mode enforcing et pare-feu actif (D-008). Sur les images Ankh, le timer de redémarrage automatique est masqué (D-010).
-  - **Résultat** : en attente de la première exécution en CI.
+  - **Échecs tolérés dans la VM** : un état « degraded » n'est accepté que si chaque service en échec figure dans une liste du script, avec le message de journal qui prouve sa cause. Aujourd'hui, un seul service : `mcelog.service`.
+    - mcelog s'arrête avec « CPU is unsupported » sur les processeurs AMD récents ([source](https://github.com/andikleen/mcelog/blob/master/mcelog.c)).
+    - Sur un vrai PC AMD, son unité est ignorée quand le module `edac_mce_amd` est chargé ([unité](https://github.com/andikleen/mcelog/blob/master/mcelog.service)). Ce module ne se charge pas dans la VM.
+    - Le comportement sur ma vraie machine reste À VALIDER en phase 9.
+  - **Résultats** :
+    - 1re exécution ([run 37684664588](https://github.com/PatrickChoumi/Ankh/actions/runs/37684664588), 2026-10-07), vérifié par le test :
+      - l'installation sur le disque virtuel a réussi en 4 min 30 s ;
+      - la VM a démarré en UEFI avec Secure Boot : le noyau signale le mode « Lockdown » ;
+      - `sshd` et `firewalld` ont démarré.
+    - Le test s'est arrêté à l'état « degraded », causé par `mcelog.service` seul. Ce cas est désormais toléré, comme décrit ci-dessus.
+    - Étapes suivantes : en attente de la 2e exécution.
 
 ## D-005 — Image de base exacte
 
