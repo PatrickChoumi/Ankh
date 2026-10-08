@@ -79,7 +79,9 @@
   - L'image réinstalle le module de Discover qui gère les mises à jour du système.
   - L'image porte son propre numéro de version (`44.AAAAMMJJ.HHMM`). Discover s'en sert pour savoir qu'une mise à jour existe.
   - Des tests sont ajoutés, en CI et en VM.
-  - Ce travail est dans la [PR #4](https://github.com/PatrickChoumi/Ankh/pull/4), en cours de vérification par la CI.
+  - La CI de la [PR #4](https://github.com/PatrickChoumi/Ankh/pull/4) est verte :
+    - un seul paquet ajouté, aucun autre paquet de KDE modifié ;
+    - le système démarré dans la VM porte bien la version d'Ankh.
 - **Ce document d'avancement** (D-029).
 
 ---
@@ -88,7 +90,7 @@
 
 ### Phase 3 — Applications et dev (en cours)
 
-1. **Discover** (D-028) : PR #4 à faire passer au vert puis à fusionner. L'affichage à l'écran sera à vérifier.
+1. **Discover** (D-028) : PR #4 verte, à fusionner. L'affichage à l'écran sera à vérifier.
 2. **Chrome** (D-023) :
    - installer Chrome dans l'image (cas particulier de `/opt` sur une image bootc) ;
    - en faire le navigateur par défaut ;
@@ -125,6 +127,6 @@
 ## Ce que je dois faire
 
 1. **Renovate** : ouvrir <https://developer.mend.io/github/PatrickChoumi/Ankh> (connexion avec GitHub) et regarder les journaux. S'il n'y a rien, vérifier sur <https://github.com/settings/installations> que Renovate a bien accès au dépôt **Ankh**.
-2. **Fusionner la PR #4** quand sa CI sera verte.
+2. **Fusionner la PR #4** : sa CI est verte.
 3. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
 4. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.

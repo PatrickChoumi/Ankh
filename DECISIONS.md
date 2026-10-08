@@ -599,13 +599,23 @@
   - **C — une notification maison** : outil maison sans documentation officielle, et aucune interface pour voir les mises à jour.
 - **À VALIDER** :
   - Universal Blue n'a jamais remis ce module. Aucune raison plus récente n'a été trouvée.
-  - Le module doit correspondre exactement à la version de Discover de la base. La dépendance exacte n'a pas pu être lue : le dépôt de paquets Fedora est inaccessible depuis mon environnement. Le journal de construction montrera ce que `dnf` installe.
+  - ~~Le module doit correspondre exactement à la version de Discover de la base.~~ Vérifié le 2026-10-08 (voir « Résultats »).
   - Discover ne doit pas gêner le téléchargement automatique en arrière-plan.
   - Le choix « Après la mise à jour : redémarrer » de Discover ne doit jamais être actif par défaut (D-010).
 - **Vérification** :
   - Test en CI (`just test`) : le module est installé, à la même version que Discover, et l'image porte son numéro de version.
   - Test en VM cloud (`tests/vm/run.sh`) : le système démarré affiche ce numéro de version.
   - L'affichage dans Discover et la notification ne se testent pas automatiquement. À vérifier à l'écran, au plus tard en phase 9.
+- **Résultats (2026-10-08, CI de la [PR #4](https://github.com/PatrickChoumi/Ankh/pull/4))**, vérifiés par un test :
+  - **Construction** ([run 37828419910](https://github.com/PatrickChoumi/Ankh/actions/runs/37828419910)), sur les deux variantes :
+    - `dnf` installe un seul paquet, `plasma-discover-rpm-ostree 0:6.7.5-1.fc44` (dépôt `updates`, 256 Kio) ;
+    - il ne met à jour, n'ajoute et ne remplace aucun autre paquet ;
+    - `just test` confirme que le module a la même version que Discover ;
+    - l'image porte la version `44.20261008.1859`.
+  - **`bootc container lint`** passe avec 2 avertissements : des restes de `dnf` dans `/run/dnf` et `/var/lib/dnf/repos`. Ce sont des avertissements, pas des erreurs ; le Containerfile de construction est le même que celui du modèle Universal Blue.
+  - **VM cloud** ([run 37828419997](https://github.com/PatrickChoumi/Ankh/actions/runs/37828419997)) :
+    - les 4 étapes réussissent ;
+    - le système démarré porte la version de l'image installée (`44.20261008.1900`), au premier démarrage et après le retour arrière.
 
 ## D-029 — AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste
 
