@@ -46,6 +46,7 @@
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
 | D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER) |
+| D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 
 ---
 
@@ -605,3 +606,16 @@
   - Test en CI (`just test`) : le module est installé, à la même version que Discover, et l'image porte son numéro de version.
   - Test en VM cloud (`tests/vm/run.sh`) : le système démarré affiche ce numéro de version.
   - L'affichage dans Discover et la notification ne se testent pas automatiquement. À vérifier à l'écran, au plus tard en phase 9.
+
+## D-029 — AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste
+
+- **Statut** : DÉCIDÉ (2026-10-08), à ma demande.
+- **Contexte** : je veux, à chaque compte rendu, un document qui fait l'état de tout ce qui a été fait depuis le début et de ce qui reste à faire.
+- **Décision** :
+  - Le fichier [AVANCEMENT.md](AVANCEMENT.md) tient cet état, phase par phase.
+  - Claude le met à jour à chaque compte rendu et me l'envoie.
+  - Il résume et renvoie aux décisions (D-xxx) sans recopier leurs détails, pour respecter la règle « une information dans un seul fichier » (CLAUDE.md §3, règle 11).
+  - L'état courant court reste dans CLAUDE.md §2. AVANCEMENT.md contient l'historique et la liste de ce qui reste.
+- **Raisons** : suivre le projet d'un coup d'œil, sans relire tout le dépôt.
+- **Alternatives rejetées** : un compte rendu seulement dans la conversation (rien n'est conservé dans le dépôt).
+- **Vérification** : chaque compte rendu de Claude contient AVANCEMENT.md à jour.

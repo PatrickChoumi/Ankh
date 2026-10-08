@@ -8,6 +8,7 @@
 > | Ce que je fais avec ma machine, les questions ouvertes, la liste NON | [ANKH-SPEC.md](ANKH-SPEC.md) |
 > | Chaque choix, ses raisons, ses sources et ses tests (`D-xxx`) | [DECISIONS.md](DECISIONS.md) |
 > | La présentation, l'architecture et la récupération après panne | [README.md](README.md) |
+> | Tout ce qui a été fait depuis le début, et ce qui reste à faire | [AVANCEMENT.md](AVANCEMENT.md) (D-029) |
 > | Les règles, la méthode, la feuille de route et l'état du projet | ce fichier |
 >
 > En cas de contradiction : **DECISIONS.md fait foi pour les choix**, **ANKH-SPEC.md pour les besoins**. Ce fichier est alors à corriger.
@@ -104,6 +105,7 @@ Elles valent pour moi comme pour tout assistant. Elles ne se contournent pas : s
   - ce qui est vérifié ;
   - ce qui reste `À VALIDER` ;
   - ce que **je** dois faire physiquement (VM, BIOS, matériel, clés).
+- Mettre à jour [AVANCEMENT.md](AVANCEMENT.md) et me l'envoyer à chaque compte rendu (D-029).
 - Claude ne peut pas tester sur ma machine. Le dire, plutôt que de présenter un résultat non testé comme acquis.
 
 ---
