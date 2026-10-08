@@ -478,6 +478,22 @@
   - L'association « navigateur par défaut » dans KDE.
   - Le retrait propre de Firefox.
 - **Vérification** : tests CI à écrire — Chrome présent, Firefox absent, politiques présentes.
+- **Mise en œuvre (phase 3, 2026-10-08)**, dans `build_files/build.sh` :
+  - **`/opt`** devient un vrai dossier de l'image (`rm /opt && mkdir /opt`). C'est la méthode du modèle officiel Universal Blue, qui cite Chrome en exemple : <https://github.com/ublue-os/image-template> (`Containerfile`, section « [IM]MUTABLE /opt »). La documentation bootc confirme que `/opt` suit alors le cycle de vie de l'image : <https://github.com/bootc-dev/bootc/blob/main/docs/src/bootc-filesystem.7.md>.
+  - **Chrome** vient du dépôt officiel de Google (`dl.google.com/linux/chrome/rpm/stable/x86_64`), avec vérification des signatures.
+    - La clé de Google est refusée si son empreinte n'est pas `EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796`.
+    - Cette empreinte est celle publiée dans les sources de Chromium : <https://github.com/chromium/chromium/blob/main/chrome/installer/linux/common/key.include>.
+  - **Firefox** est retiré par `dnf5 remove firefox`.
+  - **Navigateur par défaut** :
+    - `/etc/xdg/mimeapps.list` déclare Chrome pour les pages web, selon la spécification XDG des applications par défaut ;
+    - `/etc/xdg/kdeglobals` déclare Chrome dans `BrowserApplication` ;
+    - la construction échoue si l'un de ces fichiers existe déjà dans la base, pour ne jamais écraser un réglage sans le voir.
+  - **Tests** :
+    - `just test` vérifie que `/opt` est un dossier, que Chrome démarre (`google-chrome --version`), que Firefox est absent, et que Chrome est l'application par défaut pour `text/html`, `http` et `https` (`gio mime`, avec `XDG_CURRENT_DESKTOP=KDE`) ;
+    - `tests/vm/run.sh` vérifie, sur le système démarré, que Chrome démarre et que Firefox est absent.
+  - **Encore À VALIDER** :
+    - le choix « Navigateur web » affiché dans les réglages de KDE, et l'icône du panneau (à l'écran) ;
+    - la **fréquence de reconstruction** pour suivre les correctifs de Chrome. Elle sera proposée une fois mesurée la taille réelle de la couche Chrome (D-027).
 
 ## D-024 — Applications par défaut
 
