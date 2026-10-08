@@ -46,7 +46,7 @@ Ces réponses peuvent modifier l'architecture. Depuis D-021 (image générique),
 | 9 | Wi-Fi offensif : oui/non ? Adaptateur USB déjà possédé (modèle) ? | TODO | Achat d'un adaptateur, passthrough USB vers une VM (D-014) |
 | 10 | Distro actuelle, et ce qu'il faut conserver (outils, données, comportements) ? | Distro : UNKNOWN — Outils : TODO — Données : TODO — Comportements : TODO | Liste de migration, volume à sauvegarder avant l'installation |
 | 11 | Temps disponible pour le projet chaque semaine ? | TODO | Périmètre de la V1 |
-| 12 | Connexion internet : débit, limite de données, stabilité ? | Télécharger 4,3 Go chez moi : « pas vraiment possible » (2026-10-07). Débit, limite et stabilité : TODO | Où et comment installer, fréquence des mises à jour (D-027) |
+| 12 | Connexion internet : débit, limite de données, stabilité ? | Connexion **lente**, mais les mises à jour sont faisables (2026-10-07). Débit exact : UNKNOWN | Où et comment installer, fréquence des mises à jour (D-027) |
 
 ### Comment trouver les réponses `UNKNOWN`
 

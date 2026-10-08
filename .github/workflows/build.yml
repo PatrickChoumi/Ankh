@@ -8,9 +8,12 @@ on:
   pull_request:
     branches:
       - main
+  # Pas de filtre sur les PR : les tests obligatoires doivent toujours répondre.
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'  # un changement de documentation ne republie pas les images
   workflow_dispatch:
 
 concurrency:

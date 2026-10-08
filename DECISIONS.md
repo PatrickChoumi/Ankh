@@ -44,7 +44,7 @@
 | D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER |
-| D-027 | Connexion internet limitée : tests dans le cloud, mises à jour rares et légères | PROPOSÉE — À VALIDER |
+| D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
 
 ---
 
@@ -97,8 +97,43 @@
   - NixOS (autre modèle, non retenu pour ce projet).
 - **Vérification** :
   - Documentation officielle : <https://docs.fedoraproject.org/en-US/bootc/>
-  - Test à faire en VM (non exécuté) : `bootc status`, puis appliquer une mise à jour, puis `sudo bootc rollback` et redémarrer. Le déploiement précédent doit démarrer.
+  - Test à faire en VM : `bootc status`, puis appliquer une mise à jour, puis `sudo bootc rollback` et redémarrer. Le déploiement précédent doit démarrer. **Exécuté en phase 2 et réussi** (voir « Mise en œuvre » ci-dessous).
 - **Bureau** : KDE Plasma, fourni par Kinoite — confirmé le 2026-10-07.
+- **Mise en œuvre (phase 2, 2026-10-07)** : test automatique `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` sur les machines de GitHub (D-027).
+  - Le disque de la VM est créé par `bootc install to-disk --via-loopback`, la méthode officielle de bootc pour démarrer une image en VM : <https://github.com/bootc-dev/bootc/blob/main/docs/src/bootc-installation.7.md>. Aucun outil externe.
+  - La VM démarre en UEFI avec Secure Boot actif et les clés Microsoft, comme un vrai PC.
+  - L'accès SSH de test (clé de root et argument du noyau `systemd.wants=sshd.service`) est posé à l'installation. Ce sont des réglages locaux de la machine, conservés à chaque basculement d'image. Source : <https://github.com/bootc-dev/bootc/blob/main/docs/src/building/bootc-kernel-arguments.7.md>.
+  - Étapes vérifiées :
+    1. démarrage complet de l'image construite par la PR ;
+    2. basculement vers une autre version (`ghcr.io/patrickchoumi/ankh:latest`) ;
+    3. `bootc rollback`, qui doit redémarrer la version installée ;
+    4. `bootc switch` vers l'image de base épinglée dans `bases.env` (D-005, D-018).
+  - À chaque démarrage : Secure Boot actif (D-006), SELinux en mode enforcing et pare-feu actif (D-008). Sur les images Ankh, le timer de redémarrage automatique est masqué (D-010).
+  - **Échecs tolérés dans la VM** : un état « degraded » n'est accepté que si chaque service en échec figure dans une liste du script, avec le message de journal qui prouve sa cause. Aujourd'hui, un seul service : `mcelog.service`.
+    - mcelog s'arrête avec « CPU is unsupported » sur les processeurs AMD récents ([source](https://github.com/andikleen/mcelog/blob/master/mcelog.c)).
+    - Sur un vrai PC AMD, son unité est ignorée quand le module `edac_mce_amd` est chargé ([unité](https://github.com/andikleen/mcelog/blob/master/mcelog.service)). Ce module ne se charge pas dans la VM.
+    - Le comportement sur ma vraie machine reste À VALIDER en phase 9.
+  - **Résultats** :
+    - 1re exécution ([run 37684664588](https://github.com/PatrickChoumi/Ankh/actions/runs/37684664588), 2026-10-07), vérifié par le test :
+      - l'installation sur le disque virtuel a réussi en 4 min 30 s ;
+      - la VM a démarré en UEFI avec Secure Boot : le noyau signale le mode « Lockdown » ;
+      - `sshd` et `firewalld` ont démarré.
+    - Le test s'est arrêté à l'état « degraded », causé par `mcelog.service` seul. Ce cas est désormais toléré, comme décrit ci-dessus.
+    - 2e exécution ([run 37688598157](https://github.com/PatrickChoumi/Ankh/actions/runs/37688598157), 2026-10-07) : **les 4 étapes ont réussi**. Vérifié par le test :
+      1. Installation de l'image de la PR (`localhost/ankh:latest`, `sha256:8e97faea…`) en 6 min, puis démarrage complet.
+      2. `bootc switch ghcr.io/patrickchoumi/ankh:latest` : seules 2 couches sur 261 étaient à télécharger (641 octets). Ankh n'ajoute aujourd'hui presque rien à sa base. Après le redémarrage, l'image démarrée est `ghcr.io/patrickchoumi/ankh:latest` (`sha256:48288525…`), soit une autre version.
+      3. `bootc rollback` (« Next boot: rollback deployment ») : après le redémarrage, l'image démarrée est de nouveau `sha256:8e97faea…`.
+      4. `bootc switch` vers la base épinglée : après le redémarrage, l'image démarrée est `ghcr.io/ublue-os/kinoite-main@sha256:01ea858a…`, avec exactement le digest de `bases.env`.
+    - À chacun des 4 démarrages :
+      - Secure Boot est actif (variable UEFI `SecureBoot` = 1) ;
+      - SELinux est en mode enforcing ;
+      - `firewalld` est actif ;
+      - seul `mcelog.service` est en échec, avec le message « AMD Processor family 25: mcelog does not support this processor » : la cause attendue.
+    - Durée : 12 minutes pour le test lui-même, 33 minutes pour tout le travail CI (construction comprise).
+    - **Non vérifié par ce test** :
+      - la session graphique ;
+      - l'imposition de la signature au basculement (aucun message de vérification de signature, À VALIDER, D-022) ;
+      - le comportement sur du matériel réel (phase 9).
 
 ## D-005 — Image de base exacte
 
@@ -144,6 +179,7 @@
   - Pilotes intégrés au noyau (AMD, Intel) : aucune clé supplémentaire attendue — `À VALIDER`.
   - NVIDIA via une image Universal Blue : leur clé de signature est à enregistrer une fois par la procédure MOK (`/etc/pki/akmods/certs/akmods-ublue.der`). Source : <https://universal-blue.discourse.group/t/secure-boot-key-mok-management/4310>
 - **Vérification** : test `mokutil --sb-state` → « SecureBoot enabled ». Ensuite, session graphique avec accélération GPU fonctionnelle (non exécuté).
+- **Vérifié en VM (phase 2, 2026-10-07)**, sur la variante Mesa : démarrage avec Secure Boot actif, sur un micrologiciel UEFI qui a les clés Microsoft (OVMF), sans clé supplémentaire. Même résultat après un basculement, un retour arrière et le retour à la base (D-004). Sur du matériel réel : À VALIDER en phase 9.
 
 ## D-007 — Chiffrement LUKS
 
@@ -170,6 +206,8 @@
   getenforce              # Enforcing
   lsblk -f                # crypto_LUKS
   ```
+
+- **Vérifié en VM (phase 2, 2026-10-07)** : par défaut, sans réglage d'Ankh, SELinux est en mode enforcing et `firewalld` est actif à chaque démarrage (D-004). LUKS n'est pas testé en VM.
 
 ## D-009 — Hôte reproductible : pas de `rpm-ostree install`, pas de `curl | bash`
 
@@ -317,6 +355,7 @@
   - Sur `main` : construction, tests, publication de `ghcr.io/patrickchoumi/ankh` et `ghcr.io/patrickchoumi/ankh-nvidia` (tags `latest` et `AAAAMMJJ`), signature sans clé, puis `cosign verify`.
   - Les recettes de construction et de test (`just build`, `just test`) sont les mêmes en local et en CI.
   - Pas de « rechunk » tant que l'image n'ajoute presque rien à sa base : les couches de la base sont conservées telles quelles. À réévaluer quand on ajoutera des paquets.
+- **Vérifié en VM (phase 2, 2026-10-07)** : `bootc switch` depuis Ankh vers l'image publiée, puis vers l'image de base épinglée, fonctionne (D-004).
 
 ## D-019 — Sauvegarde et récupération : OS / configuration / données / secrets
 
@@ -504,7 +543,11 @@
 
 ## D-027 — Connexion internet limitée : tests dans le cloud, mises à jour rares et légères
 
-- **Statut** : PROPOSÉE — À VALIDER (2026-10-07).
+- **Statut** : DÉCIDÉ (2026-10-07), ajusté selon ma réponse. Ma connexion est **lente**, mais je peux faire les mises à jour. En conséquence :
+  - Point 1 (phase 2 dans le cloud) : **retenu**.
+  - Points 2 et 3 : pas de calendrier imposé. Les mises à jour de la base arrivent par des PR Renovate, que je fusionne au rythme que je choisis. Je les espace pour limiter le volume (environ 2 Go chacune).
+  - Point 4 (ISO d'installation hors ligne) : **abandonné**. L'installation se fera en ligne, même lentement. D-001 reste inchangée.
+- **Proposition initiale** (conservée pour l'historique) : voir ci-dessous.
 - **Contexte** :
   - Télécharger 4,3 Go chez moi n'est « pas vraiment possible ». Le débit, la limite de données et la stabilité sont TODO (ANKH-SPEC Q12).
   - **Mesures du 2026-10-07 sur GHCR** :
@@ -523,3 +566,4 @@
   - La taille réelle des mises à jour légères.
   - Une réduction possible du volume par un découpage plus stable des couches (« rechunk »).
 - **Vérification** : mesurer la taille téléchargée à chaque mise à jour pendant la phase 10.
+- **Première mesure (phase 2, 2026-10-07, en VM)** : passer d'une image Ankh à une autre bâtie sur la même base a demandé 2 couches sur 261, soit 641 octets (D-004). Cela confirme le principe du point 3. La taille réelle viendra quand Ankh ajoutera Chrome et les applications (phase 3).
