@@ -42,9 +42,11 @@
 | D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
 | D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
-| D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ |
+| D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
+| D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER) |
+| D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 
 ---
 
@@ -514,7 +516,7 @@
 - **Raisons** : confort, sans complexité supplémentaire.
 - **Alternatives rejetées** : restreindre l'accès au terminal ou aux droits administrateur (option b).
 - **Conséquences** :
-  - Il faut une interface pour les mises à jour du système : `kinoite-main` retire le module de mise à jour système de Discover (voir les sources de D-005). La solution est À DÉCIDER.
+  - Il faut une interface pour les mises à jour du système : `kinoite-main` retire le module de mise à jour système de Discover (voir les sources de D-005). La solution est tranchée par D-028.
   - La protection de D-026 reste une protection par friction, pas une impossibilité.
 - **Vérification** : à chaque phase, liste des actions quotidiennes faisables sans terminal (test réel).
 
@@ -567,3 +569,53 @@
   - Une réduction possible du volume par un découpage plus stable des couches (« rechunk »).
 - **Vérification** : mesurer la taille téléchargée à chaque mise à jour pendant la phase 10.
 - **Première mesure (phase 2, 2026-10-07, en VM)** : passer d'une image Ankh à une autre bâtie sur la même base a demandé 2 couches sur 261, soit 641 octets (D-004). Cela confirme le principe du point 3. La taille réelle viendra quand Ankh ajoutera Chrome et les applications (phase 3).
+
+## D-028 — Mises à jour du système dans Discover (complète D-025)
+
+- **Statut** : DÉCIDÉ (2026-10-08). J'ai choisi l'option A. Le comportement dans l'interface reste À VALIDER (voir « Vérification »).
+- **Contexte** :
+  - D-025 exige que les mises à jour du système se fassent sans terminal.
+  - `kinoite-main` retire le module `plasma-discover-rpm-ostree`. Discover ne montre donc plus les mises à jour du système, seulement celles des applications Flatpak.
+  - Le téléchargement automatique reste actif : `rpm-ostreed-automatic` en mode « stage » télécharge la mise à jour et la prépare pour le prochain démarrage, sans redémarrer.
+    - Source : <https://github.com/coreos/rpm-ostree/blob/main/man/rpm-ostreed.conf.xml> : « The "stage" policy downloads and unpacks the update, queuing it for the next boot. This leaves initiating a reboot to other automation tools. »
+- **Décision** :
+  - L'image réinstalle `plasma-discover-rpm-ostree`. Discover affiche les mises à jour du système, et une notification signale qu'un redémarrage est nécessaire. Je choisis quand redémarrer (D-010).
+  - L'image porte son propre numéro de version, qui augmente à chaque construction : `<version de Fedora>.<AAAAMMJJ>.<HHMM>`, en UTC. Il est inscrit dans les labels `org.opencontainers.image.version` et `version`.
+    - Discover compare ce numéro avec celui du système démarré pour savoir qu'une mise à jour existe.
+    - Sans ce numéro, une image Ankh reconstruite sur la même base garderait le numéro de la base.
+- **Raisons** :
+  - C'est la seule option qui donne une vraie interface, sans terminal, avec un redémarrage que je choisis.
+  - Elle s'appuie sur le comportement prévu par KDE, pas sur un outil maison.
+  - **Vérifié dans les sources** :
+    - Universal Blue a retiré ce module en 2023, parce que Discover ne s'ouvrait pas sur les images signées : <https://github.com/ublue-os/main/pull/282>.
+    - KDE a corrigé ce problème : <https://github.com/KDE/discover/commit/8cb842115c1cc0a6224454fbe66b1edf586c6911>. La prise en charge de `ostree-image-signed` est absente de `OstreeFormat.cpp` dans Discover 5.27.10, et présente depuis la 5.27.11.
+    - Quand l'origine est un tag `latest`, Discover ignore volontairement les changements de version majeure de Fedora (`RpmOstreeResource.cpp`, `setNewMajorVersion`). C'est cohérent avec D-017.
+    - Le module surveille `/ostree/deploy` et signale qu'un redémarrage est nécessaire quand une mise à jour est prête (`RpmOstreeNotifier.cpp`).
+- **Alternatives rejetées** :
+  - **B — `uupd`** (outil d'Universal Blue, utilisé par Aurora et Bazzite) :
+    - le lanceur « System Update » d'Aurora ouvre un terminal (`Terminal=true`, `Exec=/usr/bin/ujust update`) ;
+    - uupd ne notifie pas quand une mise à jour est prête, seulement en cas d'échec ou si le système a plus d'un mois.
+    - Sources : <https://github.com/ublue-os/uupd>, <https://github.com/ublue-os/aurora/issues/259>.
+  - **C — une notification maison** : outil maison sans documentation officielle, et aucune interface pour voir les mises à jour.
+- **À VALIDER** :
+  - Universal Blue n'a jamais remis ce module. Aucune raison plus récente n'a été trouvée.
+  - Le module doit correspondre exactement à la version de Discover de la base. La dépendance exacte n'a pas pu être lue : le dépôt de paquets Fedora est inaccessible depuis mon environnement. Le journal de construction montrera ce que `dnf` installe.
+  - Discover ne doit pas gêner le téléchargement automatique en arrière-plan.
+  - Le choix « Après la mise à jour : redémarrer » de Discover ne doit jamais être actif par défaut (D-010).
+- **Vérification** :
+  - Test en CI (`just test`) : le module est installé, à la même version que Discover, et l'image porte son numéro de version.
+  - Test en VM cloud (`tests/vm/run.sh`) : le système démarré affiche ce numéro de version.
+  - L'affichage dans Discover et la notification ne se testent pas automatiquement. À vérifier à l'écran, au plus tard en phase 9.
+
+## D-029 — AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste
+
+- **Statut** : DÉCIDÉ (2026-10-08), à ma demande.
+- **Contexte** : je veux, à chaque compte rendu, un document qui fait l'état de tout ce qui a été fait depuis le début et de ce qui reste à faire.
+- **Décision** :
+  - Le fichier [AVANCEMENT.md](AVANCEMENT.md) tient cet état, phase par phase.
+  - Claude le met à jour à chaque compte rendu et me l'envoie.
+  - Il résume et renvoie aux décisions (D-xxx) sans recopier leurs détails, pour respecter la règle « une information dans un seul fichier » (CLAUDE.md §3, règle 11).
+  - L'état courant court reste dans CLAUDE.md §2. AVANCEMENT.md contient l'historique et la liste de ce qui reste.
+- **Raisons** : suivre le projet d'un coup d'œil, sans relire tout le dépôt.
+- **Alternatives rejetées** : un compte rendu seulement dans la conversation (rien n'est conservé dans le dépôt).
+- **Vérification** : chaque compte rendu de Claude contient AVANCEMENT.md à jour.

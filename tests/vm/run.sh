@@ -11,7 +11,7 @@
 #   3. retour arrière (bootc rollback) vers IMAGE ;
 #   4. retour à l'image de base épinglée dans bases.env (D-005, D-018).
 # À chaque démarrage : Secure Boot actif (D-006), SELinux en mode enforcing
-# et pare-feu actif (D-008).
+# et pare-feu actif (D-008). Sur IMAGE : numéro de version d'Ankh (D-028).
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -139,6 +139,9 @@ base=$(sed -n 's/^ANKH_BASE=//p' "$repo/bases.env")
 [[ $base == *@sha256:* ]] || die "ANKH_BASE absent de bases.env ou sans digest"
 base_ref="${base%%:*}@${base##*@}"
 base_digest=${base##*@}
+# D-028 : numéro de version d'Ankh, que Discover compare pour proposer une mise à jour.
+image_version=$(podman image inspect --format '{{ index .Labels "org.opencontainers.image.version" }}' "$image")
+[[ -n $image_version ]] || die "$image n'a pas de label org.opencontainers.image.version"
 
 log "Préparation dans $work"
 ssh-keygen -q -t ed25519 -N '' -C ankh-vmtest -f "$work/id_ed25519"
@@ -183,6 +186,7 @@ wait_boot
 check_boot
 check_ankh
 installed=$(booted imageDigest)
+[[ $(booted version) == "$image_version" ]] || die "le système démarré ne porte pas la version $image_version (D-028)"
 
 log "2/4 Basculement vers une autre version : $other"
 vm bootc switch "$other"
@@ -198,6 +202,7 @@ reboot_vm
 check_boot
 check_ankh
 [[ $(booted imageDigest) == "$installed" ]] || die "le retour arrière n'a pas redémarré la version installée"
+[[ $(booted version) == "$image_version" ]] || die "après le retour arrière, la version n'est pas $image_version"
 
 log "4/4 Retour à l'image de base : $base_ref"
 vm bootc switch "$base_ref"

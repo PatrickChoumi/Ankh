@@ -10,10 +10,18 @@ build variant:
     #!/usr/bin/env bash
     set -euo pipefail
     base="$({{ just_executable() }} _base {{ variant }})"
-    echo "Construction de {{ variant }} à partir de ${base}"
+    # D-028 : numéro de version propre à Ankh, croissant à chaque construction
+    # (version de Fedora de la base, puis date et heure UTC). Discover s'en
+    # sert pour savoir qu'une mise à jour existe.
+    fedora="${base%@*}"
+    fedora="${fedora##*:}"
+    version="${fedora}.$(date -u +%Y%m%d.%H%M)"
+    echo "Construction de {{ variant }} ${version} à partir de ${base}"
     podman build \
         --pull=missing \
         --build-arg "BASE_IMAGE=${base}" \
+        --label "org.opencontainers.image.version=${version}" \
+        --label "version=${version}" \
         --label "org.opencontainers.image.title={{ variant }}" \
         --label "org.opencontainers.image.description=Ankh, OS personnel image-based (variante {{ variant }})" \
         --label "org.opencontainers.image.source=https://github.com/PatrickChoumi/Ankh" \
@@ -40,8 +48,19 @@ test variant:
     echo "Test 2 : le timer de redémarrage automatique est masqué (D-010)"
     run '[[ "$(readlink /etc/systemd/system/bootc-fetch-apply-updates.timer)" == /dev/null ]]'
 
+    echo "Test 3 : module Discover des mises à jour système, à la version de Discover (D-028)"
+    run 'q() { rpm -q --qf "%{VERSION}-%{RELEASE}" "$1"; }; [[ "$(q plasma-discover-rpm-ostree)" == "$(q plasma-discover)" ]]'
+
+    echo "Test 4 : numéro de version propre à Ankh (D-028)"
+    label() { podman image inspect --format "{{{{ index .Labels \"$1\" }}" "${image}"; }
+    version="$(label org.opencontainers.image.version)"
+    if [[ ! "${version}" =~ ^[0-9]+\.[0-9]{8}\.[0-9]{4}$ || "$(label version)" != "${version}" ]]; then
+        echo "ÉCHEC : version « ${version} » absente, mal formée ou différente du label version" >&2
+        exit 1
+    fi
+
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
-        echo "Test 3 : module NVIDIA présent pour le noyau de l'image, et signé"
+        echo "Test 5 : module NVIDIA présent pour le noyau de l'image, et signé"
         run 'k="$(ls /usr/lib/modules)"; modinfo -k "${k}" nvidia > /dev/null && [[ -n "$(modinfo -k "${k}" -F signer nvidia)" ]]'
     fi
 
