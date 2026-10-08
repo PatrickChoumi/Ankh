@@ -344,6 +344,15 @@
   - Les deux références (tag `44` + digest) sont dans `bases.env`.
   - Renovate (`renovate.json`) propose les nouveaux digests dans une seule PR, et n'a pas le droit de changer de version de Fedora.
   - Renovate ne fonctionne qu'une fois son application GitHub installée sur le dépôt (action à faire par moi).
+- **État de Renovate (2026-10-08)** : l'application est installée, et le tableau de bord Mend montre des exécutions terminées (« DONE »). Pourtant, aucune PR ni aucun ticket n'a été créé.
+  - Cause probable, d'après la documentation officielle : une installation sur « All repositories » met l'application en mode **Silent** (`dryRun=lookup`), donc sans PR ni ticket. Il faut passer le dépôt ou l'organisation en mode **Interactive** dans le tableau de bord Mend.
+  - Source : <https://github.com/renovatebot/renovate/blob/main/docs/usage/mend-hosted/hosted-apps-config.md>. À confirmer en cherchant `dryRun` dans le journal d'une exécution.
+- **Procédure prévue pour passer à Fedora 45** (réponse à ma question du 2026-10-08) :
+  1. Universal Blue publie `kinoite-main:45` et `kinoite-nvidia:45`. On attend quelques semaines de rodage (décision ci-dessus).
+  2. Une PR change seulement la référence des deux bases dans `bases.env` (tag `45` et nouveau digest). Toutes les personnalisations d'Ankh sont dans `build_files/build.sh` et se réappliquent telles quelles sur la nouvelle base.
+  3. La CI fait le vrai travail de vérification : construction des deux variantes, `just test` et le test en VM (démarrage, basculement, retour arrière). Ce qui casse apparaît là : un paquet renommé, un fichier de réglage apparu dans la base, un pilote. On corrige dans la même PR, jusqu'au vert.
+  4. Je fusionne quand je le décide. Sur ma machine, le passage à 45 arrive comme une mise à jour normale, en plus gros, puisque presque toute la base change. Le retour arrière vers la version 44 reste possible au redémarrage suivant.
+  - **Coût attendu** : faible, parce que chaque ajout d'Ankh est une ligne courte qui cite sa décision et a son test. Le point le plus sensible sera la variante NVIDIA (pilote), qui ne se teste pas en VM.
 
 ## D-018 — Construction, publication et signature de l'image
 

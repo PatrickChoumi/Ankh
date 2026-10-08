@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-08**.
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-08** (soir).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -79,10 +79,21 @@
   - L'image réinstalle le module de Discover qui gère les mises à jour du système.
   - L'image porte son propre numéro de version (`44.AAAAMMJJ.HHMM`). Discover s'en sert pour savoir qu'une mise à jour existe.
   - Des tests sont ajoutés, en CI et en VM.
-  - La CI de la [PR #4](https://github.com/PatrickChoumi/Ankh/pull/4) est verte :
+  - [PR #4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée le 2026-10-08. Sa CI a montré :
     - un seul paquet ajouté, aucun autre paquet de KDE modifié ;
     - le système démarré dans la VM porte bien la version d'Ankh.
 - **Ce document d'avancement** (D-029).
+- **Chrome et Firefox** (D-023), en cours de vérification par la CI :
+  - Chrome est installé dans l'image depuis le dépôt officiel de Google, avec vérification de la clé de signature ;
+  - `/opt` devient un vrai dossier de l'image, comme le recommande Universal Blue ;
+  - Firefox est retiré ;
+  - Chrome devient le navigateur par défaut ;
+  - des tests sont ajoutés, en CI et en VM.
+- **Captures d'écran de la VM**, à ma demande :
+  - écran de connexion, bureau KDE, Discover et Chrome ;
+  - jointes à chaque run du test en VM sur GitHub.
+- **Renovate** : il est installé et tourne, mais ne crée rien. Cause probable : le mode « Silent » de Mend (D-017).
+- **Ma question sur Fedora 45** : la procédure prévue est écrite dans D-017.
 
 ---
 
@@ -90,12 +101,11 @@
 
 ### Phase 3 — Applications et dev (en cours)
 
-1. **Discover** (D-028) : PR #4 verte, à fusionner. L'affichage à l'écran sera à vérifier.
+1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) :
-   - installer Chrome dans l'image (cas particulier de `/opt` sur une image bootc) ;
-   - en faire le navigateur par défaut ;
-   - retirer Firefox ;
-   - reconstruire l'image régulièrement pour suivre les mises à jour de Chrome.
+   - CI de la PR à faire passer au vert, puis fusionner ;
+   - vérifier à l'écran le navigateur par défaut dans KDE (captures) ;
+   - mesurer la taille de la couche Chrome, puis choisir la fréquence de reconstruction qui suivra ses correctifs.
 3. **Applications par défaut** (D-024) :
    - VLC et OnlyOffice en Flatpak, préinstallés ;
    - Claude et GitHub en applications web dans Chrome.
@@ -116,7 +126,7 @@
 
 ### Points à vérifier (À VALIDER)
 
-- **Renovate** : installé selon moi, mais aucune activité sur le dépôt, alors qu'une base plus récente existe depuis le 2026-10-02.
+- **Renovate** : installé et actif, mais probablement en mode « Silent », donc sans PR ni ticket. Une base plus récente existe depuis le 2026-10-02.
 - **Signature** : l'imposer sur ma machine (D-022). Le test en VM n'a montré aucune vérification de signature au basculement.
 - **Discover** : la notification et l'affichage des mises à jour, à l'écran (D-028).
 - **mcelog** : son comportement sur ma vraie machine (phase 9).
@@ -126,7 +136,7 @@
 
 ## Ce que je dois faire
 
-1. **Renovate** : ouvrir <https://developer.mend.io/github/PatrickChoumi/Ankh> (connexion avec GitHub) et regarder les journaux. S'il n'y a rien, vérifier sur <https://github.com/settings/installations> que Renovate a bien accès au dépôt **Ankh**.
-2. **Fusionner la PR #4** : sa CI est verte.
+1. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
+2. **Fusionner la PR de Chrome** quand sa CI sera verte, puis regarder les captures d'écran de la VM.
 3. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
 4. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
