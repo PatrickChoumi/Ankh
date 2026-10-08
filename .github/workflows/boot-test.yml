@@ -56,4 +56,17 @@ jobs:
         run: sudo env "PATH=${PATH}" just build ankh
 
       - name: Démarrer, basculer, revenir en arrière, revenir à la base
-        run: sudo tests/vm/run.sh localhost/ankh:latest
+        env:
+          ANKH_VM_WORKDIR: ${{ runner.temp }}/vm
+        run: sudo env "ANKH_VM_WORKDIR=${ANKH_VM_WORKDIR}" tests/vm/run.sh localhost/ankh:latest
+
+      # Captures d'écran de la VM, téléchargeables depuis la page du run
+      # (section « Artifacts »), même si le test échoue.
+      - name: Joindre les captures d'écran
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: captures-ankh-vm
+          path: ${{ runner.temp }}/vm/captures/
+          if-no-files-found: warn
+          retention-days: 30

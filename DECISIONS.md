@@ -134,6 +134,16 @@
     - Durée : 12 minutes pour le test lui-même, 33 minutes pour tout le travail CI (construction comprise).
     - **Non vérifié par ce test** :
       - la session graphique ;
+  - **Captures d'écran (ajout du 2026-10-08, à ma demande)** :
+    - QEMU capture l'écran de la VM (`screendump`) :
+      - au premier démarrage, l'écran de connexion ;
+      - le bureau KDE d'un compte de test `ankhvm`, connecté automatiquement par SDDM ;
+      - Discover ouvert sur les mises à jour ;
+      - Chrome ouvert sur le dépôt ;
+      - le bureau après chaque basculement.
+    - Les images sont jointes au run GitHub, section « Artifacts » (`captures-ankh-vm`), et conservées 30 jours.
+    - Le compte de test et la connexion automatique sont des réglages locaux de la VM de test, comme la clé SSH. Ils ne sont jamais dans l'image Ankh.
+    - Le test échoue si le bureau Plasma ne démarre pas en 3 minutes, après avoir capturé l'écran pour montrer pourquoi.
       - l'imposition de la signature au basculement (aucun message de vérification de signature, À VALIDER, D-022) ;
       - le comportement sur du matériel réel (phase 9).
 

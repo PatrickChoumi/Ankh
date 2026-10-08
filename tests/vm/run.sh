@@ -11,7 +11,12 @@
 #   3. retour arrière (bootc rollback) vers IMAGE ;
 #   4. retour à l'image de base épinglée dans bases.env (D-005, D-018).
 # À chaque démarrage : Secure Boot actif (D-006), SELinux en mode enforcing
-# et pare-feu actif (D-008). Sur IMAGE : numéro de version d'Ankh (D-028).
+# et pare-feu actif (D-008). Sur IMAGE : numéro de version d'Ankh (D-028),
+# Chrome qui démarre et Firefox absent (D-023).
+#
+# Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
+# connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement),
+# Discover et Chrome.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -80,6 +85,46 @@ wait_boot() {
     done
 }
 
+# Capture l'écran de la VM en PNG par le moniteur de QEMU (commande screendump).
+screenshot() {
+    local file="$work/captures/$1.png"
+    python3 - "$work/monitor.sock" "screendump $file -f png" << 'PY'
+import socket, sys
+sock = socket.socket(socket.AF_UNIX)
+sock.settimeout(30)
+sock.connect(sys.argv[1])
+
+def until_prompt():
+    data = b""
+    while b"(qemu)" not in data:
+        chunk = sock.recv(4096)
+        if not chunk:
+            sys.exit("moniteur QEMU fermé")
+        data += chunk
+
+until_prompt()  # bannière, puis invite « (qemu) »
+sock.sendall(sys.argv[2].encode() + b"\n")
+until_prompt()  # nouvelle invite : la commande est terminée
+sock.close()
+PY
+    [[ -s $file ]] || die "capture d'écran impossible : $file"
+    echo "Capture : $file"
+}
+
+# Attend le bureau Plasma du compte de test, puis le capture.
+wait_desktop() {
+    local name=$1 deadline=$((SECONDS + 180))
+    until vm pgrep -u ankhvm -x plasmashell > /dev/null; do
+        if ((SECONDS >= deadline)); then
+            screenshot "$name-echec"
+            die "le bureau Plasma ne démarre pas pour le compte de test"
+        fi
+        sleep 5
+    done
+    sleep 20 # le temps que le bureau finisse de s'afficher
+    screenshot "$name"
+}
+
 reboot_vm() {
     vm systemd-run --on-active=2 systemctl reboot
     wait_boot
@@ -130,6 +175,18 @@ check_ankh() {
         die "le timer de redémarrage automatique n'est pas masqué (D-010)"
 }
 
+# Vérifie le contenu propre à l'image installée (absent de l'image publiée
+# tant que la PR n'est pas fusionnée) : version (D-028), Chrome et Firefox (D-023).
+check_installed() {
+    local chrome
+    [[ $(booted version) == "$image_version" ]] || die "le système démarré ne porte pas la version $image_version (D-028)"
+    chrome=$(vm google-chrome --version)
+    [[ $chrome == "Google Chrome "* ]] || die "Chrome ne démarre pas : $chrome"
+    echo "Chrome : $chrome"
+    # rpm -q renvoie 1 quand le paquet est absent ; tout autre code est un échec.
+    [[ $(vm 'rpm -q firefox > /dev/null; echo $?') == 1 ]] || die "Firefox est présent, ou son état est inconnu"
+}
+
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"
 [[ -e /dev/kvm ]] || die "/dev/kvm absent : KVM est nécessaire"
 for f in OVMF_CODE_4M.secboot.fd OVMF_VARS_4M.ms.fd; do
@@ -144,6 +201,7 @@ image_version=$(podman image inspect --format '{{ index .Labels "org.opencontain
 [[ -n $image_version ]] || die "$image n'a pas de label org.opencontainers.image.version"
 
 log "Préparation dans $work"
+mkdir -p "$work/captures"
 ssh-keygen -q -t ed25519 -N '' -C ankh-vmtest -f "$work/id_ed25519"
 rm -f "$work/disk.raw"
 truncate -s 40G "$work/disk.raw"
@@ -178,7 +236,8 @@ qemu-system-x86_64 \
     -device virtio-net-pci,netdev=net0 \
     -device virtio-rng-pci \
     -device virtio-vga -display none \
-    -serial "file:$work/serial.log" -monitor none &
+    -serial "file:$work/serial.log" \
+    -monitor "unix:$work/monitor.sock,server=on,wait=off" &
 qemu_pid=$!
 
 log "1/4 Premier démarrage de $image"
@@ -186,13 +245,32 @@ wait_boot
 check_boot
 check_ankh
 installed=$(booted imageDigest)
-[[ $(booted version) == "$image_version" ]] || die "le système démarré ne porte pas la version $image_version (D-028)"
+check_installed
+screenshot 1-ecran-de-connexion
+
+log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover et Chrome"
+# Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
+# valables après chaque basculement, pour capturer le bureau de chaque image.
+# ssh recolle les arguments : la commande est passée en une seule chaîne.
+vm "useradd -m -c 'Compte de test Ankh' ankhvm"
+vm mkdir -p /etc/sddm.conf.d
+vm "printf '[Autologin]\nUser=ankhvm\nSession=plasma.desktop\n' > /etc/sddm.conf.d/ankh-vmtest.conf"
+vm systemctl restart sddm
+wait_desktop 1-bureau
+vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
+sleep 30
+screenshot 1-discover-mises-a-jour
+vm systemd-run --machine=ankhvm@ --user --collect --quiet \
+    google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
+sleep 30
+screenshot 1-chrome
 
 log "2/4 Basculement vers une autre version : $other"
 vm bootc switch "$other"
 reboot_vm
 check_boot
 check_ankh
+wait_desktop 2-bureau-ankh-publiee
 [[ $(booted image.image) == "$other" ]] || die "l'image démarrée n'est pas $other"
 [[ $(booted imageDigest) != "$installed" ]] || die "le basculement n'a pas changé de version"
 
@@ -202,12 +280,14 @@ reboot_vm
 check_boot
 check_ankh
 [[ $(booted imageDigest) == "$installed" ]] || die "le retour arrière n'a pas redémarré la version installée"
-[[ $(booted version) == "$image_version" ]] || die "après le retour arrière, la version n'est pas $image_version"
+check_installed
+wait_desktop 3-bureau-apres-retour-arriere
 
 log "4/4 Retour à l'image de base : $base_ref"
 vm bootc switch "$base_ref"
 reboot_vm
 check_boot
 [[ $(booted imageDigest) == "$base_digest" ]] || die "l'image démarrée n'est pas la base $base_digest"
+wait_desktop 4-bureau-image-de-base
 
 log "Réussi : démarrage, basculement, retour arrière et retour à la base."
