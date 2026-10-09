@@ -63,6 +63,8 @@ test variant:
 
     echo "Test 2 : le timer de redémarrage automatique est masqué (D-010)"
     run '[[ "$(readlink /etc/systemd/system/bootc-fetch-apply-updates.timer)" == /dev/null ]]'
+    echo "Test 2 bis : le montage automatique de /boot est masqué, pour que les mises à jour s'appliquent (D-004)"
+    run '[[ "$(readlink /etc/systemd/system/boot.automount)" == /dev/null ]]'
 
     echo "Test 3 : module Discover des mises à jour système, à la version de Discover (D-028)"
     run 'q() { rpm -q --qf "%{VERSION}-%{RELEASE}" "$1"; }; [[ "$(q plasma-discover-rpm-ostree)" == "$(q plasma-discover)" ]]'

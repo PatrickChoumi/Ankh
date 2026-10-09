@@ -159,6 +159,18 @@
       - L'aspect des captures elles-mêmes est à regarder par moi : l'environnement de Claude ne peut pas télécharger les artefacts.
       - l'imposition de la signature au basculement (aucun message de vérification de signature, À VALIDER, D-022) ;
       - le comportement sur du matériel réel (phase 9).
+- **Mise à jour non appliquée, corrigée (2026-10-09, [PR #9](https://github.com/PatrickChoumi/Ankh/pull/9))** : à signaler pour relecture, car cela touche aux mises à jour.
+  - **Vu deux fois en VM, sur l'image de la PR #9** : après `bootc switch` et le redémarrage, l'ancienne version a redémarré. À l'arrêt, `ostree-finalize-staged.service` a échoué avec `error: Remounting /boot read-write: Invalid argument`. La nouvelle version n'a donc jamais été écrite dans le menu de démarrage. Sur ma machine, cela voudrait dire : je lance la mise à jour, je redémarre, et rien ne change.
+  - **Cause probable** :
+    - avec `bootc install to-disk` en btrfs, `/boot` n'a pas de partition à lui. ostree y lie `/sysroot/boot` (`boot.mount`, créé par `ostree-system-generator`, `src/libostree/ostree-impl-system-generator.c` de <https://github.com/ostreedev/ostree>) ;
+    - `/boot` paraît vide quand `systemd-gpt-auto-generator` passe. Celui-ci y ajoute donc un montage automatique de la partition EFI (`boot.automount`, « EFI System Partition Automount », vu dans le journal série), qui se démonte après 2 minutes d'inactivité (`add_partition_esp`, `src/gpt-auto-generator/gpt-auto-generator.c` de <https://github.com/systemd/systemd>) ;
+    - à l'arrêt, ostree n'a plus trouvé son `/boot`. La documentation de bootc décrit ce risque pour un `/boot` monté automatiquement (`docs/src/man/bootc-composefs-finalize-staged.8.md` de <https://github.com/bootc-dev/bootc>).
+    - À VALIDER : pourquoi le même test passait sur `main` juste avant. La PR ajoute du temps et des applications dans la session de test avant le basculement.
+  - **Correctif** : `boot.automount` est masqué dans l'image (`build_files/build.sh`). `/boot` reste celui d'ostree. Quand `/boot` a sa propre partition, systemd ne crée pas ce montage automatique, et le masque est sans effet.
+  - **Vérification** :
+    - `just test`, Test 2 bis : le masque est dans l'image ;
+    - `tests/vm/run.sh` vérifie le masque sur le système installé et relève l'état de `/boot` (montages, unités) avant chaque redémarrage qui doit appliquer une version préparée. En cas d'échec, il affiche le journal de la finalisation et de `/boot` ;
+    - résultat en VM : À VENIR.
 
 ## D-005 — Image de base exacte
 

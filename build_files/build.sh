@@ -179,6 +179,19 @@ systemctl --global mask flatpak-user-update.timer
 sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=none/' /etc/rpm-ostreed.conf
 grep -qx 'AutomaticUpdatePolicy=none' /etc/rpm-ostreed.conf
 
+# D-004 : une mise à jour préparée doit s'appliquer au redémarrage. Quand
+# /boot n'a pas de partition à lui (« bootc install to-disk » en btrfs),
+# ostree y lie /sysroot/boot (boot.mount, ostree-system-generator) ; mais
+# /boot paraît vide quand systemd-gpt-auto-generator passe, et celui-ci y
+# ajoute un montage automatique de la partition EFI (boot.automount), qui se
+# démonte après 2 minutes d'inactivité (src/gpt-auto-generator dans
+# https://github.com/systemd/systemd). Vu en VM : à l'arrêt, la finalisation
+# par ostree n'a plus trouvé son /boot (« Remounting /boot read-write: Invalid
+# argument ») et l'ancienne version a redémarré. Ce montage automatique est
+# masqué ; /boot reste celui d'ostree. Quand /boot a sa propre partition,
+# systemd ne crée pas ce montage automatique : le masque est sans effet.
+systemctl mask boot.automount
+
 # D-032 : conteneur de dev. L'image Ankh apporte sa description pour distrobox
 # et deux raccourcis du menu, pour le créer et le mettre à jour quand je le
 # décide (D-031). Le socket Podman de l'utilisateur est activé pour que le

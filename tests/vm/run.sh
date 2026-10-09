@@ -148,6 +148,22 @@ configure_autologin() {
     vm systemctl restart display-manager.service
 }
 
+# État de /boot avant un redémarrage qui doit appliquer une version préparée :
+# montages empilés sur /boot, et unités qui le montent ou le gardent ouvert
+# pour la finalisation par ostree à l'arrêt.
+show_boot_state() {
+    local cmd
+    for cmd in \
+        'rpm -q ostree systemd' \
+        'findmnt -o TARGET,SOURCE,FSTYPE,OPTIONS /boot' \
+        'systemctl show -p Id,ActiveState,UnitFileState,FragmentPath boot.automount boot.mount ostree-finalize-staged.service ostree-finalize-staged-hold.service'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+}
+
 reboot_vm() {
     vm systemd-run --on-active=2 systemctl reboot
     wait_boot
@@ -160,7 +176,7 @@ explain_deployment() {
     local cmd
     log "Diagnostic : la version attendue n'a pas démarré"
     for cmd in \
-        'journalctl -b -1 -u ostree-finalize-staged.service --no-pager' \
+        'journalctl -b -1 -o short-monotonic -u ostree-finalize-staged.service -u ostree-finalize-staged-hold.service -u boot.mount -u boot.automount --no-pager' \
         'journalctl -b -1 -n 60 --no-pager' \
         'bootc status' \
         'df -h /boot /sysroot' \
@@ -209,8 +225,8 @@ check_boot() {
     ref=$(booted image.image)
     digest=$(booted imageDigest)
     echo "Démarrage complet ; Secure Boot, SELinux et pare-feu actifs."
-    # Place dans /boot (510 Mio avec « bootc install to-disk ») : chaque
-    # version d'Ankh y garde son noyau et son initramfs.
+    # Place dans /boot, où chaque version d'Ankh garde son noyau et son
+    # initramfs (ici sur la partition btrfs du système, sans partition à lui).
     echo "/boot (utilisé, taille, %) : $(vm df -h --output=used,size,pcent /boot | tail -n 1)"
     echo "Image démarrée : $ref ($digest)"
 }
@@ -247,6 +263,9 @@ check_installed() {
     vm "grep -q '^title Ankh ' /boot/loader/entries/*.conf" ||
         die "le menu de démarrage n'affiche pas Ankh (D-033)"
     [[ $(vm cat /proc/sys/kernel/hostname) == ankh ]] || die "la machine ne s'appelle pas « ankh » (D-033)"
+    # D-004 : /boot n'est pas monté automatiquement par-dessus le montage d'ostree.
+    [[ $(vm systemctl is-enabled boot.automount) == masked ]] ||
+        die "le montage automatique de /boot n'est pas masqué (D-004)"
     # D-035 : VLC et OnlyOffice présents dès l'installation, LibreOffice absent.
     vm rpm -q vlc onlyoffice-desktopeditors || die "VLC ou OnlyOffice absent (D-035)"
     [[ -z $(vm "rpm -qa 'libreoffice*'") ]] || die "LibreOffice est présent (D-035)"
@@ -373,6 +392,7 @@ screenshot 1-a-propos
 
 log "2/4 Basculement vers une autre version : $other"
 vm bootc switch "$other"
+show_boot_state
 reboot_vm
 check_boot
 check_ankh
@@ -391,6 +411,7 @@ wait_desktop 3-bureau-apres-retour-arriere
 
 log "4/4 Retour à l'image de base : $base_ref"
 vm bootc switch "$base_ref"
+show_boot_state
 reboot_vm
 check_boot
 [[ $(booted imageDigest) == "$base_digest" ]] || { explain_deployment; die "l'image démarrée n'est pas la base $base_digest"; }
