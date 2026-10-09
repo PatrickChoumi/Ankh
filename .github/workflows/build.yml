@@ -41,6 +41,7 @@ jobs:
         variant:
           - ankh
           - ankh-nvidia
+          - ankh-dev  # conteneur de dev (D-032)
 
     env:
       VARIANT: ${{ matrix.variant }}

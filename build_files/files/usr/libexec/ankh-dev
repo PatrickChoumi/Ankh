@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+# Crée ou met à jour le conteneur de dev (D-032), seulement quand je le lance
+# depuis le menu (D-031).
+set -euo pipefail
+
+case "${1:-}" in
+    creer)
+        distrobox assemble create --file /usr/share/ankh/distrobox.ini
+        distrobox enter ankh-dev -- /usr/libexec/ankh-dev-setup
+        ;;
+    mettre-a-jour)
+        distrobox upgrade ankh-dev
+        ;;
+    *)
+        echo "Usage : ankh-dev creer | mettre-a-jour" >&2
+        exit 2
+        ;;
+esac
+echo "Terminé. Cette fenêtre peut être fermée."

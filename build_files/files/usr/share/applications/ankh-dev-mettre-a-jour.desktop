@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Mettre à jour l'environnement de dev
+Comment=Met à jour les outils du conteneur de dev d'Ankh.
+Exec=konsole --hold -e /usr/libexec/ankh-dev mettre-a-jour
+Icon=system-software-update
+Terminal=false
+Categories=Development;

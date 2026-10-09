@@ -84,3 +84,11 @@ systemctl mask rpm-ostreed-automatic.timer flatpak-system-update.timer
 systemctl --global mask flatpak-user-update.timer
 sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=none/' /etc/rpm-ostreed.conf
 grep -qx 'AutomaticUpdatePolicy=none' /etc/rpm-ostreed.conf
+
+# D-032 : conteneur de dev. L'image Ankh apporte sa description pour distrobox
+# et deux raccourcis du menu, pour le créer et le mettre à jour quand je le
+# décide (D-031). Le socket Podman de l'utilisateur est activé pour que le
+# conteneur de dev pilote les conteneurs du système (bases de données).
+# Les fichiers appartiennent à root, quel que soit le propriétaire dans la CI.
+cp -a --no-preserve=ownership /ctx/files/. /
+systemctl --global enable podman.socket
