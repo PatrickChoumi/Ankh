@@ -290,7 +290,13 @@ capture_app() {
 # conteneur, extensions), puis VS Code s'ouvre. Captures des deux moments.
 check_vscode() {
     local deadline=$((SECONDS + 2400)) next=$((SECONDS + 300)) journal=/home/ankhvm/.cache/ankh/preparation-dev.log
-    vm systemd-run --machine=ankhvm@ --user --unit=ankh-vscode-premier-clic --quiet /usr/libexec/ankh-vscode
+    # Lancé comme KDE lance une application du menu : un service avec
+    # ExitType=cgroup, qui ne tue pas ce que le lanceur a démarré quand il se
+    # termine (src/gui/systemd/systemdprocessrunner.cpp de
+    # https://invent.kde.org/frameworks/kio). Sans cela, systemd arrêtait le
+    # conteneur et VS Code deux secondes après leur démarrage.
+    vm systemd-run --machine=ankhvm@ --user --unit=ankh-vscode-premier-clic --quiet \
+        --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-vscode
     sleep 60
     screenshot 1-vscode-preparation
     until vm pgrep -u ankhvm -f /usr/share/code/code > /dev/null; do
