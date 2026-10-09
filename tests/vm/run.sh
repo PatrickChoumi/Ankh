@@ -17,7 +17,8 @@
 # Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
 # connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement
 # par le gestionnaire de connexion),
-# Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic).
+# Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic). Après chaque
+# capture de Discover, son journal, pour expliquer un message d'erreur (D-028).
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -335,6 +336,47 @@ explain_vscode() {
     done
 }
 
+# D-028 : ouvre Discover sur la page des mises à jour, le capture, puis
+# affiche ce qu'il a écrit dans son journal. La fenêtre « Update Issue » ne
+# dit pas quelle source de Discover a échoué : système (rpm-ostree, qui
+# interroge le registre avec skopeo), Flatpak, micrologiciels (fwupd), KDE
+# Store ou avis. Chacune écrit son erreur dans le journal
+# (libdiscover/backends de https://invent.kde.org/plasma/discover).
+open_discover() {
+    local name=$1 unit=ankh-test-discover-${1%%-*} since ref cmd
+    since=$(vm date +%s)
+    # ssh recolle les arguments : la règle de journalisation est protégée du
+    # shell de la VM. Les messages de détail de la source « système » sont
+    # ajoutés aux avertissements, toujours écrits.
+    vm "systemd-run --machine=ankhvm@ --user --collect --quiet --unit=$unit \
+        --property=Type=simple --property=ExitType=cgroup \
+        --setenv=QT_LOGGING_RULES='org.kde.plasma.libdiscover.backend.rpm-ostree.debug=true' \
+        plasma-discover --mode update"
+    sleep 60
+    screenshot "$name"
+    log "Journal de Discover et des services qu'il interroge ($name)"
+    for cmd in \
+        "journalctl --no-pager -o short-monotonic -n 300 _SYSTEMD_USER_UNIT=$unit.service" \
+        "journalctl --no-pager -o short-monotonic --since=@$since -u polkit.service -u fwupd.service -u rpm-ostreed.service -u flatpak-system-helper.service" \
+        "rpm -qa 'plasma-discover*' skopeo fwupd flatpak" \
+        'rpm-ostree status --booted' \
+        'flatpak remotes --system --show-details' \
+        'id ankhvm'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+    # La vérification de Discover pour le système, refaite à la main, au nom
+    # du compte de test : version d'Ankh publiée dans le registre.
+    ref=$(booted image.image)
+    echo "--- skopeo inspect --no-tags docker://$ref (version publiée)"
+    if ! vm "systemd-run --machine=ankhvm@ --user --wait --pipe --quiet skopeo inspect --no-tags docker://$ref" |
+        jq -r '.Labels["org.opencontainers.image.version"]'; then
+        echo "(commande en échec)"
+    fi
+}
+
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
 # GitHub (politique WebAppInstallForceList) et leur crée un lanceur dans le
 # menu. Chrome doit avoir été ouvert une fois, avec internet.
@@ -435,9 +477,7 @@ vm "install -d -o ankhvm -g ankhvm /home/ankhvm/.config &&
     chown ankhvm:ankhvm /home/ankhvm/.config/kscreenlockerrc /home/ankhvm/.config/powerdevilrc"
 configure_autologin
 wait_desktop 1-bureau
-vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
-sleep 30
-screenshot 1-discover-mises-a-jour
+open_discover 1-discover-mises-a-jour
 vm systemd-run --machine=ankhvm@ --user --collect --quiet \
     google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
 sleep 30
@@ -459,9 +499,7 @@ check_ankh
 wait_desktop 2-bureau-ankh-publiee
 # D-028 : Discover cherche les mises à jour dans le vrai registre (l'image
 # installée à l'étape 1 vient du stockage local de la CI, sans registre).
-vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
-sleep 30
-screenshot 2-discover-mises-a-jour
+open_discover 2-discover-mises-a-jour
 [[ $(booted image.image) == "$other" ]] || { explain_deployment; die "l'image démarrée n'est pas $other"; }
 [[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "le basculement n'a pas changé de version"; }
 

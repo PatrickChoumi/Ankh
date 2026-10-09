@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (soir, PR #10 verte, à fusionner).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #10 fusionnée, Discover en cours).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -166,6 +166,8 @@
   - « À propos » montre le logo et le site d'Ankh ; l'écran de démarrage d'Ankh s'affiche ;
   - **Discover affiche encore « Update Issue »**, même sur le système venu du vrai registre : à comprendre (D-028) ;
   - **taille mesurée** : une mise à jour d'Ankh télécharge maintenant **1,2 Go** (501 Mo avant OnlyOffice et VLC).
+- **PR #10 fusionnée** le 2026-10-09.
+- **Discover, « Update Issue »** (D-028, en cours) : cette fenêtre ne dit pas quelle source a échoué. D'après le code de Discover, il y en a cinq : le système (Discover interroge le registre avec `skopeo`), Flatpak, les micrologiciels (fwupd), le KDE Store et les avis. Chacune écrit son erreur dans le journal. Le test en VM affiche maintenant ce journal après chaque capture de Discover, pour trouver la cause.
 
 ---
 
@@ -176,13 +178,13 @@
 1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) : fusionné. Reste à vérifier à l'écran le navigateur par défaut dans KDE (captures).
 3. **Applications par défaut** (D-024, D-035) : fusionné. Ensuite : regarder les captures de VLC et d'OnlyOffice, vérifier les codecs de VLC sur ma machine, et mesurer la taille d'une mise à jour.
-4. **Conteneur de dev** (D-032) : fusionné. Dernières versions LTS (Node.js 24, Java 25) : PR #10, CI verte (D-038). Ensuite :
+4. **Conteneur de dev** (D-032) : fusionné, avec les dernières versions LTS (Node.js 24, Java 25, D-038). Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
    - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
 5. **Habillage Ankh** (D-033) : fusionné.
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
-7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : PR #10 verte, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
-8. **Discover** (D-028) : comprendre « Update Issue », visible même sur le système venu du vrai registre.
+7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
+8. **Discover** (D-028) : comprendre « Update Issue », visible même sur le système venu du vrai registre. En cours : le journal de Discover est lu dans le test en VM, puis la cause sera corrigée.
 9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
 10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
@@ -215,7 +217,7 @@
 
 ## Ce que je dois faire
 
-1. **Fusionner la PR #10** ([lien](https://github.com/PatrickChoumi/Ankh/pull/10)) une fois sa CI verte : versions LTS, VS Code dans le menu, corrections de « À propos » et de l'écran de démarrage.
+1. **Dire à Claude** si la taille des mises à jour (1,2 Go) doit être réduite maintenant ou en phase 10 (D-027).
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
