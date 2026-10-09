@@ -8,12 +8,12 @@ echec() {
     exit 1
 }
 
-# Lanceur (.desktop) installé par les paquets d'une application
-lanceur() { # $1 : motif des paquets
-    local -a trouves
-    mapfile -t trouves < <(rpm -qal "$1" | grep -E '^/usr/share/applications/[^/]+\.desktop$' | sort -u)
-    [[ ${#trouves[@]} -eq 1 ]] || echec "paquets « $1 » : un lanceur attendu, trouvés : ${trouves[*]:-aucun}"
-    basename "${trouves[0]}"
+# Lanceur principal d'une application : il porte son nom et appartient à
+# l'un de ses paquets
+lanceur() { # $1 : nom de l'application et de son paquet principal
+    local fichier="/usr/share/applications/$1.desktop"
+    [[ "$(rpm -qf --qf '%{NAME}' "${fichier}")" == "$1"* ]] || echec "lanceur ${fichier} absent, ou étranger aux paquets « $1 »"
+    basename "${fichier}"
 }
 
 # Application par défaut d'un format, vue par KDE (spécification XDG)
@@ -32,12 +32,13 @@ done
 echo "VLC démarre (sous un compte ordinaire : VLC refuse root)"
 version="$(runuser -u nobody -- vlc --version)"
 echo "${version%%$'\n'*}"
-vlc="$(lanceur 'vlc*')"
+vlc="$(lanceur vlc)"
 
 echo "OnlyOffice installé dans /opt, toutes ses bibliothèques trouvées"
 rpm -q onlyoffice-desktopeditors
-editeurs="$(rpm -ql onlyoffice-desktopeditors | grep -m 1 '/DesktopEditors$')"
-[[ "${editeurs}" == /opt/* ]] || echec "OnlyOffice hors de /opt : ${editeurs}"
+mapfile -t trouves < <(rpm -ql onlyoffice-desktopeditors | grep '/DesktopEditors$')
+[[ ${#trouves[@]} -eq 1 && "${trouves[0]}" == /opt/* ]] || echec "OnlyOffice hors de /opt : ${trouves[*]:-aucun DesktopEditors}"
+editeurs="${trouves[0]}"
 # OnlyOffice apporte une partie de ses bibliothèques, dans son propre dossier :
 # seules celles du système doivent manquer à l'appel pour échouer.
 mapfile -t dossiers < <(find "$(dirname "${editeurs}")" -name '*.so*' -printf '%h\n' | sort -u)

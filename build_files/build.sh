@@ -129,19 +129,21 @@ dnf5 -y install onlyoffice-desktopeditors
 # formats sont ceux que chaque application déclare dans son lanceur, filtrés :
 # OnlyOffice déclare aussi le PDF et le texte brut, qui restent à Chrome et à
 # l'éditeur de texte.
-lanceur() { # $1 : motif des paquets de l'application
-    local -a trouves
-    mapfile -t trouves < <(rpm -qal "$1" | grep -E '^/usr/share/applications/[^/]+\.desktop$' | sort -u)
-    if [[ ${#trouves[@]} -ne 1 ]]; then
-        echo "Paquets « $1 » : un lanceur attendu, trouvés : ${trouves[*]:-aucun}" >&2
+# Le lanceur principal porte le nom de l'application et appartient à l'un de
+# ses paquets (VLC en a d'autres, pour ouvrir un DVD, un Blu-ray…).
+lanceur() { # $1 : nom de l'application et de son paquet principal
+    local fichier="/usr/share/applications/$1.desktop"
+    if [[ "$(rpm -qf --qf '%{NAME}' "${fichier}")" != "$1"* ]]; then
+        echo "Lanceur ${fichier} absent, ou étranger aux paquets « $1 ». Lanceurs de ces paquets :" \
+            "$(rpm -qal "$1*" | grep '^/usr/share/applications/' | tr '\n' ' ')" >&2
         return 1
     fi
-    echo "${trouves[0]}"
+    echo "${fichier}"
 }
 formats() { # $1 : lanceur, $2 : formats retenus (expression régulière)
     sed -n 's/^MimeType=//p' "$1" | tr ';' '\n' | grep -E "$2" | sort -u
 }
-vlc_lanceur="$(lanceur 'vlc*')"
+vlc_lanceur="$(lanceur vlc)"
 onlyoffice_lanceur="$(lanceur onlyoffice-desktopeditors)"
 mapfile -t vlc_formats < <(formats "${vlc_lanceur}" '^(video|audio)/')
 mapfile -t onlyoffice_formats < <(formats "${onlyoffice_lanceur}" \

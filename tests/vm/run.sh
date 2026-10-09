@@ -230,10 +230,10 @@ check_installed() {
 }
 
 # Lance une application dans la session du compte de test, par la commande
-# de son lanceur, puis la capture.
+# de son lanceur principal (qui porte son nom), puis la capture.
 capture_app() {
-    local name=$1 pattern=$2 desktop exe
-    desktop=$(vm "rpm -qal '$pattern' | grep -m 1 -E '^/usr/share/applications/[^/]+[.]desktop\$'")
+    local name=$1 app=$2 desktop exe
+    desktop=/usr/share/applications/$app.desktop
     exe=$(vm "sed -n 's/^Exec=\([^ ]*\).*/\1/p' $desktop | head -n 1")
     echo "$name : $desktop ($exe)"
     vm systemd-run --machine=ankhvm@ --user --collect --quiet "$exe"
@@ -342,7 +342,7 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet \
 sleep 30
 screenshot 1-chrome
 check_web_apps
-capture_app 1-vlc 'vlc*'
+capture_app 1-vlc vlc
 capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
