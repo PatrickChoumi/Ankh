@@ -168,6 +168,7 @@
   - **taille mesurée** : une mise à jour d'Ankh télécharge maintenant **1,2 Go** (501 Mo avant OnlyOffice et VLC).
 - **PR #10 fusionnée** le 2026-10-09.
 - **Discover, « Update Issue »** (D-028, en cours) : cette fenêtre ne dit pas quelle source a échoué. D'après le code de Discover, il y en a cinq : le système (Discover interroge le registre avec `skopeo`), Flatpak, les micrologiciels (fwupd), le KDE Store et les avis. Chacune écrit son erreur dans le journal. Le test en VM affiche maintenant ce journal après chaque capture de Discover, pour trouver la cause.
+- **Identité visuelle** (D-037, écrite le 2026-10-09) : mes choix (sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets) sont notés. Un jeu de couleurs « Ankh » et des couleurs de Konsole sont prêts. Le test en VM les applique à un compte à part, sans toucher l'image, et capture le résultat : ce sont les aperçus à valider avant l'intégration.
 
 ---
 
@@ -185,7 +186,7 @@
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : comprendre « Update Issue », visible même sur le système venu du vrai registre. En cours : le journal de Discover est lu dans le test en VM, puis la cause sera corrigée.
-9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
+9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus en VM en cours (PR #11) ; intégration dans l'image après mon accord.
 10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -219,6 +220,6 @@
 
 1. **Dire à Claude** si la taille des mises à jour (1,2 Go) doit être réduite maintenant ou en phase 10 (D-027).
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
+3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran. Surtout les aperçus de l'identité visuelle (`1-apercu-…`) : dire si je les valide avant leur intégration (D-037).
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
 5. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.

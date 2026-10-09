@@ -42,7 +42,7 @@
     - corrections vues sur les captures : logo et variante de « À propos », écran de démarrage graphique (D-034).
   - Ensuite :
     - comprendre « Update Issue » dans Discover (D-028) : en cours, le test en VM affiche maintenant le journal de Discover ;
-    - l'identité visuelle d'Ankh (thème sombre, couleurs, icônes, barre flottante), avec des aperçus avant intégration (D-037, à écrire).
+    - l'identité visuelle d'Ankh (thème sombre, couleurs, icônes, barre flottante) : D-037 écrite, aperçus en VM en cours, intégration après mon accord.
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).

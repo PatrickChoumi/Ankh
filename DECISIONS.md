@@ -54,6 +54,7 @@
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage) |
 | D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
 | D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; gaming en phase 5, hacking en phase 6) |
+| D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (mes choix ; aperçus en VM avant intégration, en cours) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 
 ---
@@ -1044,6 +1045,28 @@
     - la session de test se verrouillait puis éteignait l'écran : le compte de test ne le fait plus (réglage de la VM, pas de l'image) ;
     - le test lançait le raccourci comme un service systemd ordinaire, que systemd arrête avec tout ce qu'il a démarré quand le lanceur se termine : le conteneur et VS Code mouraient deux secondes après leur démarrage. Le menu de KDE lance ses applications comme des services avec `ExitType=cgroup` (`src/gui/systemd/systemdprocessrunner.cpp` de <https://invent.kde.org/frameworks/kio>), et le test fait maintenant de même. Le raccourci n'a pas changé.
   - La préparation garde son journal dans `~/.cache/ankh/preparation-dev.log`.
+
+## D-037 — Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034)
+
+- **Statut** : DÉCIDÉ (2026-10-09), mes choix. Aperçus en VM avant intégration : en cours. L'intégration dans l'image attend mon accord sur les aperçus.
+- **Contexte** : « J'aimerais que visuellement les apps qui étaient stylisées selon Fedora aient une vibe Ankh, et non Fedora, parce que là c'est comme si tu avais juste modifié les noms. »
+  - D-033 et D-034 ont changé le nom, le logo, les fonds et l'écran de démarrage. Les applications gardent l'apparence de KDE par défaut : thème clair, accent bleu, barre collée au bord (vu sur les captures de la VM).
+  - La liste de tout ce qui donne une identité visuelle m'a été présentée, en six familles : couleurs, polices, icônes et curseurs, moments clés (démarrage, connexion, verrouillage), applications (Konsole, Chrome, VS Code), bureau.
+- **Options présentées et choix** :
+  - **Ambiance** : **sombre partout**, graphite et violet comme les fonds d'écran, avec une variante claire dans les réglages (recommandée, choisie) ; ou sombre et clair au choix, clair le jour.
+  - **Disposition** : **barre flottante en bas**, détachée du bord (recommandée, choisie) ; ou dock et barre en haut ; ou barre en haut seule ; ou la barre actuelle.
+  - **Icônes** : **celles de KDE (Breeze), dossiers violets**, rien à ajouter à l'image (recommandée, choisie) ; ou Papirus sombre.
+- **Mise en œuvre prévue** : deux PR, avec des aperçus montrés avant chacune.
+  1. Couleurs, polices, icônes, Konsole, Chrome, VS Code et disposition du bureau.
+  2. Écrans de démarrage, de connexion, de chargement de la session et de verrouillage.
+- **Comment, d'après le code de KDE** (vérifié le 2026-10-09) :
+  - **couleurs** : un jeu de couleurs « Ankh », dérivé de Breeze sombre (`colors/BreezeDark.colors` de <https://invent.kde.org/plasma/breeze>). Le style Plasma Breeze et les décorations de fenêtres suivent le jeu de couleurs. Chrome et les applications GTK suivent le mode sombre annoncé par le bureau (À VALIDER sur les aperçus) ;
+  - **dossiers violets** : les dossiers de Breeze prennent la couleur d'accent du jeu de couleurs (classe `ColorScheme-Accent` de `icons/places/64/folder.svg`, <https://invent.kde.org/frameworks/breeze-icons> ; couleur fournie par `src/kiconcolors.cpp` de <https://invent.kde.org/frameworks/kiconthemes>). Aucun thème d'icônes à ajouter ;
+  - **barre flottante** : propriété `floating` des panneaux (`shell/scripting/panel.h` et `shell/panelview.cpp` de <https://invent.kde.org/plasma/plasma-workspace>). Plasma la met par défaut, mais la barre est collée au bord sur les captures : un réglage de la base la retire (lequel : À VALIDER) ;
+  - **appliqué à chaque compte** : à chaque ouverture de session, Plasma applique les réglages par défaut du thème global choisi dans l'image (`startkde/startplasma.cpp` de plasma-workspace). Les comptes existants les reçoivent donc aussi, sauf ce que j'ai changé moi-même. Piste pour l'intégration, À VALIDER.
+- **Palette de l'aperçu** (`tests/vm/apercus/Ankh.colors`) : fonds graphite bleuté du logo (`#0d1117`, `#232a35`), texte `#e6edf3`, sélections violet `#8455f0` (texte blanc lisible dessus : contraste 4,6), liens et focus au violet du logo (`#a78bfa`). Konsole : fond du logo et violet d'Ankh (`tests/vm/apercus/Ankh.colorscheme`).
+- **Aperçus (2026-10-09)** : le test en VM applique ces réglages à un compte à part, « ankhapercu », avec les outils de Plasma (`plasma-apply-colorscheme`, `plasma-changeicons`, script de Plasma pour la barre). Ni l'image ni le compte de test ne changent. Captures : bureau avant et après, menu des applications, Dolphin, Konsole, Discover, réglages des couleurs, Chrome. Résultats À VENIR.
+- **Pas encore traité** : polices (Inter, JetBrains Mono : présence dans Fedora À VALIDER), icône de VS Code dans le style d'Ankh, images de `generic-logos` (voir D-034), curseurs, effets.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
 

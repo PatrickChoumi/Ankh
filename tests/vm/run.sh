@@ -19,6 +19,7 @@
 # par le gestionnaire de connexion),
 # Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic). Après chaque
 # capture de Discover, son journal, pour expliquer un message d'erreur (D-028).
+# À l'étape 1, aperçus de l'identité visuelle sur un compte à part (D-037).
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -32,6 +33,7 @@ port=${ANKH_VM_SSH_PORT:-2222}
 ovmf=/usr/share/OVMF
 qemu_pid=
 boot_id=
+autologin_main=no
 
 # Échecs de services propres à la VM de test, avec le message qui les prouve.
 # Tout autre service en échec fait échouer le test.
@@ -72,6 +74,30 @@ vm() {
         root@127.0.0.1 "$@"
 }
 
+# Copie des fichiers dans la VM, en root, par SSH : vm_copy SOURCE... DESTINATION.
+vm_copy() {
+    scp -q -i "$work/id_ed25519" -P "$port" \
+        -o BatchMode=yes -o ConnectTimeout=5 -o LogLevel=ERROR \
+        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        "${@:1:$#-1}" "root@127.0.0.1:${!#}"
+}
+
+# Commande dans la session graphique d'un compte (par son gestionnaire
+# systemd), attendue jusqu'au bout. Les arguments sont protégés du shell de
+# la VM, car ssh les recolle.
+in_session() {
+    local user=$1
+    shift
+    vm "systemd-run --machine=$user@ --user --wait --pipe --quiet $(printf '%q ' "$@")"
+}
+
+# Application lancée dans la session graphique d'un compte, sans l'attendre.
+launch_in_session() {
+    local user=$1
+    shift
+    vm "systemd-run --machine=$user@ --user --collect --quiet $(printf '%q ' "$@")"
+}
+
 # Attend que la VM réponde en SSH après un nouveau démarrage.
 wait_boot() {
     local old=$boot_id deadline=$((SECONDS + 900)) id
@@ -87,10 +113,9 @@ wait_boot() {
     done
 }
 
-# Capture l'écran de la VM en PNG par le moniteur de QEMU (commande screendump).
-screenshot() {
-    local file="$work/captures/$1.png"
-    python3 - "$work/monitor.sock" "screendump $file -f png" << 'PY'
+# Commande au moniteur de QEMU : capture d'écran, touche du clavier…
+monitor() {
+    python3 - "$work/monitor.sock" "$1" << 'PY'
 import socket, sys
 sock = socket.socket(socket.AF_UNIX)
 sock.settimeout(30)
@@ -109,17 +134,24 @@ sock.sendall(sys.argv[2].encode() + b"\n")
 until_prompt()  # nouvelle invite : la commande est terminée
 sock.close()
 PY
+}
+
+# Capture l'écran de la VM en PNG (commande screendump du moniteur de QEMU).
+screenshot() {
+    local file="$work/captures/$1.png"
+    monitor "screendump $file -f png"
     [[ -s $file ]] || die "capture d'écran impossible : $file"
     echo "Capture : $file"
 }
 
-# Attend le bureau Plasma du compte de test, puis le capture.
+# Attend le bureau Plasma d'un compte (par défaut, le compte de test), puis
+# le capture.
 wait_desktop() {
-    local name=$1 deadline=$((SECONDS + 180))
-    until vm pgrep -u ankhvm -x plasmashell > /dev/null; do
+    local name=$1 user=${2:-ankhvm} deadline=$((SECONDS + 180))
+    until vm pgrep -u "$user" -x plasmashell > /dev/null; do
         if ((SECONDS >= deadline)); then
             screenshot "$name-echec"
-            die "le bureau Plasma ne démarre pas pour le compte de test"
+            die "le bureau Plasma ne démarre pas pour le compte $user"
         fi
         sleep 5
     done
@@ -127,12 +159,25 @@ wait_desktop() {
     screenshot "$name"
 }
 
-# Connexion automatique du compte de test, pour le gestionnaire de connexion
+# Crée un compte de test. Ni verrouillage ni écran éteint pendant le test
+# (sinon les captures montrent l'écran de verrouillage, puis un écran noir).
+# Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
+# valables après chaque basculement.
+add_test_account() {
+    local user=$1 comment=$2
+    vm "useradd -m -c '$comment' $user &&
+        install -d -o $user -g $user /home/$user/.config &&
+        printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/$user/.config/kscreenlockerrc &&
+        printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/$user/.config/powerdevilrc &&
+        chown $user:$user /home/$user/.config/kscreenlockerrc /home/$user/.config/powerdevilrc"
+}
+
+# Connexion automatique d'un compte (par défaut, le compte de test), pour le gestionnaire de connexion
 # actif : Plasma Login (Fedora 44 KDE) ou SDDM. Plasma Login, dérivé de SDDM,
 # lit la même section [Autologin] dans /etc/plasmalogin.conf ou
 # /etc/plasmalogin.conf.d/ (https://wiki.archlinux.org/title/Plasma_Login_Manager).
 configure_autologin() {
-    local dm dir
+    local user=${1:-ankhvm} dm dir
     dm=$(vm systemctl show -p Id --value display-manager.service)
     echo "Gestionnaire de connexion : $dm"
     case $dm in
@@ -140,11 +185,15 @@ configure_autologin() {
         sddm.service) dir=/etc/sddm.conf.d ;;
         *) die "gestionnaire de connexion inattendu : $dm" ;;
     esac
-    vm "mkdir -p $dir && printf '[Autologin]\nUser=ankhvm\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
+    vm "mkdir -p $dir && printf '[Autologin]\nUser=$user\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
     if [[ $dm == plasmalogin.service ]]; then
         # Le dossier .conf.d est parfois ignoré (https://bugs.kde.org/show_bug.cgi?id=522006) :
-        # le fichier principal est écrit aussi s'il n'existe pas.
-        vm "test -e /etc/plasmalogin.conf || cp $dir/ankh-vmtest.conf /etc/plasmalogin.conf"
+        # le fichier principal est écrit aussi s'il n'existe pas, ou s'il
+        # vient déjà de ce test.
+        if [[ $autologin_main == yes ]] || ! vm test -e /etc/plasmalogin.conf; then
+            vm cp "$dir/ankh-vmtest.conf" /etc/plasmalogin.conf
+            autologin_main=yes
+        fi
     fi
     vm systemctl restart display-manager.service
 }
@@ -377,6 +426,65 @@ open_discover() {
     fi
 }
 
+# D-037 : aperçus de l'identité visuelle d'Ankh, avant de l'intégrer à
+# l'image. Appliqués avec les outils de Plasma à un compte à part,
+# « ankhapercu » : ni l'image ni le compte de test ne changent.
+#   - Sombre partout : jeu de couleurs « Ankh », graphite et violet
+#     (tests/vm/apercus/Ankh.colors). Le style Plasma Breeze et les
+#     décorations de fenêtres suivent le jeu de couleurs.
+#   - Icônes Breeze sombres : leurs dossiers prennent la couleur d'accent
+#     (classe ColorScheme-Accent de icons/places/64/folder.svg,
+#     https://invent.kde.org/frameworks/breeze-icons).
+#   - Barre flottante : propriété « floating » des panneaux
+#     (shell/scripting/panel.h de https://invent.kde.org/plasma/plasma-workspace).
+#   - Konsole aux couleurs d'Ankh (tests/vm/apercus/Ankh.colorscheme).
+preview_identity() {
+    local user=ankhapercu apercus=$repo/tests/vm/apercus
+    log "Aperçus de l'identité visuelle (D-037), sur le compte à part « $user »"
+    add_test_account "$user" 'Aperçu Ankh'
+    vm "install -d -o $user -g $user /home/$user/.local /home/$user/.local/share \
+        /home/$user/.local/share/color-schemes /home/$user/.local/share/konsole"
+    vm_copy "$apercus/Ankh.colors" "/home/$user/.local/share/color-schemes/"
+    vm_copy "$apercus/Ankh.colorscheme" "$apercus/Ankh.profile" "/home/$user/.local/share/konsole/"
+    vm "printf '[Desktop Entry]\nDefaultProfile=Ankh.profile\n' > /home/$user/.config/konsolerc &&
+        chown -R $user:$user /home/$user/.local /home/$user/.config && restorecon -R /home/$user"
+    configure_autologin "$user"
+    wait_desktop 1-apercu-avant "$user"
+    # Le centre d'accueil de KDE s'ouvre à la première connexion : il est
+    # fermé, pour voir le bureau.
+    if vm pgrep -u "$user" -x plasma-welcome > /dev/null; then
+        vm pkill -u "$user" -x plasma-welcome
+    fi
+    in_session "$user" plasma-apply-colorscheme Ankh
+    in_session "$user" plasma-apply-desktoptheme default
+    in_session "$user" /usr/libexec/plasma-changeicons breeze-dark
+    in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell \
+        evaluateScript s 'panels().forEach(function (p) { p.floating = true; })'
+    sleep 15
+    screenshot 1-apercu-bureau
+    in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
+    sleep 5
+    screenshot 1-apercu-menu
+    monitor 'sendkey esc'
+    launch_in_session "$user" dolphin "/home/$user"
+    sleep 15
+    screenshot 1-apercu-dolphin
+    launch_in_session "$user" konsole
+    sleep 10
+    screenshot 1-apercu-konsole
+    launch_in_session "$user" plasma-discover
+    sleep 30
+    screenshot 1-apercu-discover
+    launch_in_session "$user" systemsettings kcm_colors
+    sleep 20
+    screenshot 1-apercu-reglages-couleurs
+    launch_in_session "$user" google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
+    sleep 30
+    screenshot 1-apercu-chrome
+    # Retour au compte de test pour la suite.
+    configure_autologin
+}
+
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
 # GitHub (politique WebAppInstallForceList) et leur crée un lanceur dans le
 # menu. Chrome doit avoir été ouvert une fois, avec internet.
@@ -465,16 +573,7 @@ check_installed
 screenshot 1-ecran-de-connexion
 
 log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
-# Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
-# valables après chaque basculement, pour capturer le bureau de chaque image.
-# ssh recolle les arguments : la commande est passée en une seule chaîne.
-vm "useradd -m -c 'Compte de test Ankh' ankhvm"
-# Ni verrouillage ni écran éteint pendant le test (sinon les captures montrent
-# l'écran de verrouillage, puis un écran noir) : réglages du compte de test.
-vm "install -d -o ankhvm -g ankhvm /home/ankhvm/.config &&
-    printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/ankhvm/.config/kscreenlockerrc &&
-    printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/ankhvm/.config/powerdevilrc &&
-    chown ankhvm:ankhvm /home/ankhvm/.config/kscreenlockerrc /home/ankhvm/.config/powerdevilrc"
+add_test_account ankhvm 'Compte de test Ankh'
 configure_autologin
 wait_desktop 1-bureau
 open_discover 1-discover-mises-a-jour
@@ -489,6 +588,7 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_abo
 sleep 20
 screenshot 1-a-propos
 check_vscode
+preview_identity
 
 log "2/4 Basculement vers une autre version : $other"
 vm bootc switch "$other"
