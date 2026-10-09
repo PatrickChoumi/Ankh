@@ -1142,7 +1142,8 @@
   - **Konsole** : `Font`, `ColorScheme`, `TerminalMargin` (`src/profile/Profile.cpp`), `Opacity` et `Blur` (`src/colorscheme/ColorScheme.cpp`), dans <https://invent.kde.org/utilities/konsole> ;
   - **message de bienvenue de Toolbx** : `/etc/profile.d/toolbox.sh` (paquet `toolbox` 0.3) ne l'affiche pas si `~/.config/toolbox/host-welcome-shown` existe. Ce fichier vide est donné à chaque nouveau compte par `/etc/skel`.
 - **Mise en œuvre** (`build_files/build.sh`, `build_files/plasma/ankh-barre.js`, `build_files/files`) :
-  - la construction échoue si un réglage de la base a changé : jeu de couleurs d'« Ankh Sombre » différent de Breeze sombre, disposition absente, `/etc/xdg/breezerc` ou `/etc/xdg/konsolerc` déjà présents, message de Toolbx lu autrement ;
+  - la construction échoue si un réglage de la base a changé : jeu de couleurs d'« Ankh Sombre » différent de Breeze sombre, disposition absente, `/etc/xdg/breezerc` déjà présent, profil Konsole déjà fixé, message de Toolbx lu autrement ;
+  - `/etc/xdg/konsolerc` existe dans la base : il vient du paquet `konsole-part` de Fedora (26.08.1 : barre de menus masquée, historique dans le cache). Vu par la construction de la CI le 2026-10-09, qui s'est arrêtée comme prévu. Il est gardé, et le profil Ankh y est seulement ajouté ;
   - les fichiers de réglages écrits sont rendus lisibles par tous les comptes (KConfig peut les créer pour leur seul propriétaire).
 - **Pas encore traité** :
   - écrans de démarrage, de connexion, de chargement de la session et de verrouillage (deuxième partie de D-037) ;

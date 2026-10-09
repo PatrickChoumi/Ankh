@@ -64,6 +64,7 @@ done
 attendu "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
 attendu "Ombres des fenêtres" ShadowVeryLarge --file breezerc --group Common --key ShadowSize
 attendu "Profil Konsole par défaut" Ankh.profile --file konsolerc --group 'Desktop Entry' --key DefaultProfile
+attendu "Barre de menus de Konsole (réglage de Fedora gardé)" Disabled --file konsolerc --group MainWindow --key MenuBar
 attendu "Couleurs du profil Konsole" Ankh --file /usr/share/konsole/Ankh.profile --group Appearance --key ColorScheme
 [[ -f /usr/share/konsole/Ankh.colorscheme ]] || echec "couleurs Konsole d'Ankh absentes"
 

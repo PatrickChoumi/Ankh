@@ -397,16 +397,26 @@ done
 # Breeze plus doux : menus translucides et floutés (MenuOpacity, flou demandé
 # par kstyle/breezestyle.cpp et breezeblurhelper.cpp), ombres des fenêtres
 # plus grandes et plus légères (kdecoration/breezesettingsdata.kcfg de
-# https://invent.kde.org/plasma/breeze). Konsole s'ouvre avec le profil Ankh.
-for f in /etc/xdg/breezerc /etc/xdg/konsolerc; do
-    if [[ -e "${f}" ]]; then
-        echo "${f} existe déjà dans la base : réglage à fusionner à la main" >&2
-        exit 1
-    fi
-done
+# https://invent.kde.org/plasma/breeze).
+if [[ -e /etc/xdg/breezerc ]]; then
+    echo "/etc/xdg/breezerc existe déjà dans la base : réglage à fusionner à la main" >&2
+    exit 1
+fi
 kwriteconfig6 --file /etc/xdg/breezerc --group Style --key MenuOpacity 85
 kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowSize ShadowVeryLarge
 kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowStrength 160
+# Konsole s'ouvre avec le profil Ankh. /etc/xdg/konsolerc vient du paquet
+# konsole-part de Fedora (barre de menus masquée, historique) : il est gardé,
+# le profil par défaut y est seulement ajouté, s'il n'en fixe pas déjà un.
+if [[ -e /etc/xdg/konsolerc ]]; then
+    echo "/etc/xdg/konsolerc de la base ($(rpm -qf /etc/xdg/konsolerc)), gardé :"
+    cat /etc/xdg/konsolerc
+    profil="$(kreadconfig6 --file /etc/xdg/konsolerc --group 'Desktop Entry' --key DefaultProfile)"
+    if [[ -n "${profil}" ]]; then
+        echo "/etc/xdg/konsolerc fixe déjà le profil « ${profil} » : réglage à fusionner à la main" >&2
+        exit 1
+    fi
+fi
 kwriteconfig6 --file /etc/xdg/konsolerc --group 'Desktop Entry' --key DefaultProfile Ankh.profile
 # Lisibles par tous les comptes : KConfig peut créer ses fichiers pour leur
 # seul propriétaire (root ici).
