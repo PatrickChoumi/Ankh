@@ -44,7 +44,7 @@
 | D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
-| D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
+| D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté ; réduction de la taille des mises à jour en phase 10) |
 | D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER ; « Update Issue » : causes trouvées ; option A choisie pour les micrologiciels, défaut suivi chez KDE) |
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
@@ -57,6 +57,7 @@
 | D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (aperçus validés le 2026-10-09 ; intégré dans l'image avec D-039) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
+| D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
 
 ---
 
@@ -651,6 +652,7 @@
   - Passer à l'image publiée qui contient le module Discover (D-028) a demandé 2 couches, soit **38,7 Mo**.
   - Le module ne pèse que 256 Kio. Le reste vient probablement de la base de données RPM, réécrite dès qu'on installe un paquet (supposé, À VALIDER).
   - Avec Chrome (140 Mio), une mise à jour d'Ankh sur la même base devrait donc coûter de l'ordre de 180 Mo. À mesurer après la fusion de Chrome.
+- **Réduction de la taille des mises à jour : en phase 10** (mon choix du 2026-10-09). Mesurée à 1,2 Go depuis VLC et OnlyOffice (D-035). La piste (découper l'image en couches qui ne changent pas à chaque fois) attend la phase 10, comme le veut la règle « on optimise après avoir vécu avec le système ».
 
 ## D-028 — Mises à jour du système dans Discover (complète D-025)
 
@@ -1158,3 +1160,16 @@
 - **Vérification** :
   - `just test`, Test 14 (`tests/identite.sh`) : polices installées, thème global et jeu de couleurs, barre des trois thèmes globaux, Breeze, Konsole et message de Toolbx. Les réglages sont lus par un compte ordinaire, dans l'ordre des dossiers de KDE sur Fedora ;
   - test en VM (`tests/vm/run.sh`, `check_identity`) : dans la session du compte de test, Plasma a bien appliqué le jeu de couleurs, le thème global, les icônes, la police, l'opacité des menus et le profil Konsole. Captures : bureau, menu, Dolphin, Konsole, réglages des couleurs, et toutes les autres applications.
+
+## D-040 — La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route)
+
+- **Statut** : DÉCIDÉ (2026-10-09), mon choix : « Pour safezone, on envisage ça à la fin. Continuons d'abord le plan. »
+- **Décision** :
+  - La phase 4 (protection : safezone adapté et intégré, D-026 et D-030) garde son numéro et son contenu, mais se fait en dernier, après la phase 10. Ordre : 3, 5, 6, 7, 8, 9, 10, puis 4.
+  - Ankh V1 est déclarée après la phase 4 : la V1 comprend toujours la protection, comme dans le plan d'origine.
+- **Conséquences** :
+  - La bascule sur ma machine (phase 9) se fait sans safezone. Le « filtrage » sort de sa checklist matériel et se vérifie sur ma machine avec la phase 4.
+  - Entre la phase 9 et la phase 4, Ankh n'a pas de protection contre le contenu pour adultes. L'exigence de ANKH-SPEC reste ; seul son moment change.
+  - La conception détaillée (D-026, D-030) reste À DÉCIDER au début de la phase 4.
+- **Raisons** : avancer d'abord sur le quotidien, le gaming, la cybersécurité, les labs, la sauvegarde et la bascule.
+- **Vérification** : la feuille de route de CLAUDE.md (§5) suit cet ordre.

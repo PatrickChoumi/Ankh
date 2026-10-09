@@ -44,7 +44,8 @@
     - En cours ([#11](https://github.com/PatrickChoumi/Ankh/pull/11), à fusionner seulement si les captures me plaisent) :
       - « Update Issue » dans Discover (D-028) : causes trouvées ; celle du test est corrigée ; pour le défaut de Discover, j'ai choisi l'option A (il est déjà suivi chez KDE, bug 523258) ;
       - l'identité visuelle validée (D-037) et une interface douce, au niveau de Windows 11 et de macOS (D-039), intégrées dans l'image.
-    - Ensuite : écrans de démarrage, de connexion et de verrouillage aux couleurs d'Ankh (deuxième partie de D-037).
+    - Ensuite : écrans de démarrage, de connexion et de verrouillage aux couleurs d'Ankh (deuxième partie de D-037), puis la phase 5 (gaming), qui attend mes réponses aux questions 6 à 9 de ANKH-SPEC.md.
+  - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).
@@ -130,7 +131,7 @@ Elles valent pour moi comme pour tout assistant. Elles ne se contournent pas : s
 
 ## 5. Feuille de route
 
-Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivante tant qu'il n'est pas rempli. Tout se teste **en VM avant la vraie machine**.
+Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivante tant qu'il n'est pas rempli. Tout se teste **en VM avant la vraie machine**. Les phases se font dans l'ordre du tableau : la phase 4 vient en dernier (D-040).
 
 | Phase | Objectif | Terminée quand |
 |---|---|---|
@@ -138,13 +139,13 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | **1. Base et chaîne de build** *(terminée le 2026-10-07)* | Images génériques construites automatiquement | D-005, D-017 et D-018 tranchées. Chaque variante de D-021 est construite par la CI, testée, signée et publiée, sans toucher ma machine |
 | **2. Premier démarrage en VM, dans le cloud** *(terminée le 2026-10-07)* | Prouver le modèle image-based sans rien télécharger chez moi (D-027) | Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, puis basculement vers une autre version, retour arrière (`bootc rollback`) et retour à l'image de base, tous réussis automatiquement. Résultats notés dans D-004. La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI |
 | **3. Applications et dev** *(prochaine)* | Le quotidien et le dev fonctionnent sans terminal pour le quotidien (D-025) | Chrome par défaut et Firefox retiré (D-023). VLC, OnlyOffice, Claude et GitHub présents (D-024). Mises à jour par l'interface. VS Code et le conteneur dev se recréent depuis le dépôt (D-012). Tests en CI et en VM cloud |
-| **4. Protection** | safezone adapté et intégré (D-026) | Conception tranchée dans DECISIONS.md. Les tests de safezone passent sur l'image Ankh. Les contournements propres au modèle image-based (`bootc switch`, retour arrière, `/etc`) sont traités ou documentés |
 | **5. Gaming** | Mes jeux fonctionnent | Chaque jeu de ANKH-SPEC Q6 testé. Manettes, VRR et multi-écran vérifiés si concernés (D-011). Test final sur la vraie machine en phase 9 |
 | **6. Cyber** | Kali isolé | Test d'isolation réussi : le `~/.ssh` de l'hôte est inaccessible depuis le conteneur. Solution « réseau bas niveau » tranchée (D-013) |
 | **7. Labs** | VMs de lab et de malware isolées | Depuis une VM de lab, l'hôte et le réseau local sont injoignables. La restauration de snapshot fonctionne (D-014) |
 | **8. Sauvegarde et récupération** | Pouvoir perdre le disque sans rien perdre | D-019 tranchée. Exercice complet de récupération réussi en VM, en suivant README.md |
-| **9. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Installation en ligne avec LUKS, même lente (D-027). Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux, filtrage. Une semaine d'usage sans retour arrière définitif |
-| **10. Vivre avec Ankh** | Corriger selon mes vraies irritations | Plusieurs semaines d'usage. Irritations notées, puis traitées une par une. Taille des mises à jour mesurée (D-027). → **Ankh V1** |
+| **9. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Installation en ligne avec LUKS, même lente (D-027). Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux (le filtrage vient avec la phase 4, D-040). Une semaine d'usage sans retour arrière définitif |
+| **10. Vivre avec Ankh** | Corriger selon mes vraies irritations | Plusieurs semaines d'usage. Irritations notées, puis traitées une par une. Taille des mises à jour mesurée et réduite (D-027) |
+| **4. Protection** *(déplacée à la fin, D-040)* | safezone adapté et intégré (D-026, D-030) | Conception tranchée dans DECISIONS.md. Les tests de safezone passent sur l'image Ankh. Les contournements propres au modèle image-based (`bootc switch`, retour arrière, `/etc`) sont traités ou documentés. Filtrage vérifié sur ma machine. → **Ankh V1** |
 
 **Repoussé hors V1** : le matériel exclu par D-021 (NVIDIA ancien), distribution publique, ISO custom (l'ISO hors ligne envisagée par D-027 est abandonnée), CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
 

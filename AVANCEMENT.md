@@ -12,13 +12,13 @@
 | 1. Base et chaîne de build | ✅ Terminée le 2026-10-07 |
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ⏳ En cours depuis le 2026-10-08 |
-| 4. Protection (safezone) | À faire |
-| 5. Gaming | À faire (questions matérielles à répondre avant) |
+| 5. Gaming | À faire (questions 6 à 9 à répondre avant) |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
 | 9. Bascule sur ma vraie machine | À faire |
-| 10. Vivre avec Ankh, puis V1 | À faire |
+| 10. Vivre avec Ankh | À faire |
+| 4. Protection (safezone), puis V1 | À faire, en dernier (D-040) |
 
 ---
 
@@ -205,15 +205,16 @@
 
 ### Phases suivantes
 
-- **Phase 4 — Protection** : concevoir puis intégrer safezone dans Ankh (D-026), en versions avec et sans protection (D-030). Il faudra traiter le basculement d'image (surtout vers une version sans protection), le retour arrière et `/etc`.
-- **Phases 5 à 7 — Gaming, Cyber, Labs** : elles demandent mes réponses aux questions matérielles Q1 à Q11 (ANKH-SPEC.md §6).
+- **Phases 5 à 7 — Gaming, Cyber, Labs** : elles demandent mes réponses aux questions 6 à 9 de ANKH-SPEC.md (jeux et anticheat, IA locale, analyse de malware, Wi-Fi offensif).
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
   - sauvegarder ma distro actuelle ;
   - installer Ankh avec LUKS ;
-  - valider le matériel (GPU, son, réseau, veille, écrans, jeux, filtrage) ;
+  - valider le matériel (GPU, son, réseau, veille, écrans, jeux) ;
   - utiliser Ankh une semaine.
-- **Phase 10 — Vivre avec Ankh** : corriger les irritations, mesurer la taille réelle des mises à jour, puis sortir la V1.
+  - Avant : répondre aux questions 1 à 5 et 10 à 12 de ANKH-SPEC.md.
+- **Phase 10 — Vivre avec Ankh** : corriger les irritations, mesurer puis réduire la taille des mises à jour (mon choix du 2026-10-09, D-027).
+- **Phase 4 — Protection, en dernier** (mon choix du 2026-10-09, D-040) : concevoir puis intégrer safezone dans Ankh (D-026), en versions avec et sans protection (D-030). Il faudra traiter le basculement d'image (surtout vers une version sans protection), le retour arrière et `/etc`. Le filtrage se vérifie alors sur ma machine. Ensuite : Ankh V1.
 
 ### Points à vérifier (À VALIDER)
 
@@ -232,10 +233,8 @@
 
 ## Ce que je dois faire
 
-1. **Dire à Claude** :
-   - si la taille des mises à jour (1,2 Go) doit être réduite maintenant ou en phase 10 (D-027) ;
-   - si l'interface d'Ankh sur les captures de la PR #11 me plaît, avant de fusionner (D-039).
+1. **Dire à Claude** si l'interface d'Ankh sur les captures de la PR #11 me plaît, avant de fusionner (D-039).
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran. Surtout les aperçus de l'identité visuelle (`1-apercu-…`) : dire si je les valide avant leur intégration (D-037).
+3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-5. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
+5. **Avant la phase 5** : répondre aux questions 6 à 9 de ANKH-SPEC.md (jeux et leur anticheat, IA locale, analyse de malware, Wi-Fi offensif), et aux détails du gaming (§4.3 : autres launchers, manettes, écrans, OBS, mode console).
