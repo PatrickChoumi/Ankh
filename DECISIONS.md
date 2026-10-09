@@ -48,6 +48,7 @@
 | D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER) |
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
+| D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
 
 ---
 
@@ -681,3 +682,23 @@
   - Le niveau de difficulté reste celui de safezone : de la friction contre l'impulsion, pas une impossibilité, puisque je garde les droits administrateur (D-025).
 - **Raisons** : pouvoir installer Ankh avec ou sans protection, selon la machine ou l'usage.
 - **Vérification** : en phase 4, tests de safezone sur les versions protégées, et test de la parade contre le basculement vers une version sans protection.
+
+## D-031 — Aucune mise à jour automatique : je décide quand tout se met à jour
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Complète D-010 (pas de redémarrage automatique), D-027 (rythme choisi par moi) et D-028 (Discover).
+- **Contexte** : `kinoite-main` active trois mises à jour automatiques. Source : `build_files/post-install.sh` de <https://github.com/ublue-os/main> :
+  - le téléchargement du système en arrière-plan (`rpm-ostreed-automatic.timer`, politique `stage`) ;
+  - les mises à jour Flatpak du système (`flatpak-system-update.timer`) ;
+  - les mises à jour Flatpak de chaque utilisateur (`flatpak-user-update.timer`).
+- **Décision** :
+  - Sur la machine, **rien ne se télécharge ni ne s'installe sans moi** : ni le système, ni les applications Flatpak, ni le conteneur de dev.
+  - Les trois timers sont masqués dans l'image. La politique de rpm-ostree passe à `none` (`man rpm-ostreed.conf` : « "none" disables automatic updates »).
+  - Discover me **prévient** qu'une mise à jour existe (D-028), et je la lance quand je le décide.
+  - Le conteneur de dev se met à jour seulement quand je le lance, par un raccourci du menu (à faire avec le conteneur de dev, D-012). Ce choix remplace ma réponse du 2026-10-09, qui demandait une mise à jour automatique chaque semaine.
+  - Côté CI, rien ne change pour moi : la reconstruction hebdomadaire de l'image (D-023) et les PR de Renovate (D-017) **préparent** des mises à jour. Rien n'arrive sur la machine tant que je ne l'ai pas demandé.
+- **Raisons** : garder la main sur ma connexion lente (D-027) et sur le moment où le système change.
+- **Conséquence assumée** : si je tarde à mettre à jour, les correctifs de sécurité attendent, ceux de Chrome compris. La notification de Discover est là pour me le rappeler.
+- **Vérification** :
+  - `just test` : les trois timers sont masqués et la politique est `none` ;
+  - `tests/vm/run.sh` : sur le système démarré, `rpm-ostreed-automatic.timer` est masqué ;
+  - la notification de Discover reste À VALIDER à l'écran.

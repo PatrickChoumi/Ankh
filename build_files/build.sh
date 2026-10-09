@@ -73,3 +73,14 @@ cat > /etc/xdg/kdeglobals << 'KDE'
 [General]
 BrowserApplication=google-chrome.desktop
 KDE
+
+# D-031 : aucune mise à jour automatique sur la machine. Je décide quand mettre
+# à jour ; Discover me prévient qu'une mise à jour existe (D-028).
+# kinoite-main active ces timers (ublue-os/main, build_files/post-install.sh) :
+# téléchargement du système en arrière-plan, mises à jour Flatpak du système
+# et de chaque utilisateur. Ils sont masqués, et la politique de rpm-ostree
+# passe à « none » (man rpm-ostreed.conf : « "none" disables automatic updates »).
+systemctl mask rpm-ostreed-automatic.timer flatpak-system-update.timer
+systemctl --global mask flatpak-user-update.timer
+sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=none/' /etc/rpm-ostreed.conf
+grep -qx 'AutomaticUpdatePolicy=none' /etc/rpm-ostreed.conf

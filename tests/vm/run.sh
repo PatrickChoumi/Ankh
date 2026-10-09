@@ -176,7 +176,8 @@ check_ankh() {
 }
 
 # Vérifie le contenu propre à l'image installée (absent de l'image publiée
-# tant que la PR n'est pas fusionnée) : version (D-028), Chrome et Firefox (D-023).
+# tant que la PR n'est pas fusionnée) : version (D-028), Chrome et Firefox (D-023),
+# pas de mise à jour automatique (D-031).
 check_installed() {
     local chrome
     [[ $(booted version) == "$image_version" ]] || die "le système démarré ne porte pas la version $image_version (D-028)"
@@ -185,6 +186,9 @@ check_installed() {
     echo "Chrome : $chrome"
     # rpm -q renvoie 1 quand le paquet est absent ; tout autre code est un échec.
     [[ $(vm 'rpm -q firefox > /dev/null; echo $?') == 1 ]] || die "Firefox est présent, ou son état est inconnu"
+    # D-031 : rien ne se télécharge ni ne s'installe sans moi.
+    [[ $(vm systemctl is-enabled rpm-ostreed-automatic.timer) == masked ]] ||
+        die "le téléchargement automatique du système n'est pas désactivé (D-031)"
 }
 
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"
