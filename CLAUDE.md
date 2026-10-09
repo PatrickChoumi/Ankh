@@ -36,9 +36,11 @@
   - Fait ([#7](https://github.com/PatrickChoumi/Ankh/pull/7) fusionnée) : l'habillage Ankh sur le bureau : nom, logo, fonds d'écran (D-033).
   - Fait ([#8](https://github.com/PatrickChoumi/Ankh/pull/8) fusionnée) : plus rien de Fedora à l'écran, démarrage compris, et une collection de fonds d'écran (D-034).
   - Fait ([#9](https://github.com/PatrickChoumi/Ankh/pull/9) fusionnée) : VLC et OnlyOffice dans l'image, LibreOffice absent, Claude et GitHub dans Chrome (D-035) ; les mises à jour s'appliquent de nouveau au redémarrage (D-004).
-  - En cours : les dernières versions LTS de Node.js et de Java dans le conteneur de dev (D-038).
+  - En cours ([#10](https://github.com/PatrickChoumi/Ankh/pull/10)) :
+    - les dernières versions LTS de Node.js et de Java dans le conteneur de dev (D-038) ;
+    - un seul Ankh : VS Code dans le menu dès l'installation, prêt au premier clic, sans « ankh-dev » à gérer (D-036) ;
+    - corrections vues sur les captures : logo et variante de « À propos », écran de démarrage graphique (D-034).
   - Ensuite :
-    - un seul Ankh : VS Code dans le menu dès l'installation, sans « ankh-dev » à gérer (D-036) ;
     - l'identité visuelle d'Ankh (thème sombre, couleurs, icônes, barre flottante), avec des aperçus avant intégration (D-037, à écrire).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
