@@ -15,7 +15,8 @@
 # Chrome qui démarre et Firefox absent (D-023).
 #
 # Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
-# connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement),
+# connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement
+# par le gestionnaire de connexion),
 # Discover et Chrome.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
@@ -123,6 +124,28 @@ wait_desktop() {
     done
     sleep 20 # le temps que le bureau finisse de s'afficher
     screenshot "$name"
+}
+
+# Connexion automatique du compte de test, pour le gestionnaire de connexion
+# actif : Plasma Login (Fedora 44 KDE) ou SDDM. Plasma Login, dérivé de SDDM,
+# lit la même section [Autologin] dans /etc/plasmalogin.conf ou
+# /etc/plasmalogin.conf.d/ (https://wiki.archlinux.org/title/Plasma_Login_Manager).
+configure_autologin() {
+    local dm dir
+    dm=$(vm systemctl show -p Id --value display-manager.service)
+    echo "Gestionnaire de connexion : $dm"
+    case $dm in
+        plasmalogin.service) dir=/etc/plasmalogin.conf.d ;;
+        sddm.service) dir=/etc/sddm.conf.d ;;
+        *) die "gestionnaire de connexion inattendu : $dm" ;;
+    esac
+    vm "mkdir -p $dir && printf '[Autologin]\nUser=ankhvm\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
+    if [[ $dm == plasmalogin.service ]]; then
+        # Le dossier .conf.d est parfois ignoré (https://bugs.kde.org/show_bug.cgi?id=522006) :
+        # le fichier principal est écrit aussi s'il n'existe pas.
+        vm "test -e /etc/plasmalogin.conf || cp $dir/ankh-vmtest.conf /etc/plasmalogin.conf"
+    fi
+    vm systemctl restart display-manager.service
 }
 
 reboot_vm() {
@@ -257,9 +280,7 @@ log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover et
 # valables après chaque basculement, pour capturer le bureau de chaque image.
 # ssh recolle les arguments : la commande est passée en une seule chaîne.
 vm "useradd -m -c 'Compte de test Ankh' ankhvm"
-vm mkdir -p /etc/sddm.conf.d
-vm "printf '[Autologin]\nUser=ankhvm\nSession=plasma.desktop\n' > /etc/sddm.conf.d/ankh-vmtest.conf"
-vm systemctl restart sddm
+configure_autologin
 wait_desktop 1-bureau
 vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
 sleep 30

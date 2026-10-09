@@ -140,7 +140,7 @@
   - **Captures d'écran (ajout du 2026-10-08, à ma demande)** :
     - QEMU capture l'écran de la VM (`screendump`) :
       - au premier démarrage, l'écran de connexion ;
-      - le bureau KDE d'un compte de test `ankhvm`, connecté automatiquement par SDDM ;
+      - le bureau KDE d'un compte de test `ankhvm`, connecté automatiquement par le gestionnaire de connexion. Sur Fedora 44, c'est **Plasma Login** et non plus SDDM : `sddm.service` n'existe pas dans l'image (constaté en CI le 2026-10-09). Le test règle donc celui que systemd désigne (`display-manager.service`) ;
       - Discover ouvert sur les mises à jour ;
       - Chrome ouvert sur le dépôt ;
       - le bureau après chaque basculement.
