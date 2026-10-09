@@ -29,7 +29,11 @@ mkdir /opt
 google_fpr=EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796
 google_key=/etc/pki/rpm-gpg/google-linux-signing-key.pub
 curl -fsSL https://dl.google.com/linux/linux_signing_key.pub -o "${google_key}"
-fpr=$(gpg --show-keys --with-colons "${google_key}" | awk -F: '/^fpr:/ {print $10; exit}')
+# Dossier temporaire pour gpg : /root pointe vers /var/roothome, qui n'existe
+# pas pendant la construction (« can't create directory '/root/.gnupg' »).
+gnupg_home=$(mktemp -d)
+fpr=$(gpg --homedir "${gnupg_home}" --show-keys --with-colons "${google_key}" | awk -F: '/^fpr:/ {print $10; exit}')
+rm -rf "${gnupg_home}"
 if [[ "${fpr}" != "${google_fpr}" ]]; then
     echo "Clé de Google inattendue : ${fpr} (attendu ${google_fpr})" >&2
     exit 1
