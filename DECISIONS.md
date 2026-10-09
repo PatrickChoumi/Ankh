@@ -29,7 +29,7 @@
 | D-009 | Hôte reproductible : pas de `rpm-ostree install`, pas de `curl \| bash` | DÉCIDÉ |
 | D-010 | Pas de redémarrage automatique | DÉCIDÉ |
 | D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ |
-| D-012 | Environnement dev en conteneur | DÉCIDÉ (outil exact À DÉCIDER) |
+| D-012 | Environnement dev en conteneur | DÉCIDÉ (précisé par D-032) |
 | D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ |
 | D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
 | D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
@@ -49,6 +49,7 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (extensions VS Code PROPOSÉES — À VALIDER) |
 
 ---
 
@@ -711,3 +712,52 @@
   - `just test` : les trois timers sont masqués et la politique est `none` ;
   - `tests/vm/run.sh` : sur le système démarré, `rpm-ostreed-automatic.timer` est masqué ;
   - la notification de Discover reste À VALIDER à l'écran.
+
+## D-032 — Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur
+
+- **Statut** : DÉCIDÉ (2026-10-09), d'après mes réponses. Précise D-012 (outil et contenu) et D-024 (VS Code). La liste d'extensions VS Code est PROPOSÉE — À VALIDER par moi.
+- **Mes choix (2026-10-09)** :
+  - Le dev se fait dans un conteneur, comme prévu par D-012, avec des outils **à la pointe**.
+  - **Base : Fedora**, de la même famille que le système. VS Code est la version officielle de Microsoft.
+  - **Langages et outils** :
+    - Java ;
+    - Python ;
+    - JavaScript et TypeScript ;
+    - C et C++ ;
+    - les bases de données ;
+    - « tout le nécessaire pour un fullstack ».
+  - **VS Code est installé dans le conteneur.** Il voit directement les outils et apparaît dans le menu de KDE.
+  - **Mises à jour** : quand je le décide (D-031).
+- **Mise en œuvre prévue** (prochaine PR, après celle de Chrome) :
+  - **Outil** : distrobox, déjà fourni par `kinoite-main`. Un fichier `distrobox assemble` crée le conteneur à ma première connexion et ajoute VS Code au menu (`exported_apps`). Source : <https://github.com/89luca89/distrobox/blob/main/docs/usage/distrobox-assemble.md>.
+  - **Image** `ghcr.io/patrickchoumi/ankh-dev` :
+    - construite, testée et signée par notre CI, à partir de l'image officielle `quay.io/fedora/fedora-toolbox:44` ;
+    - reconstruite chaque semaine, pour que la création ou la recréation du conteneur parte de versions récentes.
+  - **Contenu prévu** :
+    - outils communs : git, GitHub CLI (`gh`), make, CMake, Ninja ;
+    - C/C++ : GCC, Clang, GDB ;
+    - Python : python3, pip, pipx, uv ;
+    - JavaScript/TypeScript : Node.js, npm ;
+    - Java : la dernière version d'OpenJDK fournie par Fedora (`java-latest-openjdk`), Maven ;
+    - clients de bases de données : PostgreSQL, MariaDB, SQLite, Valkey/Redis ;
+    - VS Code.
+    - Les serveurs de bases de données d'un projet tournent dans des conteneurs Podman. Leur mise en place est à préciser.
+  - **VS Code de Microsoft** :
+    - son dépôt est signé par l'ancienne clé de Microsoft (`BC52 8686 B50D 79E3 39D3 721C EB3E 94AD BE12 29CF`), qui contient des signatures SHA1. Source : <https://learn.microsoft.com/linux/packages> et <https://packages.microsoft.com/keys/README> ;
+    - si la version de RPM de Fedora 44 la refuse, on n'affaiblit **pas** la politique de sécurité de Fedora. On installe alors l'archive officielle de VS Code, vérifiée par son empreinte publiée. À VALIDER à la construction.
+- **Extensions VS Code proposées** (préinstallées à la création du conteneur, À VALIDER par moi) :
+  - interface en français ;
+  - Java : « Extension Pack for Java » ;
+  - Python : « Python » (avec Pylance) ;
+  - C/C++ : « C/C++ Extension Pack » ;
+  - JavaScript/TypeScript : ESLint, Prettier ;
+  - bases de données : SQLTools, avec les pilotes PostgreSQL, MySQL/MariaDB et SQLite ;
+  - Git et GitHub : GitLens, « GitHub Pull Requests » ;
+  - fichiers de configuration : YAML ;
+  - conteneurs : l'extension Docker/Podman de Microsoft ;
+  - API : REST Client.
+  - Leurs mises à jour automatiques seront désactivées : VS Code me prévient, et je décide (D-031).
+- **Vérification** :
+  - en CI, chaque outil répond (`java -version`, `python3 --version`, `node --version`, `gcc --version`, `psql --version`, `code --version`) et chaque extension s'installe ;
+  - en VM, le conteneur se crée à la première connexion et VS Code apparaît dans le menu ;
+  - suppression puis recréation du conteneur à l'identique (D-012).

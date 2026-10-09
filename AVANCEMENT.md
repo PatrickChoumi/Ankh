@@ -96,6 +96,13 @@
 - **Ma question sur Fedora 45** : la procédure prévue est écrite dans D-017.
 - **Premier essai de la PR Chrome** ([#5](https://github.com/PatrickChoumi/Ankh/pull/5)) : la construction a échoué parce que `gpg` ne trouvait pas de dossier où travailler. `/root` n'existe pas pendant la construction d'une image bootc. C'est corrigé avec un dossier temporaire, et vérifié en local avec la vraie clé de Google. La CI tourne de nouveau.
 - **Safezone avec et sans** (D-030, 2026-10-09) : chaque variante existera en version protégée et en version libre. Il faudra empêcher, en phase 4, qu'une machine protégée bascule vers une version libre.
+- **Chrome mesuré** : 140 Mo à télécharger à chaque reconstruction. Mon choix : une reconstruction **chaque lundi**, faite par la CI.
+- **C'est moi qui décide des mises à jour** (D-031, 2026-10-09) : plus aucune mise à jour automatique sur la machine (système, Flatpak, conteneur de dev). Discover me prévient, et je lance la mise à jour quand je veux.
+- **Conteneur de dev** (D-032, 2026-10-09) :
+  - base Fedora ;
+  - Java, Python, JavaScript/TypeScript, C/C++ et bases de données ;
+  - VS Code dans le conteneur, avec des extensions préinstallées (liste proposée, à valider) ;
+  - mises à jour quand je le décide.
 
 ---
 
@@ -111,7 +118,7 @@
 3. **Applications par défaut** (D-024) :
    - VLC et OnlyOffice en Flatpak, préinstallés ;
    - Claude et GitHub en applications web dans Chrome.
-4. **Outils de dev** (D-012) : en attente de mes réponses. Quels langages et outils ? Dans un conteneur dev (prévu) ou dans l'image ? Et VS Code.
+4. **Conteneur de dev** (D-032) : à construire dans la prochaine PR. La liste d'extensions VS Code est à valider.
 5. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -139,6 +146,7 @@
 ## Ce que je dois faire
 
 1. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-2. **Fusionner la PR de Chrome** quand sa CI sera verte, puis regarder les captures d'écran de la VM.
-3. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-4. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
+2. **Fusionner la PR #5** (Chrome, mises à jour manuelles) quand sa CI sera verte, puis regarder les captures d'écran de la VM.
+3. **Valider ou modifier la liste d'extensions VS Code** (D-032).
+4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+5. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.

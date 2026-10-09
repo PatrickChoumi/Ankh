@@ -27,8 +27,14 @@
 
 - **Phase en cours : 3 — Applications et dev** (depuis le 2026-10-08).
   - Fait : les mises à jour du système dans Discover (D-028, [#4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée).
-  - En cours : Chrome dans l'image, navigateur par défaut, et Firefox retiré (D-023).
-  - Ensuite : les applications par défaut (D-024), puis VS Code et le conteneur dev (D-012).
+  - En cours ([#5](https://github.com/PatrickChoumi/Ankh/pull/5)) :
+    - Chrome dans l'image, navigateur par défaut, et Firefox retiré (D-023) ;
+    - reconstruction chaque lundi ;
+    - aucune mise à jour automatique sur la machine (D-031) ;
+    - captures d'écran de la VM.
+  - Ensuite :
+    - le conteneur de dev, avec VS Code et les langages fullstack (D-032) ;
+    - puis VLC et OnlyOffice (D-024).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).
