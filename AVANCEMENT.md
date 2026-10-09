@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-08** (soir).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09**.
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -94,6 +94,8 @@
   - jointes à chaque run du test en VM sur GitHub.
 - **Renovate** : il est installé et tourne, mais ne crée rien. Cause probable : le mode « Silent » de Mend (D-017).
 - **Ma question sur Fedora 45** : la procédure prévue est écrite dans D-017.
+- **Premier essai de la PR Chrome** ([#5](https://github.com/PatrickChoumi/Ankh/pull/5)) : la construction a échoué parce que `gpg` ne trouvait pas de dossier où travailler. `/root` n'existe pas pendant la construction d'une image bootc. C'est corrigé avec un dossier temporaire, et vérifié en local avec la vraie clé de Google. La CI tourne de nouveau.
+- **Safezone avec et sans** (D-030, 2026-10-09) : chaque variante existera en version protégée et en version libre. Il faudra empêcher, en phase 4, qu'une machine protégée bascule vers une version libre.
 
 ---
 
@@ -109,12 +111,12 @@
 3. **Applications par défaut** (D-024) :
    - VLC et OnlyOffice en Flatpak, préinstallés ;
    - Claude et GitHub en applications web dans Chrome.
-4. **VS Code et le conteneur dev** (D-012) : l'outil exact est encore à décider.
+4. **Outils de dev** (D-012) : en attente de mes réponses. Quels langages et outils ? Dans un conteneur dev (prévu) ou dans l'image ? Et VS Code.
 5. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
-- **Phase 4 — Protection** : concevoir puis intégrer safezone dans Ankh (D-026). Il faudra traiter le basculement d'image, le retour arrière et `/etc`.
+- **Phase 4 — Protection** : concevoir puis intégrer safezone dans Ankh (D-026), en versions avec et sans protection (D-030). Il faudra traiter le basculement d'image (surtout vers une version sans protection), le retour arrière et `/etc`.
 - **Phases 5 à 7 — Gaming, Cyber, Labs** : elles demandent mes réponses aux questions matérielles Q1 à Q11 (ANKH-SPEC.md §6).
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
