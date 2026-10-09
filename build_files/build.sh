@@ -172,11 +172,18 @@ fi
 # Le cache d'icônes est refait après ce changement de logos (voir D-033).
 gtk-update-icon-cache --force /usr/share/icons/hicolor
 
+# Le paquet flatpak de Fedora ajoute au premier démarrage le dépôt
+# « Fedora Flatpaks », visible dans Discover. Il est masqué : les applications
+# viennent de Flathub (D-011).
+systemctl mask flatpak-add-fedora-repos.service
+
 # Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
 # remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui
 # de Fedora ; seule son image de filigrane change.
 theme="$(plymouth-set-default-theme)"
 images="$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")"
+# Fedora écrit ce chemin avec « // » : il est normalisé.
+images="$(realpath -m "${images}")"
 if [[ -z "${images}" || ! -d "${images}" ]]; then
     echo "Thème Plymouth « ${theme} » : dossier d'images introuvable (« ${images} »)" >&2
     exit 1

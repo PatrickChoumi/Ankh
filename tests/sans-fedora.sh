@@ -67,17 +67,21 @@ for f in /usr/share/color-schemes/*.colors; do
     fi
 done
 
-# Dépôt Flatpak de Fedora, visible dans Discover
-for f in /etc/flatpak/remotes.d/fedora.flatpakrepo /usr/share/flatpak/remotes.d/fedora.flatpakrepo \
-    /usr/lib/systemd/system/flatpak-add-fedora-repos.service; do
+# Dépôt Flatpak de Fedora, visible dans Discover : aucun fichier de dépôt, et
+# le service qui l'ajoute au premier démarrage est masqué
+for f in /etc/flatpak/remotes.d/fedora.flatpakrepo /usr/share/flatpak/remotes.d/fedora.flatpakrepo; do
     if [[ -e "${f}" ]]; then
         signaler "dépôt Flatpak de Fedora" "${f}"
     fi
 done
+service=flatpak-add-fedora-repos.service
+if [[ -e "/usr/lib/systemd/system/${service}" && "$(readlink "/etc/systemd/system/${service}")" != /dev/null ]]; then
+    signaler "service qui ajoute le dépôt Flatpak de Fedora" "/usr/lib/systemd/system/${service}"
+fi
 
 # Écran de démarrage : le filigrane d'Ankh, dans le thème et dans l'initramfs
 theme="$(plymouth-set-default-theme)"
-images="$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")"
+images="$(realpath -m "$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")")"
 echo "Thème Plymouth : ${theme} (${images})"
 reference=/usr/share/ankh/plymouth/watermark.png
 if ! cmp -s "${reference}" "${images}/watermark.png"; then
@@ -90,6 +94,25 @@ if ! lsinitrd -f "${images#/}/watermark.png" "${initramfs}" | cmp -s "${referenc
 fi
 
 if ((trouves > 0)); then
+    # Inventaire pour savoir quoi traiter : contenu des paquets d'habillage de
+    # Fedora encore présents, et réglages qui font référence à leurs fichiers.
+    for p in plasma-lookandfeel-fedora f44-backgrounds-kde; do
+        if rpm -q "${p}" > /dev/null; then
+            echo "--- Contenu de ${p} :" >&2
+            rpm -ql "${p}" | sed '/\/contents\/images/d' >&2
+        fi
+    done
+    dossiers=()
+    for d in /etc /usr/share/plasma /usr/share/kde-settings /usr/lib/plasmalogin /usr/share/plasmalogin; do
+        if [[ -d "${d}" ]]; then
+            dossiers+=("${d}")
+        fi
+    done
+    echo "--- Réglages qui citent un fond ou un thème de Fedora :" >&2
+    if ! grep -rIls -e 'wallpapers/Fedora' -e 'wallpapers/F44' -e 'wallpapers/Default' -e 'org.fedoraproject' \
+        -e 'LookAndFeelPackage' "${dossiers[@]}" >&2; then
+        echo "(aucun)" >&2
+    fi
     echo "ÉCHEC : ${trouves} élément(s) au nom de Fedora visibles" >&2
     exit 1
 fi
