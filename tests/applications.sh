@@ -20,7 +20,9 @@ lanceur() { # $1 : nom de l'application et de son paquet principal
 par_defaut() { # $1 : format, $2 : lanceur attendu
     local reponse
     reponse="$(XDG_CURRENT_DESKTOP=KDE gio mime "$1")"
-    [[ "${reponse}" == *": $2" ]] || echec "$1 : « ${reponse} » au lieu de $2"
+    # Première ligne : « Default application for “…”: lanceur.desktop »
+    reponse="${reponse%%$'\n'*}"
+    [[ "${reponse}" == "Default application for "*": $2" ]] || echec "$1 : « ${reponse} » au lieu de $2"
 }
 
 echo "LibreOffice absent"
