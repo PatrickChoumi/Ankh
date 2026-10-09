@@ -153,6 +153,26 @@ reboot_vm() {
     wait_boot
 }
 
+# Quand la version attendue n'a pas démarré : finalisation du déploiement
+# préparé par ostree (faite à l'arrêt précédent), état des déploiements et
+# place dans /boot, pour trouver la cause dans le journal de la CI.
+explain_deployment() {
+    local cmd
+    log "Diagnostic : la version attendue n'a pas démarré"
+    for cmd in \
+        'journalctl -b -1 -u ostree-finalize-staged.service --no-pager' \
+        'journalctl -b -1 -n 60 --no-pager' \
+        'bootc status' \
+        'df -h /boot /sysroot' \
+        'ls -la /boot/loader/entries /boot/ostree' \
+        'du -sh /boot/ostree/*'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+}
+
 # Champ de l'image démarrée dans « bootc status » (image.image ou imageDigest).
 booted() {
     vm bootc status --format=json | jq -er ".status.booted.image.$1"
@@ -189,6 +209,9 @@ check_boot() {
     ref=$(booted image.image)
     digest=$(booted imageDigest)
     echo "Démarrage complet ; Secure Boot, SELinux et pare-feu actifs."
+    # Place dans /boot (510 Mio avec « bootc install to-disk ») : chaque
+    # version d'Ankh y garde son noyau et son initramfs.
+    echo "/boot (utilisé, taille, %) : $(vm df -h --output=used,size,pcent /boot | tail -n 1)"
     echo "Image démarrée : $ref ($digest)"
 }
 
@@ -354,15 +377,15 @@ reboot_vm
 check_boot
 check_ankh
 wait_desktop 2-bureau-ankh-publiee
-[[ $(booted image.image) == "$other" ]] || die "l'image démarrée n'est pas $other"
-[[ $(booted imageDigest) != "$installed" ]] || die "le basculement n'a pas changé de version"
+[[ $(booted image.image) == "$other" ]] || { explain_deployment; die "l'image démarrée n'est pas $other"; }
+[[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "le basculement n'a pas changé de version"; }
 
 log "3/4 Retour arrière (bootc rollback)"
 vm bootc rollback
 reboot_vm
 check_boot
 check_ankh
-[[ $(booted imageDigest) == "$installed" ]] || die "le retour arrière n'a pas redémarré la version installée"
+[[ $(booted imageDigest) == "$installed" ]] || { explain_deployment; die "le retour arrière n'a pas redémarré la version installée"; }
 check_installed
 wait_desktop 3-bureau-apres-retour-arriere
 
@@ -370,7 +393,7 @@ log "4/4 Retour à l'image de base : $base_ref"
 vm bootc switch "$base_ref"
 reboot_vm
 check_boot
-[[ $(booted imageDigest) == "$base_digest" ]] || die "l'image démarrée n'est pas la base $base_digest"
+[[ $(booted imageDigest) == "$base_digest" ]] || { explain_deployment; die "l'image démarrée n'est pas la base $base_digest"; }
 wait_desktop 4-bureau-image-de-base
 
 log "Réussi : démarrage, basculement, retour arrière et retour à la base."
