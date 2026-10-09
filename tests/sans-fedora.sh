@@ -47,9 +47,19 @@ for f in /usr/share/plasma/look-and-feel/*/metadata.json /usr/share/plasma/deskt
     if [[ ! -e "${f}" ]]; then
         continue
     fi
-    if grep -qiE '"Name(\[[^]]*\])?" *: *"[^"]*fedora|^Name(\[[^]]*\])?=.*fedora' "${f}"; then
+    # Toute mention de Fedora, sauf l'identifiant du paquet, qui ne se voit pas
+    if grep -viE '"Id" *:|^X-KDE-PluginInfo-Name=' "${f}" | grep -qi fedora; then
         signaler "thème ou fond d'écran" "${f}"
     fi
+done
+
+# Aperçus des thèmes globaux venus de Fedora : ceux d'Ankh
+for d in /usr/share/plasma/look-and-feel/org.fedoraproject.*/; do
+    for apercu in preview.png fullscreenpreview.jpg lockscreen.png; do
+        if [[ -e "${d}contents/previews/${apercu}" ]] && ! cmp -s "/usr/share/ankh/apercus/${apercu}" "${d}contents/previews/${apercu}"; then
+            signaler "aperçu de thème global" "${d}contents/previews/${apercu}"
+        fi
+    done
 done
 
 # Fonds d'écran de Fedora, nommés par version (F44…) ou « Fedora »
@@ -109,10 +119,12 @@ if ((trouves > 0)); then
         fi
     done
     echo "--- Réglages qui citent un fond ou un thème de Fedora :" >&2
-    if ! grep -rIls -e 'wallpapers/Fedora' -e 'wallpapers/F44' -e 'wallpapers/Default' -e 'org.fedoraproject' \
-        -e 'LookAndFeelPackage' "${dossiers[@]}" >&2; then
+    if ! grep -rIns --exclude=metadata.json -e 'wallpapers/Fedora' -e 'wallpapers/F44' -e 'wallpapers/Default' \
+        -e 'org.fedoraproject' -e 'LookAndFeelPackage' -e 'backgrounds/' "${dossiers[@]}" >&2; then
         echo "(aucun)" >&2
     fi
+    echo "--- Fonds d'écran présents :" >&2
+    ls -la /usr/share/wallpapers >&2
     echo "ÉCHEC : ${trouves} élément(s) au nom de Fedora visibles" >&2
     exit 1
 fi

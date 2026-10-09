@@ -130,6 +130,15 @@ def main() -> None:
         toile.image().save(cible, quality=90, subsampling=0, optimize=True)
         decrire(paquet, nom)
 
+    # Aperçus des thèmes globaux (D-034) : le fond par défaut, « Ankh Signal ».
+    signal = Image.open(RACINE / "wallpapers" / "Ankh-Signal" / "contents" / "images" / "3840x2160.jpg")
+    apercus = RACINE / "ankh" / "apercus"
+    apercus.mkdir(parents=True, exist_ok=True)
+    signal.resize((800, 450), Image.LANCZOS).save(apercus / "preview.png", optimize=True)
+    signal.resize((1920, 1080), Image.LANCZOS).save(apercus / "fullscreenpreview.jpg", quality=90)
+    verrou = signal.resize((800, 450), Image.LANCZOS).point(lambda v: int(v * 0.6))
+    verrou.save(apercus / "lockscreen.png", optimize=True)
+
     cible = RACINE / "ankh" / "plymouth" / "watermark.png"
     cible.parent.mkdir(parents=True, exist_ok=True)
     filigrane().save(cible, optimize=True)

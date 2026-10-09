@@ -177,6 +177,35 @@ gtk-update-icon-cache --force /usr/share/icons/hicolor
 # viennent de Flathub (D-011).
 systemctl mask flatpak-add-fedora-repos.service
 
+# Thèmes globaux de Fedora (paquet plasma-lookandfeel-fedora) : kde-settings-plasma
+# en dépend et en règle un par défaut, ils restent donc. Ils deviennent les
+# thèmes d'Ankh : nom, description et aperçus. Leurs écrans de démarrage de
+# session n'affichent que les logos de KDE. Leur identifiant ne se voit pas.
+for theme_nom in "fedora:Ankh" "fedoradark:Ankh Sombre" "fedoralight:Ankh Clair"; do
+    dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme_nom%%:*}.desktop"
+    python3 - "${dossier}/metadata.json" "${theme_nom#*:}" << 'PY'
+import json
+import sys
+
+chemin, nom = sys.argv[1], sys.argv[2]
+with open(chemin, encoding="utf-8") as f:
+    fiche = json.load(f)
+plugin = fiche["KPlugin"]
+# Toute mention de Fedora disparaît, sauf l'identifiant, invisible.
+for cle in list(plugin):
+    if cle != "Id" and "fedora" in json.dumps(plugin[cle]).lower():
+        del plugin[cle]
+plugin["Name"] = nom
+plugin["Description"] = "Thème global d'Ankh"
+with open(chemin, "w", encoding="utf-8") as f:
+    json.dump(fiche, f, indent=4, ensure_ascii=False)
+    f.write("\n")
+PY
+    for apercu in preview.png fullscreenpreview.jpg lockscreen.png; do
+        install -m 0644 "/usr/share/ankh/apercus/${apercu}" "${dossier}/contents/previews/${apercu}"
+    done
+done
+
 # Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
 # remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui
 # de Fedora ; seule son image de filigrane change.
