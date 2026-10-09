@@ -51,7 +51,7 @@
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
 | D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
-| D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (mise en œuvre en cours) |
+| D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (CI et VM vertes ; rendu À VALIDER sur les captures) |
 
 ---
 
@@ -860,7 +860,7 @@
 
 ## D-034 — Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033)
 
-- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Complète D-033 : son niveau 2 (l'écran de démarrage) est maintenant retenu. Mise en œuvre en cours.
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Complète D-033 : son niveau 2 (l'écran de démarrage) est maintenant retenu. CI et VM vertes ; le rendu à l'écran est À VALIDER sur les captures.
 - **Mes choix (2026-10-09)** :
   - **Visuellement, plus rien en rapport avec Fedora** : ni logo ni nom. Sous le capot, Fedora ne me dérange pas.
   - **Écran de démarrage compris**, là où se tape le mot de passe LUKS : « Oui, testé en VM ».
@@ -887,3 +887,13 @@
   - `just test`, Test 11 (`tests/sans-fedora.sh`, lancé dans l'image) : il échoue s'il reste un élément visible au nom de Fedora, et l'affiche avec le paquet qui le fournit. Il couvre les paquets de logos, le nom du système, les entrées du menu, les thèmes et les fonds d'écran, les schémas de couleurs, le dépôt Flatpak de Fedora, et le filigrane de l'écran de démarrage, dans le thème et dans l'initramfs. Il servira aussi au passage à Fedora 45 ;
   - `just test`, Test 10 : les sept fonds sont présents, et « Ankh Signal » est le fond par défaut de chaque thème global ;
   - test en VM : le démarrage réussit avec l'initramfs reconstruit, et des captures sont prises pendant le démarrage (`0-demarrage-*`).
+- **Résultats de la CI ([PR #8](https://github.com/PatrickChoumi/Ankh/pull/8), 2026-10-09)** : tout est vert au quatrième passage, après trois passages qui ont servi d'inventaire.
+  - **Test 11** : « Rien de Fedora à l'écran », sur les images Mesa et NVIDIA.
+  - **Changement de logos** : seul `fedora-logos` est retiré, remplacé par `generic-logos` ; le garde-fou n'a rien trouvé d'autre.
+  - **Initramfs reconstruit** pour les deux images. dracut affiche `dracut-install: ERROR: installing '/root'` : `/root` pointe vers `/var/roothome`, absent pendant la construction (même cause que l'erreur de gpg contournée pour la clé de Google, voir build.sh). Le message est sans effet : la VM démarre.
+  - **Test en VM** ([run 37915307956](https://github.com/PatrickChoumi/Ankh/actions/runs/37915307956)) :
+    - les 4 étapes réussissent avec l'initramfs reconstruit, Secure Boot, SELinux et le pare-feu actifs ;
+    - la machine s'appelle « ankh » dès les premiers messages du démarrage, car l'initramfs contient maintenant le nom d'Ankh ;
+    - 12 captures dans l'artefact `captures-ankh-vm`, dont 4 pendant le démarrage (`0-demarrage-1` à `-4`).
+  - **Taille mesurée** : passer de cette image à l'image publiée a téléchargé 252,7 Mo (2 couches). La couche d'Ankh contient Chrome, les fonds, les logos et l'initramfs ; toute reconstruction la renouvelle en entier. La part de chacun est À MESURER (D-027).
+  - **À VALIDER par moi** : le rendu à l'écran sur les captures (démarrage, connexion, verrouillage, bureau, « À propos »), et l'écran du mot de passe LUKS sur ma machine.

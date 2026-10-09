@@ -132,6 +132,11 @@
   - L'initramfs est reconstruit avec la commande d'Universal Blue pour cette même base, pour y mettre le logo d'Ankh.
   - Un test liste tout ce qui reste visible au nom de Fedora, et échoue tant qu'il en reste.
 - **Fonds d'écran travaillés**, style Kali (D-034) : six fonds sombres autour du logo, gardés tous avec le fond épuré. **« Signal »** est le fond par défaut.
+- **CI de la PR #8 verte** ([run du test en VM](https://github.com/PatrickChoumi/Ankh/actions/runs/37915307956)) :
+  - le test « rien de Fedora à l'écran » a d'abord servi d'inventaire. Il a trouvé les trois thèmes globaux de Fedora (renommés « Ankh », « Ankh Sombre », « Ankh Clair »), les fonds de Fedora (retirés), le dépôt « Fedora Flatpaks » (coupé) ;
+  - il a aussi montré que l'écran de verrouillage et l'écran de connexion affichaient encore le fond de Fedora : ils affichent maintenant « Ankh Signal » ;
+  - la VM démarre avec l'initramfs reconstruit et Secure Boot actif, et 4 captures sont prises pendant le démarrage ;
+  - passer à l'image publiée a téléchargé 252,7 Mo ; la part de l'initramfs est à mesurer (D-027).
 
 ---
 
@@ -148,7 +153,7 @@
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
    - vérifier la version de Java choisie par défaut, et proposer un Node.js plus récent que la 22 si Fedora en fournit un.
 5. **Habillage Ankh** (D-033) : fusionné.
-6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : PR en cours. La CI dira ce qui reste visible de Fedora, puis je le traiterai. Ensuite, vérifier le rendu sur les captures de la VM, démarrage compris.
+6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : CI et VM vertes, PR #8 à fusionner après mon regard sur les captures.
 7. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -171,6 +176,7 @@
 - **mcelog** : son comportement sur ma vraie machine (phase 9).
 - **Variante NVIDIA** : elle ne se teste pas en VM, seulement par des contrôles statiques en CI.
 - **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
+- **Taille des mises à jour** : 252,7 Mo pour passer d'une image Ankh à une autre sur la même base ; la part de Chrome, des fonds et de l'initramfs est à mesurer (D-027).
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
 
 ---
