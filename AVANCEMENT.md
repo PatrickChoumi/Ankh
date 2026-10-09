@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09**.
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (matin).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -103,6 +103,13 @@
   - Java, Python, JavaScript/TypeScript, C/C++ et bases de données ;
   - VS Code dans le conteneur, avec des extensions préinstallées (liste proposée, à valider) ;
   - mises à jour quand je le décide.
+- **CI de la PR #5 verte** ([run du test en VM](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044)) :
+  - Fedora 44 KDE utilise **Plasma Login** et non plus SDDM ; le test s'y est adapté ;
+  - Chrome 155 démarre dans la VM, et Firefox est absent ;
+  - le téléchargement automatique est bien coupé ;
+  - le bureau KDE démarre à chaque étape ;
+  - **7 captures d'écran** sont jointes au run : connexion, bureau, Discover, Chrome, et le bureau après chaque basculement ;
+  - une mise à jour d'Ankh sur la même base coûte déjà 38,7 Mo, avant Chrome (D-027).
 
 ---
 
@@ -146,7 +153,7 @@
 ## Ce que je dois faire
 
 1. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-2. **Fusionner la PR #5** (Chrome, mises à jour manuelles) quand sa CI sera verte, puis regarder les captures d'écran de la VM.
+2. **Fusionner la PR #5** (Chrome, mises à jour manuelles) : sa CI est verte. Puis **regarder les captures d'écran** : page du run « Tester le démarrage en VM », section « Artifacts », fichier `captures-ankh-vm`. Me dire si le bureau, Chrome et Discover ont l'air corrects.
 3. **Valider ou modifier la liste d'extensions VS Code** (D-032).
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
 5. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.

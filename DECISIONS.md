@@ -147,6 +147,11 @@
     - Les images sont jointes au run GitHub, section « Artifacts » (`captures-ankh-vm`), et conservées 30 jours.
     - Le compte de test et la connexion automatique sont des réglages locaux de la VM de test, comme la clé SSH. Ils ne sont jamais dans l'image Ankh.
     - Le test échoue si le bureau Plasma ne démarre pas en 3 minutes, après avoir capturé l'écran pour montrer pourquoi.
+    - **Résultat ([run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044), 2026-10-09)**, vérifié par le test :
+      - le gestionnaire de connexion est `plasmalogin.service` ;
+      - le bureau Plasma du compte de test démarre à chacun des 4 démarrages, y compris sur l'image de base ;
+      - les 7 captures sont jointes au run (4,4 Mo).
+      - L'aspect des captures elles-mêmes est à regarder par moi : l'environnement de Claude ne peut pas télécharger les artefacts.
       - l'imposition de la signature au basculement (aucun message de vérification de signature, À VALIDER, D-022) ;
       - le comportement sur du matériel réel (phase 9).
 
@@ -513,8 +518,9 @@
   - **Tests** :
     - `just test` vérifie que `/opt` est un dossier, que Chrome démarre (`google-chrome --version`), que Firefox est absent, et que Chrome est l'application par défaut pour `text/html`, `http` et `https` (`gio mime`, avec `XDG_CURRENT_DESKTOP=KDE`) ;
     - `tests/vm/run.sh` vérifie, sur le système démarré, que Chrome démarre et que Firefox est absent.
+  - **Vérifié en VM** ([run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044)) : sur le système démarré, Chrome démarre (`Google Chrome 155.0.8059.39`) et Firefox est absent, au premier démarrage comme après le retour arrière.
   - **Encore À VALIDER** :
-    - le choix « Navigateur web » affiché dans les réglages de KDE, et l'icône du panneau (à l'écran) ;
+    - le choix « Navigateur web » affiché dans les réglages de KDE, et l'icône du panneau (à l'écran, voir les captures) ;
     - ~~la fréquence de reconstruction~~ : tranchée, voir ci-dessous.
 - **Résultats de construction (2026-10-09, [PR #5](https://github.com/PatrickChoumi/Ankh/pull/5))**, vérifiés par la CI :
   - `google-chrome-stable 155.0.8059.39` s'installe avec une seule dépendance (`liberation-fonts-all`) : **140 Mio à télécharger**, 440 Mio une fois installé.
@@ -616,6 +622,10 @@
   - Une réduction possible du volume par un découpage plus stable des couches (« rechunk »).
 - **Vérification** : mesurer la taille téléchargée à chaque mise à jour pendant la phase 10.
 - **Première mesure (phase 2, 2026-10-07, en VM)** : passer d'une image Ankh à une autre bâtie sur la même base a demandé 2 couches sur 261, soit 641 octets (D-004). Cela confirme le principe du point 3. La taille réelle viendra quand Ankh ajoutera Chrome et les applications (phase 3).
+- **Deuxième mesure (2026-10-09, en VM, [run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044))** :
+  - Passer à l'image publiée qui contient le module Discover (D-028) a demandé 2 couches, soit **38,7 Mo**.
+  - Le module ne pèse que 256 Kio. Le reste vient probablement de la base de données RPM, réécrite dès qu'on installe un paquet (supposé, À VALIDER).
+  - Avec Chrome (140 Mio), une mise à jour d'Ankh sur la même base devrait donc coûter de l'ordre de 180 Mo. À mesurer après la fusion de Chrome.
 
 ## D-028 — Mises à jour du système dans Discover (complète D-025)
 
@@ -710,7 +720,7 @@
 - **Conséquence assumée** : si je tarde à mettre à jour, les correctifs de sécurité attendent, ceux de Chrome compris. La notification de Discover est là pour me le rappeler.
 - **Vérification** :
   - `just test` : les trois timers sont masqués et la politique est `none` ;
-  - `tests/vm/run.sh` : sur le système démarré, `rpm-ostreed-automatic.timer` est masqué ;
+  - `tests/vm/run.sh` : sur le système démarré, `rpm-ostreed-automatic.timer` est masqué. **Vérifié en VM** le 2026-10-09 ([run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044)) ;
   - la notification de Discover reste À VALIDER à l'écran.
 
 ## D-032 — Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur
