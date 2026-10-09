@@ -830,7 +830,9 @@
 - **Mise en œuvre** (`build_files/build.sh`) :
   - **Nom** : dans `/usr/lib/os-release`, `NAME` et `PRETTY_NAME` deviennent « Ankh ». Le nom apparaît alors dans « À propos de ce système » (KInfoCenter lit `NAME`, `LOGO` et `HOME_URL`) et dans le menu de démarrage. ostree écrit le titre de chaque entrée à partir de `PRETTY_NAME`, suivi de la version (source : `src/libostree/ostree-sysroot-deploy.c` de <https://github.com/ostreedev/ostree>) : « Ankh 44.AAAAMMJJ.HHMM (ostree:0) ».
   - `LOGO=ankh-logo`, `HOME_URL` pointe vers le dépôt, `ANSI_COLOR` passe au violet.
-  - `DEFAULT_HOSTNAME=ankh` : le nom de la machine par défaut, affiché dans le terminal, devient « ankh » au lieu de « fedora ». C'est un nom générique, pas propre à une machine (D-021).
+  - **Nom de la machine** : « ankh » au lieu de « fedora », affiché dans le terminal. C'est un nom générique, le même pour toutes les machines (D-021). Je peux le changer avec `hostnamectl`, et ce choix reste local, comme tout réglage de `/etc`.
+    - `DEFAULT_HOSTNAME=ankh` dans `os-release` ne suffit pas : l'initramfs de Fedora nomme déjà la machine « fedora », et systemd garde un nom existant si `/etc/hostname` est absent (source : `hostname_setup` dans `src/shared/hostname-setup.c` de <https://github.com/systemd/systemd>). Vu en VM : le journal du système démarré affichait encore « fedora » ([run 37897946381](https://github.com/PatrickChoumi/Ankh/actions/runs/37897946381)).
+    - L'image fournit donc `/etc/hostname` avec « ankh ».
   - **`ID` reste `fedora`**. Des outils s'en servent pour reconnaître le système. Exemple : Aurora (Universal Blue), qui a changé `ID`, doit en retour corriger `grub2-switch-to-blscfg` (source : `build_scripts/base/18-image-info.sh` de <https://github.com/ublue-os/aurora>).
   - **Logo** dans le thème d'icônes `hicolor`, avec son cache refait : ostree met la même date à tous les fichiers, donc un cache périmé paraîtrait encore valide.
   - **Fond d'écran par défaut** : Plasma prend le fond indiqué par `[Wallpaper] Image=` dans le fichier `defaults` du thème global (source : `wallpapers/defaultwallpaper.cpp` de plasma-workspace). D'après le code de Plasma et de Plasma Login, le bureau, l'écran de verrouillage et l'écran de connexion le reprennent, sauf réglage contraire de Fedora : À VALIDER sur les captures. Chaque thème global de l'image est réglé sur « Ankh ».
@@ -844,6 +846,10 @@
   - Remplacer le paquet `fedora-logos` (comme Aurora) : plus lourd, et inutile pour le niveau 1.
   - Le symbole égyptien ☥ (première ébauche) : je veux un design qui évoque le dev, le hacking et le gaming.
 - **Vérification** :
-  - `just test ankh`, Test 10 : `NAME` et `PRETTY_NAME` valent « Ankh », `ID` vaut `fedora`, le logo est dans le cache d'icônes, et le fond d'écran, son paquet et le script du lanceur sont présents. Chaque thème global pointe vers « Ankh » ;
-  - `tests/vm/run.sh` : sur le système démarré, le nom est « Ankh », et le menu de démarrage affiche « Ankh ». Les captures montrent l'écran de connexion, le bureau, l'icône du menu et « À propos de ce système » ;
+  - `just test ankh`, Test 10 : `NAME` et `PRETTY_NAME` valent « Ankh », `ID` vaut `fedora`, `/etc/hostname` vaut « ankh », le logo est dans le cache d'icônes, et le fond d'écran, son paquet et le script du lanceur sont présents. Chaque thème global pointe vers « Ankh » ;
+  - `tests/vm/run.sh` : sur le système démarré, le nom est « Ankh », la machine s'appelle « ankh », et le menu de démarrage affiche « Ankh ». Les captures montrent l'écran de connexion, le bureau, l'icône du menu et « À propos de ce système » ;
   - le rendu à l'écran est À VALIDER par moi, sur ces captures.
+- **Résultats de la CI ([PR #7](https://github.com/PatrickChoumi/Ankh/pull/7), 2026-10-09)** :
+  - **Construction** : six thèmes globaux réglaient le fond par défaut, et tous pointent maintenant vers « Ankh ». Les trois thèmes de Fedora (`org.fedoraproject.fedora`, `fedoradark`, `fedoralight`) indiquaient « Fedora », les trois de Breeze « Next ».
+  - **Test en VM** ([run 37897946381](https://github.com/PatrickChoumi/Ankh/actions/runs/37897946381), captures dans l'artefact `captures-ankh-vm`) : le système démarré s'appelle « Ankh », avec `ID=fedora`, et le menu de démarrage affiche « Ankh ».
+  - **Correction** : le nom de machine restait « fedora ». `/etc/hostname` est ajouté, et le test en VM vérifie désormais que la machine s'appelle « ankh ».

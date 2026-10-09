@@ -223,6 +223,7 @@ check_installed() {
         die "le système ne s'appelle pas Ankh, ou son ID n'est plus fedora (D-033)"
     vm "grep -q '^title Ankh ' /boot/loader/entries/*.conf" ||
         die "le menu de démarrage n'affiche pas Ankh (D-033)"
+    [[ $(vm cat /proc/sys/kernel/hostname) == ankh ]] || die "la machine ne s'appelle pas « ankh » (D-033)"
 }
 
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"

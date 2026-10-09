@@ -98,6 +98,7 @@ test variant:
 
     echo "Test 10 : habillage Ankh sur le bureau, ID de Fedora conservé (D-033)"
     run '. /etc/os-release && [[ "${NAME}" == Ankh && "${PRETTY_NAME}" == Ankh && "${ID}" == fedora && "${LOGO}" == ankh-logo ]] &&
+        [[ "$(cat /etc/hostname)" == ankh ]] &&
         grep -aq ankh-logo /usr/share/icons/hicolor/icon-theme.cache &&
         test -f /usr/share/wallpapers/Ankh/metadata.json -a -f /usr/share/wallpapers/Ankh/contents/images/3840x2160.jpg -a -f /usr/share/wallpapers/Ankh/contents/images_dark/3840x2160.jpg &&
         test -f /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/ankh-lanceur.js &&

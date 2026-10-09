@@ -122,6 +122,17 @@ OSRELEASE
 grep -qx 'ID=fedora' "${os_release}"
 cat "${os_release}"
 
+# Nom de machine par défaut : « ankh », pour toutes les machines (générique,
+# D-021). DEFAULT_HOSTNAME ne suffit pas : l'initramfs de Fedora nomme déjà la
+# machine « fedora », et systemd garde un nom existant si /etc/hostname est
+# absent (src/shared/hostname-setup.c, hostname_setup ; vu en VM). Un
+# changement fait avec hostnamectl reste local à la machine, comme tout /etc.
+if [[ -e /etc/hostname ]]; then
+    echo "/etc/hostname existe déjà dans la base : réglage à fusionner à la main" >&2
+    exit 1
+fi
+echo ankh > /etc/hostname
+
 # Logo dans le thème d'icônes : le cache est refait, car ostree met la même
 # date à tous les fichiers et un cache périmé paraîtrait encore valide.
 gtk-update-icon-cache --force /usr/share/icons/hicolor
