@@ -21,16 +21,16 @@
 | D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021 ; « pas de branding » modifié par D-033) |
 | D-002 | Une seule machine, un seul GPU en V1 | REMPLACÉE par D-021 |
 | D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
-| D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe) |
+| D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe ; mise à jour non appliquée corrigée le 2026-10-09) |
 | D-005 | Image de base exacte : `kinoite-main` + `kinoite-nvidia` (Fedora 44) | DÉCIDÉ |
 | D-006 | Secure Boot activé | DÉCIDÉ |
 | D-007 | Chiffrement LUKS | DÉCIDÉ |
 | D-008 | Aucune sécurité désactivée pour faire marcher un outil | DÉCIDÉ |
 | D-009 | Hôte reproductible : pas de `rpm-ostree install`, pas de `curl \| bash` | DÉCIDÉ |
 | D-010 | Pas de redémarrage automatique | DÉCIDÉ |
-| D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ |
-| D-012 | Environnement dev en conteneur | DÉCIDÉ (précisé par D-032) |
-| D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ |
+| D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ (applications du quotidien dans l'image : D-035 ; Steam dans le menu : D-036) |
+| D-012 | Environnement dev en conteneur | DÉCIDÉ (précisé par D-032 et D-036) |
+| D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ (outils dans le menu : D-036) |
 | D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
 | D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
 | D-016 | Le dépôt est la source de vérité, toute affirmation importante est prouvée | DÉCIDÉ (complétée par D-020) |
@@ -41,7 +41,7 @@
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
 | D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
-| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
+| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
@@ -49,9 +49,11 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
-| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09) |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (CI et VM vertes ; rendu À VALIDER sur les captures) |
+| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; codecs, taille des mises à jour et Java 27-ea À VALIDER) |
+| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (mise en œuvre : dev à la prochaine PR, gaming en phase 5, hacking en phase 6) |
 
 ---
 
@@ -157,6 +159,18 @@
       - L'aspect des captures elles-mêmes est à regarder par moi : l'environnement de Claude ne peut pas télécharger les artefacts.
       - l'imposition de la signature au basculement (aucun message de vérification de signature, À VALIDER, D-022) ;
       - le comportement sur du matériel réel (phase 9).
+- **Mise à jour non appliquée, corrigée (2026-10-09, [PR #9](https://github.com/PatrickChoumi/Ankh/pull/9))** : à signaler pour relecture, car cela touche aux mises à jour.
+  - **Vu deux fois en VM, sur l'image de la PR #9** : après `bootc switch` et le redémarrage, l'ancienne version a redémarré. À l'arrêt, `ostree-finalize-staged.service` a échoué avec `error: Remounting /boot read-write: Invalid argument`. La nouvelle version n'a donc jamais été écrite dans le menu de démarrage. Sur ma machine, cela voudrait dire : je lance la mise à jour, je redémarre, et rien ne change.
+  - **Cause probable** :
+    - avec `bootc install to-disk` en btrfs, `/boot` n'a pas de partition à lui. ostree y lie `/sysroot/boot` (`boot.mount`, créé par `ostree-system-generator`, `src/libostree/ostree-impl-system-generator.c` de <https://github.com/ostreedev/ostree>) ;
+    - `/boot` paraît vide quand `systemd-gpt-auto-generator` passe. Celui-ci y ajoute donc un montage automatique de la partition EFI (`boot.automount`, « EFI System Partition Automount », vu dans le journal série), qui se démonte après 2 minutes d'inactivité (`add_partition_esp`, `src/gpt-auto-generator/gpt-auto-generator.c` de <https://github.com/systemd/systemd>) ;
+    - à l'arrêt, ostree n'a plus trouvé son `/boot`. La documentation de bootc décrit ce risque pour un `/boot` monté automatiquement (`docs/src/man/bootc-composefs-finalize-staged.8.md` de <https://github.com/bootc-dev/bootc>).
+    - À VALIDER : pourquoi le même test passait sur `main` juste avant. La PR ajoute du temps et des applications dans la session de test avant le basculement.
+  - **Correctif** : `boot.automount` est masqué dans l'image (`build_files/build.sh`). `/boot` reste celui d'ostree. Quand `/boot` a sa propre partition, systemd ne crée pas ce montage automatique, et le masque est sans effet.
+  - **Vérification** :
+    - `just test`, Test 2 bis : le masque est dans l'image ;
+    - `tests/vm/run.sh` vérifie le masque sur le système installé et relève l'état de `/boot` (montages, unités) avant chaque redémarrage qui doit appliquer une version préparée. En cas d'échec, il affiche le journal de la finalisation et de `/boot` ;
+    - **résultat en VM ([run 37934589711](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711), 2026-10-09)** : les 4 étapes réussissent. Avant chaque redémarrage qui applique une version préparée, `boot.automount` est masqué et inactif, `boot.mount` est celui d'ostree (`/run/systemd/generator/boot.mount`, actif), `/boot` est le lien btrfs d'ostree (`/dev/vda3[/boot]`, en lecture seule), et `ostree-finalize-staged.service` et `ostree-finalize-staged-hold.service` sont actifs. Versions : `ostree-2026.4-1.fc44`, `systemd-259.9-1.fc44`.
 
 ## D-005 — Image de base exacte
 
@@ -269,6 +283,7 @@
   - Aucune bibliothèque 32 bits n'est nécessaire sur l'hôte.
   - Les manettes sont reconnues (des règles udev sur l'hôte pourraient être nécessaires).
 - **Vérification** : test réel sur la machine avec la liste de jeux de Q6 (non exécuté).
+- **Modifiée par D-035 (2026-10-09)** : les applications du quotidien (VLC, OnlyOffice) sont dans l'image, comme Chrome. Les autres applications restent en Flatpak.
 
 ## D-012 — Environnement dev en conteneur
 
@@ -560,6 +575,7 @@
   - L'installation automatique des applications web par la politique Chrome `WebAppInstallForceList`.
   - Le volume téléchargé au premier démarrage (contrainte D-027).
 - **Vérification** : tests CI pour les fichiers de préinstallation et la politique ; test réel au premier démarrage.
+- **Modifiée par D-035 (2026-10-09)** : VLC et OnlyOffice deviennent des paquets de l'image, et non des Flatpaks préinstallés. Claude et GitHub restent des applications web de Chrome, installées par la politique `WebAppInstallForceList`.
 
 ## D-025 — Terminal : le quotidien se fait sans terminal
 
@@ -719,6 +735,7 @@
   - Discover me **prévient** qu'une mise à jour existe (D-028), et je la lance quand je le décide.
   - Le conteneur de dev se met à jour seulement quand je le lance, par un raccourci du menu (à faire avec le conteneur de dev, D-012). Ce choix remplace ma réponse du 2026-10-09, qui demandait une mise à jour automatique chaque semaine.
   - Côté CI, rien ne change pour moi : la reconstruction hebdomadaire de l'image (D-023) et les PR de Renovate (D-017) **préparent** des mises à jour. Rien n'arrive sur la machine tant que je ne l'ai pas demandé.
+  - **Confirmé le 2026-10-09** : je ne veux pas de mise à jour hebdomadaire sur ma machine ; c'est moi qui la lance. La préparation du lundi sur GitHub est gardée (mon choix « Garder la préparation »), car elle n'installe rien.
 - **Raisons** : garder la main sur ma connexion lente (D-027) et sur le moment où le système change.
 - **Conséquence assumée** : si je tarde à mettre à jour, les correctifs de sécurité attendent, ceux de Chrome compris. La notification de Discover est là pour me le rappeler.
 - **Vérification** :
@@ -809,6 +826,7 @@
   - **À VALIDER** :
     - `java -version` affiche la 25, alors que `java-latest-openjdk` est demandé. Il faut vérifier s'il installe une version plus récente à côté, que Maven ne choisit pas par défaut ;
     - Node.js 22 est la version par défaut de Fedora 44. Une version LTS plus récente existe peut-être dans un paquet séparé : à vérifier, puis à me proposer si je veux des outils à la pointe ;
+    - → Java et Node.js : traités par D-035 (les versions les plus récentes de Fedora, à ma demande) ;
     - la création réelle du conteneur et VS Code dans le menu, en VM ou sur la machine.
 
 ## D-033 — Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001)
@@ -897,3 +915,95 @@
     - 12 captures dans l'artefact `captures-ankh-vm`, dont 4 pendant le démarrage (`0-demarrage-1` à `-4`).
   - **Taille mesurée** : passer de cette image à l'image publiée a téléchargé 252,7 Mo (2 couches). La couche d'Ankh contient Chrome, les fonds, les logos et l'initramfs ; toute reconstruction la renouvelle en entier. La part de chacun est À MESURER (D-027).
   - **À VALIDER par moi** : le rendu à l'écran sur les captures (démarrage, connexion, verrouillage, bureau, « À propos »), et l'écran du mot de passe LUKS sur ma machine.
+
+## D-035 — VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents (modifie D-011 et D-024)
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-011 et D-024 ; précise D-032. CI et VM vertes ([PR #9](https://github.com/PatrickChoumi/Ankh/pull/9)), résultats ci-dessous.
+- **Mes choix (2026-10-09)** :
+  - « Je veux que l'OS ait déjà le nécessaire » : VLC, OnlyOffice, Claude et GitHub sont disponibles dès l'installation de l'image.
+  - Forme retenue : **« A. Paquets système, comme Chrome »**, c'est-à-dire des paquets RPM dans l'image, plutôt que des Flatpaks préinstallés.
+  - **LibreOffice est retiré de l'image**, comme Firefox : une seule suite bureautique, OnlyOffice.
+  - « Si Fedora a de nouvelles versions d'outils de dev, ce serait bien de les avoir dans Ankh » : le conteneur de dev prend les versions les plus récentes que Fedora propose.
+- **Ce qui change** :
+  - **D-011** : les applications restent en Flatpak, sauf celles du quotidien listées ici, dans l'image comme Chrome.
+  - **D-024** : VLC et OnlyOffice passent de « Flatpak préinstallé » à « paquet de l'image ». Claude et GitHub ne changent pas (applications web de Chrome) ; leur mécanisme est mis en place ici.
+- **Raisons** :
+  - Tout est là au premier démarrage, sans téléchargement. Un Flatpak préinstallé, lui, se télécharge au premier démarrage, alors que D-027 et D-031 veulent éviter les téléchargements que je n'ai pas lancés.
+  - VLC et OnlyOffice suivent l'image, reconstruite chaque semaine (D-023).
+- **Alternatives rejetées** :
+  - Flatpaks préinstallés (D-024 d'origine) : téléchargement au premier démarrage, et version de Flatpak de la base à vérifier.
+  - Garder LibreOffice à côté d'OnlyOffice : deux suites pour le même usage.
+- **Conséquences** :
+  - **Taille** : l'image grossit d'OnlyOffice et de VLC. Toute reconstruction renouvelle la couche d'Ankh en entier (252,7 Mo avant ce changement, D-034), donc chaque mise à jour que je lance retélécharge aussi OnlyOffice et VLC. Taille À MESURER par la CI (D-027).
+  - **Chrome affiche « Géré par votre organisation »**, à cause de la politique qui installe Claude et GitHub. C'est normal, et la protection de D-026 ajoutera d'autres politiques. Ces deux applications ne se désinstallent pas depuis Chrome.
+  - **Claude et GitHub apparaissent dans le menu après la première ouverture de Chrome**, avec internet : c'est Chrome qui les installe.
+  - **Node.js** : la version la plus récente peut être une version impaire, sans support long (environ 6 mois). La reconstruction hebdomadaire suit les versions proposées par Fedora.
+- **Mise en œuvre** :
+  - **LibreOffice** (`build_files/build.sh`) : tous les paquets `libreoffice*` de la base sont retirés, et la liste de ce qui part est affichée dans le journal de construction. S'il n'y en a aucun, la construction le dit.
+  - **VLC** : paquet `vlc`, depuis les dépôts de la base. `kinoite-main` active en priorité le dépôt multimédia de negativo17, aux codecs complets (`build_files/install.sh` de <https://github.com/ublue-os/main>). Le dépôt utilisé s'affiche dans le journal.
+  - **OnlyOffice** : paquet `onlyoffice-desktopeditors`, depuis le dépôt officiel d'OnlyOffice pour Red Hat et dérivés (`download.onlyoffice.com/repo/centos/main/noarch/`, <https://helpcenter.onlyoffice.com/desktop/installation/desktop-install-rhel.aspx>), installé dans `/opt` comme Chrome, avec vérification des signatures :
+    - la clé est refusée si son empreinte n'est pas `E09CA29F6E178040EF22B4098320CA65CB2DE8E5` ;
+    - la documentation d'OnlyOffice pour Ubuntu désigne la clé par son identifiant court `CB2DE8E5` sur `keyserver.ubuntu.com` (<https://helpcenter.onlyoffice.com/installation/desktop-install-ubuntu.aspx>, vue par une recherche : le site n'est pas accessible depuis l'environnement de Claude) ;
+    - ce serveur donne cette empreinte complète, une clé RSA 4096 de 2016 au nom d'« Ascensio System Limited (ONLYOFFICE) » (vérifié le 2026-10-09). La construction prend la clé sur ce même serveur.
+  - **Applications par défaut** (`/etc/xdg/mimeapps.list`, comme Chrome dans D-023) :
+    - VLC pour chaque format vidéo et audio qu'il déclare dans son lanceur ;
+    - OnlyOffice pour les documents de bureau qu'il déclare : Word, Excel, PowerPoint, OpenDocument, RTF et CSV. Il déclare aussi le PDF et le texte brut, qui ne lui sont **pas** confiés : le PDF reste à Chrome, le texte à l'éditeur de texte ;
+    - le nom des lanceurs est lu dans les paquets, et la construction échoue s'il n'y en a pas exactement un.
+  - **Claude et GitHub** : fichier `/etc/opt/chrome/policies/managed/ankh-applications.json`, politique `WebAppInstallForceList` de Chrome. Chaque application s'ouvre dans sa propre fenêtre, sous le nom « Claude » ou « GitHub » (`custom_name`). La politique existe sous Linux depuis Chrome 75, `custom_name` depuis Chrome 112. Source : `components/policy/resources/templates/policy_definitions/Miscellaneous/WebAppInstallForceList.yaml` de <https://github.com/chromium/chromium>.
+  - **Conteneur de dev** (`dev/build.sh`) :
+    - **Node.js** : Fedora fournit chaque version majeure dans ses propres paquets (`nodejs22`, `nodejs24`…), et leurs sous-paquets `-bin` et `-npm-bin` donnent les commandes `node`, `npm` et `npx` sans numéro. Source : le fichier `nodejsNN.spec`, repris par CentOS Stream (<https://gitlab.com/redhat/centos-stream/rpms/nodejs26>), car le site des paquets de Fedora n'est pas accessible depuis l'environnement de Claude. La construction prend le plus grand numéro proposé par Fedora ;
+    - **Java** : `java-latest-openjdk` devient la version des commandes `java` et `javac` (`alternatives --set`). Maven reste sur la version de référence de Fedora, qu'il installe pour lui-même (la 25 dans D-032). À VALIDER : si un projet Maven a besoin de la dernière version de Java.
+  - **À faire quand Fedora 45 sortira** : passer le conteneur de dev à Fedora 45, ma demande du 2026-10-09, en suivant la procédure de D-017.
+- **Vérification** :
+  - `just test`, Test 12 (`tests/applications.sh`, lancé dans l'image) :
+    - aucun paquet ni lanceur de LibreOffice ;
+    - VLC démarre (`vlc --version`, sous un compte ordinaire, car VLC refuse root) ;
+    - OnlyOffice est dans `/opt`, et toutes ses bibliothèques sont trouvées (`ldd`) ;
+    - VLC et OnlyOffice sont les applications par défaut de formats courants (MP4, MKV, MP3, FLAC ; DOCX, XLSX, PPTX, ODT), et Chrome reste celle du web (`gio mime`, avec `XDG_CURRENT_DESKTOP=KDE`) ;
+    - la politique de Chrome liste Claude et GitHub ;
+  - `just test ankh-dev`, Test 4 : `node` est le plus grand numéro proposé par Fedora, et `java` et `javac` sont ceux de `java-latest-openjdk` ;
+  - en VM : VLC et OnlyOffice présents et LibreOffice absent, à chaque étape ; Chrome, une fois ouvert, crée les lanceurs de Claude et de GitHub dans le menu ; captures de VLC et d'OnlyOffice ouverts (`1-vlc`, `1-onlyoffice`).
+- **À VALIDER** :
+  - si la base contenait LibreOffice (le journal de construction le dira) ;
+  - le dépôt d'où vient VLC, et la lecture des formats courants sur ma machine ;
+  - l'acceptation des signatures d'OnlyOffice par RPM de Fedora 44 ;
+  - l'installation de Claude et de GitHub par Chrome (test en VM) ;
+  - la taille ajoutée à chaque mise à jour (D-027).
+- **Résultats de la CI ([PR #9](https://github.com/PatrickChoumi/Ankh/pull/9), 2026-10-09)** : tout est vert au cinquième passage. Les passages précédents ont corrigé deux erreurs de mes scripts (VLC a cinq lanceurs ; `gio mime` répond sur plusieurs lignes) et une vraie panne des mises à jour (voir D-004).
+  - **LibreOffice n'était pas dans la base** : le journal de construction affiche « LibreOffice absent de la base : rien à retirer ». Le Test 12 garantit qu'il reste absent.
+  - **VLC 3.0.24** (`vlc-3.0.24-1.fc44`) vient du dépôt de Fedora (`updates`, « Fedora Project »), pas de celui de negativo17 : 37 paquets, 10 Mio à télécharger, 26 Mio une fois installé. VLC lit avec les bibliothèques ffmpeg du système, que `kinoite-main` prend chez negativo17 (codecs complets). La lecture des formats courants (H.264, H.265…) reste À VALIDER sur ma machine.
+  - **OnlyOffice 9.4.0** (`onlyoffice-desktopeditors-9.4.0-129.el7`) : la clé est acceptée et les signatures sont vérifiées par RPM de Fedora 44, sans erreur. 366 Mio à télécharger, **1,3 Gio une fois installé**, avec 6 dépendances de Fedora (boost, polices DejaVu et Liberation Narrow).
+  - **Applications par défaut** : `vlc.desktop` et `onlyoffice-desktopeditors.desktop` sont celles des formats testés (MP4, MKV, MP3, FLAC ; DOCX, XLSX, PPTX, ODT), et Chrome reste celle du web.
+  - **En VM** ([run 37934589711](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711)) :
+    - VLC et OnlyOffice sont présents à chaque étape et LibreOffice absent ;
+    - **Chrome installe lui-même Claude et GitHub** dès sa première ouverture : deux lanceurs `chrome-…-Default.desktop` apparaissent dans le menu du compte de test ;
+    - VLC et OnlyOffice s'ouvrent dans la session : captures `1-vlc` et `1-onlyoffice` (15 captures jointes au run).
+  - **Conteneur de dev** :
+    - **Node.js 24.18.0** (`nodejs24`), la version la plus récente que Fedora 44 propose, au lieu de la 22. C'est une version à support long (LTS) ;
+    - **Java 27** par défaut (`java-latest-openjdk 27.0.0.0.35`), au lieu de la 25. Fedora la marque encore « early access » (`27-ea`). À VALIDER par moi : garder la 27 ou revenir à la 25 (LTS) par défaut ;
+    - Maven 3.9.11 reste sur Java 25.
+  - **Taille** :
+    - l'image installée passe de 9,9 Go à 11,3 Go (taille décompressée affichée par `bootc install`) ;
+    - la couche d'Ankh publiée sur `main` (sans OnlyOffice) se télécharge en 501,1 Mo. Avec OnlyOffice, une mise à jour devrait approcher 870 Mo (501 + 366, estimation). À MESURER après la fusion (D-027).
+
+## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
+
+- **Statut** : DÉCIDÉ (2026-10-09), mon choix. Mise en œuvre : le dev à la prochaine PR, le gaming en phase 5, le hacking en phase 6.
+- **Contexte** : « Je ne comprends pas pourquoi il y a une version ankh-dev. De base, Ankh doit intégrer les outils de dev, de hacking et de gaming, les trois en même temps. »
+  - `ankh-dev` n'est pas une autre version d'Ankh : c'est l'image du conteneur de dev (D-032), qui tourne dans Ankh. Aujourd'hui, il faut le créer depuis le menu (« Créer l'environnement de dev ») avant d'avoir VS Code.
+  - Il n'y a qu'un système, Ankh, et sa variante pour NVIDIA (D-021).
+- **Options présentées** :
+  1. **Un seul Ankh, outils isolés dessous** (recommandée) : tout apparaît dans le menu comme des applications ordinaires ; dev et hacking tournent isolés en dessous ;
+  2. dev dans l'image, hacking isolé : image et mises à jour plus lourdes (1 à 2 Go de plus, à mesurer) ;
+  3. tout dans l'image : remplace la règle 8 et D-013 ; un outil de hacking piégé aurait accès à tout le système et à mes fichiers (déconseillée).
+- **Décision : option 1.**
+  - Les outils apparaissent dans le menu d'Ankh comme des applications ordinaires : VS Code et les outils de dev, les outils de hacking (Kali), Steam. Je n'ai pas de « ankh-dev » à gérer.
+  - En dessous, le placement ne change pas (règle 5) : dev dans un conteneur (D-012, D-032), hacking dans Kali en Podman rootless (D-013), jeux par Steam en Flatpak (D-011).
+- **Raisons** :
+  - Un outil de hacking piégé ne touche ni le système ni mes fichiers (règle 8, D-013).
+  - L'image reste légère pour ma connexion (D-027).
+- **Avec D-031** (rien ne se télécharge sans moi) : préparer un outil télécharge beaucoup (le conteneur de dev, Steam, Kali). Mise en œuvre prévue : le premier clic sur l'outil dans le menu le prépare, en montrant la progression, puis l'ouvre ; les fois suivantes, il s'ouvre directement. À VALIDER en VM.
+- **Mise en œuvre prévue** :
+  - **dev** (prochaine PR) : « VS Code » dans le menu dès l'installation. Il crée le conteneur au premier clic, puis s'ouvre. Les raccourcis « Créer l'environnement de dev » et « Mettre à jour l'environnement de dev » disparaissent du menu au profit d'une seule entrée de mise à jour des outils, sans le mot « ankh-dev ». Test en VM avec captures : VS Code présent dans le menu, conteneur créé au premier clic, VS Code ouvert ;
+  - **gaming** (phase 5) : Steam dans le menu dès l'installation, sur le même principe ;
+  - **hacking** (phase 6) : les outils de Kali dans le menu, lancés dans le conteneur Kali isolé. Les questions de la phase 6 (ANKH-SPEC.md) restent à répondre.

@@ -34,8 +34,11 @@
     - captures d'écran de la VM.
   - Fait ([#6](https://github.com/PatrickChoumi/Ankh/pull/6) fusionnée) : le conteneur de dev `ankh-dev`, avec VS Code et les langages fullstack (D-032).
   - Fait ([#7](https://github.com/PatrickChoumi/Ankh/pull/7) fusionnée) : l'habillage Ankh sur le bureau : nom, logo, fonds d'écran (D-033).
-  - En cours : plus rien de Fedora à l'écran, démarrage compris, et une collection de fonds d'écran (D-034).
-  - Ensuite : VLC et OnlyOffice (D-024).
+  - Fait ([#8](https://github.com/PatrickChoumi/Ankh/pull/8) fusionnée) : plus rien de Fedora à l'écran, démarrage compris, et une collection de fonds d'écran (D-034).
+  - Fait, à fusionner ([#9](https://github.com/PatrickChoumi/Ankh/pull/9), CI et VM vertes) : VLC et OnlyOffice dans l'image, LibreOffice absent, Claude et GitHub dans Chrome, Node.js 24 et Java 27 dans le conteneur de dev (D-035) ; les mises à jour s'appliquent de nouveau au redémarrage (D-004).
+  - Ensuite :
+    - un seul Ankh : VS Code dans le menu dès l'installation, sans « ankh-dev » à gérer (D-036) ;
+    - l'identité visuelle d'Ankh (thème sombre, couleurs, icônes, barre flottante), avec des aperçus avant intégration (D-037, à écrire).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).
@@ -114,6 +117,7 @@ Elles valent pour moi comme pour tout assistant. Elles ne se contournent pas : s
   - ce qui reste `À VALIDER` ;
   - ce que **je** dois faire physiquement (VM, BIOS, matériel, clés).
 - Mettre à jour [AVANCEMENT.md](AVANCEMENT.md) et me l'envoyer à chaque compte rendu (D-029).
+- Joindre à chaque compte rendu des captures d'écran de la VM qui montrent le travail fait (ma demande du 2026-10-09). Si une capture manque, dire pourquoi.
 - Claude ne peut pas tester sur ma machine. Le dire, plutôt que de présenter un résultat non testé comme acquis.
 
 ---

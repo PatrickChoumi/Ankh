@@ -1,0 +1,14 @@
+{
+    "WebAppInstallForceList": [
+        {
+            "url": "https://claude.ai/",
+            "default_launch_container": "window",
+            "custom_name": "Claude"
+        },
+        {
+            "url": "https://github.com/",
+            "default_launch_container": "window",
+            "custom_name": "GitHub"
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (début d'après-midi).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (après-midi, PR #9 verte, à fusionner).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -137,6 +137,24 @@
   - il a aussi montré que l'écran de verrouillage et l'écran de connexion affichaient encore le fond de Fedora : ils affichent maintenant « Ankh Signal » ;
   - la VM démarre avec l'initramfs reconstruit et Secure Boot actif, et 4 captures sont prises pendant le démarrage ;
   - passer à l'image publiée a téléchargé 252,7 Mo ; la part de l'initramfs est à mesurer (D-027).
+- **PR #8 fusionnée** le 2026-10-09.
+- **Le nécessaire dès l'installation** (D-035, 2026-10-09), à ma demande, en cours de vérification par la CI :
+  - **VLC** et **OnlyOffice** sont des paquets de l'image, comme Chrome (mon choix « A »), et non plus des Flatpaks à télécharger au premier démarrage ;
+  - **LibreOffice est retiré**, comme Firefox ;
+  - VLC ouvre par défaut la vidéo et l'audio, OnlyOffice les documents Word, Excel, PowerPoint et OpenDocument ;
+  - **Claude et GitHub** : Chrome les installe lui-même, chacun dans sa fenêtre, dès sa première ouverture ;
+  - **conteneur de dev** : Node.js dans la version la plus récente que Fedora propose (au lieu de la 22), et la dernière version de Java par défaut (au lieu de la 25).
+- **Ma demande d'identité visuelle** (2026-10-09) : sombre partout (variante claire disponible), barre flottante en bas, icônes KDE avec dossiers violets. Des aperçus me seront montrés avant intégration (D-037).
+- **Un seul Ankh** (D-036, 2026-10-09) : `ankh-dev` n'était pas une autre version d'Ankh, mais la boîte à outils du dev. Mon choix : tous les outils (dev, hacking, gaming) dans le menu d'Ankh comme des applications ordinaires, isolés en dessous, sans « ankh-dev » à gérer.
+- **Mises à jour** : confirmé, rien ne se met à jour tout seul sur ma machine, c'est moi qui lance (D-031). La préparation du lundi sur GitHub est gardée.
+- **Captures d'écran à chaque travail** : Claude les joint à chaque compte rendu (règle ajoutée à CLAUDE.md).
+- **CI de la PR #9 verte** ([run du test en VM](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711)) :
+  - LibreOffice n'était pas dans la base ; un test garantit qu'il reste absent ;
+  - VLC 3.0.24 (dépôt de Fedora) et OnlyOffice 9.4.0 (dépôt officiel, signatures vérifiées) sont installés et deviennent les applications par défaut de leurs formats ;
+  - dans la VM, Chrome installe lui-même Claude et GitHub, et VLC et OnlyOffice s'ouvrent (captures `1-vlc` et `1-onlyoffice`) ;
+  - conteneur de dev : Node.js 24 (au lieu de 22) et Java 27 (au lieu de 25), que Fedora marque encore « early access » ;
+  - **panne trouvée et corrigée** : en VM, une mise à jour préparée ne s'appliquait pas au redémarrage, à cause d'un montage automatique de `/boot` ajouté par systemd. Il est masqué ; les 4 étapes du test passent de nouveau (D-004) ;
+  - OnlyOffice pèse 1,3 Go installé : une mise à jour d'Ankh devrait passer d'environ 500 Mo à environ 870 Mo (estimation, à mesurer, D-027).
 
 ---
 
@@ -146,15 +164,15 @@
 
 1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) : fusionné. Reste à vérifier à l'écran le navigateur par défaut dans KDE (captures).
-3. **Applications par défaut** (D-024) :
-   - VLC et OnlyOffice en Flatpak, préinstallés ;
-   - Claude et GitHub en applications web dans Chrome.
-4. **Conteneur de dev** (D-032) : fusionné. Ensuite :
+3. **Applications par défaut** (D-024, D-035) : PR #9 verte, à fusionner. Ensuite : regarder les captures de VLC et d'OnlyOffice, vérifier les codecs de VLC sur ma machine, et mesurer la taille d'une mise à jour.
+4. **Conteneur de dev** (D-032) : fusionné. Node.js 24 et Java 27 : dans la PR #9. Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
-   - vérifier la version de Java choisie par défaut, et proposer un Node.js plus récent que la 22 si Fedora en fournit un.
+   - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
 5. **Habillage Ankh** (D-033) : fusionné.
-6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : CI et VM vertes, PR #8 à fusionner après mon regard sur les captures.
-7. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
+7. **Un seul Ankh** (D-036, prochaine PR) : VS Code dans le menu dès l'installation, prêt au premier clic, sans « ankh-dev » à gérer. Steam en phase 5, outils Kali en phase 6, sur le même principe.
+8. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
+9. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
@@ -178,12 +196,16 @@
 - **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
 - **Taille des mises à jour** : 252,7 Mo pour passer d'une image Ankh à une autre sur la même base ; la part de Chrome, des fonds et de l'initramfs est à mesurer (D-027).
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
+- **D-035** : les codecs de VLC sur ma machine, et la taille réelle d'une mise à jour avec OnlyOffice (estimée à 870 Mo).
+- **Mise à jour non appliquée** (D-004) : corrigée et vérifiée en VM. Reste à comprendre pourquoi le même test passait sur `main` juste avant.
 
 ---
 
 ## Ce que je dois faire
 
-1. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-2. **Regarder les captures d'écran** de la PR en cours, une fois sa CI verte : page du run « Tester le démarrage en VM », section « Artifacts », fichier `captures-ankh-vm`. Me dire si le démarrage, la connexion, le bureau, Chrome et Discover ont l'air corrects.
-3. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-4. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
+1. **Fusionner la PR #9** ([lien](https://github.com/PatrickChoumi/Ankh/pull/9)), et me dire si je garde **Java 27** (« early access » chez Fedora) ou si je reviens à **Java 25** (LTS) par défaut dans le conteneur de dev.
+2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
+3. **Regarder les captures d'écran** de la PR #9 ([run du test en VM](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711)) : section « Artifacts », fichier `captures-ankh-vm`. Me dire si le démarrage, la connexion, le bureau, Chrome, Discover, VLC et OnlyOffice ont l'air corrects.
+4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+5. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
+6. **Pour que Claude voie et m'envoie les captures** : autoriser le domaine `blob.core.windows.net` dans les réglages réseau de l'environnement cloud (menu de l'environnement dans la barre de titre de la session → Edit → Network access → Allowed domains, case des gestionnaires de paquets laissée cochée). C'est là que GitHub range les captures de la VM.

@@ -63,6 +63,8 @@ test variant:
 
     echo "Test 2 : le timer de redémarrage automatique est masqué (D-010)"
     run '[[ "$(readlink /etc/systemd/system/bootc-fetch-apply-updates.timer)" == /dev/null ]]'
+    echo "Test 2 bis : le montage automatique de /boot est masqué, pour que les mises à jour s'appliquent (D-004)"
+    run '[[ "$(readlink /etc/systemd/system/boot.automount)" == /dev/null ]]'
 
     echo "Test 3 : module Discover des mises à jour système, à la version de Discover (D-028)"
     run 'q() { rpm -q --qf "%{VERSION}-%{RELEASE}" "$1"; }; [[ "$(q plasma-discover-rpm-ostree)" == "$(q plasma-discover)" ]]'
@@ -122,8 +124,11 @@ test variant:
     echo "Test 11 : plus rien de Fedora à l'écran, démarrage compris (D-034)"
     podman run --rm -i --network=none "${image}" bash -s < tests/sans-fedora.sh
 
+    echo "Test 12 : VLC et OnlyOffice présents et par défaut, LibreOffice absent, Claude et GitHub dans Chrome (D-035)"
+    podman run --rm -i --network=none "${image}" bash -s < tests/applications.sh
+
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
-        echo "Test 12 : module NVIDIA présent pour le noyau de l'image, et signé"
+        echo "Test 13 : module NVIDIA présent pour le noyau de l'image, et signé"
         run 'k="$(ls /usr/lib/modules)"; modinfo -k "${k}" nvidia > /dev/null && [[ -n "$(modinfo -k "${k}" -F signer nvidia)" ]]'
     fi
 
@@ -181,5 +186,19 @@ _test-dev:
         done
         echo "${attendues} extensions installées"
         grep -q "\"extensions.autoUpdate\": false" "${HOME}/.config/Code/User/settings.json"'
+
+    echo "Test 4 : Node.js le plus récent proposé par Fedora, dernière version d'OpenJDK par défaut (D-035)"
+    podman run --rm "${image}" bash -c 'set -euo pipefail
+        plus_recente="$(dnf5 -q repoquery --qf "%{name}\n" "nodejs*" | grep -xE "nodejs[0-9]+" | sed "s/^nodejs//" | sort -n | tail -n 1)"
+        node="$(node --version)"
+        echo "Node.js ${node} ; la plus récente proposée par Fedora : ${plus_recente}"
+        [[ "${node}" == "v${plus_recente}."* ]]
+        for c in java javac; do
+            attendu="$(readlink -f "$(rpm -qal "java-latest-openjdk*" | grep -E "/bin/${c}\$")")"
+            actuel="$(readlink -f "/usr/bin/${c}")"
+            echo "${c} : ${actuel}"
+            [[ "${actuel}" == "${attendu}" ]] || { echo "ÉCHEC : ${c} devrait être ${attendu}" >&2; exit 1; }
+        done
+        java -version'
 
     echo "Tous les tests de ankh-dev sont passés."
