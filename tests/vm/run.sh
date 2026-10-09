@@ -21,7 +21,8 @@
 # Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic). Après chaque
 # capture de Discover, son journal, pour expliquer un message d'erreur (D-028).
 # À l'étape 1, l'interface d'Ankh (D-037, D-039) : réglages appliqués dans la
-# session, menu, Dolphin, Konsole et réglages des couleurs.
+# session, menu, Dolphin, Konsole, réglages des couleurs, écrans de connexion
+# et de verrouillage.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -462,6 +463,14 @@ check_identity() {
     launch_in_session "$user" systemsettings kcm_colors
     sleep 20
     screenshot 1-reglages-couleurs
+    # Écran de verrouillage : verrouillé puis déverrouillé par logind, que
+    # l'écran de verrouillage de KDE écoute (le compte de test n'a pas de mot
+    # de passe à taper).
+    vm loginctl lock-sessions
+    sleep 10
+    screenshot 1-ecran-de-verrouillage
+    vm loginctl unlock-sessions
+    sleep 5
 }
 
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
@@ -557,6 +566,11 @@ screenshot 1-ecran-de-connexion
 
 log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
 add_test_account ankhvm 'Compte de test Ankh'
+# D-037 : écran de connexion, une fois un compte créé (sans compte, c'est
+# l'assistant de premier démarrage de KDE qui s'affiche, capturé plus haut).
+vm systemctl restart display-manager.service
+sleep 30
+screenshot 1-ecran-de-connexion-compte
 configure_autologin
 wait_desktop 1-bureau
 open_discover 1-discover-mises-a-jour
