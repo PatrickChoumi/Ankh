@@ -17,7 +17,7 @@
 # Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
 # connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement
 # par le gestionnaire de connexion),
-# Discover, Chrome, VLC et OnlyOffice.
+# Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic).
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -251,10 +251,10 @@ check_installed() {
     # D-031 : rien ne se télécharge ni ne s'installe sans moi.
     [[ $(vm systemctl is-enabled rpm-ostreed-automatic.timer) == masked ]] ||
         die "le téléchargement automatique du système n'est pas désactivé (D-031)"
-    # D-032 : raccourcis du conteneur de dev (le conteneur lui-même n'est pas
-    # créé dans la VM : gros téléchargement, testé à part en CI).
-    vm test -x /usr/libexec/ankh-dev -a -f /usr/share/applications/ankh-dev-creer.desktop ||
-        die "raccourcis du conteneur de dev absents (D-032)"
+    # D-036 : VS Code dans le menu dès l'installation (le premier clic est
+    # testé une fois, dans la session de test, par check_vscode).
+    vm test -x /usr/libexec/ankh-vscode -a -f /usr/share/applications/ankh-vscode.desktop ||
+        die "VS Code absent du menu (D-036)"
     # D-033 : le système s'appelle Ankh, jusque dans le menu de démarrage
     # (titre écrit par ostree à partir de PRETTY_NAME).
     # shellcheck disable=SC2016 # variables lues dans la VM
@@ -283,6 +283,29 @@ capture_app() {
     vm systemd-run --machine=ankhvm@ --user --collect --quiet "$exe"
     sleep 30
     screenshot "$name"
+}
+
+# D-036 : premier lancement de VS Code depuis le menu, comme un clic : une
+# fenêtre montre la préparation de l'environnement de dev (téléchargement du
+# conteneur, extensions), puis VS Code s'ouvre. Captures des deux moments.
+check_vscode() {
+    local deadline=$((SECONDS + 1500))
+    vm systemd-run --machine=ankhvm@ --user --collect --quiet /usr/libexec/ankh-vscode
+    sleep 60
+    screenshot 1-vscode-preparation
+    until vm pgrep -u ankhvm -f /usr/share/code/code > /dev/null; do
+        if ((SECONDS >= deadline)); then
+            screenshot 1-vscode-echec
+            if ! vm "sudo -u ankhvm XDG_RUNTIME_DIR=/run/user/\$(id -u ankhvm) podman ps -a"; then
+                echo "(conteneurs du compte de test illisibles)"
+            fi
+            die "VS Code ne s'est pas ouvert 25 minutes après le premier clic (D-036)"
+        fi
+        sleep 15
+    done
+    sleep 45
+    screenshot 1-vscode
+    echo "VS Code ouvert au premier clic, environnement de dev préparé"
 }
 
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
@@ -389,6 +412,7 @@ screenshot 1-chrome
 check_web_apps
 capture_app 1-vlc vlc
 capture_app 1-onlyoffice onlyoffice-desktopeditors
+check_vscode
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
@@ -400,6 +424,11 @@ reboot_vm
 check_boot
 check_ankh
 wait_desktop 2-bureau-ankh-publiee
+# D-028 : Discover cherche les mises à jour dans le vrai registre (l'image
+# installée à l'étape 1 vient du stockage local de la CI, sans registre).
+vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
+sleep 30
+screenshot 2-discover-mises-a-jour
 [[ $(booted image.image) == "$other" ]] || { explain_deployment; die "l'image démarrée n'est pas $other"; }
 [[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "le basculement n'a pas changé de version"; }
 

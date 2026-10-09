@@ -95,10 +95,12 @@ test variant:
     [[ "$(readlink /etc/systemd/user/flatpak-user-update.timer)" == /dev/null ]] &&
         grep -qx "AutomaticUpdatePolicy=none" /etc/rpm-ostreed.conf'
 
-    echo "Test 9 : raccourcis du conteneur de dev, et socket Podman de l'utilisateur (D-032)"
-    run 'test -x /usr/libexec/ankh-dev && test -f /usr/share/ankh/distrobox.ini &&
-        command -v distrobox konsole > /dev/null &&
-        desktop-file-validate /usr/share/applications/ankh-dev-creer.desktop /usr/share/applications/ankh-dev-mettre-a-jour.desktop &&
+    echo "Test 9 : VS Code dans le menu, prêt au premier clic, et socket Podman de l'utilisateur (D-032, D-036)"
+    run 'test -x /usr/libexec/ankh-dev && test -x /usr/libexec/ankh-vscode && test -f /usr/share/ankh/distrobox.ini &&
+        command -v distrobox konsole podman > /dev/null &&
+        desktop-file-validate /usr/share/applications/ankh-vscode.desktop /usr/share/applications/ankh-dev-mettre-a-jour.desktop &&
+        test ! -e /usr/share/applications/ankh-dev-creer.desktop &&
+        find /usr/share/icons -name "applications-development.*" | grep -q . &&
         test -L /etc/systemd/user/sockets.target.wants/podman.socket'
 
     echo "Test 10 : habillage Ankh sur le bureau, ID de Fedora conservé (D-033)"

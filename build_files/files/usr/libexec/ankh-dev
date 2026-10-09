@@ -1,19 +1,29 @@
 #!/usr/bin/bash
-# Crée ou met à jour le conteneur de dev (D-032), seulement quand je le lance
-# depuis le menu (D-031).
+# Crée ou met à jour le conteneur de dev (D-032), seulement quand je le
+# décide (D-031) : la création se fait au premier lancement de VS Code depuis
+# le menu (D-036, /usr/libexec/ankh-vscode), la mise à jour par l'entrée
+# « Mettre à jour les outils de dev ».
 set -euo pipefail
 
 case "${1:-}" in
     creer)
+        echo "Préparation de l'environnement de dev : VS Code, Java, Python, JavaScript,"
+        echo "C/C++ et bases de données. Gros téléchargement, seulement cette fois-ci."
+        echo
         distrobox assemble create --file /usr/share/ankh/distrobox.ini
         distrobox enter ankh-dev -- /usr/libexec/ankh-dev-setup
+        echo "Terminé. VS Code va s'ouvrir."
         ;;
     mettre-a-jour)
+        if ! podman container exists ankh-dev; then
+            echo "Les outils de dev ne sont pas encore préparés : ouvre VS Code une première fois depuis le menu." >&2
+            exit 1
+        fi
         distrobox upgrade ankh-dev
+        echo "Terminé. Cette fenêtre peut être fermée."
         ;;
     *)
         echo "Usage : ankh-dev creer | mettre-a-jour" >&2
         exit 2
         ;;
 esac
-echo "Terminé. Cette fenêtre peut être fermée."
