@@ -1107,6 +1107,14 @@
   - le centre d'accueil de KDE (Konqi) s'ouvre à la première connexion, en clair : il suivra les couleurs d'Ankh une fois intégrées ;
   - la VM est en anglais : les comptes de test n'ont pas de langue réglée. La langue de ma machine se choisit à l'installation.
 - **Intégration (2026-10-09, avec D-039)** : le jeu de couleurs `Ankh.colors` va dans `/usr/share/color-schemes`, et les couleurs et le profil Konsole dans `/usr/share/konsole`. Le thème global par défaut devient « Ankh Sombre », avec le jeu de couleurs Ankh. Le message de bienvenue de Konsole, qui conseille Toolbx et DNF, n'est plus affiché aux nouveaux comptes. Détails et tests : D-039.
+- **Deuxième partie : moments clés (commencée le 2026-10-09, [PR #11](https://github.com/PatrickChoumi/Ankh/pull/11))** :
+  - **Écran de chargement de la session**, après la connexion : celui d'Ankh, adapté de celui de KDE, avec le fond et le logo d'Ankh, sans le logo ni le texte de Plasma (`build_files/plasma/ankh-splash.qml`). Chaque thème global d'Ankh le désigne ; Fedora désignait celui de KDE. Vérifié par le Test 14 ; capturé en VM, rejoué en mode test (`ksplashqml --test`).
+  - **Écrans de connexion et de verrouillage** : le test en VM les capture maintenant. Leur style sera revu sur ces captures.
+  - **Assistant de premier démarrage de KDE** (`plasma-setup`), vu sur la première capture de la VM : sans compte, c'est lui qui s'affiche (« Welcome to Plasma Desktop », bouton « Begin Setup »), et il crée le compte. D'après son code (<https://invent.kde.org/plasma/plasma-setup>, vérifié le 2026-10-09) :
+    - le titre « Plasma Desktop » est écrit en dur (`src/qml/LandingComponent.qml`) ; « Powered by » affiche le nom du système, donc « Ankh » ;
+    - son image de fond est cherchée dans le fond d'écran « Next » de KDE ; absent de l'image, il laisse un fond gris uni ;
+    - son choix clair/sombre applique les thèmes globaux Breeze de KDE (`modules/prepareutil/prepareutil.cpp`), puis les réglages de l'assistant sont copiés dans le nouveau compte (`src/auth/authhelper.cpp`). Toucher ce choix remplacerait donc le thème d'Ankh par celui de KDE ;
+    - à traiter : options à présenter, après les captures avec le nouveau thème par défaut.
 - **Pas encore traité** : polices (Inter, JetBrains Mono : présence dans Fedora À VALIDER), icône de VS Code dans le style d'Ankh, images de `generic-logos` (voir D-034), curseurs, effets.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
