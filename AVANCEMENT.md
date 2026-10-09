@@ -144,7 +144,10 @@
   - VLC ouvre par défaut la vidéo et l'audio, OnlyOffice les documents Word, Excel, PowerPoint et OpenDocument ;
   - **Claude et GitHub** : Chrome les installe lui-même, chacun dans sa fenêtre, dès sa première ouverture ;
   - **conteneur de dev** : Node.js dans la version la plus récente que Fedora propose (au lieu de la 22), et la dernière version de Java par défaut (au lieu de la 25).
-- **Ma demande d'identité visuelle** (2026-10-09) : sombre partout (variante claire disponible), barre flottante en bas, icônes KDE avec dossiers violets. Des aperçus me seront montrés avant intégration (D-036, prochaine PR).
+- **Ma demande d'identité visuelle** (2026-10-09) : sombre partout (variante claire disponible), barre flottante en bas, icônes KDE avec dossiers violets. Des aperçus me seront montrés avant intégration (D-037).
+- **Un seul Ankh** (D-036, 2026-10-09) : `ankh-dev` n'était pas une autre version d'Ankh, mais la boîte à outils du dev. Mon choix : tous les outils (dev, hacking, gaming) dans le menu d'Ankh comme des applications ordinaires, isolés en dessous, sans « ankh-dev » à gérer.
+- **Mises à jour** : confirmé, rien ne se met à jour tout seul sur ma machine, c'est moi qui lance (D-031). La préparation du lundi sur GitHub est gardée.
+- **Captures d'écran à chaque travail** : Claude les joint à chaque compte rendu (règle ajoutée à CLAUDE.md).
 
 ---
 
@@ -160,8 +163,9 @@
    - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
 5. **Habillage Ankh** (D-033) : fusionné.
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
-7. **Identité visuelle d'Ankh** (D-036, prochaine PR) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
-8. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+7. **Un seul Ankh** (D-036, prochaine PR) : VS Code dans le menu dès l'installation, prêt au premier clic, sans « ankh-dev » à gérer. Steam en phase 5, outils Kali en phase 6, sur le même principe.
+8. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
+9. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
@@ -195,3 +199,4 @@
 2. **Regarder les captures d'écran** de la PR en cours, une fois sa CI verte : page du run « Tester le démarrage en VM », section « Artifacts », fichier `captures-ankh-vm`. Me dire si le démarrage, la connexion, le bureau, Chrome et Discover ont l'air corrects.
 3. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
 4. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
+5. **Pour que Claude voie et m'envoie les captures** : autoriser le domaine `blob.core.windows.net` dans les réglages réseau de l'environnement cloud (menu de l'environnement dans la barre de titre de la session → Edit → Network access → Allowed domains, case des gestionnaires de paquets laissée cochée). C'est là que GitHub range les captures de la VM.

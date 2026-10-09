@@ -28,9 +28,9 @@
 | D-008 | Aucune sécurité désactivée pour faire marcher un outil | DÉCIDÉ |
 | D-009 | Hôte reproductible : pas de `rpm-ostree install`, pas de `curl \| bash` | DÉCIDÉ |
 | D-010 | Pas de redémarrage automatique | DÉCIDÉ |
-| D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ (applications du quotidien dans l'image : D-035) |
-| D-012 | Environnement dev en conteneur | DÉCIDÉ (précisé par D-032) |
-| D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ |
+| D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ (applications du quotidien dans l'image : D-035 ; Steam dans le menu : D-036) |
+| D-012 | Environnement dev en conteneur | DÉCIDÉ (précisé par D-032 et D-036) |
+| D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ (outils dans le menu : D-036) |
 | D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
 | D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
 | D-016 | Le dépôt est la source de vérité, toute affirmation importante est prouvée | DÉCIDÉ (complétée par D-020) |
@@ -49,10 +49,11 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
-| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035) |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (CI et VM vertes ; rendu À VALIDER sur les captures) |
 | D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI À VENIR) |
+| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (mise en œuvre : dev à la prochaine PR, gaming en phase 5, hacking en phase 6) |
 
 ---
 
@@ -722,6 +723,7 @@
   - Discover me **prévient** qu'une mise à jour existe (D-028), et je la lance quand je le décide.
   - Le conteneur de dev se met à jour seulement quand je le lance, par un raccourci du menu (à faire avec le conteneur de dev, D-012). Ce choix remplace ma réponse du 2026-10-09, qui demandait une mise à jour automatique chaque semaine.
   - Côté CI, rien ne change pour moi : la reconstruction hebdomadaire de l'image (D-023) et les PR de Renovate (D-017) **préparent** des mises à jour. Rien n'arrive sur la machine tant que je ne l'ai pas demandé.
+  - **Confirmé le 2026-10-09** : je ne veux pas de mise à jour hebdomadaire sur ma machine ; c'est moi qui la lance. La préparation du lundi sur GitHub est gardée (mon choix « Garder la préparation »), car elle n'installe rien.
 - **Raisons** : garder la main sur ma connexion lente (D-027) et sur le moment où le système change.
 - **Conséquence assumée** : si je tarde à mettre à jour, les correctifs de sécurité attendent, ceux de Chrome compris. La notification de Discover est là pour me le rappeler.
 - **Vérification** :
@@ -920,7 +922,7 @@
   - Flatpaks préinstallés (D-024 d'origine) : téléchargement au premier démarrage, et version de Flatpak de la base à vérifier.
   - Garder LibreOffice à côté d'OnlyOffice : deux suites pour le même usage.
 - **Conséquences** :
-  - **Taille** : l'image grossit d'OnlyOffice et de VLC. Toute reconstruction renouvelle la couche d'Ankh en entier (252,7 Mo avant ce changement, D-034), donc chaque mise à jour hebdomadaire retélécharge aussi OnlyOffice et VLC. Taille À MESURER par la CI (D-027).
+  - **Taille** : l'image grossit d'OnlyOffice et de VLC. Toute reconstruction renouvelle la couche d'Ankh en entier (252,7 Mo avant ce changement, D-034), donc chaque mise à jour que je lance retélécharge aussi OnlyOffice et VLC. Taille À MESURER par la CI (D-027).
   - **Chrome affiche « Géré par votre organisation »**, à cause de la politique qui installe Claude et GitHub. C'est normal, et la protection de D-026 ajoutera d'autres politiques. Ces deux applications ne se désinstallent pas depuis Chrome.
   - **Claude et GitHub apparaissent dans le menu après la première ouverture de Chrome**, avec internet : c'est Chrome qui les installe.
   - **Node.js** : la version la plus récente peut être une version impaire, sans support long (environ 6 mois). La reconstruction hebdomadaire suit les versions proposées par Fedora.
@@ -955,3 +957,25 @@
   - l'acceptation des signatures d'OnlyOffice par RPM de Fedora 44 ;
   - l'installation de Claude et de GitHub par Chrome (test en VM) ;
   - la taille ajoutée à chaque mise à jour (D-027).
+
+## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
+
+- **Statut** : DÉCIDÉ (2026-10-09), mon choix. Mise en œuvre : le dev à la prochaine PR, le gaming en phase 5, le hacking en phase 6.
+- **Contexte** : « Je ne comprends pas pourquoi il y a une version ankh-dev. De base, Ankh doit intégrer les outils de dev, de hacking et de gaming, les trois en même temps. »
+  - `ankh-dev` n'est pas une autre version d'Ankh : c'est l'image du conteneur de dev (D-032), qui tourne dans Ankh. Aujourd'hui, il faut le créer depuis le menu (« Créer l'environnement de dev ») avant d'avoir VS Code.
+  - Il n'y a qu'un système, Ankh, et sa variante pour NVIDIA (D-021).
+- **Options présentées** :
+  1. **Un seul Ankh, outils isolés dessous** (recommandée) : tout apparaît dans le menu comme des applications ordinaires ; dev et hacking tournent isolés en dessous ;
+  2. dev dans l'image, hacking isolé : image et mises à jour plus lourdes (1 à 2 Go de plus, à mesurer) ;
+  3. tout dans l'image : remplace la règle 8 et D-013 ; un outil de hacking piégé aurait accès à tout le système et à mes fichiers (déconseillée).
+- **Décision : option 1.**
+  - Les outils apparaissent dans le menu d'Ankh comme des applications ordinaires : VS Code et les outils de dev, les outils de hacking (Kali), Steam. Je n'ai pas de « ankh-dev » à gérer.
+  - En dessous, le placement ne change pas (règle 5) : dev dans un conteneur (D-012, D-032), hacking dans Kali en Podman rootless (D-013), jeux par Steam en Flatpak (D-011).
+- **Raisons** :
+  - Un outil de hacking piégé ne touche ni le système ni mes fichiers (règle 8, D-013).
+  - L'image reste légère pour ma connexion (D-027).
+- **Avec D-031** (rien ne se télécharge sans moi) : préparer un outil télécharge beaucoup (le conteneur de dev, Steam, Kali). Mise en œuvre prévue : le premier clic sur l'outil dans le menu le prépare, en montrant la progression, puis l'ouvre ; les fois suivantes, il s'ouvre directement. À VALIDER en VM.
+- **Mise en œuvre prévue** :
+  - **dev** (prochaine PR) : « VS Code » dans le menu dès l'installation. Il crée le conteneur au premier clic, puis s'ouvre. Les raccourcis « Créer l'environnement de dev » et « Mettre à jour l'environnement de dev » disparaissent du menu au profit d'une seule entrée de mise à jour des outils, sans le mot « ankh-dev ». Test en VM avec captures : VS Code présent dans le menu, conteneur créé au premier clic, VS Code ouvert ;
+  - **gaming** (phase 5) : Steam dans le menu dès l'installation, sur le même principe ;
+  - **hacking** (phase 6) : les outils de Kali dans le menu, lancés dans le conteneur Kali isolé. Les questions de la phase 6 (ANKH-SPEC.md) restent à répondre.
