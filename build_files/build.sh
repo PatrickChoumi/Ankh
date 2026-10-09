@@ -92,3 +92,64 @@ grep -qx 'AutomaticUpdatePolicy=none' /etc/rpm-ostreed.conf
 # Les fichiers appartiennent à root, quel que soit le propriétaire dans la CI.
 cp -a --no-preserve=ownership /ctx/files/. /
 systemctl --global enable podman.socket
+
+# D-033 : habillage Ankh, sur le bureau seulement (modifie D-001). Le logo et
+# les fonds d'écran viennent de build_files/artwork et sont copiés juste au-dessus.
+# Rien ne change au démarrage : l'écran de démarrage, le chargeur EFI signé
+# et Secure Boot restent ceux de Fedora.
+#
+# Nom affiché « Ankh », dans « À propos de ce système » et dans le menu de
+# démarrage : ostree écrit le titre de chaque entrée à partir de PRETTY_NAME
+# (src/libostree/ostree-sysroot-deploy.c). ID reste « fedora » : des outils
+# s'en servent pour reconnaître le système (Aurora, qui l'a changé, doit
+# corriger grub2-switch-to-blscfg en retour).
+if [[ "$(readlink -f /etc/os-release)" != "$(readlink -f /usr/lib/os-release)" ]]; then
+    echo "/etc/os-release n'est pas un lien vers /usr/lib/os-release" >&2
+    exit 1
+fi
+os_release="$(readlink -f /usr/lib/os-release)"
+for key in NAME PRETTY_NAME LOGO HOME_URL ANSI_COLOR DEFAULT_HOSTNAME; do
+    sed -i "/^${key}=/d" "${os_release}"
+done
+cat >> "${os_release}" << 'OSRELEASE'
+NAME="Ankh"
+PRETTY_NAME="Ankh"
+LOGO=ankh-logo
+HOME_URL="https://github.com/PatrickChoumi/Ankh"
+ANSI_COLOR="0;38;2;167;139;250"
+DEFAULT_HOSTNAME="ankh"
+OSRELEASE
+grep -qx 'ID=fedora' "${os_release}"
+cat "${os_release}"
+
+# Nom de machine par défaut : « ankh », pour toutes les machines (générique,
+# D-021). DEFAULT_HOSTNAME ne suffit pas : l'initramfs de Fedora nomme déjà la
+# machine « fedora », et systemd garde un nom existant si /etc/hostname est
+# absent (src/shared/hostname-setup.c, hostname_setup ; vu en VM). Un
+# changement fait avec hostnamectl reste local à la machine, comme tout /etc.
+# Le fichier de la base, s'il existe, est vu tel quel grâce à
+# « podman build --no-hostname » (Justfile).
+if [[ -e /etc/hostname ]]; then
+    echo "/etc/hostname existe déjà dans la base (« $(cat /etc/hostname) ») : réglage à fusionner à la main" >&2
+    exit 1
+fi
+echo ankh > /etc/hostname
+
+# Logo dans le thème d'icônes : le cache est refait, car ostree met la même
+# date à tous les fichiers et un cache périmé paraîtrait encore valide.
+gtk-update-icon-cache --force /usr/share/icons/hicolor
+
+# Fond d'écran par défaut : celui du thème global (Plasma lit [Wallpaper]
+# Image= dans son fichier defaults, plasma-workspace,
+# wallpapers/defaultwallpaper.cpp). D'après le code de Plasma, le bureau,
+# l'écran de verrouillage et l'écran de connexion le reprennent. Chaque thème
+# global est réglé, pour garder le fond d'Ankh quel que soit le thème choisi.
+mapfile -t lnf_defaults < <(grep -l '^\[Wallpaper\]' /usr/share/plasma/look-and-feel/*/contents/defaults)
+if [[ ${#lnf_defaults[@]} -eq 0 ]]; then
+    echo "Aucun thème global ne règle le fond d'écran par défaut" >&2
+    exit 1
+fi
+for f in "${lnf_defaults[@]}"; do
+    echo "${f} : fond d'origine « $(sed -n '/^\[Wallpaper\]/,/^\[/ s/^Image=//p' "${f}") »"
+    sed -i '/^\[Wallpaper\]/,/^\[/ s/^Image=.*/Image=Ankh/' "${f}"
+done

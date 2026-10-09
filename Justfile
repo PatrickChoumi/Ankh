@@ -26,8 +26,11 @@ build variant:
         description="Ankh, conteneur de dev (D-032)"
     fi
     echo "Construction de {{ variant }} ${version} à partir de ${base}"
+    # --no-hostname : podman ne fournit pas son propre /etc/hostname pendant la
+    # construction, et celui écrit par build.sh reste dans l'image (D-033).
     podman build \
         --pull=missing \
+        --no-hostname \
         --build-arg "BASE_IMAGE=${base}" \
         --label "org.opencontainers.image.version=${version}" \
         --label "version=${version}" \
@@ -96,8 +99,25 @@ test variant:
         desktop-file-validate /usr/share/applications/ankh-dev-creer.desktop /usr/share/applications/ankh-dev-mettre-a-jour.desktop &&
         test -L /etc/systemd/user/sockets.target.wants/podman.socket'
 
+    echo "Test 10 : habillage Ankh sur le bureau, ID de Fedora conservé (D-033)"
+    run '. /etc/os-release && [[ "${NAME}" == Ankh && "${PRETTY_NAME}" == Ankh && "${ID}" == fedora && "${LOGO}" == ankh-logo ]] &&
+        grep -aq ankh-logo /usr/share/icons/hicolor/icon-theme.cache &&
+        test -f /usr/share/wallpapers/Ankh/metadata.json -a -f /usr/share/wallpapers/Ankh/contents/images/3840x2160.jpg -a -f /usr/share/wallpapers/Ankh/contents/images_dark/3840x2160.jpg &&
+        test -f /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/ankh-lanceur.js &&
+        for f in /usr/share/plasma/look-and-feel/*/contents/defaults; do
+            grep -q "^\[Wallpaper\]" "${f}" || continue
+            [[ "$(sed -n "/^\[Wallpaper\]/,/^\[/ s/^Image=//p" "${f}")" == Ankh ]] || { echo "Fond par défaut inchangé : ${f}" >&2; exit 1; }
+        done'
+    # podman run fournit son propre /etc/hostname : celui de l'image se lit
+    # par un montage de l'image.
+    nom="$(podman run --rm --network=none --mount "type=image,source=${image},destination=/image" "${image}" cat /image/etc/hostname)"
+    if [[ "${nom}" != ankh ]]; then
+        echo "ÉCHEC : /etc/hostname de l'image vaut « ${nom} » au lieu de « ankh »" >&2
+        exit 1
+    fi
+
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
-        echo "Test 10 : module NVIDIA présent pour le noyau de l'image, et signé"
+        echo "Test 11 : module NVIDIA présent pour le noyau de l'image, et signé"
         run 'k="$(ls /usr/lib/modules)"; modinfo -k "${k}" nvidia > /dev/null && [[ -n "$(modinfo -k "${k}" -F signer nvidia)" ]]'
     fi
 

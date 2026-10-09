@@ -18,7 +18,7 @@
 
 | ID | Décision | Statut |
 |---|---|---|
-| D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021) |
+| D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021 ; « pas de branding » modifié par D-033) |
 | D-002 | Une seule machine, un seul GPU en V1 | REMPLACÉE par D-021 |
 | D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
 | D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe) |
@@ -49,7 +49,8 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
-| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (extensions VS Code PROPOSÉES — À VALIDER ; mise en œuvre en cours) |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions VS Code PROPOSÉES — À VALIDER) |
+| D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (rendu à l'écran À VALIDER en VM) |
 
 ---
 
@@ -64,6 +65,7 @@
   - Plusieurs variantes pour plusieurs profils d'utilisateurs.
 - **Vérification** : décision de périmètre, pas technique. Critère d'application : tout ajout qui ne sert qu'à du matériel ou à des usages absents d'ANKH-SPEC.md est refusé.
 - **Modifiée par** : D-021 (2026-10-07). « Une seule machine » est remplacé par « une image générique pour le maximum de PC ». Le caractère personnel et non public reste inchangé.
+- **Modifiée par** : D-033 (2026-10-09). « Pas de branding » devient « habillage Ankh sur le bureau seulement » : nom, logo et fonds d'écran. Pas d'ISO custom, pas de changement au démarrage.
 
 ## D-002 — Une seule machine, un seul GPU en V1
 
@@ -790,3 +792,65 @@
     - `just test ankh` : les raccourcis, distrobox, Konsole et le socket Podman sont présents ;
     - en VM, les raccourcis sont présents. Le conteneur lui-même n'est pas créé dans la VM, à cause de la taille du téléchargement.
   - **À faire par moi après la première publication** : rendre public le paquet `ankh-dev` sur GHCR, comme `ankh` et `ankh-nvidia`. Sinon distrobox ne peut pas le télécharger.
+- **Résultats de la CI ([PR #6](https://github.com/PatrickChoumi/Ankh/pull/6), 2026-10-09)** : tout est vert.
+  - **Construction de `ankh-dev`** : environ 2 minutes. La clé de VS Code est acceptée par RPM de Fedora 44 : son autosignature est en SHA-256, pas en SHA1 (vérifié avec `gpg --list-packets`). L'archive de secours n'est donc pas nécessaire.
+  - **Versions installées** ([journal](https://github.com/PatrickChoumi/Ankh/actions/runs/37895079755/job/113704494907)) :
+    - Java : OpenJDK 25.0.4.1, Maven 3.9.11 ;
+    - Python 3.14.8, pip 26.0.1, pipx 1.15.0, uv 0.12.19 ;
+    - Node.js 22.23.1, npm 10.9.8 ;
+    - GCC 16.2.1, Clang 22.1.8, GDB 17.2, CMake 4.3.0 ;
+    - git 2.55.0, gh 2.97.0 ;
+    - clients PostgreSQL 18.6, MariaDB 11.8.8, SQLite 3.51.2, Valkey 9.0.6 ;
+    - Podman 5.8.7 (podman-remote), podman-compose 1.6.0 ;
+    - VS Code 1.141.0.
+  - **Extensions** : les 15 extensions de la liste s'installent à la création, avec leurs dépendances (Pylance, débogueurs Java et Python, CMake Tools…). Le réglage « pas de mise à jour automatique » est écrit.
+  - **Test en VM** ([run 37895079821](https://github.com/PatrickChoumi/Ankh/actions/runs/37895079821)) : les 4 étapes réussissent et les raccourcis du conteneur sont présents sur le système démarré.
+  - **À VALIDER** :
+    - `java -version` affiche la 25, alors que `java-latest-openjdk` est demandé. Il faut vérifier s'il installe une version plus récente à côté, que Maven ne choisit pas par défaut ;
+    - Node.js 22 est la version par défaut de Fedora 44. Une version LTS plus récente existe peut-être dans un paquet séparé : à vérifier, puis à me proposer si je veux des outils à la pointe ;
+    - la création réelle du conteneur et VS Code dans le menu, en VM ou sur la machine.
+
+## D-033 — Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001)
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-001 (« pas de branding »). Le rendu à l'écran est À VALIDER sur les captures de la VM.
+- **Contexte** : je veux voir « Ankh » à la place de Fedora, avec un logo et des fonds d'écran à moi. D-001 interdisait le branding pour éviter la charge d'une distribution publique ; un habillage limité au bureau reste léger.
+- **Trois niveaux étudiés** :
+  1. **Bureau** : nom affiché, logo, fonds d'écran, écran de connexion, icône du menu. Facile, aucun risque pour le démarrage.
+  2. **Écran de démarrage** (Plymouth, où se tape le mot de passe LUKS) : il faudrait régénérer l'initramfs dans l'image, donc toucher au démarrage et au déverrouillage. Écarté pour l'instant.
+  3. **Le reste** : noms des paquets et des dépôts, « fc44 » dans la version du noyau, entrée « Fedora » du BIOS et fichiers EFI signés par Fedora pour Secure Boot. On n'y touche pas : les modifier imposerait de re-signer le démarrage (règle 7 de CLAUDE.md).
+- **Mes choix (2026-10-09)** :
+  - **Niveau 1 seulement**, le bureau.
+  - « Ankh » est juste le nom. Le design doit être **épuré**, évoquer **le dev, le hacking, le gaming et le minimalisme**, et rester **élégant**.
+  - Claude dessine une première version. Sur trois pistes proposées (curseur, pixel, trait), j'ai choisi **« Curseur »** avec un accent **violet**.
+- **Le design** :
+  - **Logo** : un A sans barre (Λ), dont la barre devient un **curseur de terminal** violet, sur une **touche de clavier** graphite. Il évoque l'invite de commande (dev, hacking) et le λ de Half-Life (gaming).
+  - **Fonds d'écran** : un clair et un sombre, que Plasma choisit selon le thème de couleurs. Un dégradé graphite (ou gris clair), une grille de points très discrète, le A et une lueur violette.
+  - Couleurs : blanc `#e6edf3`, graphite `#1b212b`, violet `#a78bfa` (`#7c3aed` sur fond clair, pour le contraste).
+  - Sources : `build_files/artwork/generer.py`, qui dessine le logo (`ankh-logo.svg`) et les fonds. Les images produites sont versionnées dans `build_files/files/`.
+- **Mise en œuvre** (`build_files/build.sh`) :
+  - **Nom** : dans `/usr/lib/os-release`, `NAME` et `PRETTY_NAME` deviennent « Ankh ». Le nom apparaît alors dans « À propos de ce système » (KInfoCenter lit `NAME`, `LOGO` et `HOME_URL`) et dans le menu de démarrage. ostree écrit le titre de chaque entrée à partir de `PRETTY_NAME`, suivi de la version (source : `src/libostree/ostree-sysroot-deploy.c` de <https://github.com/ostreedev/ostree>) : « Ankh 44.AAAAMMJJ.HHMM (ostree:0) ».
+  - `LOGO=ankh-logo`, `HOME_URL` pointe vers le dépôt, `ANSI_COLOR` passe au violet.
+  - **Nom de la machine** : « ankh » au lieu de « fedora », affiché dans le terminal. C'est un nom générique, le même pour toutes les machines (D-021). Je peux le changer avec `hostnamectl`, et ce choix reste local, comme tout réglage de `/etc`.
+    - `DEFAULT_HOSTNAME=ankh` dans `os-release` ne suffit pas : l'initramfs de Fedora nomme déjà la machine « fedora », et systemd garde un nom existant si `/etc/hostname` est absent (source : `hostname_setup` dans `src/shared/hostname-setup.c` de <https://github.com/systemd/systemd>). Vu en VM : le journal du système démarré affichait encore « fedora » ([run 37897946381](https://github.com/PatrickChoumi/Ankh/actions/runs/37897946381)).
+    - L'image fournit donc `/etc/hostname` avec « ankh ».
+    - Pendant la construction, podman fournit son propre `/etc/hostname` à chaque étape (« By default, Buildah manages the /etc/hostname file », `podman-build`, option `--no-hostname`). `just build` passe donc `--no-hostname` pour que le fichier écrit reste dans l'image. `podman run` fait de même, et le Test 10 lit ce fichier par un montage de l'image.
+  - **`ID` reste `fedora`**. Des outils s'en servent pour reconnaître le système. Exemple : Aurora (Universal Blue), qui a changé `ID`, doit en retour corriger `grub2-switch-to-blscfg` (source : `build_scripts/base/18-image-info.sh` de <https://github.com/ublue-os/aurora>).
+  - **Logo** dans le thème d'icônes `hicolor`, avec son cache refait : ostree met la même date à tous les fichiers, donc un cache périmé paraîtrait encore valide.
+  - **Fond d'écran par défaut** : Plasma prend le fond indiqué par `[Wallpaper] Image=` dans le fichier `defaults` du thème global (source : `wallpapers/defaultwallpaper.cpp` de plasma-workspace). D'après le code de Plasma et de Plasma Login, le bureau, l'écran de verrouillage et l'écran de connexion le reprennent, sauf réglage contraire de Fedora : À VALIDER sur les captures. Chaque thème global de l'image est réglé sur « Ankh ».
+  - **Icône du menu des applications** : un script de mise à jour de Plasma (`ankh-lanceur.js`) la règle sur le logo d'Ankh. Plasma l'exécute une seule fois par utilisateur, après la création du bureau. Si je change l'icône ensuite, mon choix est respecté.
+- **Ce qui reste Fedora** : l'écran de démarrage, les fichiers EFI et l'entrée du BIOS, les noms de paquets et de dépôts, et les commandes du terminal (`rpm`, `dnf`, `uname`). Ankh reste construit sur Fedora.
+- **Conséquences assumées** :
+  - À chaque nouvelle version de Fedora, l'emplacement des réglages peut changer. Les tests de la CI le détectent.
+  - Après un retour à l'image de base Fedora, l'icône du menu reste réglée sur le logo d'Ankh, qui n'existe plus : l'icône apparaît vide jusqu'à ce que je la change.
+- **Alternatives rejetées** :
+  - Remplacer `ID=fedora` (comme Aurora) : risque de casser des outils pour un gain invisible.
+  - Remplacer le paquet `fedora-logos` (comme Aurora) : plus lourd, et inutile pour le niveau 1.
+  - Le symbole égyptien ☥ (première ébauche) : je veux un design qui évoque le dev, le hacking et le gaming.
+- **Vérification** :
+  - `just test ankh`, Test 10 : `NAME` et `PRETTY_NAME` valent « Ankh », `ID` vaut `fedora`, `/etc/hostname` vaut « ankh », le logo est dans le cache d'icônes, et le fond d'écran, son paquet et le script du lanceur sont présents. Chaque thème global pointe vers « Ankh » ;
+  - `tests/vm/run.sh` : sur le système démarré, le nom est « Ankh », la machine s'appelle « ankh », et le menu de démarrage affiche « Ankh ». Les captures montrent l'écran de connexion, le bureau, l'icône du menu et « À propos de ce système » ;
+  - le rendu à l'écran est À VALIDER par moi, sur ces captures.
+- **Résultats de la CI ([PR #7](https://github.com/PatrickChoumi/Ankh/pull/7), 2026-10-09)** :
+  - **Construction** : six thèmes globaux réglaient le fond par défaut, et tous pointent maintenant vers « Ankh ». Les trois thèmes de Fedora (`org.fedoraproject.fedora`, `fedoradark`, `fedoralight`) indiquaient « Fedora », les trois de Breeze « Next ».
+  - **Test en VM** ([run 37897946381](https://github.com/PatrickChoumi/Ankh/actions/runs/37897946381), captures dans l'artefact `captures-ankh-vm`) : le système démarré s'appelle « Ankh », avec `ID=fedora`, et le menu de démarrage affiche « Ankh ».
+  - **Correction** : le nom de machine restait « fedora ». `/etc/hostname` est ajouté, et le test en VM vérifie désormais que la machine s'appelle « ankh ». Le premier essai a échoué sur la garde « /etc/hostname existe déjà » : c'était le fichier fourni par podman pendant la construction, d'où `--no-hostname`.

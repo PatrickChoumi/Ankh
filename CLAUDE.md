@@ -32,7 +32,8 @@
     - reconstruction chaque lundi ;
     - aucune mise à jour automatique sur la machine (D-031) ;
     - captures d'écran de la VM.
-  - En cours : le conteneur de dev `ankh-dev`, avec VS Code et les langages fullstack (D-032).
+  - Fait ([#6](https://github.com/PatrickChoumi/Ankh/pull/6) fusionnée) : le conteneur de dev `ankh-dev`, avec VS Code et les langages fullstack (D-032).
+  - En cours : l'habillage Ankh sur le bureau : nom, logo, fonds d'écran (D-033).
   - Ensuite : VLC et OnlyOffice (D-024).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
@@ -55,7 +56,7 @@
 Elles valent pour moi comme pour tout assistant. Elles ne se contournent pas : si une règle bloque, on ouvre une nouvelle décision dans DECISIONS.md.
 
 ### Périmètre
-1. Pas de distribution publique, pas de branding, pas d'ISO custom en V1 (D-001).
+1. Pas de distribution publique, pas d'ISO custom en V1 (D-001). L'habillage Ankh se limite au bureau : nom, logo, fonds d'écran (D-033).
 2. Image générique : rien de propre à une machine particulière dans l'image. Couverture matérielle et variantes : D-021.
 3. Linux uniquement, pas de dual boot, pas de Windows natif. Une VM Windows reste possible (D-003).
 
@@ -134,7 +135,7 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | **9. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Installation en ligne avec LUKS, même lente (D-027). Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux, filtrage. Une semaine d'usage sans retour arrière définitif |
 | **10. Vivre avec Ankh** | Corriger selon mes vraies irritations | Plusieurs semaines d'usage. Irritations notées, puis traitées une par une. Taille des mises à jour mesurée (D-027). → **Ankh V1** |
 
-**Repoussé hors V1** : le matériel exclu par D-021 (NVIDIA ancien), distribution publique, branding, ISO custom (l'ISO hors ligne envisagée par D-027 est abandonnée), CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
+**Repoussé hors V1** : le matériel exclu par D-021 (NVIDIA ancien), distribution publique, habillage au-delà du bureau (écran de démarrage, D-033), ISO custom (l'ISO hors ligne envisagée par D-027 est abandonnée), CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
 
 **Règle de bascule** : Ankh ne remplace pas ma distro actuelle tant que la récupération (phase 8) n'a pas été testée.
 
