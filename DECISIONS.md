@@ -49,8 +49,9 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
-| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions VS Code PROPOSÉES — À VALIDER) |
-| D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (rendu à l'écran À VALIDER en VM) |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09) |
+| D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
+| D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (mise en œuvre en cours) |
 
 ---
 
@@ -727,7 +728,7 @@
 
 ## D-032 — Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur
 
-- **Statut** : DÉCIDÉ (2026-10-09), d'après mes réponses. Précise D-012 (outil et contenu) et D-024 (VS Code). La liste d'extensions VS Code est PROPOSÉE — À VALIDER par moi.
+- **Statut** : DÉCIDÉ (2026-10-09), d'après mes réponses. Précise D-012 (outil et contenu) et D-024 (VS Code). La liste d'extensions VS Code est validée par moi le 2026-10-09.
 - **Mes choix (2026-10-09)** :
   - Le dev se fait dans un conteneur, comme prévu par D-012, avec des outils **à la pointe**.
   - **Base : Fedora**, de la même famille que le système. VS Code est la version officielle de Microsoft.
@@ -757,7 +758,7 @@
   - **VS Code de Microsoft** :
     - son dépôt est signé par l'ancienne clé de Microsoft (`BC52 8686 B50D 79E3 39D3 721C EB3E 94AD BE12 29CF`), qui contient des signatures SHA1. Source : <https://learn.microsoft.com/linux/packages> et <https://packages.microsoft.com/keys/README> ;
     - si la version de RPM de Fedora 44 la refuse, on n'affaiblit **pas** la politique de sécurité de Fedora. On installe alors l'archive officielle de VS Code, vérifiée par son empreinte publiée. À VALIDER à la construction.
-- **Extensions VS Code proposées** (préinstallées à la création du conteneur, À VALIDER par moi) :
+- **Extensions VS Code** (préinstallées à la création du conteneur ; liste validée par moi le 2026-10-09) :
   - interface en français ;
   - Java : « Extension Pack for Java » ;
   - Python : « Python » (avec Pylance) ;
@@ -791,7 +792,7 @@
     - `just test ankh-dev` : chaque outil répond, VS Code démarre, chaque extension de la liste s'installe et le réglage est écrit ;
     - `just test ankh` : les raccourcis, distrobox, Konsole et le socket Podman sont présents ;
     - en VM, les raccourcis sont présents. Le conteneur lui-même n'est pas créé dans la VM, à cause de la taille du téléchargement.
-  - **À faire par moi après la première publication** : rendre public le paquet `ankh-dev` sur GHCR, comme `ankh` et `ankh-nvidia`. Sinon distrobox ne peut pas le télécharger.
+  - **À faire par moi après la première publication** : rendre public le paquet `ankh-dev` sur GHCR, comme `ankh` et `ankh-nvidia`. Sinon distrobox ne peut pas le télécharger. **Fait le 2026-10-09.**
 - **Résultats de la CI ([PR #6](https://github.com/PatrickChoumi/Ankh/pull/6), 2026-10-09)** : tout est vert.
   - **Construction de `ankh-dev`** : environ 2 minutes. La clé de VS Code est acceptée par RPM de Fedora 44 : son autosignature est en SHA-256, pas en SHA1 (vérifié avec `gpg --list-packets`). L'archive de secours n'est donc pas nécessaire.
   - **Versions installées** ([journal](https://github.com/PatrickChoumi/Ankh/actions/runs/37895079755/job/113704494907)) :
@@ -813,6 +814,7 @@
 ## D-033 — Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001)
 
 - **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-001 (« pas de branding »). Le rendu à l'écran est À VALIDER sur les captures de la VM.
+- **Complétée par** : D-034 (2026-10-09) : plus rien de Fedora à l'écran, écran de démarrage compris, et une collection de fonds d'écran.
 - **Contexte** : je veux voir « Ankh » à la place de Fedora, avec un logo et des fonds d'écran à moi. D-001 interdisait le branding pour éviter la charge d'une distribution publique ; un habillage limité au bureau reste léger.
 - **Trois niveaux étudiés** :
   1. **Bureau** : nom affiché, logo, fonds d'écran, écran de connexion, icône du menu. Facile, aucun risque pour le démarrage.
@@ -853,4 +855,31 @@
 - **Résultats de la CI ([PR #7](https://github.com/PatrickChoumi/Ankh/pull/7), 2026-10-09)** :
   - **Construction** : six thèmes globaux réglaient le fond par défaut, et tous pointent maintenant vers « Ankh ». Les trois thèmes de Fedora (`org.fedoraproject.fedora`, `fedoradark`, `fedoralight`) indiquaient « Fedora », les trois de Breeze « Next ».
   - **Test en VM** ([run 37897946381](https://github.com/PatrickChoumi/Ankh/actions/runs/37897946381), captures dans l'artefact `captures-ankh-vm`) : le système démarré s'appelle « Ankh », avec `ID=fedora`, et le menu de démarrage affiche « Ankh ».
+  - **Après correction** ([run 37901076405](https://github.com/PatrickChoumi/Ankh/actions/runs/37901076405)) : tout est vert, et la machine démarrée s'appelle « ankh ».
   - **Correction** : le nom de machine restait « fedora ». `/etc/hostname` est ajouté, et le test en VM vérifie désormais que la machine s'appelle « ankh ». Le premier essai a échoué sur la garde « /etc/hostname existe déjà » : c'était le fichier fourni par podman pendant la construction, d'où `--no-hostname`.
+
+## D-034 — Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033)
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Complète D-033 : son niveau 2 (l'écran de démarrage) est maintenant retenu. Mise en œuvre en cours.
+- **Mes choix (2026-10-09)** :
+  - **Visuellement, plus rien en rapport avec Fedora** : ni logo ni nom. Sous le capot, Fedora ne me dérange pas.
+  - **Écran de démarrage compris**, là où se tape le mot de passe LUKS : « Oui, testé en VM ».
+  - **Des fonds d'écran travaillés**, du style de ceux de Kali. Sur six pistes proposées, je les garde toutes, avec le fond épuré de D-033. **« Signal » est le fond par défaut.**
+- **Ce qui reste Fedora, sous le capot** : les paquets et leurs dépôts, le noyau (« fc44 »), l'identifiant `ID=fedora` (D-033), les commandes du terminal, et les fichiers EFI signés pour Secure Boot. L'entrée du menu du BIOS, visible seulement dans le menu de démarrage de la carte mère, est à étudier à part.
+- **Fonds d'écran** (`build_files/artwork/fonds.py`, appelé par `generer.py`), tous sombres, graphite et violet, autour du logo :
+  - **Signal** : rubans de lumière violet et cyan ;
+  - **Circuit** : pistes de circuit imprimé qui partent du logo ;
+  - **Topographie** : courbes de niveau ;
+  - **Glitch** : le logo décalé comme un signal vidéo abîmé ;
+  - **Horizon** : grille rétro qui file vers l'horizon, le logo en soleil ;
+  - **Code** : colonnes de code et l'invite `ankh ~ $`.
+- **Mise en œuvre** (`build_files/build.sh`) :
+  - **Logos** : `fedora-logos` est remplacé par `generic-logos`, le paquet que Fedora fournit à ses dérivés, comme le fait Aurora (`build_scripts/base/01-packages.sh` de <https://github.com/ublue-os/aurora>).
+  - **Écran de démarrage** : le thème de Plymouth reste celui de Fedora. Seule son image de filigrane, en bas de l'écran, devient le logo d'Ankh.
+  - **Initramfs** : l'écran de démarrage vit dans l'initramfs, qui est donc reconstruit. La commande est celle qu'Universal Blue utilise pour cette même base : `dracut --no-hostonly --reproducible --add ostree` (`build_files/initramfs.sh` de <https://github.com/ublue-os/main>). Secure Boot n'est pas concerné : l'initramfs n'est pas signé.
+  - Le reste (thèmes globaux et fonds d'écran de Fedora, pages d'accueil de Fedora…) est traité d'après l'inventaire du test ci-dessous.
+- **Risque assumé** : un initramfs cassé empêcherait le démarrage. Parades : le test en VM démarre l'image avec Secure Boot, et le retour arrière reste possible depuis le menu de démarrage. Le test en VM n'a pas de LUKS : l'écran du mot de passe est À VALIDER sur ma machine.
+- **Vérification** :
+  - `just test`, Test 11 (`tests/sans-fedora.sh`, lancé dans l'image) : il échoue s'il reste un élément visible au nom de Fedora, et l'affiche avec le paquet qui le fournit. Il couvre les paquets de logos, le nom du système, les entrées du menu, les thèmes et les fonds d'écran, les schémas de couleurs, le dépôt Flatpak de Fedora, et le filigrane de l'écran de démarrage, dans le thème et dans l'initramfs. Il servira aussi au passage à Fedora 45 ;
+  - `just test`, Test 10 : les sept fonds sont présents, et « Ankh Signal » est le fond par défaut de chaque thème global ;
+  - test en VM : le démarrage réussit avec l'initramfs reconstruit, et des captures sont prises pendant le démarrage (`0-demarrage-*`).

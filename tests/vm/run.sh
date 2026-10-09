@@ -280,6 +280,12 @@ qemu-system-x86_64 \
 qemu_pid=$!
 
 log "1/4 Premier démarrage de $image"
+# D-034 : l'écran de démarrage, capturé pendant le démarrage. Son moment
+# exact dépend de la vitesse de la VM, d'où plusieurs captures.
+for n in 1 2 3 4; do
+    sleep 5
+    screenshot "0-demarrage-$n"
+done
 wait_boot
 check_boot
 check_ankh

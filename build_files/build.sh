@@ -144,6 +144,7 @@ gtk-update-icon-cache --force /usr/share/icons/hicolor
 # wallpapers/defaultwallpaper.cpp). D'après le code de Plasma, le bureau,
 # l'écran de verrouillage et l'écran de connexion le reprennent. Chaque thème
 # global est réglé, pour garder le fond d'Ankh quel que soit le thème choisi.
+# Le fond par défaut est « Ankh Signal », de la collection de D-034.
 mapfile -t lnf_defaults < <(grep -l '^\[Wallpaper\]' /usr/share/plasma/look-and-feel/*/contents/defaults)
 if [[ ${#lnf_defaults[@]} -eq 0 ]]; then
     echo "Aucun thème global ne règle le fond d'écran par défaut" >&2
@@ -151,5 +152,45 @@ if [[ ${#lnf_defaults[@]} -eq 0 ]]; then
 fi
 for f in "${lnf_defaults[@]}"; do
     echo "${f} : fond d'origine « $(sed -n '/^\[Wallpaper\]/,/^\[/ s/^Image=//p' "${f}") »"
-    sed -i '/^\[Wallpaper\]/,/^\[/ s/^Image=.*/Image=Ankh/' "${f}"
+    sed -i '/^\[Wallpaper\]/,/^\[/ s/^Image=.*/Image=Ankh-Signal/' "${f}"
 done
+
+# D-034 : plus rien de Fedora à l'écran, démarrage compris (complète D-033).
+# Sous le capot, les paquets, le noyau et l'identifiant « fedora » restent.
+#
+# Logos : le paquet générique que Fedora fournit à ses dérivés remplace
+# fedora-logos, comme le fait Aurora (build_scripts/base/01-packages.sh de
+# https://github.com/ublue-os/aurora).
+# Garde-fou : ce changement ne doit retirer aucun autre paquet.
+avant="$(rpm -qa --qf '%{NAME}\n' | sort -u)"
+dnf5 -y swap fedora-logos generic-logos
+retires="$(comm -23 <(echo "${avant}") <(rpm -qa --qf '%{NAME}\n' | sort -u) | sed '/^fedora-logos$/d')"
+if [[ -n "${retires}" ]]; then
+    echo "Le changement de logos a aussi retiré : ${retires}" >&2
+    exit 1
+fi
+# Le cache d'icônes est refait après ce changement de logos (voir D-033).
+gtk-update-icon-cache --force /usr/share/icons/hicolor
+
+# Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
+# remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui
+# de Fedora ; seule son image de filigrane change.
+theme="$(plymouth-set-default-theme)"
+images="$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")"
+if [[ -z "${images}" || ! -d "${images}" ]]; then
+    echo "Thème Plymouth « ${theme} » : dossier d'images introuvable (« ${images} »)" >&2
+    exit 1
+fi
+echo "Thème Plymouth « ${theme} », images dans ${images}"
+install -m 0644 /usr/share/ankh/plymouth/watermark.png "${images}/watermark.png"
+
+# L'écran de démarrage vit dans l'initramfs : il est reconstruit avec la
+# commande qu'Universal Blue utilise pour cette même base (build_files/initramfs.sh
+# de https://github.com/ublue-os/main). Une image bootc n'a qu'un noyau.
+if [[ "$(find /usr/lib/modules -mindepth 1 -maxdepth 1 | wc -l)" != 1 ]]; then
+    echo "Il faut exactement un noyau dans /usr/lib/modules" >&2
+    exit 1
+fi
+kver="$(basename /usr/lib/modules/*)"
+DRACUT_NO_XATTR=1 dracut --no-hostonly --kver "${kver}" --reproducible --add ostree -f "/usr/lib/modules/${kver}/initramfs.img"
+chmod 0600 "/usr/lib/modules/${kver}/initramfs.img"

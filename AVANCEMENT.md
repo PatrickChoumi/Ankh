@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (midi).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (début d'après-midi).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -125,7 +125,13 @@
 - **Habillage Ankh** (D-033, 2026-10-09) : j'ai choisi d'habiller **le bureau seulement** (nom, logo, fonds d'écran). Le démarrage et Secure Boot ne changent pas.
   - Design choisi parmi trois pistes : **« Curseur »**, un A dont la barre est un curseur de terminal **violet**, sur une touche de clavier graphite. Il est épuré et évoque le dev, le hacking et le gaming.
   - [PR #7](https://github.com/PatrickChoumi/Ankh/pull/7) : la CI est verte du premier coup. Dans la VM, le système s'appelle « Ankh », jusque dans le menu de démarrage, et 8 captures sont jointes, dont « À propos de ce système » ([run](https://github.com/PatrickChoumi/Ankh/actions/runs/37897946381)).
-  - La VM a montré que la machine s'appelait encore « fedora » : c'est corrigé, en cours de vérification par la CI.
+  - La VM a montré que la machine s'appelait encore « fedora » : c'est corrigé et vérifié en VM ([run](https://github.com/PatrickChoumi/Ankh/actions/runs/37901076405)).
+- **PR #7 fusionnée** le 2026-10-09.
+- **Fait par moi** : le paquet `ankh-dev` est public, et j'ai validé la liste des extensions VS Code (D-032).
+- **Plus rien de Fedora à l'écran** (D-034, 2026-10-09) : à ma demande, ni nom ni logo de Fedora visibles, **écran de démarrage compris**. Sous le capot, Fedora reste.
+  - L'initramfs est reconstruit avec la commande d'Universal Blue pour cette même base, pour y mettre le logo d'Ankh.
+  - Un test liste tout ce qui reste visible au nom de Fedora, et échoue tant qu'il en reste.
+- **Fonds d'écran travaillés**, style Kali (D-034) : six fonds sombres autour du logo, gardés tous avec le fond épuré. **« Signal »** est le fond par défaut.
 
 ---
 
@@ -140,10 +146,10 @@
    - Claude et GitHub en applications web dans Chrome.
 4. **Conteneur de dev** (D-032) : fusionné. Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
-   - valider la liste d'extensions VS Code ;
    - vérifier la version de Java choisie par défaut, et proposer un Node.js plus récent que la 22 si Fedora en fournit un.
-5. **Habillage Ankh** (D-033) : PR en cours. Ensuite, vérifier le rendu sur les captures de la VM : écran de connexion, bureau, icône du menu, « À propos ».
-6. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+5. **Habillage Ankh** (D-033) : fusionné.
+6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : PR en cours. La CI dira ce qui reste visible de Fedora, puis je le traiterai. Ensuite, vérifier le rendu sur les captures de la VM, démarrage compris.
+7. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
@@ -164,14 +170,14 @@
 - **Discover** : la notification et l'affichage des mises à jour, à l'écran (D-028).
 - **mcelog** : son comportement sur ma vraie machine (phase 9).
 - **Variante NVIDIA** : elle ne se teste pas en VM, seulement par des contrôles statiques en CI.
+- **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
+- **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
 
 ---
 
 ## Ce que je dois faire
 
 1. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-2. **Regarder les captures d'écran** : page du run « Tester le démarrage en VM », section « Artifacts », fichier `captures-ankh-vm`. Me dire si le bureau, Chrome et Discover ont l'air corrects.
-3. **Rendre public le paquet `ankh-dev`** sur GHCR, comme `ankh` et `ankh-nvidia`, dès que la CI de `main` l'a publié (PR #6 fusionnée).
-4. **Valider ou modifier la liste d'extensions VS Code** (D-032).
-5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-6. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
+2. **Regarder les captures d'écran** de la PR en cours, une fois sa CI verte : page du run « Tester le démarrage en VM », section « Artifacts », fichier `captures-ankh-vm`. Me dire si le démarrage, la connexion, le bureau, Chrome et Discover ont l'air corrects.
+3. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+4. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.

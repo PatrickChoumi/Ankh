@@ -1,20 +1,24 @@
-"""Dessine le logo et les fonds d'écran d'Ankh (D-033).
+"""Dessine le logo, les fonds d'écran et le logo de démarrage d'Ankh (D-033, D-034).
 
 Le logo : un A sans barre, dont la barre devient un curseur de terminal, sur
 une touche de clavier graphite. Un seul accent de couleur, violet.
 
 Les images produites sont versionnées dans build_files/files ; ce script sert
-seulement à les refaire après une modification du dessin :
+seulement à les refaire après une modification du dessin (police DejaVu Sans
+Mono nécessaire) :
 
-    uv run --with cairosvg --with pillow python build_files/artwork/generer.py
+    uv run --with cairosvg --with pillow --with numpy python build_files/artwork/generer.py
 """
 
 import io
+import json
 import pathlib
 import random
 
 import cairosvg
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageDraw
+
+import fonds
 
 RACINE = pathlib.Path(__file__).resolve().parents[1] / "files" / "usr" / "share"
 
@@ -86,16 +90,49 @@ def tramer(image: Image.Image) -> Image.Image:
     return ImageChops.add(image, bruit, offset=-128)
 
 
+def decrire(paquet: pathlib.Path, nom: str) -> None:
+    """Fiche du paquet de fond d'écran, lue par Plasma."""
+    fiche = {"KPlugin": {"Authors": [{"Name": "Ankh"}], "Id": paquet.name,
+                         "License": "Apache-2.0", "Name": nom}}
+    (paquet / "metadata.json").write_text(json.dumps(fiche, indent=4, ensure_ascii=False) + "\n")
+
+
+def filigrane() -> Image.Image:
+    """Logo de l'écran de démarrage : le A et « ankh », en blanc sur fond transparent."""
+    image = Image.new("RGBA", (330, 112), (0, 0, 0, 0))
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">{marque(BLANC)}</svg>'
+    a = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), output_width=112, output_height=112)))
+    image.alpha_composite(a.convert("RGBA"), (0, 0))
+    ImageDraw.Draw(image).text((122, 56), "ankh", fill=BLANC, font=fonds.police_mono(58), anchor="lm")
+    return image
+
+
 def main() -> None:
     icone = RACINE / "icons" / "hicolor" / "scalable" / "apps" / "ankh-logo.svg"
     icone.parent.mkdir(parents=True, exist_ok=True)
     icone.write_text(logo())
 
-    paquet = RACINE / "wallpapers" / "Ankh" / "contents"
+    # Le fond épuré (D-033), en version claire et sombre.
+    paquet = RACINE / "wallpapers" / "Ankh"
     for dossier, sombre in (("images", False), ("images_dark", True)):
-        cible = paquet / dossier / "3840x2160.jpg"
+        cible = paquet / "contents" / dossier / "3840x2160.jpg"
         cible.parent.mkdir(parents=True, exist_ok=True)
         tramer(rendre(fond(sombre), 3840, 2160)).save(cible, quality=92, subsampling=0, optimize=True)
+    decrire(paquet, "Ankh Épuré")
+
+    # Les fonds travaillés (D-034), sombres.
+    for ident, nom, dessin in fonds.COLLECTION:
+        paquet = RACINE / "wallpapers" / ident
+        cible = paquet / "contents" / "images" / "3840x2160.jpg"
+        cible.parent.mkdir(parents=True, exist_ok=True)
+        toile = fonds.Toile(3840, 2160)
+        dessin(toile)
+        toile.image().save(cible, quality=90, subsampling=0, optimize=True)
+        decrire(paquet, nom)
+
+    cible = RACINE / "ankh" / "plymouth" / "watermark.png"
+    cible.parent.mkdir(parents=True, exist_ok=True)
+    filigrane().save(cible, optimize=True)
 
 
 if __name__ == "__main__":

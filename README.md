@@ -14,7 +14,7 @@
 ## Ce qu'Ankh n'est pas
 
 - Pas une distribution publique ni un produit : pas d'utilisateurs à servir, pas de support.
-- Pas d'ISO custom en V1. L'habillage Ankh se limite au bureau : nom, logo, fonds d'écran (D-033).
+- Pas d'ISO custom en V1. À l'écran, rien de Fedora : Ankh a son nom, ses logos, ses fonds et son écran de démarrage. Sous le capot, Fedora reste (D-033, D-034).
 - Pas un hôte où l'on installe des outils offensifs ou où l'on manipule du malware.
 
 La liste complète est dans [ANKH-SPEC.md, section 5](ANKH-SPEC.md#5-ce-que-je-ne-veux-pas).
