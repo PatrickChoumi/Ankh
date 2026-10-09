@@ -724,6 +724,7 @@
      - **Décision (2026-10-09, mon choix) : option A.** Les micrologiciels restent dans Discover.
        - Le défaut est déjà signalé et confirmé chez KDE : [bug 523258](https://bugs.kde.org/show_bug.cgi?id=523258), « Discover shows a false "Update Issue" error dialog when fwupd declines a redundant LVFS metadata refresh » (Fedora 44 Kinoite, Discover 6.7.3 et 6.7.4). Il est aussi suivi chez Fedora : [bug 2502629](https://bugzilla.redhat.com/show_bug.cgi?id=2502629). Inutile d'en ouvrir un autre. Ses commentaires décrivent la limite de fwupd, pas encore pourquoi Discover redemande le catalogue. Notre analyse (relance à la fin de la recherche pour le système) pourrait y être ajoutée, avec un compte KDE.
        - La correction arrivera avec une version de Discover qui la contient, par la reconstruction hebdomadaire de l'image. À surveiller : le statut de ce bug.
+     - **Vérifié en VM le 2026-10-09** ([run 37986772808](https://github.com/PatrickChoumi/Ankh/actions/runs/37986772808)) : à l'étape 1, le système de test suit maintenant le registre d'Ankh ; Discover lit la version publiée et affiche « Up to date », sans « Update Issue ». À l'étape 2, le défaut de Discover (cause 2) se produit encore, comme prévu.
 
 ## D-029 — AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste
 
@@ -1135,7 +1136,7 @@
 
 ## D-039 — Interface douce, au niveau de Windows 11 et de macOS (complète D-037)
 
-- **Statut** : DÉCIDÉ (2026-10-09), ma demande. Les réglages sont choisis par Claude, sur les sources ci-dessous. Je les valide sur les captures de la VM avant de fusionner.
+- **Statut** : DÉCIDÉ (2026-10-09), ma demande. Les réglages sont choisis par Claude, sur les sources ci-dessous. Vérifié en VM le 2026-10-09 ; je les valide sur les captures avant de fusionner.
 - **Contexte** : après les aperçus de D-037 : « Le style me convient. J'aimerais que visuellement l'interface soit bien plus belle et soft, du même niveau que du Windows 11 ou du macOS. »
 - **Décision** : garder les couleurs validées (D-037) et adoucir le reste, uniquement avec des paquets de Fedora et des réglages de KDE. Pas de thème tiers, rien à maintenir hors de Fedora et de KDE.
   1. **Polices** : Inter pour l'interface, JetBrains Mono pour le terminal et le code (paquets `rsms-inter-fonts` et `jetbrains-mono-fonts` de Fedora 44, vérifiés dans <https://mdapi.fedoraproject.org>). Elles remplacent Noto Sans, la police de Fedora.
@@ -1168,6 +1169,18 @@
 - **Vérification** :
   - `just test`, Test 14 (`tests/identite.sh`) : polices installées, thème global et jeu de couleurs, barre des trois thèmes globaux, Breeze, Konsole et message de Toolbx. Les réglages sont lus par un compte ordinaire, dans l'ordre des dossiers de KDE sur Fedora ;
   - test en VM (`tests/vm/run.sh`, `check_identity`) : dans la session du compte de test, Plasma a bien appliqué le jeu de couleurs, le thème global, les icônes, la police, l'opacité des menus et le profil Konsole. Captures : bureau, menu, Dolphin, Konsole, réglages des couleurs, et toutes les autres applications.
+- **Résultats (2026-10-09, [run 37986772808](https://github.com/PatrickChoumi/Ankh/actions/runs/37986772808))**, vérifiés par le test :
+  - les constructions passent, Test 14 compris (polices, thème, barre, Breeze, Konsole, écran de chargement), sur les deux variantes ;
+  - dans la session, Plasma a appliqué : jeu de couleurs `Ankh`, thème global `org.fedoraproject.fedoradark.desktop`, icônes `breeze-dark`, police Inter 10, menus à 85 %, profil Konsole `Ankh.profile`, écran de chargement d'Ankh ;
+  - **vu sur les captures** :
+    - bureau sombre, menu et applications au centre de la barre flottante ;
+    - menu, Dolphin (dossiers violets), Discover et réglages en graphite et violet, police Inter ;
+    - Konsole translucide, sans le message de Toolbx ;
+    - écrans de connexion et de verrouillage : heure et date sur le fond d'Ankh ;
+    - écran de chargement : logo d'Ankh sur le fond du logo ;
+    - l'assistant de premier démarrage est maintenant sombre, aux couleurs d'Ankh. Il affiche toujours « Welcome to Plasma Desktop » (D-037) ;
+  - la barre se colle au bord quand une fenêtre la touche, puis flotte de nouveau : c'est le comportement de Plasma pour une barre flottante ;
+  - taille : l'installation reste à 11,3 Go ; les polices ajoutent 17 Mio. Une mise à jour télécharge toujours 1,2 Go (réduction en phase 10, D-027).
 
 ## D-040 — La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route)
 

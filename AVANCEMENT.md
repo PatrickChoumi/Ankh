@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 : Discover, identité visuelle et interface douce intégrées).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 verte : interface d'Ankh vérifiée en VM, captures envoyées).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -182,7 +182,9 @@
     - la barre flottante, avec le menu et les applications au centre comme sous Windows 11 ;
     - les menus translucides et floutés, et des ombres plus douces ;
     - Konsole aux couleurs d'Ankh, légèrement translucide, sans le message Toolbx.
-  - Vérifié par un nouveau test de l'image (Test 14) et dans la session de la VM ; les captures diront si le résultat me plaît.
+  - Vérifié par un nouveau test de l'image (Test 14) et dans la session de la VM.
+- **PR #11 verte** ([run 37986772808](https://github.com/PatrickChoumi/Ankh/actions/runs/37986772808)) : interface d'Ankh partout, de l'assistant de premier démarrage à l'écran de verrouillage ; écran de chargement d'Ankh ; Discover sans « Update Issue » au premier démarrage du test. Reste : l'assistant de premier démarrage affiche « Welcome to Plasma Desktop » (D-037).
+- **Mes choix (2026-10-09, suite)** : réduire la taille des mises à jour en phase 10 ; safezone (phase 4) en dernier, après la phase 10 (D-040).
 
 ---
 
