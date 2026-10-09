@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #10 fusionnée, Discover en cours).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 : causes de « Update Issue » trouvées, aperçus de l'identité visuelle).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -167,8 +167,13 @@
   - **Discover affiche encore « Update Issue »**, même sur le système venu du vrai registre : à comprendre (D-028) ;
   - **taille mesurée** : une mise à jour d'Ankh télécharge maintenant **1,2 Go** (501 Mo avant OnlyOffice et VLC).
 - **PR #10 fusionnée** le 2026-10-09.
-- **Discover, « Update Issue »** (D-028, en cours) : cette fenêtre ne dit pas quelle source a échoué. D'après le code de Discover, il y en a cinq : le système (Discover interroge le registre avec `skopeo`), Flatpak, les micrologiciels (fwupd), le KDE Store et les avis. Chacune écrit son erreur dans le journal. Le test en VM affiche maintenant ce journal après chaque capture de Discover, pour trouver la cause.
-- **Identité visuelle** (D-037, écrite le 2026-10-09) : mes choix (sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets) sont notés. Un jeu de couleurs « Ankh » et des couleurs de Konsole sont prêts. Le test en VM les applique à un compte à part, sans toucher l'image, et capture le résultat : ce sont les aperçus à valider avant l'intégration.
+- **Discover, « Update Issue »** (D-028) : cette fenêtre ne dit pas quelle source a échoué. Le test en VM affiche maintenant le journal de Discover ([run 37975438997](https://github.com/PatrickChoumi/Ankh/actions/runs/37975438997)). Deux causes trouvées :
+  - **propre au test** : le système de test, installé depuis la CI, cherchait ses mises à jour dans un registre « localhost » qui n'existe pas. Le test suit maintenant le registre d'Ankh, comme ma machine ; son étape 2 devient une mise à jour (`bootc upgrade`) au lieu d'un basculement (D-004, à relire) ;
+  - **un défaut de Discover** : sa partie « micrologiciels » (fwupd) télécharge deux fois de suite le catalogue des micrologiciels, et fwupd refuse le second téléchargement. Le premier réussit : seul le message est faux. Il dépend du minutage. À moi de choisir quoi faire (D-028).
+- **Identité visuelle** (D-037, écrite le 2026-10-09) : mes choix (sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets) sont notés. Un jeu de couleurs « Ankh » et des couleurs de Konsole sont prêts. Le test en VM les applique à un compte à part, sans toucher l'image, et capture le résultat.
+  - **Aperçus réussis** : bureau, menu, Dolphin, Konsole, Discover et réglages en graphite et violet ; dossiers violets ; Chrome sombre de lui-même.
+  - **La barre était déjà flottante** avant l'aperçu : rien à changer.
+  - **Vu au passage** : le message de bienvenue de Konsole pousse vers Toolbx et DNF (à remplacer) ; KDE Wallet s'ouvre au premier lancement de Chrome (à vérifier sur ma machine, avec un mot de passe).
 
 ---
 
@@ -185,8 +190,8 @@
 5. **Habillage Ankh** (D-033) : fusionné.
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
-8. **Discover** (D-028) : comprendre « Update Issue », visible même sur le système venu du vrai registre. En cours : le journal de Discover est lu dans le test en VM, puis la cause sera corrigée.
-9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus en VM en cours (PR #11) ; intégration dans l'image après mon accord.
+8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Pour le défaut de Discover, j'ai un choix à faire : A, garder les micrologiciels dans Discover et signaler le défaut à KDE (recommandé) ; B, retirer les micrologiciels de Discover.
+9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus en VM réussis (PR #11) ; intégration dans l'image après mon accord.
 10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -218,7 +223,10 @@
 
 ## Ce que je dois faire
 
-1. **Dire à Claude** si la taille des mises à jour (1,2 Go) doit être réduite maintenant ou en phase 10 (D-027).
+1. **Dire à Claude** :
+   - si la taille des mises à jour (1,2 Go) doit être réduite maintenant ou en phase 10 (D-027) ;
+   - pour Discover : A (garder les micrologiciels dans Discover et signaler le défaut à KDE) ou B (les retirer de Discover) (D-028) ;
+   - si les aperçus de l'identité visuelle me conviennent, pour qu'il les intègre à l'image (D-037).
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran. Surtout les aperçus de l'identité visuelle (`1-apercu-…`) : dire si je les valide avant leur intégration (D-037).
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.

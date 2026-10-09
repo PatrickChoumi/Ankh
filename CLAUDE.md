@@ -41,8 +41,8 @@
     - un seul Ankh : VS Code dans le menu dès l'installation, prêt au premier clic, sans « ankh-dev » à gérer (D-036) ;
     - corrections vues sur les captures : logo et variante de « À propos », écran de démarrage graphique (D-034).
   - Ensuite :
-    - comprendre « Update Issue » dans Discover (D-028) : en cours, le test en VM affiche maintenant le journal de Discover ;
-    - l'identité visuelle d'Ankh (thème sombre, couleurs, icônes, barre flottante) : D-037 écrite, aperçus en VM en cours, intégration après mon accord.
+    - « Update Issue » dans Discover (D-028) : causes trouvées ([#11](https://github.com/PatrickChoumi/Ankh/pull/11)) ; celle du test est corrigée, mon choix est attendu pour le défaut de Discover ;
+    - l'identité visuelle d'Ankh (D-037) : aperçus en VM réussis ([#11](https://github.com/PatrickChoumi/Ankh/pull/11)), intégration après mon accord.
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).

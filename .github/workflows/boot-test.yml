@@ -1,6 +1,6 @@
 ---
 # Phase 2 (D-004, D-027) : démarre l'image ankh dans une VM sur les machines
-# de GitHub, puis teste basculement, retour arrière et retour à la base.
+# de GitHub, puis teste mise à jour, retour arrière et retour à la base.
 # Rien n'est téléchargé chez moi. Détails : tests/vm/run.sh.
 # La variante NVIDIA ne se teste pas en VM (pas de GPU NVIDIA) : elle a
 # seulement les contrôles statiques de build.yml.
@@ -58,7 +58,7 @@ jobs:
       - name: Construire l'image ankh
         run: sudo env "PATH=${PATH}" just build ankh
 
-      - name: Démarrer, basculer, revenir en arrière, revenir à la base
+      - name: Démarrer, mettre à jour, revenir en arrière, revenir à la base
         env:
           ANKH_VM_WORKDIR: ${{ runner.temp }}/vm
         run: sudo env "ANKH_VM_WORKDIR=${ANKH_VM_WORKDIR}" tests/vm/run.sh localhost/ankh:latest

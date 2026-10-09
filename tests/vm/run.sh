@@ -7,7 +7,8 @@
 #
 # Étapes, toutes vérifiées automatiquement :
 #   1. installation de IMAGE sur un disque virtuel, puis démarrage complet ;
-#   2. basculement vers une autre version (ghcr.io/patrickchoumi/ankh:latest) ;
+#   2. mise à jour vers la version publiée (ghcr.io/patrickchoumi/ankh:latest),
+#      le registre que suit le système installé, comme sur ma machine ;
 #   3. retour arrière (bootc rollback) vers IMAGE ;
 #   4. retour à l'image de base épinglée dans bases.env (D-005, D-018).
 # À chaque démarrage : Secure Boot actif (D-006), SELinux en mode enforcing
@@ -405,7 +406,7 @@ open_discover() {
     screenshot "$name"
     log "Journal de Discover et des services qu'il interroge ($name)"
     for cmd in \
-        "journalctl --no-pager -o short-monotonic -n 300 _SYSTEMD_USER_UNIT=$unit.service" \
+        "journalctl --no-pager -o short-monotonic -n 300 _SYSTEMD_USER_UNIT=$unit.service | cut -c 1-400" \
         "journalctl --no-pager -o short-monotonic --since=@$since -u polkit.service -u fwupd.service -u rpm-ostreed.service -u flatpak-system-helper.service" \
         "rpm -qa 'plasma-discover*' skopeo fwupd flatpak" \
         'rpm-ostree status --booted' \
@@ -530,12 +531,16 @@ log "Installation de $image sur le disque virtuel"
 # Méthode officielle : https://github.com/bootc-dev/bootc/blob/main/docs/src/bootc-installation.7.md
 # Les arguments du noyau et la clé SSH de root deviennent l'état local de la
 # machine : ils restent valables après chaque basculement d'image.
+# --target-imgref : le système installé suit le registre d'Ankh pour ses mises
+# à jour, comme ma machine installée depuis ce registre (D-027), au lieu du
+# stockage local de la CI. Sans cela, Discover cherchait les mises à jour dans
+# un registre « localhost » inexistant et affichait « Update Issue » (D-028).
 podman run --rm --privileged --pid=host --ipc=host \
     --security-opt label=type:unconfined_t \
     -v /dev:/dev -v /var/lib/containers:/var/lib/containers -v "$work:/output" \
     "$image" \
     bootc install to-disk --generic-image --via-loopback --filesystem btrfs \
-    --skip-fetch-check \
+    --skip-fetch-check --target-imgref "$other" \
     --root-ssh-authorized-keys /output/id_ed25519.pub \
     --karg console=tty0 --karg console=ttyS0,115200n8 \
     --karg plymouth.ignore-serial-consoles \
@@ -590,18 +595,18 @@ screenshot 1-a-propos
 check_vscode
 preview_identity
 
-log "2/4 Basculement vers une autre version : $other"
-vm bootc switch "$other"
+log "2/4 Mise à jour vers la version publiée : $other"
+# Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,
+# pas un basculement (celui-ci est testé à l'étape 4).
+vm bootc upgrade
 show_boot_state
 reboot_vm
 check_boot
 check_ankh
 wait_desktop 2-bureau-ankh-publiee
-# D-028 : Discover cherche les mises à jour dans le vrai registre (l'image
-# installée à l'étape 1 vient du stockage local de la CI, sans registre).
 open_discover 2-discover-mises-a-jour
 [[ $(booted image.image) == "$other" ]] || { explain_deployment; die "l'image démarrée n'est pas $other"; }
-[[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "le basculement n'a pas changé de version"; }
+[[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "la mise à jour n'a pas changé de version"; }
 
 log "3/4 Retour arrière (bootc rollback)"
 vm bootc rollback
@@ -620,4 +625,4 @@ check_boot
 [[ $(booted imageDigest) == "$base_digest" ]] || { explain_deployment; die "l'image démarrée n'est pas la base $base_digest"; }
 wait_desktop 4-bureau-image-de-base
 
-log "Réussi : démarrage, basculement, retour arrière et retour à la base."
+log "Réussi : démarrage, mise à jour, retour arrière et retour à la base."

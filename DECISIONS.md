@@ -21,7 +21,7 @@
 | D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021 ; « pas de branding » modifié par D-033) |
 | D-002 | Une seule machine, un seul GPU en V1 | REMPLACÉE par D-021 |
 | D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
-| D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe ; mise à jour non appliquée corrigée le 2026-10-09) |
+| D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe ; mise à jour non appliquée corrigée le 2026-10-09 ; étape 2 du test en VM devenue une mise à jour le 2026-10-09) |
 | D-005 | Image de base exacte : `kinoite-main` + `kinoite-nvidia` (Fedora 44) | DÉCIDÉ |
 | D-006 | Secure Boot activé | DÉCIDÉ |
 | D-007 | Chiffrement LUKS | DÉCIDÉ |
@@ -45,7 +45,7 @@
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
-| D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER) |
+| D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER ; « Update Issue » : causes trouvées, choix À DÉCIDER pour les micrologiciels) |
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
@@ -54,7 +54,7 @@
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage) |
 | D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
 | D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; gaming en phase 5, hacking en phase 6) |
-| D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (mes choix ; aperçus en VM avant intégration, en cours) |
+| D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (mes choix ; aperçus en VM réussis le 2026-10-09, intégration après mon accord) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 
 ---
@@ -173,6 +173,9 @@
     - `just test`, Test 2 bis : le masque est dans l'image ;
     - `tests/vm/run.sh` vérifie le masque sur le système installé et relève l'état de `/boot` (montages, unités) avant chaque redémarrage qui doit appliquer une version préparée. En cas d'échec, il affiche le journal de la finalisation et de `/boot` ;
     - **résultat en VM ([run 37934589711](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711), 2026-10-09)** : les 4 étapes réussissent. Avant chaque redémarrage qui applique une version préparée, `boot.automount` est masqué et inactif, `boot.mount` est celui d'ostree (`/run/systemd/generator/boot.mount`, actif), `/boot` est le lien btrfs d'ostree (`/dev/vda3[/boot]`, en lecture seule), et `ostree-finalize-staged.service` et `ostree-finalize-staged-hold.service` sont actifs. Versions : `ostree-2026.4-1.fc44`, `systemd-259.9-1.fc44`.
+- **Étape 2 du test en VM : une mise à jour au lieu d'un basculement (2026-10-09, [PR #11](https://github.com/PatrickChoumi/Ankh/pull/11))** : à signaler pour relecture, car cela touche au test des mises à jour.
+  - Le système de test est installé avec `--target-imgref ghcr.io/patrickchoumi/ankh:latest`. Il suit le registre d'Ankh, comme ma machine installée depuis ce registre (D-027), au lieu du stockage local de la CI. Raison : Discover cherchait les mises à jour dans un registre « localhost » inexistant (D-028).
+  - L'étape 2 fait donc `bootc upgrade` vers la version publiée, comme une mise à jour que je lance, au lieu de `bootc switch`. Le basculement reste testé à l'étape 4 (retour à l'image de base). Le retour arrière (étape 3) est inchangé.
 
 ## D-005 — Image de base exacte
 
@@ -694,6 +697,27 @@
   - **VM cloud** ([run 37828419997](https://github.com/PatrickChoumi/Ankh/actions/runs/37828419997)) :
     - les 4 étapes réussissent ;
     - le système démarré porte la version de l'image installée (`44.20261008.1900`), au premier démarrage et après le retour arrière.
+- **« Update Issue » : causes trouvées (2026-10-09, [PR #11](https://github.com/PatrickChoumi/Ankh/pull/11), [run 37975438997](https://github.com/PatrickChoumi/Ankh/actions/runs/37975438997))**. Ce message de Discover ne dit pas quelle source a échoué. Le test en VM affiche maintenant le journal de Discover après chaque capture. Deux causes, vérifiées par ce journal et dans le code de Discover (<https://invent.kde.org/plasma/discover>, branche master du 2026-10-09) :
+  1. **Propre au test, à l'étape 1** :
+     - Le système installé depuis le stockage local de la CI suivait `ostree-unverified-registry:localhost/ankh:latest`.
+     - Pour chercher une mise à jour, Discover lance `skopeo inspect --no-tags docker://localhost/ankh:latest` (`RpmOstreeTransaction.cpp`), qui échoue (`connection refused`).
+     - Discover n'ignore que les transports locaux (`containers-storage`, `oci`…), pas un registre local (`OstreeFormat::isLocalOCI`).
+     - Ma machine, installée depuis `ghcr.io` (D-027), n'est pas concernée.
+     - **Correctif du test** : `bootc install --target-imgref ghcr.io/patrickchoumi/ankh:latest`, option documentée (« Specify the image to fetch for subsequent updates », `docs/src/man/bootc-install-to-disk.8.md` de <https://github.com/bootc-dev/bootc>). Le système de test suit alors le registre d'Ankh, comme ma machine. L'étape 2 devient une mise à jour (`bootc upgrade`) au lieu d'un basculement (voir D-004).
+  2. **Un défaut de Discover, sur un système venu du registre (étape 2)** :
+     - La recherche pour le système réussit : `skopeo` lit la version publiée, et Discover conclut « No new version found ».
+     - La source « micrologiciels » (fwupd) échoue : `Fwupd Error 21 Failed to download metadata for lvfs: attempted previous download of https://cdn.fwupd.org/downloads/firmware.xml.zst.jcat from process just 68ms ago`.
+     - Mécanisme, d'après le code :
+       - à l'ouverture, cette source lit les appareils, puis télécharge le catalogue des micrologiciels (LVFS) (`FwupdBackend::checkForUpdates`, `setRemotes`) ;
+       - elle se déclare prête dès que les appareils sont lus, avant la fin du téléchargement (`m_fetching = false` dans `setDevices`) ;
+       - elle relance tout à chaque fin de tâche de Discover (`lastTransactionFinished`). La recherche pour le système est une tâche : quand elle finit pendant ce téléchargement, le catalogue est redemandé ;
+       - fwupd refuse de télécharger deux fois la même adresse en moins de 1,5 seconde, avec l'erreur `FWUPD_ERROR_NOT_REACHABLE` (`FWUPD_CLIENT_DOWNLOAD_URI_DELTA`, `libfwupd/fwupd-client.c` de <https://github.com/fwupd/fwupd>) ;
+       - Discover affiche toute erreur de fwupd, sauf « fichier invalide », « non pris en charge » et « rien à faire » (`FwupdBackend::handleError`).
+     - **Conséquence** : le premier téléchargement réussit ; seul le message est faux. Son apparition dépend du minutage : sur ma machine, À VALIDER.
+     - **À DÉCIDER (mon choix)** :
+       - **A** (recommandée) : garder les micrologiciels dans Discover et signaler le défaut à KDE (<https://bugs.kde.org>) avec cette analyse. La correction arrivera avec une future version de Discover, par la reconstruction hebdomadaire. D'ici là, le message peut apparaître, sans effet.
+       - **B** : retirer la source « micrologiciels » de Discover dans l'image. Plus de message, mais les mises à jour de micrologiciels (BIOS/UEFI, liste de révocation de Secure Boot, SSD) ne seraient plus proposées dans l'interface. Il faudrait une entrée de menu dédiée. Le paquet qui fournit cette source est À VALIDER.
+       - **C** (déconseillée) : livrer dans l'image un Discover corrigé par Ankh. Il faudrait reconstruire et suivre un paquet de KDE.
 
 ## D-029 — AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste
 
@@ -1048,7 +1072,7 @@
 
 ## D-037 — Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034)
 
-- **Statut** : DÉCIDÉ (2026-10-09), mes choix. Aperçus en VM avant intégration : en cours. L'intégration dans l'image attend mon accord sur les aperçus.
+- **Statut** : DÉCIDÉ (2026-10-09), mes choix. Aperçus en VM réussis le 2026-10-09. L'intégration dans l'image attend mon accord sur les aperçus.
 - **Contexte** : « J'aimerais que visuellement les apps qui étaient stylisées selon Fedora aient une vibe Ankh, et non Fedora, parce que là c'est comme si tu avais juste modifié les noms. »
   - D-033 et D-034 ont changé le nom, le logo, les fonds et l'écran de démarrage. Les applications gardent l'apparence de KDE par défaut : thème clair, accent bleu, barre collée au bord (vu sur les captures de la VM).
   - La liste de tout ce qui donne une identité visuelle m'a été présentée, en six familles : couleurs, polices, icônes et curseurs, moments clés (démarrage, connexion, verrouillage), applications (Konsole, Chrome, VS Code), bureau.
@@ -1060,12 +1084,22 @@
   1. Couleurs, polices, icônes, Konsole, Chrome, VS Code et disposition du bureau.
   2. Écrans de démarrage, de connexion, de chargement de la session et de verrouillage.
 - **Comment, d'après le code de KDE** (vérifié le 2026-10-09) :
-  - **couleurs** : un jeu de couleurs « Ankh », dérivé de Breeze sombre (`colors/BreezeDark.colors` de <https://invent.kde.org/plasma/breeze>). Le style Plasma Breeze et les décorations de fenêtres suivent le jeu de couleurs. Chrome et les applications GTK suivent le mode sombre annoncé par le bureau (À VALIDER sur les aperçus) ;
+  - **couleurs** : un jeu de couleurs « Ankh », dérivé de Breeze sombre (`colors/BreezeDark.colors` de <https://invent.kde.org/plasma/breeze>). Le style Plasma Breeze et les décorations de fenêtres suivent le jeu de couleurs. Chrome et les applications GTK suivent le mode sombre annoncé par le bureau (vérifié pour Chrome sur les aperçus ; OnlyOffice et VLC À VALIDER) ;
   - **dossiers violets** : les dossiers de Breeze prennent la couleur d'accent du jeu de couleurs (classe `ColorScheme-Accent` de `icons/places/64/folder.svg`, <https://invent.kde.org/frameworks/breeze-icons> ; couleur fournie par `src/kiconcolors.cpp` de <https://invent.kde.org/frameworks/kiconthemes>). Aucun thème d'icônes à ajouter ;
-  - **barre flottante** : propriété `floating` des panneaux (`shell/scripting/panel.h` et `shell/panelview.cpp` de <https://invent.kde.org/plasma/plasma-workspace>). Plasma la met par défaut, mais la barre est collée au bord sur les captures : un réglage de la base la retire (lequel : À VALIDER) ;
+  - **barre flottante** : propriété `floating` des panneaux (`shell/scripting/panel.h` et `shell/panelview.cpp` de <https://invent.kde.org/plasma/plasma-workspace>). Plasma la met par défaut. ~~La barre est collée au bord sur les captures : un réglage de la base la retire.~~ Corrigé le 2026-10-09 : sur les captures, la barre est déjà flottante, détachée du bord et arrondie, avant comme après l'aperçu (`1-bureau`, `1-apercu-avant`, `1-apercu-bureau`). Rien à changer ;
   - **appliqué à chaque compte** : à chaque ouverture de session, Plasma applique les réglages par défaut du thème global choisi dans l'image (`startkde/startplasma.cpp` de plasma-workspace). Les comptes existants les reçoivent donc aussi, sauf ce que j'ai changé moi-même. Piste pour l'intégration, À VALIDER.
 - **Palette de l'aperçu** (`tests/vm/apercus/Ankh.colors`) : fonds graphite bleuté du logo (`#0d1117`, `#232a35`), texte `#e6edf3`, sélections violet `#8455f0` (texte blanc lisible dessus : contraste 4,6), liens et focus au violet du logo (`#a78bfa`). Konsole : fond du logo et violet d'Ankh (`tests/vm/apercus/Ankh.colorscheme`).
-- **Aperçus (2026-10-09)** : le test en VM applique ces réglages à un compte à part, « ankhapercu », avec les outils de Plasma (`plasma-apply-colorscheme`, `plasma-changeicons`, script de Plasma pour la barre). Ni l'image ni le compte de test ne changent. Captures : bureau avant et après, menu des applications, Dolphin, Konsole, Discover, réglages des couleurs, Chrome. Résultats À VENIR.
+- **Aperçus (2026-10-09)** : le test en VM applique ces réglages à un compte à part, « ankhapercu », avec les outils de Plasma (`plasma-apply-colorscheme`, `plasma-changeicons`, script de Plasma pour la barre). Ni l'image ni le compte de test ne changent. Captures : bureau avant et après, menu des applications, Dolphin, Konsole, Discover, réglages des couleurs, Chrome.
+- **Résultats des aperçus ([run 37975438997](https://github.com/PatrickChoumi/Ankh/actions/runs/37975438997), 2026-10-09)**, vus sur les captures :
+  - le jeu de couleurs s'applique (« Successfully applied the color scheme Ankh ») : bureau, menu des applications, Dolphin, Konsole, Discover et réglages sont sombres, graphite et violet ;
+  - les dossiers de Dolphin sont violets ;
+  - Chrome passe en sombre de lui-même ;
+  - « Ankh » apparaît dans la liste des jeux de couleurs, à côté de Breeze.
+- **Vu sur les captures, à traiter à l'intégration** :
+  - **message de bienvenue de Konsole** : « Welcome to Ankh. This terminal is running on the host system. You may want to try out the Toolbx for a directly mutable environment that allows package installation with DNF. » Il pousse vers Toolbx et DNF, ce qui va contre D-009 et D-036. Il vient de Fedora (fichier exact À VALIDER) ; à remplacer par un message d'Ankh, ou à retirer ;
+  - **KDE Wallet** : au premier lancement de Chrome, KDE demande de créer un portefeuille. Le compte de test n'a pas de mot de passe. Avec un mot de passe à la connexion, ce portefeuille s'ouvre peut-être tout seul : À VALIDER sur ma machine ;
+  - le centre d'accueil de KDE (Konqi) s'ouvre à la première connexion, en clair : il suivra les couleurs d'Ankh une fois intégrées ;
+  - la VM est en anglais : les comptes de test n'ont pas de langue réglée. La langue de ma machine se choisit à l'installation.
 - **Pas encore traité** : polices (Inter, JetBrains Mono : présence dans Fedora À VALIDER), icône de VS Code dans le style d'Ankh, images de `generic-logos` (voir D-034), curseurs, effets.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
