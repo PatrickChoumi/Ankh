@@ -450,6 +450,7 @@ check_identity() {
     identity_setting "$user" "Police de l'interface" 'Inter,10,-1,5,50,0,0,0,0,0' --group General --key font
     identity_setting "$user" "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
     identity_setting "$user" "Profil Konsole" Ankh.profile --file konsolerc --group 'Desktop Entry' --key DefaultProfile
+    identity_setting "$user" "Écran de chargement" org.fedoraproject.fedoradark.desktop --file ksplashrc --group KSplash --key Theme
     in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
     sleep 5
     screenshot 1-menu
@@ -470,6 +471,12 @@ check_identity() {
     sleep 10
     screenshot 1-ecran-de-verrouillage
     vm loginctl unlock-sessions
+    sleep 5
+    # Écran de chargement de la session, rejoué en mode test (il se ferme seul
+    # après 6 secondes : ksplash/ksplashqml/splashapp.cpp de plasma-workspace).
+    launch_in_session "$user" ksplashqml --test
+    sleep 3
+    screenshot 1-ecran-de-chargement
     sleep 5
 }
 

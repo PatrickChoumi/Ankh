@@ -60,6 +60,17 @@ for theme in fedora fedoradark fedoralight; do
     fi
 done
 
+# Écran de chargement de la session : celui d'Ankh, dans chaque thème global
+for theme in fedora fedoradark fedoralight; do
+    dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop"
+    if grep -q 'images/ankh-logo.svg' "${dossier}/contents/splash/Splash.qml" && [[ -f "${dossier}/contents/splash/images/ankh-logo.svg" ]]; then
+        echo "Écran de chargement d'Ankh : ${theme}"
+    else
+        echec "écran de chargement de ${dossier} : pas celui d'Ankh"
+    fi
+    attendu "Écran de chargement désigné par ${theme}" "org.fedoraproject.${theme}.desktop" --file "${dossier}/contents/defaults" --group ksplashrc --group KSplash --key Theme
+done
+
 # Breeze plus doux et Konsole aux couleurs d'Ankh
 attendu "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
 attendu "Ombres des fenêtres" ShadowVeryLarge --file breezerc --group Common --key ShadowSize

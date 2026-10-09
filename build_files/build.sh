@@ -394,6 +394,24 @@ for theme in fedora fedoradark fedoralight; do
     install -m 0644 /ctx/plasma/ankh-barre.js "${barre}"
 done
 
+# Écran de chargement de la session : celui d'Ankh (build_files/plasma/ankh-splash.qml),
+# fond et logo d'Ankh, dans les trois thèmes globaux d'Ankh. Fedora y désignait
+# celui de KDE (ksplashrc dans contents/defaults) ; chaque thème désigne
+# maintenant le sien (setSplashScreen, libklookandfeel/klookandfeelmanager.cpp
+# de plasma-workspace).
+for theme in fedora fedoradark fedoralight; do
+    dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop"
+    if [[ ! -e "${dossier}/contents/splash/Splash.qml" ]]; then
+        echo "${dossier} : écran de chargement absent : à revoir" >&2
+        exit 1
+    fi
+    rm "${dossier}/contents/splash/Splash.qml"
+    install -m 0644 /ctx/plasma/ankh-splash.qml "${dossier}/contents/splash/Splash.qml"
+    install -m 0644 /usr/share/icons/hicolor/scalable/apps/ankh-logo.svg "${dossier}/contents/splash/images/ankh-logo.svg"
+    kwriteconfig6 --file "${dossier}/contents/defaults" --group ksplashrc --group KSplash --key Theme "org.fedoraproject.${theme}.desktop"
+    chmod 0644 "${dossier}/contents/defaults"
+done
+
 # Breeze plus doux : menus translucides et floutés (MenuOpacity, flou demandé
 # par kstyle/breezestyle.cpp et breezeblurhelper.cpp), ombres des fenêtres
 # plus grandes et plus légères (kdecoration/breezesettingsdata.kcfg de
