@@ -185,4 +185,18 @@ _test-dev:
         echo "${attendues} extensions installées"
         grep -q "\"extensions.autoUpdate\": false" "${HOME}/.config/Code/User/settings.json"'
 
+    echo "Test 4 : Node.js le plus récent proposé par Fedora, dernière version d'OpenJDK par défaut (D-035)"
+    podman run --rm "${image}" bash -c 'set -euo pipefail
+        plus_recente="$(dnf5 -q repoquery --qf "%{name}\n" "nodejs*" | grep -xE "nodejs[0-9]+" | sed "s/^nodejs//" | sort -n | tail -n 1)"
+        node="$(node --version)"
+        echo "Node.js ${node} ; la plus récente proposée par Fedora : ${plus_recente}"
+        [[ "${node}" == "v${plus_recente}."* ]]
+        for c in java javac; do
+            attendu="$(readlink -f "$(rpm -qal "java-latest-openjdk*" | grep -E "/bin/${c}\$")")"
+            actuel="$(readlink -f "/usr/bin/${c}")"
+            echo "${c} : ${actuel}"
+            [[ "${actuel}" == "${attendu}" ]] || { echo "ÉCHEC : ${c} devrait être ${attendu}" >&2; exit 1; }
+        done
+        java -version'
+
     echo "Tous les tests de ankh-dev sont passés."
