@@ -21,7 +21,7 @@
 | D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021 ; « pas de branding » modifié par D-033) |
 | D-002 | Une seule machine, un seul GPU en V1 | REMPLACÉE par D-021 |
 | D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
-| D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe) |
+| D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe ; mise à jour non appliquée corrigée le 2026-10-09) |
 | D-005 | Image de base exacte : `kinoite-main` + `kinoite-nvidia` (Fedora 44) | DÉCIDÉ |
 | D-006 | Secure Boot activé | DÉCIDÉ |
 | D-007 | Chiffrement LUKS | DÉCIDÉ |
@@ -52,7 +52,7 @@
 | D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (CI et VM vertes ; rendu À VALIDER sur les captures) |
-| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI À VENIR) |
+| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; codecs, taille des mises à jour et Java 27-ea À VALIDER) |
 | D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (mise en œuvre : dev à la prochaine PR, gaming en phase 5, hacking en phase 6) |
 
 ---
@@ -170,7 +170,7 @@
   - **Vérification** :
     - `just test`, Test 2 bis : le masque est dans l'image ;
     - `tests/vm/run.sh` vérifie le masque sur le système installé et relève l'état de `/boot` (montages, unités) avant chaque redémarrage qui doit appliquer une version préparée. En cas d'échec, il affiche le journal de la finalisation et de `/boot` ;
-    - résultat en VM : À VENIR.
+    - **résultat en VM ([run 37934589711](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711), 2026-10-09)** : les 4 étapes réussissent. Avant chaque redémarrage qui applique une version préparée, `boot.automount` est masqué et inactif, `boot.mount` est celui d'ostree (`/run/systemd/generator/boot.mount`, actif), `/boot` est le lien btrfs d'ostree (`/dev/vda3[/boot]`, en lecture seule), et `ostree-finalize-staged.service` et `ostree-finalize-staged-hold.service` sont actifs. Versions : `ostree-2026.4-1.fc44`, `systemd-259.9-1.fc44`.
 
 ## D-005 — Image de base exacte
 
@@ -918,7 +918,7 @@
 
 ## D-035 — VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents (modifie D-011 et D-024)
 
-- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-011 et D-024 ; précise D-032. Résultats de la CI À VENIR.
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-011 et D-024 ; précise D-032. CI et VM vertes ([PR #9](https://github.com/PatrickChoumi/Ankh/pull/9)), résultats ci-dessous.
 - **Mes choix (2026-10-09)** :
   - « Je veux que l'OS ait déjà le nécessaire » : VLC, OnlyOffice, Claude et GitHub sont disponibles dès l'installation de l'image.
   - Forme retenue : **« A. Paquets système, comme Chrome »**, c'est-à-dire des paquets RPM dans l'image, plutôt que des Flatpaks préinstallés.
@@ -969,6 +969,22 @@
   - l'acceptation des signatures d'OnlyOffice par RPM de Fedora 44 ;
   - l'installation de Claude et de GitHub par Chrome (test en VM) ;
   - la taille ajoutée à chaque mise à jour (D-027).
+- **Résultats de la CI ([PR #9](https://github.com/PatrickChoumi/Ankh/pull/9), 2026-10-09)** : tout est vert au cinquième passage. Les passages précédents ont corrigé deux erreurs de mes scripts (VLC a cinq lanceurs ; `gio mime` répond sur plusieurs lignes) et une vraie panne des mises à jour (voir D-004).
+  - **LibreOffice n'était pas dans la base** : le journal de construction affiche « LibreOffice absent de la base : rien à retirer ». Le Test 12 garantit qu'il reste absent.
+  - **VLC 3.0.24** (`vlc-3.0.24-1.fc44`) vient du dépôt de Fedora (`updates`, « Fedora Project »), pas de celui de negativo17 : 37 paquets, 10 Mio à télécharger, 26 Mio une fois installé. VLC lit avec les bibliothèques ffmpeg du système, que `kinoite-main` prend chez negativo17 (codecs complets). La lecture des formats courants (H.264, H.265…) reste À VALIDER sur ma machine.
+  - **OnlyOffice 9.4.0** (`onlyoffice-desktopeditors-9.4.0-129.el7`) : la clé est acceptée et les signatures sont vérifiées par RPM de Fedora 44, sans erreur. 366 Mio à télécharger, **1,3 Gio une fois installé**, avec 6 dépendances de Fedora (boost, polices DejaVu et Liberation Narrow).
+  - **Applications par défaut** : `vlc.desktop` et `onlyoffice-desktopeditors.desktop` sont celles des formats testés (MP4, MKV, MP3, FLAC ; DOCX, XLSX, PPTX, ODT), et Chrome reste celle du web.
+  - **En VM** ([run 37934589711](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711)) :
+    - VLC et OnlyOffice sont présents à chaque étape et LibreOffice absent ;
+    - **Chrome installe lui-même Claude et GitHub** dès sa première ouverture : deux lanceurs `chrome-…-Default.desktop` apparaissent dans le menu du compte de test ;
+    - VLC et OnlyOffice s'ouvrent dans la session : captures `1-vlc` et `1-onlyoffice` (15 captures jointes au run).
+  - **Conteneur de dev** :
+    - **Node.js 24.18.0** (`nodejs24`), la version la plus récente que Fedora 44 propose, au lieu de la 22. C'est une version à support long (LTS) ;
+    - **Java 27** par défaut (`java-latest-openjdk 27.0.0.0.35`), au lieu de la 25. Fedora la marque encore « early access » (`27-ea`). À VALIDER par moi : garder la 27 ou revenir à la 25 (LTS) par défaut ;
+    - Maven 3.9.11 reste sur Java 25.
+  - **Taille** :
+    - l'image installée passe de 9,9 Go à 11,3 Go (taille décompressée affichée par `bootc install`) ;
+    - la couche d'Ankh publiée sur `main` (sans OnlyOffice) se télécharge en 501,1 Mo. Avec OnlyOffice, une mise à jour devrait approcher 870 Mo (501 + 366, estimation). À MESURER après la fusion (D-027).
 
 ## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
 
