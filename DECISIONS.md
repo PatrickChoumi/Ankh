@@ -514,7 +514,16 @@
     - `tests/vm/run.sh` vérifie, sur le système démarré, que Chrome démarre et que Firefox est absent.
   - **Encore À VALIDER** :
     - le choix « Navigateur web » affiché dans les réglages de KDE, et l'icône du panneau (à l'écran) ;
-    - la **fréquence de reconstruction** pour suivre les correctifs de Chrome. Elle sera proposée une fois mesurée la taille réelle de la couche Chrome (D-027).
+    - ~~la fréquence de reconstruction~~ : tranchée, voir ci-dessous.
+- **Résultats de construction (2026-10-09, [PR #5](https://github.com/PatrickChoumi/Ankh/pull/5))**, vérifiés par la CI :
+  - `google-chrome-stable 155.0.8059.39` s'installe avec une seule dépendance (`liberation-fonts-all`) : **140 Mio à télécharger**, 440 Mio une fois installé.
+  - `dnf5 remove firefox` retire `firefox` et `firefox-langpacks` (337 Mio).
+  - **Erreurs sans conséquence** : le script `%post` du paquet de Chrome essaie d'importer lui-même la clé de Google. Il échoue (« can't create transaction lock … key 1 import failed »), parce que `dnf` tient déjà la base RPM. La clé est déjà importée par notre `rpm --import`, juste avant, après vérification de son empreinte. Rien ne manque.
+  - Les deux variantes passent `just test` : Chrome démarre (`Google Chrome 155.0.8059.39`), Firefox est absent, et Chrome est l'application par défaut pour le web.
+- **Reconstruction hebdomadaire** (mon choix du 2026-10-09 : chaque semaine, environ 140 Mio) :
+  - `build.yml` reconstruit et publie l'image **chaque lundi** (`cron: '17 3 * * 1'`), et `boot-test.yml` la teste en VM le même jour.
+  - L'image publiée est seulement **proposée** : elle n'arrive sur ma machine que quand je lance la mise à jour (D-031).
+  - Note : GitHub désactive les tâches planifiées d'un dépôt public sans activité pendant 60 jours (À VALIDER sur la documentation GitHub).
 
 ## D-024 — Applications par défaut
 

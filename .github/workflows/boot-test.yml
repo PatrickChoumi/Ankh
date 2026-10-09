@@ -17,6 +17,9 @@ on:
       - main
     paths-ignore:
       - '**.md'
+  # Chaque lundi, après la reconstruction hebdomadaire (build.yml).
+  schedule:
+    - cron: '47 4 * * 1'
   workflow_dispatch:
 
 concurrency:
