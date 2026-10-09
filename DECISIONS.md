@@ -53,7 +53,7 @@
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage) |
 | D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
-| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev mis en œuvre, CI À VENIR ; gaming en phase 5, hacking en phase 6) |
+| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; gaming en phase 5, hacking en phase 6) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 
 ---
@@ -930,6 +930,11 @@
     - Discover affiche « Update Issue » sur le système installé depuis le stockage local de la CI, qui n'est pas un registre. Le test capture maintenant Discover après le basculement, quand le système vient du vrai registre (D-028) ;
     - au premier lancement de Chrome, KDE demande de créer un portefeuille (KDE Wallet). Sur la VM, la connexion est automatique, sans mot de passe ; sur ma machine, le portefeuille s'ouvre peut-être avec le mot de passe de session. À VALIDER sur ma machine ;
     - le premier écran (« Welcome to Plasma Desktop », réglage du premier compte) est gris, et l'interface est en anglais dans la VM. La langue se choisit dans ce premier écran.
+  - **Vérifié en VM ([PR #10](https://github.com/PatrickChoumi/Ankh/pull/10), [run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515))** :
+    - « À propos » affiche le logo d'Ankh, « Ankh 44 » et le site d'Ankh, sans hot-dog ni « Kinoite » (capture `1-a-propos`) ;
+    - l'écran de démarrage graphique s'affiche, avec le logo « ankh » en bas et la roue de chargement (captures `0-demarrage-3` et `-4`). Au centre, le thème `bgrt` montre le logo du firmware : TianoCore dans la VM, celui de la carte mère sur un vrai PC ;
+    - l'écran de verrouillage montre « Ankh Signal ».
+  - **Discover affiche toujours « Update Issue »**, même après le basculement vers l'image du vrai registre (capture `2-discover-mises-a-jour`). Ce n'était donc pas dû au stockage local de la CI. Cause À TROUVER (D-028) : le test devra relever le journal de Discover.
 
 ## D-035 — VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents (modifie D-011 et D-024)
 
@@ -1000,6 +1005,7 @@
   - **Taille** :
     - l'image installée passe de 9,9 Go à 11,3 Go (taille décompressée affichée par `bootc install`) ;
     - la couche d'Ankh publiée sur `main` (sans OnlyOffice) se télécharge en 501,1 Mo. Avec OnlyOffice, une mise à jour devrait approcher 870 Mo (501 + 366, estimation). À MESURER après la fusion (D-027).
+    - **Mesuré le 2026-10-09** ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515)) : passer à l'image publiée sur `main`, avec OnlyOffice et VLC, a téléchargé **1,2 Go** (2 couches), contre 501,1 Mo avant D-035. Comme toute reconstruction renouvelle la couche d'Ankh en entier, c'est la taille de chaque mise à jour que je lance. Réduire cette taille (découper l'image en couches qui ne changent pas à chaque fois) est une piste pour la phase 10 (D-027), ou plus tôt si je le décide.
 
 ## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
 
@@ -1032,7 +1038,12 @@
   - **Icône** : celle de KDE pour le développement (`applications-development`). Breeze n'a pas d'icône VS Code (vérifié dans <https://invent.kde.org/frameworks/breeze-icons>, `icons/apps`). Une icône dans le style d'Ankh viendra avec l'identité visuelle (D-037).
   - **Tests** :
     - `just test`, Test 9 : les deux entrées sont valides, l'icône existe, l'ancienne entrée a disparu ;
-    - en VM : le premier clic est joué dans la session de test. Captures `1-vscode-preparation` (la fenêtre de préparation) et `1-vscode` (VS Code ouvert). Résultat À VENIR.
+    - en VM : le premier clic est joué dans la session de test. Captures `1-vscode-preparation` (la fenêtre de préparation) et `1-vscode` (VS Code ouvert).
+  - **Résultat en VM ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515), 2026-10-09)** : au premier clic, la fenêtre de préparation s'ouvre (messages en français), le conteneur se télécharge et les 15 extensions s'installent, puis **VS Code s'ouvre** sur son écran d'accueil. Environ 3 minutes dans la VM des machines de GitHub ; plus long sur ma connexion (D-027).
+  - **Deux corrections du test en chemin** :
+    - la session de test se verrouillait puis éteignait l'écran : le compte de test ne le fait plus (réglage de la VM, pas de l'image) ;
+    - le test lançait le raccourci comme un service systemd ordinaire, que systemd arrête avec tout ce qu'il a démarré quand le lanceur se termine : le conteneur et VS Code mouraient deux secondes après leur démarrage. Le menu de KDE lance ses applications comme des services avec `ExitType=cgroup` (`src/gui/systemd/systemdprocessrunner.cpp` de <https://invent.kde.org/frameworks/kio>), et le test fait maintenant de même. Le raccourci n'a pas changé.
+  - La préparation garde son journal dans `~/.cache/ankh/preparation-dev.log`.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
 

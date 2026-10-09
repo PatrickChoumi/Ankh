@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (fin d'après-midi, PR #10 en cours).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (soir, PR #10 verte, à fusionner).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -161,6 +161,11 @@
   - « À propos » affichait un hot-dog (logo générique de Fedora) et « Kinoite » : il affiche maintenant le logo et le site d'Ankh ;
   - le démarrage affichait les messages du noyau au lieu de l'écran d'Ankh : l'argument `rhgb` manquait.
 - **Un seul Ankh, côté dev** (D-036, PR #10) : « Visual Studio Code » est dans le menu dès l'installation. Au premier clic, une fenêtre montre la préparation de l'environnement de dev, puis VS Code s'ouvre. L'entrée « Créer l'environnement de dev » disparaît.
+- **CI de la PR #10 verte** ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515)) :
+  - en VM, **VS Code s'ouvre au premier clic** (environ 3 minutes de préparation dans la VM) ;
+  - « À propos » montre le logo et le site d'Ankh ; l'écran de démarrage d'Ankh s'affiche ;
+  - **Discover affiche encore « Update Issue »**, même sur le système venu du vrai registre : à comprendre (D-028) ;
+  - **taille mesurée** : une mise à jour d'Ankh télécharge maintenant **1,2 Go** (501 Mo avant OnlyOffice et VLC).
 
 ---
 
@@ -176,9 +181,10 @@
    - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
 5. **Habillage Ankh** (D-033) : fusionné.
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
-7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : PR #10, test en VM à venir. Steam en phase 5, outils Kali en phase 6, sur le même principe.
-8. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
-9. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : PR #10 verte, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
+8. **Discover** (D-028) : comprendre « Update Issue », visible même sur le système venu du vrai registre.
+9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
+10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
@@ -202,7 +208,7 @@
 - **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
 - **Taille des mises à jour** : 252,7 Mo pour passer d'une image Ankh à une autre sur la même base ; la part de Chrome, des fonds et de l'initramfs est à mesurer (D-027).
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
-- **D-035** : les codecs de VLC sur ma machine, et la taille réelle d'une mise à jour avec OnlyOffice (estimée à 870 Mo).
+- **D-035** : les codecs de VLC sur ma machine. Taille d'une mise à jour mesurée : 1,2 Go ; la réduire est une piste (D-027).
 - **Mise à jour non appliquée** (D-004) : corrigée et vérifiée en VM. Reste à comprendre pourquoi le même test passait sur `main` juste avant.
 
 ---
