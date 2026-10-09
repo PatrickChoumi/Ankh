@@ -74,6 +74,98 @@ cat > /etc/xdg/kdeglobals << 'KDE'
 BrowserApplication=google-chrome.desktop
 KDE
 
+# D-035 : les applications du quotidien sont dans l'image dès l'installation,
+# comme Chrome (modifie D-011 et D-024) : VLC et OnlyOffice. Elles se mettent
+# à jour avec l'image, chaque semaine (D-023, D-031).
+#
+# LibreOffice est retiré : une seule suite bureautique, OnlyOffice. Tous ses
+# paquets, s'il y en a dans la base. La liste de ce qui part est affichée.
+mapfile -t libreoffice < <(rpm -qa --qf '%{NAME}\n' 'libreoffice*' | sort -u)
+if [[ ${#libreoffice[@]} -gt 0 ]]; then
+    avant="$(rpm -qa --qf '%{NAME}\n' | sort -u)"
+    dnf5 -y remove "${libreoffice[@]}"
+    echo "Retirés avec LibreOffice : $(comm -23 <(echo "${avant}") <(rpm -qa --qf '%{NAME}\n' | sort -u) | tr '\n' ' ')"
+else
+    echo "LibreOffice absent de la base : rien à retirer"
+fi
+
+# VLC, depuis les dépôts de la base : celui de Fedora, ou celui de negativo17
+# (codecs complets), que kinoite-main active en priorité
+# (build_files/install.sh de https://github.com/ublue-os/main).
+dnf5 -y install vlc
+rpm -q --qf 'VLC installé : %{NAME} %{VERSION}-%{RELEASE} (%{VENDOR})\n' vlc
+
+# OnlyOffice, depuis son dépôt officiel pour Red Hat et dérivés
+# (https://helpcenter.onlyoffice.com/desktop/installation/desktop-install-rhel.aspx),
+# installé dans /opt comme Chrome. La clé de signature est refusée si son
+# empreinte n'est pas celle-ci : la documentation d'OnlyOffice pour Ubuntu
+# désigne la clé par son identifiant court CB2DE8E5, sur keyserver.ubuntu.com
+# (https://helpcenter.onlyoffice.com/installation/desktop-install-ubuntu.aspx),
+# et ce serveur donne cette empreinte complète, au nom d'Ascensio System
+# (l'éditeur d'OnlyOffice). La clé est prise sur ce même serveur.
+onlyoffice_fpr=E09CA29F6E178040EF22B4098320CA65CB2DE8E5
+onlyoffice_key=/etc/pki/rpm-gpg/onlyoffice.asc
+curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x${onlyoffice_fpr}" -o "${onlyoffice_key}"
+gnupg_home=$(mktemp -d)
+fpr=$(gpg --homedir "${gnupg_home}" --show-keys --with-colons "${onlyoffice_key}" | awk -F: '/^fpr:/ {print $10; exit}')
+rm -rf "${gnupg_home}"
+if [[ "${fpr}" != "${onlyoffice_fpr}" ]]; then
+    echo "Clé d'OnlyOffice inattendue : ${fpr} (attendu ${onlyoffice_fpr})" >&2
+    exit 1
+fi
+rpm --import "${onlyoffice_key}"
+cat > /etc/yum.repos.d/onlyoffice.repo << REPO
+[onlyoffice]
+name=onlyoffice
+baseurl=https://download.onlyoffice.com/repo/centos/main/noarch/
+enabled=1
+gpgcheck=1
+gpgkey=file://${onlyoffice_key}
+REPO
+dnf5 -y install onlyoffice-desktopeditors
+
+# Applications par défaut (spécification XDG, comme Chrome plus haut) : VLC
+# pour la vidéo et l'audio, OnlyOffice pour les documents de bureau. Les
+# formats sont ceux que chaque application déclare dans son lanceur, filtrés :
+# OnlyOffice déclare aussi le PDF et le texte brut, qui restent à Chrome et à
+# l'éditeur de texte.
+lanceur() { # $1 : motif des paquets de l'application
+    local -a trouves
+    mapfile -t trouves < <(rpm -qal "$1" | grep -E '^/usr/share/applications/[^/]+\.desktop$' | sort -u)
+    if [[ ${#trouves[@]} -ne 1 ]]; then
+        echo "Paquets « $1 » : un lanceur attendu, trouvés : ${trouves[*]:-aucun}" >&2
+        return 1
+    fi
+    echo "${trouves[0]}"
+}
+formats() { # $1 : lanceur, $2 : formats retenus (expression régulière)
+    sed -n 's/^MimeType=//p' "$1" | tr ';' '\n' | grep -E "$2" | sort -u
+}
+vlc_lanceur="$(lanceur 'vlc*')"
+onlyoffice_lanceur="$(lanceur onlyoffice-desktopeditors)"
+mapfile -t vlc_formats < <(formats "${vlc_lanceur}" '^(video|audio)/')
+mapfile -t onlyoffice_formats < <(formats "${onlyoffice_lanceur}" \
+    '^(application/(msword|rtf|vnd\.ms-(excel|powerpoint|word)|vnd\.openxmlformats-officedocument\.|vnd\.oasis\.opendocument\.(text|spreadsheet|presentation))|text/(csv|rtf)$)')
+if [[ ${#vlc_formats[@]} -eq 0 || ${#onlyoffice_formats[@]} -eq 0 ]]; then
+    echo "Formats introuvables : ${#vlc_formats[@]} pour VLC, ${#onlyoffice_formats[@]} pour OnlyOffice" >&2
+    exit 1
+fi
+echo "VLC (${vlc_lanceur}) par défaut pour ${#vlc_formats[@]} formats"
+echo "OnlyOffice (${onlyoffice_lanceur}) par défaut pour ${#onlyoffice_formats[@]} formats"
+for t in "${vlc_formats[@]}"; do
+    echo "${t}=$(basename "${vlc_lanceur}")"
+done >> /etc/xdg/mimeapps.list
+for t in "${onlyoffice_formats[@]}"; do
+    echo "${t}=$(basename "${onlyoffice_lanceur}")"
+done >> /etc/xdg/mimeapps.list
+
+# Claude et GitHub (D-024) : applications web que Chrome installe lui-même,
+# dans leur propre fenêtre, par sa politique WebAppInstallForceList
+# (fichier /etc/opt/chrome/policies/managed/ankh-applications.json, copié
+# avec les autres fichiers d'Ankh plus bas). Définition de la politique :
+# components/policy/resources/templates/policy_definitions/Miscellaneous/WebAppInstallForceList.yaml
+# dans https://github.com/chromium/chromium.
+
 # D-031 : aucune mise à jour automatique sur la machine. Je décide quand mettre
 # à jour ; Discover me prévient qu'une mise à jour existe (D-028).
 # kinoite-main active ces timers (ublue-os/main, build_files/post-install.sh) :

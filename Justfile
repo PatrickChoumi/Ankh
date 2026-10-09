@@ -122,8 +122,11 @@ test variant:
     echo "Test 11 : plus rien de Fedora à l'écran, démarrage compris (D-034)"
     podman run --rm -i --network=none "${image}" bash -s < tests/sans-fedora.sh
 
+    echo "Test 12 : VLC et OnlyOffice présents et par défaut, LibreOffice absent, Claude et GitHub dans Chrome (D-035)"
+    podman run --rm -i --network=none "${image}" bash -s < tests/applications.sh
+
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
-        echo "Test 12 : module NVIDIA présent pour le noyau de l'image, et signé"
+        echo "Test 13 : module NVIDIA présent pour le noyau de l'image, et signé"
         run 'k="$(ls /usr/lib/modules)"; modinfo -k "${k}" nvidia > /dev/null && [[ -n "$(modinfo -k "${k}" -F signer nvidia)" ]]'
     fi
 

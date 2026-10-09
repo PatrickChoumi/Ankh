@@ -17,7 +17,7 @@
 # Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
 # connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement
 # par le gestionnaire de connexion),
-# Discover et Chrome.
+# Discover, Chrome, VLC et OnlyOffice.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -224,6 +224,40 @@ check_installed() {
     vm "grep -q '^title Ankh ' /boot/loader/entries/*.conf" ||
         die "le menu de démarrage n'affiche pas Ankh (D-033)"
     [[ $(vm cat /proc/sys/kernel/hostname) == ankh ]] || die "la machine ne s'appelle pas « ankh » (D-033)"
+    # D-035 : VLC et OnlyOffice présents dès l'installation, LibreOffice absent.
+    vm rpm -q vlc onlyoffice-desktopeditors || die "VLC ou OnlyOffice absent (D-035)"
+    [[ -z $(vm "rpm -qa 'libreoffice*'") ]] || die "LibreOffice est présent (D-035)"
+}
+
+# Lance une application dans la session du compte de test, par la commande
+# de son lanceur, puis la capture.
+capture_app() {
+    local name=$1 pattern=$2 desktop exe
+    desktop=$(vm "rpm -qal '$pattern' | grep -m 1 -E '^/usr/share/applications/[^/]+[.]desktop\$'")
+    exe=$(vm "sed -n 's/^Exec=\([^ ]*\).*/\1/p' $desktop | head -n 1")
+    echo "$name : $desktop ($exe)"
+    vm systemd-run --machine=ankhvm@ --user --collect --quiet "$exe"
+    sleep 30
+    screenshot "$name"
+}
+
+# D-024, D-035 : Chrome installe lui-même les applications web Claude et
+# GitHub (politique WebAppInstallForceList) et leur crée un lanceur dans le
+# menu. Chrome doit avoir été ouvert une fois, avec internet.
+check_web_apps() {
+    local dir=/home/ankhvm/.local/share/applications deadline=$((SECONDS + 300)) app
+    for app in Claude GitHub; do
+        until vm "grep -lsx 'Name=$app' $dir/chrome-*.desktop"; do
+            if ((SECONDS >= deadline)); then
+                if ! vm "grep -H '^Name=' $dir/*.desktop"; then
+                    echo "Aucun lanceur dans $dir"
+                fi
+                die "Chrome n'a pas installé l'application web $app (D-024)"
+            fi
+            sleep 10
+        done
+    done
+    echo "Applications web installées par Chrome : Claude et GitHub"
 }
 
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"
@@ -307,6 +341,9 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet \
     google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
 sleep 30
 screenshot 1-chrome
+check_web_apps
+capture_app 1-vlc 'vlc*'
+capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
