@@ -41,7 +41,7 @@ dnf5 -y install "${packages[@]}"
 # si un paquet de la liste en installe une autre (Maven tire sa version de
 # référence).
 for commande in java javac; do
-    mapfile -t chemins < <(rpm -qal "java-${java_majeure}-openjdk*" | grep -E "/bin/${commande}\$")
+    mapfile -t chemins < <(rpm -qal "java-${java_majeure}-openjdk*" | grep -E "^/usr/lib/jvm/.*/bin/${commande}\$")
     if [[ ${#chemins[@]} -ne 1 ]]; then
         echo "java-${java_majeure}-openjdk : une commande ${commande} attendue, trouvées : ${chemins[*]:-aucune}" >&2
         exit 1

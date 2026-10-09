@@ -199,7 +199,7 @@ _test-dev:
         java_lts="$(python3 /lts.py java "${java_fedora[@]}")"
         echo "Java : dernière LTS proposée par Fedora : ${java_lts} (proposées : ${java_fedora[*]})"
         for c in java javac; do
-            attendu="$(readlink -f "$(rpm -qal "java-${java_lts}-openjdk*" | grep -E "/bin/${c}\$")")"
+            attendu="$(readlink -f "$(rpm -qal "java-${java_lts}-openjdk*" | grep -E "^/usr/lib/jvm/.*/bin/${c}\$")")"
             actuel="$(readlink -f "/usr/bin/${c}")"
             echo "${c} : ${actuel}"
             [[ "${actuel}" == "${attendu}" ]] || { echo "ÉCHEC : ${c} devrait être ${attendu}" >&2; exit 1; }
