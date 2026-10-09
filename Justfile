@@ -187,14 +187,19 @@ _test-dev:
         echo "${attendues} extensions installées"
         grep -q "\"extensions.autoUpdate\": false" "${HOME}/.config/Code/User/settings.json"'
 
-    echo "Test 4 : Node.js le plus récent proposé par Fedora, dernière version d'OpenJDK par défaut (D-035)"
-    podman run --rm "${image}" bash -c 'set -euo pipefail
-        plus_recente="$(dnf5 -q repoquery --qf "%{name}\n" "nodejs*" | grep -xE "nodejs[0-9]+" | sed "s/^nodejs//" | sort -n | tail -n 1)"
+    echo "Test 4 : Node.js et Java dans leur dernière version LTS proposée par Fedora (D-038)"
+    podman run --rm -v "${PWD}/dev/lts.py:/lts.py:ro" "${image}" bash -c 'set -euo pipefail
+        mapfile -t node_fedora < <(dnf5 -q repoquery --qf "%{name}\n" "nodejs*" | grep -xE "nodejs[0-9]+" | sed "s/^nodejs//" | sort -un)
+        curl -fsSL https://raw.githubusercontent.com/nodejs/Release/main/schedule.json -o /tmp/node-schedule.json
+        node_lts="$(python3 /lts.py node /tmp/node-schedule.json "${node_fedora[@]}")"
         node="$(node --version)"
-        echo "Node.js ${node} ; la plus récente proposée par Fedora : ${plus_recente}"
-        [[ "${node}" == "v${plus_recente}."* ]]
+        echo "Node.js ${node} ; dernière LTS proposée par Fedora : ${node_lts} (proposées : ${node_fedora[*]})"
+        [[ "${node}" == "v${node_lts}."* ]]
+        mapfile -t java_fedora < <(dnf5 -q repoquery --qf "%{name}\n" "java-*-openjdk-devel" | sed -nE "s/^java-([0-9]+)-openjdk-devel\$/\1/p" | sort -un)
+        java_lts="$(python3 /lts.py java "${java_fedora[@]}")"
+        echo "Java : dernière LTS proposée par Fedora : ${java_lts} (proposées : ${java_fedora[*]})"
         for c in java javac; do
-            attendu="$(readlink -f "$(rpm -qal "java-latest-openjdk*" | grep -E "/bin/${c}\$")")"
+            attendu="$(readlink -f "$(rpm -qal "java-${java_lts}-openjdk*" | grep -E "/bin/${c}\$")")"
             actuel="$(readlink -f "/usr/bin/${c}")"
             echo "${c} : ${actuel}"
             [[ "${actuel}" == "${attendu}" ]] || { echo "ÉCHEC : ${c} devrait être ${attendu}" >&2; exit 1; }

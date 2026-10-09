@@ -52,8 +52,9 @@
 | D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (CI et VM vertes ; rendu À VALIDER sur les captures) |
-| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; codecs, taille des mises à jour et Java 27-ea À VALIDER) |
+| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
 | D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (mise en œuvre : dev à la prochaine PR, gaming en phase 5, hacking en phase 6) |
+| D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI À VENIR) |
 
 ---
 
@@ -980,7 +981,7 @@
     - VLC et OnlyOffice s'ouvrent dans la session : captures `1-vlc` et `1-onlyoffice` (15 captures jointes au run).
   - **Conteneur de dev** :
     - **Node.js 24.18.0** (`nodejs24`), la version la plus récente que Fedora 44 propose, au lieu de la 22. C'est une version à support long (LTS) ;
-    - **Java 27** par défaut (`java-latest-openjdk 27.0.0.0.35`), au lieu de la 25. Fedora la marque encore « early access » (`27-ea`). À VALIDER par moi : garder la 27 ou revenir à la 25 (LTS) par défaut ;
+    - **Java 27** par défaut (`java-latest-openjdk 27.0.0.0.35`), au lieu de la 25. Fedora la marque encore « early access » (`27-ea`). Mon choix du 2026-10-09 : les dernières versions LTS (D-038) ;
     - Maven 3.9.11 reste sur Java 25.
   - **Taille** :
     - l'image installée passe de 9,9 Go à 11,3 Go (taille décompressée affichée par `bootc install`) ;
@@ -1007,3 +1008,18 @@
   - **dev** (prochaine PR) : « VS Code » dans le menu dès l'installation. Il crée le conteneur au premier clic, puis s'ouvre. Les raccourcis « Créer l'environnement de dev » et « Mettre à jour l'environnement de dev » disparaissent du menu au profit d'une seule entrée de mise à jour des outils, sans le mot « ankh-dev ». Test en VM avec captures : VS Code présent dans le menu, conteneur créé au premier clic, VS Code ouvert ;
   - **gaming** (phase 5) : Steam dans le menu dès l'installation, sur le même principe ;
   - **hacking** (phase 6) : les outils de Kali dans le menu, lancés dans le conteneur Kali isolé. Les questions de la phase 6 (ANKH-SPEC.md) restent à répondre.
+
+## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-035 pour les versions du conteneur de dev. Résultats de la CI À VENIR.
+- **Contexte** : D-035 prenait la version la plus récente que Fedora propose. Pour Java, c'était la 27, que Fedora marque encore « early access » (`27-ea`). Ma réponse : « garde les dernières versions LTS ».
+- **Décision** : pour Node.js et Java, le conteneur de dev prend la **dernière version LTS** (support long) que Fedora propose, et la règle s'applique à chaque reconstruction, sans intervention.
+  - **Node.js** : une version proposée par Fedora (paquets `nodejsNN`) est retenue si elle est déjà entrée en LTS et pas encore en fin de vie, d'après le calendrier officiel de Node.js (`schedule.json` de <https://github.com/nodejs/Release>). La plus récente est installée. Aujourd'hui : **Node.js 24** (LTS depuis le 2025-10-28). Node.js 26 deviendra LTS le 2026-10-28, et sera pris quand Fedora 44 le proposera.
+  - **Java** : depuis Java 17, une version LTS sort tous les deux ans, soit une version sur quatre : 17, 21, 25, 29… (Java SE Support Roadmap d'Oracle, <https://www.oracle.com/fr/java/technologies/java-se-support-roadmap.html> : versions LTS 8, 11, 17, 21 et 25, une LTS tous les deux ans, prochaine LTS Java 29 en septembre 2027 ; vu le 2026-10-09 dans les résultats d'une recherche, la page elle-même refusant l'accès à l'environnement de Claude). La plus récente de ces versions proposée par Fedora (`java-NN-openjdk`) est installée, et `java` et `javac` pointent vers elle. Aujourd'hui : **Java 25**. `java-latest-openjdk` n'est plus installé.
+  - Les autres outils (Python, GCC, Clang…) n'ont pas de version LTS : ils restent dans la version de Fedora 44.
+- **Raisons** : des versions stables et suivies longtemps, plutôt que les toutes dernières.
+- **Mise en œuvre** :
+  - `dev/lts.py` choisit la version : `python3 lts.py node calendrier.json 22 24 …` ou `python3 lts.py java 21 25 …`. Il échoue s'il n'y a aucune version LTS parmi celles de Fedora : la construction s'arrête au lieu de prendre une autre version ;
+  - `dev/build.sh` interroge les dépôts de Fedora, télécharge le calendrier de Node.js, puis installe les versions choisies ;
+  - testé en local le 2026-10-09 avec le vrai calendrier : 24 parmi « 20 22 24 25 », 24 parmi « 22 24 26 27 » (la 26 n'est pas encore LTS), 25 parmi « 21 25 27 », 29 parmi « 25 26 27 29 », échec parmi « 25 27 » et « 26 27 ».
+- **Vérification** : `just test ankh-dev`, Test 4. Il refait le choix à partir des dépôts et du calendrier, puis vérifie que `node`, `java` et `javac` sont bien ces versions.
