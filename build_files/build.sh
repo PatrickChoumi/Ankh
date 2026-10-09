@@ -127,8 +127,10 @@ cat "${os_release}"
 # machine « fedora », et systemd garde un nom existant si /etc/hostname est
 # absent (src/shared/hostname-setup.c, hostname_setup ; vu en VM). Un
 # changement fait avec hostnamectl reste local à la machine, comme tout /etc.
+# Le fichier de la base, s'il existe, est vu tel quel grâce à
+# « podman build --no-hostname » (Justfile).
 if [[ -e /etc/hostname ]]; then
-    echo "/etc/hostname existe déjà dans la base : réglage à fusionner à la main" >&2
+    echo "/etc/hostname existe déjà dans la base (« $(cat /etc/hostname) ») : réglage à fusionner à la main" >&2
     exit 1
 fi
 echo ankh > /etc/hostname
