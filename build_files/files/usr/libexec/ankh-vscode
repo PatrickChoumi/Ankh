@@ -1,0 +1,20 @@
+#!/usr/bin/bash
+# D-036 : VS Code, depuis le menu d'Ankh. Au premier lancement, prépare
+# l'environnement de dev (le conteneur de D-032) dans une fenêtre qui montre
+# la progression, puis ouvre VS Code ; les fois suivantes, VS Code s'ouvre
+# directement. Rien ne se télécharge avant ce premier clic (D-031).
+set -euo pipefail
+
+if ! podman container exists ankh-dev; then
+    # En cas d'échec, la fenêtre reste ouverte pour montrer pourquoi.
+    konsole --nofork -e bash -c '/usr/libexec/ankh-dev creer || {
+        echo
+        echo "La préparation a échoué. Appuie sur Entrée pour fermer cette fenêtre."
+        read -r
+        exit 1
+    }'
+    # konsole ne rend pas toujours le code de sortie de la commande : le
+    # conteneur doit exister, sinon on s'arrête là.
+    podman container exists ankh-dev
+fi
+exec distrobox enter ankh-dev -- code "$@"

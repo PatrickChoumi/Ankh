@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (après-midi, PR #9 verte, à fusionner).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (soir, PR #10 verte, à fusionner).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -155,6 +155,17 @@
   - conteneur de dev : Node.js 24 (au lieu de 22) et Java 27 (au lieu de 25), que Fedora marque encore « early access » ;
   - **panne trouvée et corrigée** : en VM, une mise à jour préparée ne s'appliquait pas au redémarrage, à cause d'un montage automatique de `/boot` ajouté par systemd. Il est masqué ; les 4 étapes du test passent de nouveau (D-004) ;
   - OnlyOffice pèse 1,3 Go installé : une mise à jour d'Ankh devrait passer d'environ 500 Mo à environ 870 Mo (estimation, à mesurer, D-027).
+- **PR #9 fusionnée** le 2026-10-09.
+- **Versions LTS** (D-038, 2026-10-09) : à ma demande, le conteneur de dev prend les dernières versions LTS de Node.js et de Java, plus les toutes dernières. Aujourd'hui : Node.js 24 et Java 25. La règle se réapplique à chaque reconstruction. CI verte.
+- **Captures récupérées** : j'ai autorisé le domaine des artefacts de GitHub ; Claude voit et m'envoie maintenant les captures. Elles ont montré deux défauts, corrigés dans la PR #10 (D-034) :
+  - « À propos » affichait un hot-dog (logo générique de Fedora) et « Kinoite » : il affiche maintenant le logo et le site d'Ankh ;
+  - le démarrage affichait les messages du noyau au lieu de l'écran d'Ankh : l'argument `rhgb` manquait.
+- **Un seul Ankh, côté dev** (D-036, PR #10) : « Visual Studio Code » est dans le menu dès l'installation. Au premier clic, une fenêtre montre la préparation de l'environnement de dev, puis VS Code s'ouvre. L'entrée « Créer l'environnement de dev » disparaît.
+- **CI de la PR #10 verte** ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515)) :
+  - en VM, **VS Code s'ouvre au premier clic** (environ 3 minutes de préparation dans la VM) ;
+  - « À propos » montre le logo et le site d'Ankh ; l'écran de démarrage d'Ankh s'affiche ;
+  - **Discover affiche encore « Update Issue »**, même sur le système venu du vrai registre : à comprendre (D-028) ;
+  - **taille mesurée** : une mise à jour d'Ankh télécharge maintenant **1,2 Go** (501 Mo avant OnlyOffice et VLC).
 
 ---
 
@@ -164,15 +175,16 @@
 
 1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) : fusionné. Reste à vérifier à l'écran le navigateur par défaut dans KDE (captures).
-3. **Applications par défaut** (D-024, D-035) : PR #9 verte, à fusionner. Ensuite : regarder les captures de VLC et d'OnlyOffice, vérifier les codecs de VLC sur ma machine, et mesurer la taille d'une mise à jour.
-4. **Conteneur de dev** (D-032) : fusionné. Node.js 24 et Java 27 : dans la PR #9. Ensuite :
+3. **Applications par défaut** (D-024, D-035) : fusionné. Ensuite : regarder les captures de VLC et d'OnlyOffice, vérifier les codecs de VLC sur ma machine, et mesurer la taille d'une mise à jour.
+4. **Conteneur de dev** (D-032) : fusionné. Dernières versions LTS (Node.js 24, Java 25) : PR #10, CI verte (D-038). Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
    - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
 5. **Habillage Ankh** (D-033) : fusionné.
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
-7. **Un seul Ankh** (D-036, prochaine PR) : VS Code dans le menu dès l'installation, prêt au premier clic, sans « ankh-dev » à gérer. Steam en phase 5, outils Kali en phase 6, sur le même principe.
-8. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
-9. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : PR #10 verte, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
+8. **Discover** (D-028) : comprendre « Update Issue », visible même sur le système venu du vrai registre.
+9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
+10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
@@ -196,16 +208,15 @@
 - **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
 - **Taille des mises à jour** : 252,7 Mo pour passer d'une image Ankh à une autre sur la même base ; la part de Chrome, des fonds et de l'initramfs est à mesurer (D-027).
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
-- **D-035** : les codecs de VLC sur ma machine, et la taille réelle d'une mise à jour avec OnlyOffice (estimée à 870 Mo).
+- **D-035** : les codecs de VLC sur ma machine. Taille d'une mise à jour mesurée : 1,2 Go ; la réduire est une piste (D-027).
 - **Mise à jour non appliquée** (D-004) : corrigée et vérifiée en VM. Reste à comprendre pourquoi le même test passait sur `main` juste avant.
 
 ---
 
 ## Ce que je dois faire
 
-1. **Fusionner la PR #9** ([lien](https://github.com/PatrickChoumi/Ankh/pull/9)), et me dire si je garde **Java 27** (« early access » chez Fedora) ou si je reviens à **Java 25** (LTS) par défaut dans le conteneur de dev.
+1. **Fusionner la PR #10** ([lien](https://github.com/PatrickChoumi/Ankh/pull/10)) une fois sa CI verte : versions LTS, VS Code dans le menu, corrections de « À propos » et de l'écran de démarrage.
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-3. **Regarder les captures d'écran** de la PR #9 ([run du test en VM](https://github.com/PatrickChoumi/Ankh/actions/runs/37934589711)) : section « Artifacts », fichier `captures-ankh-vm`. Me dire si le démarrage, la connexion, le bureau, Chrome, Discover, VLC et OnlyOffice ont l'air corrects.
+3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
 5. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
-6. **Pour que Claude voie et m'envoie les captures** : autoriser le domaine `blob.core.windows.net` dans les réglages réseau de l'environnement cloud (menu de l'environnement dans la barre de titre de la session → Edit → Network access → Allowed domains, case des gestionnaires de paquets laissée cochée). C'est là que GitHub range les captures de la VM.

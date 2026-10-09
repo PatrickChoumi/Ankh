@@ -17,7 +17,7 @@
 # Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
 # connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement
 # par le gestionnaire de connexion),
-# Discover, Chrome, VLC et OnlyOffice.
+# Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic).
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -251,10 +251,10 @@ check_installed() {
     # D-031 : rien ne se télécharge ni ne s'installe sans moi.
     [[ $(vm systemctl is-enabled rpm-ostreed-automatic.timer) == masked ]] ||
         die "le téléchargement automatique du système n'est pas désactivé (D-031)"
-    # D-032 : raccourcis du conteneur de dev (le conteneur lui-même n'est pas
-    # créé dans la VM : gros téléchargement, testé à part en CI).
-    vm test -x /usr/libexec/ankh-dev -a -f /usr/share/applications/ankh-dev-creer.desktop ||
-        die "raccourcis du conteneur de dev absents (D-032)"
+    # D-036 : VS Code dans le menu dès l'installation (le premier clic est
+    # testé une fois, dans la session de test, par check_vscode).
+    vm test -x /usr/libexec/ankh-vscode -a -f /usr/share/applications/ankh-vscode.desktop ||
+        die "VS Code absent du menu (D-036)"
     # D-033 : le système s'appelle Ankh, jusque dans le menu de démarrage
     # (titre écrit par ostree à partir de PRETTY_NAME).
     # shellcheck disable=SC2016 # variables lues dans la VM
@@ -263,6 +263,8 @@ check_installed() {
     vm "grep -q '^title Ankh ' /boot/loader/entries/*.conf" ||
         die "le menu de démarrage n'affiche pas Ankh (D-033)"
     [[ $(vm cat /proc/sys/kernel/hostname) == ankh ]] || die "la machine ne s'appelle pas « ankh » (D-033)"
+    # D-034 : écran de démarrage graphique (« rhgb », donné par l'image).
+    vm grep -qw rhgb /proc/cmdline || die "le noyau n'a pas reçu « rhgb » : pas d'écran de démarrage (D-034)"
     # D-004 : /boot n'est pas monté automatiquement par-dessus le montage d'ostree.
     [[ $(vm systemctl is-enabled boot.automount) == masked ]] ||
         die "le montage automatique de /boot n'est pas masqué (D-004)"
@@ -281,6 +283,56 @@ capture_app() {
     vm systemd-run --machine=ankhvm@ --user --collect --quiet "$exe"
     sleep 30
     screenshot "$name"
+}
+
+# D-036 : premier lancement de VS Code depuis le menu, comme un clic : une
+# fenêtre montre la préparation de l'environnement de dev (téléchargement du
+# conteneur, extensions), puis VS Code s'ouvre. Captures des deux moments.
+check_vscode() {
+    local deadline=$((SECONDS + 2400)) next=$((SECONDS + 300)) journal=/home/ankhvm/.cache/ankh/preparation-dev.log
+    # Lancé comme KDE lance une application du menu : un service avec
+    # ExitType=cgroup, qui ne tue pas ce que le lanceur a démarré quand il se
+    # termine (src/gui/systemd/systemdprocessrunner.cpp de
+    # https://invent.kde.org/frameworks/kio). Sans cela, systemd arrêtait le
+    # conteneur et VS Code deux secondes après leur démarrage.
+    vm systemd-run --machine=ankhvm@ --user --unit=ankh-vscode-premier-clic --quiet \
+        --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-vscode
+    sleep 60
+    screenshot 1-vscode-preparation
+    until vm pgrep -u ankhvm -f /usr/share/code/code > /dev/null; do
+        if ((SECONDS >= deadline)); then
+            screenshot 1-vscode-echec
+            explain_vscode "$journal"
+            die "VS Code ne s'est pas ouvert 40 minutes après le premier clic (D-036)"
+        fi
+        if ((SECONDS >= next)); then
+            next=$((SECONDS + 300))
+            echo "Préparation en cours, fin du journal :"
+            if ! vm "tail -n 3 $journal"; then
+                echo "(journal de préparation absent)"
+            fi
+        fi
+        sleep 15
+    done
+    sleep 45
+    screenshot 1-vscode
+    echo "VS Code ouvert au premier clic, environnement de dev préparé"
+}
+
+# Quand VS Code ne s'ouvre pas : journal de la préparation, sortie du
+# lanceur, et conteneurs du compte de test.
+explain_vscode() {
+    local cmd
+    log "Diagnostic : VS Code ne s'est pas ouvert"
+    for cmd in \
+        "tail -n 60 $1" \
+        'journalctl --no-pager -n 60 _SYSTEMD_USER_UNIT=ankh-vscode-premier-clic.service' \
+        'systemd-run --machine=ankhvm@ --user --wait --pipe --quiet podman ps -a'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
 }
 
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
@@ -336,6 +388,7 @@ podman run --rm --privileged --pid=host --ipc=host \
     --skip-fetch-check \
     --root-ssh-authorized-keys /output/id_ed25519.pub \
     --karg console=tty0 --karg console=ttyS0,115200n8 \
+    --karg plymouth.ignore-serial-consoles \
     --karg systemd.wants=sshd.service \
     /output/disk.raw
 
@@ -374,6 +427,12 @@ log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, C
 # valables après chaque basculement, pour capturer le bureau de chaque image.
 # ssh recolle les arguments : la commande est passée en une seule chaîne.
 vm "useradd -m -c 'Compte de test Ankh' ankhvm"
+# Ni verrouillage ni écran éteint pendant le test (sinon les captures montrent
+# l'écran de verrouillage, puis un écran noir) : réglages du compte de test.
+vm "install -d -o ankhvm -g ankhvm /home/ankhvm/.config &&
+    printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/ankhvm/.config/kscreenlockerrc &&
+    printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/ankhvm/.config/powerdevilrc &&
+    chown ankhvm:ankhvm /home/ankhvm/.config/kscreenlockerrc /home/ankhvm/.config/powerdevilrc"
 configure_autologin
 wait_desktop 1-bureau
 vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
@@ -389,6 +448,7 @@ capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
+check_vscode
 
 log "2/4 Basculement vers une autre version : $other"
 vm bootc switch "$other"
@@ -397,6 +457,11 @@ reboot_vm
 check_boot
 check_ankh
 wait_desktop 2-bureau-ankh-publiee
+# D-028 : Discover cherche les mises à jour dans le vrai registre (l'image
+# installée à l'étape 1 vient du stockage local de la CI, sans registre).
+vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
+sleep 30
+screenshot 2-discover-mises-a-jour
 [[ $(booted image.image) == "$other" ]] || { explain_deployment; die "l'image démarrée n'est pas $other"; }
 [[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "le basculement n'a pas changé de version"; }
 

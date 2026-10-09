@@ -25,12 +25,11 @@ pipx
 uv
 
 # JavaScript / TypeScript : Node.js et npm s'installent dans build.sh, dans
-# la version la plus récente que Fedora propose (D-035). TypeScript s'installe
-# par projet, avec npm.
+# leur dernière version LTS proposée par Fedora (D-038). TypeScript
+# s'installe par projet, avec npm.
 
-# Java : la dernière version d'OpenJDK fournie par Fedora, réglée comme
-# version par défaut dans build.sh (D-035)
-java-latest-openjdk-devel
+# Java : OpenJDK s'installe dans build.sh, dans sa dernière version LTS
+# proposée par Fedora (D-038)
 maven
 
 # Bases de données : les clients. Les serveurs tournent dans des conteneurs

@@ -51,9 +51,10 @@
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
 | D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
-| D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (CI et VM vertes ; rendu À VALIDER sur les captures) |
-| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; codecs, taille des mises à jour et Java 27-ea À VALIDER) |
-| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (mise en œuvre : dev à la prochaine PR, gaming en phase 5, hacking en phase 6) |
+| D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage) |
+| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
+| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; gaming en phase 5, hacking en phase 6) |
+| D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 
 ---
 
@@ -915,6 +916,25 @@
     - 12 captures dans l'artefact `captures-ankh-vm`, dont 4 pendant le démarrage (`0-demarrage-1` à `-4`).
   - **Taille mesurée** : passer de cette image à l'image publiée a téléchargé 252,7 Mo (2 couches). La couche d'Ankh contient Chrome, les fonds, les logos et l'initramfs ; toute reconstruction la renouvelle en entier. La part de chacun est À MESURER (D-027).
   - **À VALIDER par moi** : le rendu à l'écran sur les captures (démarrage, connexion, verrouillage, bureau, « À propos »), et l'écran du mot de passe LUKS sur ma machine.
+- **Correction après lecture des captures (2026-10-09, [run 37938577307](https://github.com/PatrickChoumi/Ankh/actions/runs/37938577307))** : les captures, enfin récupérées par Claude, montrent deux défauts que les tests ne voyaient pas.
+  - **« À propos de ce système » affichait un hot-dog et « Kinoite »**.
+    - Cause : KDE lit le logo, la variante et le site de cette page dans `kcm-about-distrorc` avant `os-release` (`kcms/about-distro/src/main.cpp` de <https://invent.kde.org/plasma/kinfocenter>). Le réglage de Fedora y désigne l'image de `generic-logos`, un hot-dog, et la variante « Kinoite ».
+    - Correctif : chaque `kcm-about-distrorc` désigne le logo d'Ankh, sans variante, avec le site d'Ankh (`build_files/regler-a-propos.py`). `os-release` perd `VARIANT`, et `VERSION` ne garde que le numéro (`44`). `VARIANT_ID`, lu par des outils, reste.
+    - Le journal de construction liste maintenant les images de `generic-logos`, pour les remplacer avec l'identité visuelle (D-037).
+  - **Le démarrage affichait les messages du noyau, pas l'écran d'Ankh**.
+    - Cause : Plymouth n'affiche son écran graphique (logo d'Ankh, saisie du mot de passe LUKS) qu'avec l'argument `rhgb`. L'installateur de Fedora l'ajoute ; avec `bootc install`, les arguments viennent de `/usr/lib/bootc/kargs.d`, et l'image ne le donnait pas.
+    - Correctif, **à relire car il touche au démarrage** : `/usr/lib/bootc/kargs.d/10-ankh-ecran-de-demarrage.toml` donne `rhgb quiet`, sauf si la base les donne déjà. D'après la documentation de bootc, un changement de `kargs.d` s'applique aussi aux machines déjà installées, à la mise à jour suivante (`docs/src/building/bootc-kernel-arguments.7.md` de <https://github.com/bootc-dev/bootc>).
+    - En VM, l'argument `plymouth.ignore-serial-consoles` (propre au test) laisse Plymouth afficher son écran malgré la console série, pour que les captures du démarrage le montrent.
+  - **Tests** : le Test 11 vérifie maintenant le nom, la version et la variante du système (ni Fedora ni Kinoite), le logo de « À propos » et la présence de `rhgb`. Le test en VM vérifie que le noyau a reçu `rhgb`.
+  - **Vu aussi sur les captures, sans correctif pour l'instant** :
+    - Discover affiche « Update Issue » sur le système installé depuis le stockage local de la CI, qui n'est pas un registre. Le test capture maintenant Discover après le basculement, quand le système vient du vrai registre (D-028) ;
+    - au premier lancement de Chrome, KDE demande de créer un portefeuille (KDE Wallet). Sur la VM, la connexion est automatique, sans mot de passe ; sur ma machine, le portefeuille s'ouvre peut-être avec le mot de passe de session. À VALIDER sur ma machine ;
+    - le premier écran (« Welcome to Plasma Desktop », réglage du premier compte) est gris, et l'interface est en anglais dans la VM. La langue se choisit dans ce premier écran.
+  - **Vérifié en VM ([PR #10](https://github.com/PatrickChoumi/Ankh/pull/10), [run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515))** :
+    - « À propos » affiche le logo d'Ankh, « Ankh 44 » et le site d'Ankh, sans hot-dog ni « Kinoite » (capture `1-a-propos`) ;
+    - l'écran de démarrage graphique s'affiche, avec le logo « ankh » en bas et la roue de chargement (captures `0-demarrage-3` et `-4`). Au centre, le thème `bgrt` montre le logo du firmware : TianoCore dans la VM, celui de la carte mère sur un vrai PC ;
+    - l'écran de verrouillage montre « Ankh Signal ».
+  - **Discover affiche toujours « Update Issue »**, même après le basculement vers l'image du vrai registre (capture `2-discover-mises-a-jour`). Ce n'était donc pas dû au stockage local de la CI. Cause À TROUVER (D-028) : le test devra relever le journal de Discover.
 
 ## D-035 — VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents (modifie D-011 et D-024)
 
@@ -980,11 +1000,12 @@
     - VLC et OnlyOffice s'ouvrent dans la session : captures `1-vlc` et `1-onlyoffice` (15 captures jointes au run).
   - **Conteneur de dev** :
     - **Node.js 24.18.0** (`nodejs24`), la version la plus récente que Fedora 44 propose, au lieu de la 22. C'est une version à support long (LTS) ;
-    - **Java 27** par défaut (`java-latest-openjdk 27.0.0.0.35`), au lieu de la 25. Fedora la marque encore « early access » (`27-ea`). À VALIDER par moi : garder la 27 ou revenir à la 25 (LTS) par défaut ;
+    - **Java 27** par défaut (`java-latest-openjdk 27.0.0.0.35`), au lieu de la 25. Fedora la marque encore « early access » (`27-ea`). Mon choix du 2026-10-09 : les dernières versions LTS (D-038) ;
     - Maven 3.9.11 reste sur Java 25.
   - **Taille** :
     - l'image installée passe de 9,9 Go à 11,3 Go (taille décompressée affichée par `bootc install`) ;
     - la couche d'Ankh publiée sur `main` (sans OnlyOffice) se télécharge en 501,1 Mo. Avec OnlyOffice, une mise à jour devrait approcher 870 Mo (501 + 366, estimation). À MESURER après la fusion (D-027).
+    - **Mesuré le 2026-10-09** ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515)) : passer à l'image publiée sur `main`, avec OnlyOffice et VLC, a téléchargé **1,2 Go** (2 couches), contre 501,1 Mo avant D-035. Comme toute reconstruction renouvelle la couche d'Ankh en entier, c'est la taille de chaque mise à jour que je lance. Réduire cette taille (découper l'image en couches qui ne changent pas à chaque fois) est une piste pour la phase 10 (D-027), ou plus tôt si je le décide.
 
 ## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
 
@@ -1007,3 +1028,35 @@
   - **dev** (prochaine PR) : « VS Code » dans le menu dès l'installation. Il crée le conteneur au premier clic, puis s'ouvre. Les raccourcis « Créer l'environnement de dev » et « Mettre à jour l'environnement de dev » disparaissent du menu au profit d'une seule entrée de mise à jour des outils, sans le mot « ankh-dev ». Test en VM avec captures : VS Code présent dans le menu, conteneur créé au premier clic, VS Code ouvert ;
   - **gaming** (phase 5) : Steam dans le menu dès l'installation, sur le même principe ;
   - **hacking** (phase 6) : les outils de Kali dans le menu, lancés dans le conteneur Kali isolé. Les questions de la phase 6 (ANKH-SPEC.md) restent à répondre.
+- **Mise en œuvre du dev (2026-10-09)** :
+  - **« Visual Studio Code »** est dans le menu dès l'installation (`ankh-vscode.desktop`, catégorie Développement). Il lance `/usr/libexec/ankh-vscode` :
+    - si l'environnement de dev n'existe pas, une fenêtre Konsole montre sa préparation : téléchargement du conteneur `ankh-dev` (D-032), puis installation des extensions VS Code. En cas d'échec, la fenêtre reste ouverte pour montrer pourquoi ;
+    - ensuite, VS Code s'ouvre dans le conteneur ;
+    - les fois suivantes, VS Code s'ouvre directement.
+  - **« Créer l'environnement de dev » disparaît**. L'entrée de mise à jour devient « Mettre à jour les outils de dev ». Le nom `ankh-dev` reste celui du conteneur, en coulisse.
+  - **distrobox n'exporte plus VS Code** (`exported_apps` retiré de `distrobox.ini`), pour éviter une deuxième entrée « Visual Studio Code (on ankh-dev) ».
+  - **Icône** : celle de KDE pour le développement (`applications-development`). Breeze n'a pas d'icône VS Code (vérifié dans <https://invent.kde.org/frameworks/breeze-icons>, `icons/apps`). Une icône dans le style d'Ankh viendra avec l'identité visuelle (D-037).
+  - **Tests** :
+    - `just test`, Test 9 : les deux entrées sont valides, l'icône existe, l'ancienne entrée a disparu ;
+    - en VM : le premier clic est joué dans la session de test. Captures `1-vscode-preparation` (la fenêtre de préparation) et `1-vscode` (VS Code ouvert).
+  - **Résultat en VM ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515), 2026-10-09)** : au premier clic, la fenêtre de préparation s'ouvre (messages en français), le conteneur se télécharge et les 15 extensions s'installent, puis **VS Code s'ouvre** sur son écran d'accueil. Environ 3 minutes dans la VM des machines de GitHub ; plus long sur ma connexion (D-027).
+  - **Deux corrections du test en chemin** :
+    - la session de test se verrouillait puis éteignait l'écran : le compte de test ne le fait plus (réglage de la VM, pas de l'image) ;
+    - le test lançait le raccourci comme un service systemd ordinaire, que systemd arrête avec tout ce qu'il a démarré quand le lanceur se termine : le conteneur et VS Code mouraient deux secondes après leur démarrage. Le menu de KDE lance ses applications comme des services avec `ExitType=cgroup` (`src/gui/systemd/systemdprocessrunner.cpp` de <https://invent.kde.org/frameworks/kio>), et le test fait maintenant de même. Le raccourci n'a pas changé.
+  - La préparation garde son journal dans `~/.cache/ankh/preparation-dev.log`.
+
+## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-035 pour les versions du conteneur de dev. Résultats de la CI À VENIR.
+- **Contexte** : D-035 prenait la version la plus récente que Fedora propose. Pour Java, c'était la 27, que Fedora marque encore « early access » (`27-ea`). Ma réponse : « garde les dernières versions LTS ».
+- **Décision** : pour Node.js et Java, le conteneur de dev prend la **dernière version LTS** (support long) que Fedora propose, et la règle s'applique à chaque reconstruction, sans intervention.
+  - **Node.js** : une version proposée par Fedora (paquets `nodejsNN`) est retenue si elle est déjà entrée en LTS et pas encore en fin de vie, d'après le calendrier officiel de Node.js (`schedule.json` de <https://github.com/nodejs/Release>). La plus récente est installée. Aujourd'hui : **Node.js 24** (LTS depuis le 2025-10-28). Node.js 26 deviendra LTS le 2026-10-28, et sera pris quand Fedora 44 le proposera.
+  - **Java** : depuis Java 17, une version LTS sort tous les deux ans, soit une version sur quatre : 17, 21, 25, 29… (Java SE Support Roadmap d'Oracle, <https://www.oracle.com/fr/java/technologies/java-se-support-roadmap.html> : versions LTS 8, 11, 17, 21 et 25, une LTS tous les deux ans, prochaine LTS Java 29 en septembre 2027 ; vu le 2026-10-09 dans les résultats d'une recherche, la page elle-même refusant l'accès à l'environnement de Claude). La plus récente de ces versions proposée par Fedora (`java-NN-openjdk`) est installée, et `java` et `javac` pointent vers elle. Aujourd'hui : **Java 25**. `java-latest-openjdk` n'est plus installé.
+  - Les autres outils (Python, GCC, Clang…) n'ont pas de version LTS : ils restent dans la version de Fedora 44.
+- **Raisons** : des versions stables et suivies longtemps, plutôt que les toutes dernières.
+- **Mise en œuvre** :
+  - `dev/lts.py` choisit la version : `python3 lts.py node calendrier.json 22 24 …` ou `python3 lts.py java 21 25 …`. Il échoue s'il n'y a aucune version LTS parmi celles de Fedora : la construction s'arrête au lieu de prendre une autre version ;
+  - `dev/build.sh` interroge les dépôts de Fedora, télécharge le calendrier de Node.js, puis installe les versions choisies ;
+  - testé en local le 2026-10-09 avec le vrai calendrier : 24 parmi « 20 22 24 25 », 24 parmi « 22 24 26 27 » (la 26 n'est pas encore LTS), 25 parmi « 21 25 27 », 29 parmi « 25 26 27 29 », échec parmi « 25 27 » et « 26 27 ».
+- **Vérification** : `just test ankh-dev`, Test 4. Il refait le choix à partir des dépôts et du calendrier, puis vérifie que `node`, `java` et `javac` sont bien ces versions.
+- **Résultat de la CI ([PR #10](https://github.com/PatrickChoumi/Ankh/pull/10), 2026-10-09)** : « Construire ankh-dev » est vert, Test 4 compris, au deuxième passage. Le premier a montré que le paquet de Java 25 déclare aussi le lien `/usr/bin/java` géré par `alternatives` : seuls les chemins sous `/usr/lib/jvm` sont maintenant retenus.
