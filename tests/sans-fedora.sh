@@ -7,6 +7,14 @@ set -euo pipefail
 
 trouves=0
 
+# Dossiers de réglages où chercher un fond de Fedora
+dossiers=()
+for d in /etc /usr/share/plasma /usr/share/kde-settings /usr/lib/plasmalogin /usr/share/plasmalogin; do
+    if [[ -d "${d}" ]]; then
+        dossiers+=("${d}")
+    fi
+done
+
 signaler() { # $1 : ce qui est visible, $2 : fichier
     local paquet="aucun paquet"
     if rpm -qf "$2" > /dev/null 2>&1; then
@@ -70,6 +78,11 @@ for d in /usr/share/wallpapers/*/; do
     fi
 done
 
+# Réglages qui affichent un fond de Fedora (écran de verrouillage, de connexion…)
+while IFS= read -r f; do
+    signaler "réglage qui affiche un fond de Fedora" "${f}"
+done < <(grep -rIlsE 'wallpapers/(Fedora|Default|F[0-9]+)/' "${dossiers[@]}")
+
 # Schémas de couleurs
 for f in /usr/share/color-schemes/*.colors; do
     if [[ -e "${f}" ]] && grep -qiE '^Name(\[[^]]*\])?=.*fedora' "${f}"; then
@@ -110,12 +123,6 @@ if ((trouves > 0)); then
         if rpm -q "${p}" > /dev/null; then
             echo "--- Contenu de ${p} :" >&2
             rpm -ql "${p}" | sed '/\/contents\/images/d' >&2
-        fi
-    done
-    dossiers=()
-    for d in /etc /usr/share/plasma /usr/share/kde-settings /usr/lib/plasmalogin /usr/share/plasmalogin; do
-        if [[ -d "${d}" ]]; then
-            dossiers+=("${d}")
         fi
     done
     echo "--- Réglages qui citent un fond ou un thème de Fedora :" >&2

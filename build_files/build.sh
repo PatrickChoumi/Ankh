@@ -206,6 +206,22 @@ PY
     done
 done
 
+# Fonds d'écran de Fedora : l'écran de verrouillage (kde-settings) et l'écran
+# de connexion (Plasma Login) les désignent explicitement, sans passer par le
+# fond par défaut du thème global (vu par le Test 11). Ils désignent
+# maintenant « Ankh Signal », puis les fonds de Fedora sont retirés.
+# kde-settings-plasma dépend de leur paquet, qui reste installé, sans images.
+for f in /usr/share/kde-settings/kde-profile/default/xdg/kscreenlockerrc /usr/lib/plasmalogin/defaults.conf; do
+    if ! grep -q 'wallpapers/Fedora/' "${f}"; then
+        echo "${f} ne désigne plus le fond de Fedora : réglage à revoir" >&2
+        exit 1
+    fi
+    sed -i 's|/usr/share/wallpapers/Fedora/|/usr/share/wallpapers/Ankh-Signal/|g' "${f}"
+done
+# « Fedora » et « Default » sont des liens vers le fond de la version (F44).
+rm /usr/share/wallpapers/Fedora /usr/share/wallpapers/Default
+rm -r /usr/share/wallpapers/F[0-9]*
+
 # Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
 # remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui
 # de Fedora ; seule son image de filigrane change.
