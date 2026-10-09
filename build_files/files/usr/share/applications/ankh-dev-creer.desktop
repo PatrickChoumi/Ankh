@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Créer l'environnement de dev
+Comment=Crée le conteneur de dev d'Ankh : VS Code, Java, Python, JavaScript, C/C++ et bases de données. Gros téléchargement.
+Exec=konsole --hold -e /usr/libexec/ankh-dev creer
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;

@@ -1,0 +1,37 @@
+# Extensions VS Code installées à la création du conteneur de dev (D-032).
+# Une extension par ligne : identifiant de la place de marché de VS Code.
+
+# Interface en français
+MS-CEINTL.vscode-language-pack-fr
+
+# Java
+vscjava.vscode-java-pack
+
+# Python
+ms-python.python
+
+# C / C++
+ms-vscode.cpptools-extension-pack
+
+# JavaScript / TypeScript
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+
+# Bases de données
+mtxr.sqltools
+mtxr.sqltools-driver-pg
+mtxr.sqltools-driver-mysql
+mtxr.sqltools-driver-sqlite
+
+# Git et GitHub
+eamodio.gitlens
+github.vscode-pull-request-github
+
+# Fichiers de configuration
+redhat.vscode-yaml
+
+# Conteneurs
+ms-azuretools.vscode-containers
+
+# API
+humao.rest-client

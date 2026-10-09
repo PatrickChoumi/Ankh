@@ -212,6 +212,10 @@ check_installed() {
     # D-031 : rien ne se télécharge ni ne s'installe sans moi.
     [[ $(vm systemctl is-enabled rpm-ostreed-automatic.timer) == masked ]] ||
         die "le téléchargement automatique du système n'est pas désactivé (D-031)"
+    # D-032 : raccourcis du conteneur de dev (le conteneur lui-même n'est pas
+    # créé dans la VM : gros téléchargement, testé à part en CI).
+    vm test -x /usr/libexec/ankh-dev -a -f /usr/share/applications/ankh-dev-creer.desktop ||
+        die "raccourcis du conteneur de dev absents (D-032)"
 }
 
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"

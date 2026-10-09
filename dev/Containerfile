@@ -1,0 +1,11 @@
+# Image du conteneur de dev d'Ankh (D-012, D-032), créée par distrobox.
+# L'image de base est fournie par `just build ankh-dev`, qui la lit dans
+# bases.env.
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE}
+
+RUN --mount=type=bind,source=.,target=/ctx \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/build.sh

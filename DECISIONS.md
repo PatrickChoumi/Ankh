@@ -49,7 +49,7 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
-| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (extensions VS Code PROPOSÉES — À VALIDER) |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (extensions VS Code PROPOSÉES — À VALIDER ; mise en œuvre en cours) |
 
 ---
 
@@ -769,5 +769,24 @@
   - Leurs mises à jour automatiques seront désactivées : VS Code me prévient, et je décide (D-031).
 - **Vérification** :
   - en CI, chaque outil répond (`java -version`, `python3 --version`, `node --version`, `gcc --version`, `psql --version`, `code --version`) et chaque extension s'installe ;
-  - en VM, le conteneur se crée à la première connexion et VS Code apparaît dans le menu ;
+  - en VM, VS Code apparaît dans le menu une fois le conteneur créé ;
   - suppression puis recréation du conteneur à l'identique (D-012).
+- **Mise en œuvre (2026-10-09)** :
+  - **Changement par rapport au plan** : le conteneur n'est **pas** créé automatiquement à la première connexion. Sa création est un gros téléchargement, et D-031 veut que rien ne se télécharge sans moi. Deux raccourcis du menu « Développement » le **créent** et le **mettent à jour** quand je le décide :
+    - « Créer l'environnement de dev » ;
+    - « Mettre à jour l'environnement de dev ».
+    - Ils lancent `/usr/libexec/ankh-dev` dans Konsole, qui reste ouvert pour montrer le résultat. Le terminal est accepté pour le dev (D-025).
+  - **Image `ankh-dev`** (`dev/`) :
+    - construite par la même CI que le système (`just build ankh-dev`), à partir de `quay.io/fedora/fedora-toolbox:44` ;
+    - suivie par son tag dans `bases.env`, sans digest, pour partir d'outils récents à chaque reconstruction hebdomadaire ;
+    - paquets dans `dev/packages.txt` ;
+    - VS Code vient du dépôt de Microsoft, et la clé est refusée si son empreinte n'est pas `BC52…29CF`.
+  - **Extensions** : la liste est dans `dev/vscode-extensions.txt`, modifiable ligne à ligne. Elles s'installent à la création du conteneur (`/usr/libexec/ankh-dev-setup`), donc dans leur dernière version. Le même script règle VS Code pour qu'il ne se mette pas à jour tout seul (D-031) ; un réglage existant n'est jamais écrasé.
+  - **Bases de données et fullstack** :
+    - `podman` (podman-remote) et `podman-compose` du conteneur pilotent le Podman du système, par le socket de l'utilisateur, activé dans l'image Ankh ;
+    - les serveurs (PostgreSQL, MariaDB…) tournent donc dans des conteneurs du système. À VALIDER en VM ou sur la machine.
+  - **Tests** :
+    - `just test ankh-dev` : chaque outil répond, VS Code démarre, chaque extension de la liste s'installe et le réglage est écrit ;
+    - `just test ankh` : les raccourcis, distrobox, Konsole et le socket Podman sont présents ;
+    - en VM, les raccourcis sont présents. Le conteneur lui-même n'est pas créé dans la VM, à cause de la taille du téléchargement.
+  - **À faire par moi après la première publication** : rendre public le paquet `ankh-dev` sur GHCR, comme `ankh` et `ankh-nvidia`. Sinon distrobox ne peut pas le télécharger.

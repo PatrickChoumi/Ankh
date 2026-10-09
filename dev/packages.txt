@@ -1,0 +1,44 @@
+# Paquets Fedora du conteneur de dev (D-032). Un paquet par ligne.
+
+# Outils communs
+git
+gh
+make
+cmake
+ninja-build
+jq
+ripgrep
+gnupg2
+
+# C / C++
+gcc
+gcc-c++
+clang
+clang-tools-extra
+gdb
+
+# Python
+python3
+python3-pip
+python3-devel
+pipx
+uv
+
+# JavaScript / TypeScript (TypeScript s'installe par projet, avec npm)
+nodejs
+nodejs-npm
+
+# Java : la dernière version d'OpenJDK fournie par Fedora
+java-latest-openjdk-devel
+maven
+
+# Bases de données : les clients. Les serveurs tournent dans des conteneurs
+# Podman du système.
+postgresql
+mariadb
+sqlite
+valkey
+
+# Piloter le Podman du système depuis le conteneur de dev
+podman-remote
+podman-compose
