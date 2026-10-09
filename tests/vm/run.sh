@@ -200,7 +200,7 @@ check_ankh() {
 
 # Vérifie le contenu propre à l'image installée (absent de l'image publiée
 # tant que la PR n'est pas fusionnée) : version (D-028), Chrome et Firefox (D-023),
-# pas de mise à jour automatique (D-031).
+# pas de mise à jour automatique (D-031), habillage (D-033).
 check_installed() {
     local chrome
     [[ $(booted version) == "$image_version" ]] || die "le système démarré ne porte pas la version $image_version (D-028)"
@@ -216,6 +216,13 @@ check_installed() {
     # créé dans la VM : gros téléchargement, testé à part en CI).
     vm test -x /usr/libexec/ankh-dev -a -f /usr/share/applications/ankh-dev-creer.desktop ||
         die "raccourcis du conteneur de dev absents (D-032)"
+    # D-033 : le système s'appelle Ankh, jusque dans le menu de démarrage
+    # (titre écrit par ostree à partir de PRETTY_NAME).
+    # shellcheck disable=SC2016 # variables lues dans la VM
+    [[ $(vm '. /etc/os-release && echo "$NAME $ID"') == "Ankh fedora" ]] ||
+        die "le système ne s'appelle pas Ankh, ou son ID n'est plus fedora (D-033)"
+    vm "grep -q '^title Ankh ' /boot/loader/entries/*.conf" ||
+        die "le menu de démarrage n'affiche pas Ankh (D-033)"
 }
 
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"
@@ -279,7 +286,7 @@ installed=$(booted imageDigest)
 check_installed
 screenshot 1-ecran-de-connexion
 
-log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover et Chrome"
+log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
 # Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
 # valables après chaque basculement, pour capturer le bureau de chaque image.
 # ssh recolle les arguments : la commande est passée en une seule chaîne.
@@ -293,6 +300,9 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet \
     google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
 sleep 30
 screenshot 1-chrome
+vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
+sleep 20
+screenshot 1-a-propos
 
 log "2/4 Basculement vers une autre version : $other"
 vm bootc switch "$other"

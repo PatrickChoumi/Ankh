@@ -121,9 +121,10 @@
   - VS Code 1.141 démarre, et les 15 extensions s'installent ;
   - la clé de VS Code est acceptée par Fedora 44, sans affaiblir la sécurité ;
   - le test en VM réussit ses 4 étapes ([run](https://github.com/PatrickChoumi/Ankh/actions/runs/37895079821)).
+- **PR #6 fusionnée** le 2026-10-09.
 - **Habillage Ankh** (D-033, 2026-10-09) : j'ai choisi d'habiller **le bureau seulement** (nom, logo, fonds d'écran). Le démarrage et Secure Boot ne changent pas.
   - Design choisi parmi trois pistes : **« Curseur »**, un A dont la barre est un curseur de terminal **violet**, sur une touche de clavier graphite. Il est épuré et évoque le dev, le hacking et le gaming.
-  - Prêt, et proposé dans une PR séparée, juste après la fusion de la PR #6.
+  - Proposé dans sa propre PR, en cours de vérification par la CI.
 
 ---
 
@@ -136,11 +137,11 @@
 3. **Applications par défaut** (D-024) :
    - VLC et OnlyOffice en Flatpak, préinstallés ;
    - Claude et GitHub en applications web dans Chrome.
-4. **Conteneur de dev** (D-032) : CI verte, PR #6 à fusionner. Ensuite :
+4. **Conteneur de dev** (D-032) : fusionné. Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
    - valider la liste d'extensions VS Code ;
    - vérifier la version de Java choisie par défaut, et proposer un Node.js plus récent que la 22 si Fedora en fournit un.
-5. **Habillage Ankh** (D-033) : PR à ouvrir après la fusion de la PR #6, puis vérifier le rendu sur les captures de la VM.
+5. **Habillage Ankh** (D-033) : PR en cours. Ensuite, vérifier le rendu sur les captures de la VM : écran de connexion, bureau, icône du menu, « À propos ».
 6. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -169,7 +170,7 @@
 
 1. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 2. **Regarder les captures d'écran** : page du run « Tester le démarrage en VM », section « Artifacts », fichier `captures-ankh-vm`. Me dire si le bureau, Chrome et Discover ont l'air corrects.
-3. **Fusionner la [PR #6](https://github.com/PatrickChoumi/Ankh/pull/6)** (conteneur de dev, CI verte), puis **rendre public le paquet `ankh-dev`** sur GHCR, comme `ankh` et `ankh-nvidia`.
+3. **Rendre public le paquet `ankh-dev`** sur GHCR, comme `ankh` et `ankh-nvidia`, dès que la CI de `main` l'a publié (PR #6 fusionnée).
 4. **Valider ou modifier la liste d'extensions VS Code** (D-032).
 5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
 6. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.

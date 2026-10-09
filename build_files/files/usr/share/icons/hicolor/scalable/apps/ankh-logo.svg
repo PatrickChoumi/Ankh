@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="touche" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#232a35"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
+</defs>
+<rect x="6" y="6" width="244" height="244" rx="56" fill="url(#touche)"/>
+<rect x="7.5" y="7.5" width="241" height="241" rx="54.5" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="3"/>
+<path d="M 78 194 L 128 62 L 178 194" fill="none" stroke="#e6edf3" stroke-width="22" stroke-linejoin="miter" stroke-miterlimit="10"/><rect x="111" y="150" width="34" height="17" fill="#a78bfa"/>
+</svg>

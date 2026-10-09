@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Id": "Ankh",
+        "License": "Apache-2.0",
+        "Name": "Ankh"
+    }
+}
