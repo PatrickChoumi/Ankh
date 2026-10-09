@@ -70,7 +70,7 @@ Pour Q6, vérifier chaque jeu sur <https://areweanticheatyet.com> et <https://ww
 | Décision | Référence |
 |---|---|
 | Ankh est strictement personnel. Pas de distribution publique | D-001 |
-| Pas d'ISO custom en V1. Habillage Ankh sur le bureau seulement (nom, logo, fonds d'écran) | D-001, D-033 |
+| Pas d'ISO custom en V1. À l'écran, plus rien de Fedora ; sous le capot, Fedora reste | D-001, D-033, D-034 |
 | Image générique, pour le maximum de PC (couverture matérielle proposée dans D-021) | D-021 |
 | Linux uniquement, pas de dual boot | D-003 |
 | Système immuable / image-based | D-004 |
@@ -185,7 +185,8 @@ Points ouverts dans cette architecture :
 ## 5. Ce que je ne veux PAS
 
 - Pas de distribution publique.
-- Pas d'ISO custom en V1. Pas d'habillage au-delà du bureau : l'écran de démarrage et les fichiers de démarrage restent ceux de Fedora (D-033).
+- Pas d'ISO custom en V1.
+- Pas de nom ni de logo de Fedora à l'écran (D-034). Sous le capot, Fedora ne me dérange pas.
 - Pas de réglage propre à une seule machine dans l'image (D-021).
 - Pas de dual boot ni de Windows installé en natif (une VM Windows reste possible, voir Q8).
 - Pas d'outils offensifs sur l'hôte.

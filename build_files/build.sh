@@ -144,6 +144,7 @@ gtk-update-icon-cache --force /usr/share/icons/hicolor
 # wallpapers/defaultwallpaper.cpp). D'après le code de Plasma, le bureau,
 # l'écran de verrouillage et l'écran de connexion le reprennent. Chaque thème
 # global est réglé, pour garder le fond d'Ankh quel que soit le thème choisi.
+# Le fond par défaut est « Ankh Signal », de la collection de D-034.
 mapfile -t lnf_defaults < <(grep -l '^\[Wallpaper\]' /usr/share/plasma/look-and-feel/*/contents/defaults)
 if [[ ${#lnf_defaults[@]} -eq 0 ]]; then
     echo "Aucun thème global ne règle le fond d'écran par défaut" >&2
@@ -151,5 +152,97 @@ if [[ ${#lnf_defaults[@]} -eq 0 ]]; then
 fi
 for f in "${lnf_defaults[@]}"; do
     echo "${f} : fond d'origine « $(sed -n '/^\[Wallpaper\]/,/^\[/ s/^Image=//p' "${f}") »"
-    sed -i '/^\[Wallpaper\]/,/^\[/ s/^Image=.*/Image=Ankh/' "${f}"
+    sed -i '/^\[Wallpaper\]/,/^\[/ s/^Image=.*/Image=Ankh-Signal/' "${f}"
 done
+
+# D-034 : plus rien de Fedora à l'écran, démarrage compris (complète D-033).
+# Sous le capot, les paquets, le noyau et l'identifiant « fedora » restent.
+#
+# Logos : le paquet générique que Fedora fournit à ses dérivés remplace
+# fedora-logos, comme le fait Aurora (build_scripts/base/01-packages.sh de
+# https://github.com/ublue-os/aurora).
+# Garde-fou : ce changement ne doit retirer aucun autre paquet.
+avant="$(rpm -qa --qf '%{NAME}\n' | sort -u)"
+dnf5 -y swap fedora-logos generic-logos
+retires="$(comm -23 <(echo "${avant}") <(rpm -qa --qf '%{NAME}\n' | sort -u) | sed '/^fedora-logos$/d')"
+if [[ -n "${retires}" ]]; then
+    echo "Le changement de logos a aussi retiré : ${retires}" >&2
+    exit 1
+fi
+# Le cache d'icônes est refait après ce changement de logos (voir D-033).
+gtk-update-icon-cache --force /usr/share/icons/hicolor
+
+# Le paquet flatpak de Fedora ajoute au premier démarrage le dépôt
+# « Fedora Flatpaks », visible dans Discover. Il est masqué : les applications
+# viennent de Flathub (D-011).
+systemctl mask flatpak-add-fedora-repos.service
+
+# Thèmes globaux de Fedora (paquet plasma-lookandfeel-fedora) : kde-settings-plasma
+# en dépend et en règle un par défaut, ils restent donc. Ils deviennent les
+# thèmes d'Ankh : nom, description et aperçus. Leurs écrans de démarrage de
+# session n'affichent que les logos de KDE. Leur identifiant ne se voit pas.
+for theme_nom in "fedora:Ankh" "fedoradark:Ankh Sombre" "fedoralight:Ankh Clair"; do
+    dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme_nom%%:*}.desktop"
+    python3 - "${dossier}/metadata.json" "${theme_nom#*:}" << 'PY'
+import json
+import sys
+
+chemin, nom = sys.argv[1], sys.argv[2]
+with open(chemin, encoding="utf-8") as f:
+    fiche = json.load(f)
+plugin = fiche["KPlugin"]
+# Toute mention de Fedora disparaît, sauf l'identifiant, invisible.
+for cle in list(plugin):
+    if cle != "Id" and "fedora" in json.dumps(plugin[cle]).lower():
+        del plugin[cle]
+plugin["Name"] = nom
+plugin["Description"] = "Thème global d'Ankh"
+with open(chemin, "w", encoding="utf-8") as f:
+    json.dump(fiche, f, indent=4, ensure_ascii=False)
+    f.write("\n")
+PY
+    for apercu in preview.png fullscreenpreview.jpg lockscreen.png; do
+        install -m 0644 "/usr/share/ankh/apercus/${apercu}" "${dossier}/contents/previews/${apercu}"
+    done
+done
+
+# Fonds d'écran de Fedora : l'écran de verrouillage (kde-settings) et l'écran
+# de connexion (Plasma Login) les désignent explicitement, sans passer par le
+# fond par défaut du thème global (vu par le Test 11). Ils désignent
+# maintenant « Ankh Signal », puis les fonds de Fedora sont retirés.
+# kde-settings-plasma dépend de leur paquet, qui reste installé, sans images.
+for f in /usr/share/kde-settings/kde-profile/default/xdg/kscreenlockerrc /usr/lib/plasmalogin/defaults.conf; do
+    if ! grep -q 'wallpapers/Fedora/' "${f}"; then
+        echo "${f} ne désigne plus le fond de Fedora : réglage à revoir" >&2
+        exit 1
+    fi
+    sed -i 's|/usr/share/wallpapers/Fedora/|/usr/share/wallpapers/Ankh-Signal/|g' "${f}"
+done
+# « Fedora » et « Default » sont des liens vers le fond de la version (F44).
+rm /usr/share/wallpapers/Fedora /usr/share/wallpapers/Default
+rm -r /usr/share/wallpapers/F[0-9]*
+
+# Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
+# remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui
+# de Fedora ; seule son image de filigrane change.
+theme="$(plymouth-set-default-theme)"
+images="$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")"
+# Fedora écrit ce chemin avec « // » : il est normalisé.
+images="$(realpath -m "${images}")"
+if [[ -z "${images}" || ! -d "${images}" ]]; then
+    echo "Thème Plymouth « ${theme} » : dossier d'images introuvable (« ${images} »)" >&2
+    exit 1
+fi
+echo "Thème Plymouth « ${theme} », images dans ${images}"
+install -m 0644 /usr/share/ankh/plymouth/watermark.png "${images}/watermark.png"
+
+# L'écran de démarrage vit dans l'initramfs : il est reconstruit avec la
+# commande qu'Universal Blue utilise pour cette même base (build_files/initramfs.sh
+# de https://github.com/ublue-os/main). Une image bootc n'a qu'un noyau.
+if [[ "$(find /usr/lib/modules -mindepth 1 -maxdepth 1 | wc -l)" != 1 ]]; then
+    echo "Il faut exactement un noyau dans /usr/lib/modules" >&2
+    exit 1
+fi
+kver="$(basename /usr/lib/modules/*)"
+DRACUT_NO_XATTR=1 dracut --no-hostonly --kver "${kver}" --reproducible --add ostree -f "/usr/lib/modules/${kver}/initramfs.img"
+chmod 0600 "/usr/lib/modules/${kver}/initramfs.img"
