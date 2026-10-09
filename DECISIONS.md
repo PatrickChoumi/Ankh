@@ -49,7 +49,7 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
-| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (extensions VS Code PROPOSÉES — À VALIDER ; mise en œuvre en cours) |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions VS Code PROPOSÉES — À VALIDER) |
 
 ---
 
@@ -790,3 +790,20 @@
     - `just test ankh` : les raccourcis, distrobox, Konsole et le socket Podman sont présents ;
     - en VM, les raccourcis sont présents. Le conteneur lui-même n'est pas créé dans la VM, à cause de la taille du téléchargement.
   - **À faire par moi après la première publication** : rendre public le paquet `ankh-dev` sur GHCR, comme `ankh` et `ankh-nvidia`. Sinon distrobox ne peut pas le télécharger.
+- **Résultats de la CI ([PR #6](https://github.com/PatrickChoumi/Ankh/pull/6), 2026-10-09)** : tout est vert.
+  - **Construction de `ankh-dev`** : environ 2 minutes. La clé de VS Code est acceptée par RPM de Fedora 44 : son autosignature est en SHA-256, pas en SHA1 (vérifié avec `gpg --list-packets`). L'archive de secours n'est donc pas nécessaire.
+  - **Versions installées** ([journal](https://github.com/PatrickChoumi/Ankh/actions/runs/37895079755/job/113704494907)) :
+    - Java : OpenJDK 25.0.4.1, Maven 3.9.11 ;
+    - Python 3.14.8, pip 26.0.1, pipx 1.15.0, uv 0.12.19 ;
+    - Node.js 22.23.1, npm 10.9.8 ;
+    - GCC 16.2.1, Clang 22.1.8, GDB 17.2, CMake 4.3.0 ;
+    - git 2.55.0, gh 2.97.0 ;
+    - clients PostgreSQL 18.6, MariaDB 11.8.8, SQLite 3.51.2, Valkey 9.0.6 ;
+    - Podman 5.8.7 (podman-remote), podman-compose 1.6.0 ;
+    - VS Code 1.141.0.
+  - **Extensions** : les 15 extensions de la liste s'installent à la création, avec leurs dépendances (Pylance, débogueurs Java et Python, CMake Tools…). Le réglage « pas de mise à jour automatique » est écrit.
+  - **Test en VM** ([run 37895079821](https://github.com/PatrickChoumi/Ankh/actions/runs/37895079821)) : les 4 étapes réussissent et les raccourcis du conteneur sont présents sur le système démarré.
+  - **À VALIDER** :
+    - `java -version` affiche la 25, alors que `java-latest-openjdk` est demandé. Il faut vérifier s'il installe une version plus récente à côté, que Maven ne choisit pas par défaut ;
+    - Node.js 22 est la version par défaut de Fedora 44. Une version LTS plus récente existe peut-être dans un paquet séparé : à vérifier, puis à me proposer si je veux des outils à la pointe ;
+    - la création réelle du conteneur et VS Code dans le menu, en VM ou sur la machine.
