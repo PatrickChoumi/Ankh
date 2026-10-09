@@ -14,6 +14,11 @@ on:
       - main
     paths-ignore:
       - '**.md'  # un changement de documentation ne republie pas les images
+  # Chaque lundi : reconstruction pour suivre les correctifs de Chrome (D-023).
+  # Les images publiées sont seulement proposées : la machine ne se met à jour
+  # que quand je le décide, depuis Discover (D-031).
+  schedule:
+    - cron: '17 3 * * 1'
   workflow_dispatch:
 
 concurrency:

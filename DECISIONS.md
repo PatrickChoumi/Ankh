@@ -29,7 +29,7 @@
 | D-009 | Hôte reproductible : pas de `rpm-ostree install`, pas de `curl \| bash` | DÉCIDÉ |
 | D-010 | Pas de redémarrage automatique | DÉCIDÉ |
 | D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ |
-| D-012 | Environnement dev en conteneur | DÉCIDÉ (outil exact À DÉCIDER) |
+| D-012 | Environnement dev en conteneur | DÉCIDÉ (précisé par D-032) |
 | D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ |
 | D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
 | D-015 | Recettes `just` plutôt qu'un CLI maison | DÉCIDÉ |
@@ -43,10 +43,13 @@
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
 | D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
-| D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER |
+| D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
 | D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER) |
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
+| D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
+| D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (extensions VS Code PROPOSÉES — À VALIDER) |
 
 ---
 
@@ -134,6 +137,21 @@
     - Durée : 12 minutes pour le test lui-même, 33 minutes pour tout le travail CI (construction comprise).
     - **Non vérifié par ce test** :
       - la session graphique ;
+  - **Captures d'écran (ajout du 2026-10-08, à ma demande)** :
+    - QEMU capture l'écran de la VM (`screendump`) :
+      - au premier démarrage, l'écran de connexion ;
+      - le bureau KDE d'un compte de test `ankhvm`, connecté automatiquement par le gestionnaire de connexion. Sur Fedora 44, c'est **Plasma Login** et non plus SDDM : `sddm.service` n'existe pas dans l'image (constaté en CI le 2026-10-09). Le test règle donc celui que systemd désigne (`display-manager.service`) ;
+      - Discover ouvert sur les mises à jour ;
+      - Chrome ouvert sur le dépôt ;
+      - le bureau après chaque basculement.
+    - Les images sont jointes au run GitHub, section « Artifacts » (`captures-ankh-vm`), et conservées 30 jours.
+    - Le compte de test et la connexion automatique sont des réglages locaux de la VM de test, comme la clé SSH. Ils ne sont jamais dans l'image Ankh.
+    - Le test échoue si le bureau Plasma ne démarre pas en 3 minutes, après avoir capturé l'écran pour montrer pourquoi.
+    - **Résultat ([run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044), 2026-10-09)**, vérifié par le test :
+      - le gestionnaire de connexion est `plasmalogin.service` ;
+      - le bureau Plasma du compte de test démarre à chacun des 4 démarrages, y compris sur l'image de base ;
+      - les 7 captures sont jointes au run (4,4 Mo).
+      - L'aspect des captures elles-mêmes est à regarder par moi : l'environnement de Claude ne peut pas télécharger les artefacts.
       - l'imposition de la signature au basculement (aucun message de vérification de signature, À VALIDER, D-022) ;
       - le comportement sur du matériel réel (phase 9).
 
@@ -334,6 +352,15 @@
   - Les deux références (tag `44` + digest) sont dans `bases.env`.
   - Renovate (`renovate.json`) propose les nouveaux digests dans une seule PR, et n'a pas le droit de changer de version de Fedora.
   - Renovate ne fonctionne qu'une fois son application GitHub installée sur le dépôt (action à faire par moi).
+- **État de Renovate (2026-10-08)** : l'application est installée, et le tableau de bord Mend montre des exécutions terminées (« DONE »). Pourtant, aucune PR ni aucun ticket n'a été créé.
+  - Cause probable, d'après la documentation officielle : une installation sur « All repositories » met l'application en mode **Silent** (`dryRun=lookup`), donc sans PR ni ticket. Il faut passer le dépôt ou l'organisation en mode **Interactive** dans le tableau de bord Mend.
+  - Source : <https://github.com/renovatebot/renovate/blob/main/docs/usage/mend-hosted/hosted-apps-config.md>. À confirmer en cherchant `dryRun` dans le journal d'une exécution.
+- **Procédure prévue pour passer à Fedora 45** (réponse à ma question du 2026-10-08) :
+  1. Universal Blue publie `kinoite-main:45` et `kinoite-nvidia:45`. On attend quelques semaines de rodage (décision ci-dessus).
+  2. Une PR change seulement la référence des deux bases dans `bases.env` (tag `45` et nouveau digest). Toutes les personnalisations d'Ankh sont dans `build_files/build.sh` et se réappliquent telles quelles sur la nouvelle base.
+  3. La CI fait le vrai travail de vérification : construction des deux variantes, `just test` et le test en VM (démarrage, basculement, retour arrière). Ce qui casse apparaît là : un paquet renommé, un fichier de réglage apparu dans la base, un pilote. On corrige dans la même PR, jusqu'au vert.
+  4. Je fusionne quand je le décide. Sur ma machine, le passage à 45 arrive comme une mise à jour normale, en plus gros, puisque presque toute la base change. Le retour arrière vers la version 44 reste possible au redémarrage suivant.
+  - **Coût attendu** : faible, parce que chaque ajout d'Ankh est une ligne courte qui cite sa décision et a son test. Le point le plus sensible sera la variante NVIDIA (pilote), qui ne se teste pas en VM.
 
 ## D-018 — Construction, publication et signature de l'image
 
@@ -478,6 +505,32 @@
   - L'association « navigateur par défaut » dans KDE.
   - Le retrait propre de Firefox.
 - **Vérification** : tests CI à écrire — Chrome présent, Firefox absent, politiques présentes.
+- **Mise en œuvre (phase 3, 2026-10-08)**, dans `build_files/build.sh` :
+  - **`/opt`** devient un vrai dossier de l'image (`rm /opt && mkdir /opt`). C'est la méthode du modèle officiel Universal Blue, qui cite Chrome en exemple : <https://github.com/ublue-os/image-template> (`Containerfile`, section « [IM]MUTABLE /opt »). La documentation bootc confirme que `/opt` suit alors le cycle de vie de l'image : <https://github.com/bootc-dev/bootc/blob/main/docs/src/bootc-filesystem.7.md>.
+  - **Chrome** vient du dépôt officiel de Google (`dl.google.com/linux/chrome/rpm/stable/x86_64`), avec vérification des signatures.
+    - La clé de Google est refusée si son empreinte n'est pas `EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796`.
+    - Cette empreinte est celle publiée dans les sources de Chromium : <https://github.com/chromium/chromium/blob/main/chrome/installer/linux/common/key.include>.
+  - **Firefox** est retiré par `dnf5 remove firefox`.
+  - **Navigateur par défaut** :
+    - `/etc/xdg/mimeapps.list` déclare Chrome pour les pages web, selon la spécification XDG des applications par défaut ;
+    - `/etc/xdg/kdeglobals` déclare Chrome dans `BrowserApplication` ;
+    - la construction échoue si l'un de ces fichiers existe déjà dans la base, pour ne jamais écraser un réglage sans le voir.
+  - **Tests** :
+    - `just test` vérifie que `/opt` est un dossier, que Chrome démarre (`google-chrome --version`), que Firefox est absent, et que Chrome est l'application par défaut pour `text/html`, `http` et `https` (`gio mime`, avec `XDG_CURRENT_DESKTOP=KDE`) ;
+    - `tests/vm/run.sh` vérifie, sur le système démarré, que Chrome démarre et que Firefox est absent.
+  - **Vérifié en VM** ([run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044)) : sur le système démarré, Chrome démarre (`Google Chrome 155.0.8059.39`) et Firefox est absent, au premier démarrage comme après le retour arrière.
+  - **Encore À VALIDER** :
+    - le choix « Navigateur web » affiché dans les réglages de KDE, et l'icône du panneau (à l'écran, voir les captures) ;
+    - ~~la fréquence de reconstruction~~ : tranchée, voir ci-dessous.
+- **Résultats de construction (2026-10-09, [PR #5](https://github.com/PatrickChoumi/Ankh/pull/5))**, vérifiés par la CI :
+  - `google-chrome-stable 155.0.8059.39` s'installe avec une seule dépendance (`liberation-fonts-all`) : **140 Mio à télécharger**, 440 Mio une fois installé.
+  - `dnf5 remove firefox` retire `firefox` et `firefox-langpacks` (337 Mio).
+  - **Erreurs sans conséquence** : le script `%post` du paquet de Chrome essaie d'importer lui-même la clé de Google. Il échoue (« can't create transaction lock … key 1 import failed »), parce que `dnf` tient déjà la base RPM. La clé est déjà importée par notre `rpm --import`, juste avant, après vérification de son empreinte. Rien ne manque.
+  - Les deux variantes passent `just test` : Chrome démarre (`Google Chrome 155.0.8059.39`), Firefox est absent, et Chrome est l'application par défaut pour le web.
+- **Reconstruction hebdomadaire** (mon choix du 2026-10-09 : chaque semaine, environ 140 Mio) :
+  - `build.yml` reconstruit et publie l'image **chaque lundi** (`cron: '17 3 * * 1'`), et `boot-test.yml` la teste en VM le même jour.
+  - L'image publiée est seulement **proposée** : elle n'arrive sur ma machine que quand je lance la mise à jour (D-031).
+  - Note : GitHub désactive les tâches planifiées d'un dépôt public sans activité pendant 60 jours (À VALIDER sur la documentation GitHub).
 
 ## D-024 — Applications par défaut
 
@@ -569,6 +622,10 @@
   - Une réduction possible du volume par un découpage plus stable des couches (« rechunk »).
 - **Vérification** : mesurer la taille téléchargée à chaque mise à jour pendant la phase 10.
 - **Première mesure (phase 2, 2026-10-07, en VM)** : passer d'une image Ankh à une autre bâtie sur la même base a demandé 2 couches sur 261, soit 641 octets (D-004). Cela confirme le principe du point 3. La taille réelle viendra quand Ankh ajoutera Chrome et les applications (phase 3).
+- **Deuxième mesure (2026-10-09, en VM, [run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044))** :
+  - Passer à l'image publiée qui contient le module Discover (D-028) a demandé 2 couches, soit **38,7 Mo**.
+  - Le module ne pèse que 256 Kio. Le reste vient probablement de la base de données RPM, réécrite dès qu'on installe un paquet (supposé, À VALIDER).
+  - Avec Chrome (140 Mio), une mise à jour d'Ankh sur la même base devrait donc coûter de l'ordre de 180 Mo. À mesurer après la fusion de Chrome.
 
 ## D-028 — Mises à jour du système dans Discover (complète D-025)
 
@@ -599,13 +656,23 @@
   - **C — une notification maison** : outil maison sans documentation officielle, et aucune interface pour voir les mises à jour.
 - **À VALIDER** :
   - Universal Blue n'a jamais remis ce module. Aucune raison plus récente n'a été trouvée.
-  - Le module doit correspondre exactement à la version de Discover de la base. La dépendance exacte n'a pas pu être lue : le dépôt de paquets Fedora est inaccessible depuis mon environnement. Le journal de construction montrera ce que `dnf` installe.
+  - ~~Le module doit correspondre exactement à la version de Discover de la base.~~ Vérifié le 2026-10-08 (voir « Résultats »).
   - Discover ne doit pas gêner le téléchargement automatique en arrière-plan.
   - Le choix « Après la mise à jour : redémarrer » de Discover ne doit jamais être actif par défaut (D-010).
 - **Vérification** :
   - Test en CI (`just test`) : le module est installé, à la même version que Discover, et l'image porte son numéro de version.
   - Test en VM cloud (`tests/vm/run.sh`) : le système démarré affiche ce numéro de version.
   - L'affichage dans Discover et la notification ne se testent pas automatiquement. À vérifier à l'écran, au plus tard en phase 9.
+- **Résultats (2026-10-08, CI de la [PR #4](https://github.com/PatrickChoumi/Ankh/pull/4))**, vérifiés par un test :
+  - **Construction** ([run 37828419910](https://github.com/PatrickChoumi/Ankh/actions/runs/37828419910)), sur les deux variantes :
+    - `dnf` installe un seul paquet, `plasma-discover-rpm-ostree 0:6.7.5-1.fc44` (dépôt `updates`, 256 Kio) ;
+    - il ne met à jour, n'ajoute et ne remplace aucun autre paquet ;
+    - `just test` confirme que le module a la même version que Discover ;
+    - l'image porte la version `44.20261008.1859`.
+  - **`bootc container lint`** passe avec 2 avertissements : des restes de `dnf` dans `/run/dnf` et `/var/lib/dnf/repos`. Ce sont des avertissements, pas des erreurs ; le Containerfile de construction est le même que celui du modèle Universal Blue.
+  - **VM cloud** ([run 37828419997](https://github.com/PatrickChoumi/Ankh/actions/runs/37828419997)) :
+    - les 4 étapes réussissent ;
+    - le système démarré porte la version de l'image installée (`44.20261008.1900`), au premier démarrage et après le retour arrière.
 
 ## D-029 — AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste
 
@@ -619,3 +686,88 @@
 - **Raisons** : suivre le projet d'un coup d'œil, sans relire tout le dépôt.
 - **Alternatives rejetées** : un compte rendu seulement dans la conversation (rien n'est conservé dans le dépôt).
 - **Vérification** : chaque compte rendu de Claude contient AVANCEMENT.md à jour.
+
+## D-030 — Variantes avec et sans protection safezone (complète D-026)
+
+- **Statut** : DÉCIDÉ (principe, 2026-10-09), à ma demande. La conception est À DÉCIDER en phase 4.
+- **Contexte** : D-026 prévoyait safezone dans toutes les images Ankh. Je veux des versions avec cette protection et des versions sans.
+- **Décision** :
+  - Chaque variante matérielle (D-021 : Mesa, NVIDIA) existe en deux versions : **avec** safezone et **sans**.
+  - Toutes sont construites, testées et signées par la même CI, à partir du même `build_files/build.sh`. La protection s'ajoute à la fin, par une étape distincte.
+  - Les noms des images sont à choisir en phase 4.
+- **Conséquence à traiter en phase 4** :
+  - Une image sans protection est une porte de sortie toute trouvée : depuis une machine protégée, `bootc switch` vers la version sans protection suffirait.
+  - D-026 prévoyait comme parade un filtre dans toutes les images. Cette parade ne vaut plus.
+  - Piste à étudier : sur une machine protégée, n'accepter que les images protégées. Par exemple, une politique de signature qui limite les images autorisées, plus de la friction sur la modification de cette politique.
+  - Le niveau de difficulté reste celui de safezone : de la friction contre l'impulsion, pas une impossibilité, puisque je garde les droits administrateur (D-025).
+- **Raisons** : pouvoir installer Ankh avec ou sans protection, selon la machine ou l'usage.
+- **Vérification** : en phase 4, tests de safezone sur les versions protégées, et test de la parade contre le basculement vers une version sans protection.
+
+## D-031 — Aucune mise à jour automatique : je décide quand tout se met à jour
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Complète D-010 (pas de redémarrage automatique), D-027 (rythme choisi par moi) et D-028 (Discover).
+- **Contexte** : `kinoite-main` active trois mises à jour automatiques. Source : `build_files/post-install.sh` de <https://github.com/ublue-os/main> :
+  - le téléchargement du système en arrière-plan (`rpm-ostreed-automatic.timer`, politique `stage`) ;
+  - les mises à jour Flatpak du système (`flatpak-system-update.timer`) ;
+  - les mises à jour Flatpak de chaque utilisateur (`flatpak-user-update.timer`).
+- **Décision** :
+  - Sur la machine, **rien ne se télécharge ni ne s'installe sans moi** : ni le système, ni les applications Flatpak, ni le conteneur de dev.
+  - Les trois timers sont masqués dans l'image. La politique de rpm-ostree passe à `none` (`man rpm-ostreed.conf` : « "none" disables automatic updates »).
+  - Discover me **prévient** qu'une mise à jour existe (D-028), et je la lance quand je le décide.
+  - Le conteneur de dev se met à jour seulement quand je le lance, par un raccourci du menu (à faire avec le conteneur de dev, D-012). Ce choix remplace ma réponse du 2026-10-09, qui demandait une mise à jour automatique chaque semaine.
+  - Côté CI, rien ne change pour moi : la reconstruction hebdomadaire de l'image (D-023) et les PR de Renovate (D-017) **préparent** des mises à jour. Rien n'arrive sur la machine tant que je ne l'ai pas demandé.
+- **Raisons** : garder la main sur ma connexion lente (D-027) et sur le moment où le système change.
+- **Conséquence assumée** : si je tarde à mettre à jour, les correctifs de sécurité attendent, ceux de Chrome compris. La notification de Discover est là pour me le rappeler.
+- **Vérification** :
+  - `just test` : les trois timers sont masqués et la politique est `none` ;
+  - `tests/vm/run.sh` : sur le système démarré, `rpm-ostreed-automatic.timer` est masqué. **Vérifié en VM** le 2026-10-09 ([run 37887155044](https://github.com/PatrickChoumi/Ankh/actions/runs/37887155044)) ;
+  - la notification de Discover reste À VALIDER à l'écran.
+
+## D-032 — Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur
+
+- **Statut** : DÉCIDÉ (2026-10-09), d'après mes réponses. Précise D-012 (outil et contenu) et D-024 (VS Code). La liste d'extensions VS Code est PROPOSÉE — À VALIDER par moi.
+- **Mes choix (2026-10-09)** :
+  - Le dev se fait dans un conteneur, comme prévu par D-012, avec des outils **à la pointe**.
+  - **Base : Fedora**, de la même famille que le système. VS Code est la version officielle de Microsoft.
+  - **Langages et outils** :
+    - Java ;
+    - Python ;
+    - JavaScript et TypeScript ;
+    - C et C++ ;
+    - les bases de données ;
+    - « tout le nécessaire pour un fullstack ».
+  - **VS Code est installé dans le conteneur.** Il voit directement les outils et apparaît dans le menu de KDE.
+  - **Mises à jour** : quand je le décide (D-031).
+- **Mise en œuvre prévue** (prochaine PR, après celle de Chrome) :
+  - **Outil** : distrobox, déjà fourni par `kinoite-main`. Un fichier `distrobox assemble` crée le conteneur à ma première connexion et ajoute VS Code au menu (`exported_apps`). Source : <https://github.com/89luca89/distrobox/blob/main/docs/usage/distrobox-assemble.md>.
+  - **Image** `ghcr.io/patrickchoumi/ankh-dev` :
+    - construite, testée et signée par notre CI, à partir de l'image officielle `quay.io/fedora/fedora-toolbox:44` ;
+    - reconstruite chaque semaine, pour que la création ou la recréation du conteneur parte de versions récentes.
+  - **Contenu prévu** :
+    - outils communs : git, GitHub CLI (`gh`), make, CMake, Ninja ;
+    - C/C++ : GCC, Clang, GDB ;
+    - Python : python3, pip, pipx, uv ;
+    - JavaScript/TypeScript : Node.js, npm ;
+    - Java : la dernière version d'OpenJDK fournie par Fedora (`java-latest-openjdk`), Maven ;
+    - clients de bases de données : PostgreSQL, MariaDB, SQLite, Valkey/Redis ;
+    - VS Code.
+    - Les serveurs de bases de données d'un projet tournent dans des conteneurs Podman. Leur mise en place est à préciser.
+  - **VS Code de Microsoft** :
+    - son dépôt est signé par l'ancienne clé de Microsoft (`BC52 8686 B50D 79E3 39D3 721C EB3E 94AD BE12 29CF`), qui contient des signatures SHA1. Source : <https://learn.microsoft.com/linux/packages> et <https://packages.microsoft.com/keys/README> ;
+    - si la version de RPM de Fedora 44 la refuse, on n'affaiblit **pas** la politique de sécurité de Fedora. On installe alors l'archive officielle de VS Code, vérifiée par son empreinte publiée. À VALIDER à la construction.
+- **Extensions VS Code proposées** (préinstallées à la création du conteneur, À VALIDER par moi) :
+  - interface en français ;
+  - Java : « Extension Pack for Java » ;
+  - Python : « Python » (avec Pylance) ;
+  - C/C++ : « C/C++ Extension Pack » ;
+  - JavaScript/TypeScript : ESLint, Prettier ;
+  - bases de données : SQLTools, avec les pilotes PostgreSQL, MySQL/MariaDB et SQLite ;
+  - Git et GitHub : GitLens, « GitHub Pull Requests » ;
+  - fichiers de configuration : YAML ;
+  - conteneurs : l'extension Docker/Podman de Microsoft ;
+  - API : REST Client.
+  - Leurs mises à jour automatiques seront désactivées : VS Code me prévient, et je décide (D-031).
+- **Vérification** :
+  - en CI, chaque outil répond (`java -version`, `python3 --version`, `node --version`, `gcc --version`, `psql --version`, `code --version`) et chaque extension s'installe ;
+  - en VM, le conteneur se crée à la première connexion et VS Code apparaît dans le menu ;
+  - suppression puis recréation du conteneur à l'identique (D-012).

@@ -26,15 +26,22 @@
 ## 2. État actuel
 
 - **Phase en cours : 3 — Applications et dev** (depuis le 2026-10-08).
-  - Premier point : les mises à jour du système dans Discover (D-028, option A choisie le 2026-10-08). Le module est ajouté à l'image, avec un numéro de version propre à Ankh.
-  - Ensuite : Chrome et le retrait de Firefox (D-023), puis les applications par défaut (D-024), puis VS Code et le conteneur dev (D-012).
+  - Fait : les mises à jour du système dans Discover (D-028, [#4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée).
+  - En cours ([#5](https://github.com/PatrickChoumi/Ankh/pull/5)) :
+    - Chrome dans l'image, navigateur par défaut, et Firefox retiré (D-023) ;
+    - reconstruction chaque lundi ;
+    - aucune mise à jour automatique sur la machine (D-031) ;
+    - captures d'écran de la VM.
+  - Ensuite :
+    - le conteneur de dev, avec VS Code et les langages fullstack (D-032) ;
+    - puis VLC et OnlyOffice (D-024).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).
 - **Phase 1 terminée le 2026-10-07** :
   - Les images sont construites, testées, signées sans clé (D-022) et publiées par la CI : `ghcr.io/patrickchoumi/ankh` (4,3 Go compressés) et `ghcr.io/patrickchoumi/ankh-nvidia` (5,2 Go).
   - `main` est protégée (ruleset `protection-main`, tests « Construire ankh » et « Construire ankh-nvidia » obligatoires). Une PR cassée est bien bloquée ([#2](https://github.com/PatrickChoumi/Ankh/pull/2)).
-  - Renovate : installé selon moi (2026-10-08). Pourtant, aucune activité n'est visible sur le dépôt : ni ticket, ni PR, ni branche. Une base plus récente existe pourtant depuis le 2026-10-02. À vérifier dans le tableau de bord Mend.
+  - Renovate : installé et actif dans le tableau de bord Mend (2026-10-08), mais il n'a encore créé ni PR ni ticket. Cause probable : le mode « Silent » de Mend (voir D-017). Je dois passer le dépôt en mode « Interactive ».
 - **Construire et tester en local** : `just build ankh` puis `just test ankh` (nécessite podman et just).
 - **Questions matérielles** : elles ne bloquent pas la phase 1 (D-021). Elles restent nécessaires avant les phases indiquées dans ANKH-SPEC.md §6.
 - **Branches** : `main` reçoit les changements uniquement par PR.

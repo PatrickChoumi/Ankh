@@ -59,8 +59,26 @@ test variant:
         exit 1
     fi
 
+    echo "Test 5 : Chrome installé dans /opt, dossier de l'image, et il démarre (D-023)"
+    run '[[ -d /opt && ! -L /opt ]] && google-chrome --version'
+
+    echo "Test 6 : Firefox absent (D-023)"
+    run '! rpm -q firefox && [[ ! -e /usr/share/applications/firefox.desktop ]]'
+
+    echo "Test 7 : Chrome est l'application par défaut pour le web (D-023)"
+    run 'for t in text/html x-scheme-handler/http x-scheme-handler/https; do
+        XDG_CURRENT_DESKTOP=KDE gio mime "${t}" | grep -q "^Default application.*: google-chrome.desktop$" || exit 1
+    done'
+
+    echo "Test 8 : aucune mise à jour automatique (D-031)"
+    run 'for u in rpm-ostreed-automatic.timer flatpak-system-update.timer; do
+        [[ "$(readlink "/etc/systemd/system/${u}")" == /dev/null ]] || exit 1
+    done
+    [[ "$(readlink /etc/systemd/user/flatpak-user-update.timer)" == /dev/null ]] &&
+        grep -qx "AutomaticUpdatePolicy=none" /etc/rpm-ostreed.conf'
+
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
-        echo "Test 5 : module NVIDIA présent pour le noyau de l'image, et signé"
+        echo "Test 9 : module NVIDIA présent pour le noyau de l'image, et signé"
         run 'k="$(ls /usr/lib/modules)"; modinfo -k "${k}" nvidia > /dev/null && [[ -n "$(modinfo -k "${k}" -F signer nvidia)" ]]'
     fi
 
