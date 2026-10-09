@@ -289,23 +289,44 @@ capture_app() {
 # fenêtre montre la préparation de l'environnement de dev (téléchargement du
 # conteneur, extensions), puis VS Code s'ouvre. Captures des deux moments.
 check_vscode() {
-    local deadline=$((SECONDS + 1500))
-    vm systemd-run --machine=ankhvm@ --user --collect --quiet /usr/libexec/ankh-vscode
+    local deadline=$((SECONDS + 2400)) next=$((SECONDS + 300)) journal=/home/ankhvm/.cache/ankh/preparation-dev.log
+    vm systemd-run --machine=ankhvm@ --user --unit=ankh-vscode-premier-clic --quiet /usr/libexec/ankh-vscode
     sleep 60
     screenshot 1-vscode-preparation
     until vm pgrep -u ankhvm -f /usr/share/code/code > /dev/null; do
         if ((SECONDS >= deadline)); then
             screenshot 1-vscode-echec
-            if ! vm "sudo -u ankhvm XDG_RUNTIME_DIR=/run/user/\$(id -u ankhvm) podman ps -a"; then
-                echo "(conteneurs du compte de test illisibles)"
+            explain_vscode "$journal"
+            die "VS Code ne s'est pas ouvert 40 minutes après le premier clic (D-036)"
+        fi
+        if ((SECONDS >= next)); then
+            next=$((SECONDS + 300))
+            echo "Préparation en cours, fin du journal :"
+            if ! vm "tail -n 3 $journal"; then
+                echo "(journal de préparation absent)"
             fi
-            die "VS Code ne s'est pas ouvert 25 minutes après le premier clic (D-036)"
         fi
         sleep 15
     done
     sleep 45
     screenshot 1-vscode
     echo "VS Code ouvert au premier clic, environnement de dev préparé"
+}
+
+# Quand VS Code ne s'ouvre pas : journal de la préparation, sortie du
+# lanceur, et conteneurs du compte de test.
+explain_vscode() {
+    local cmd
+    log "Diagnostic : VS Code ne s'est pas ouvert"
+    for cmd in \
+        "tail -n 60 $1" \
+        'journalctl --no-pager -n 60 _SYSTEMD_USER_UNIT=ankh-vscode-premier-clic.service' \
+        'systemd-run --machine=ankhvm@ --user --wait --pipe --quiet podman ps -a'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
 }
 
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
@@ -400,6 +421,12 @@ log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, C
 # valables après chaque basculement, pour capturer le bureau de chaque image.
 # ssh recolle les arguments : la commande est passée en une seule chaîne.
 vm "useradd -m -c 'Compte de test Ankh' ankhvm"
+# Ni verrouillage ni écran éteint pendant le test (sinon les captures montrent
+# l'écran de verrouillage, puis un écran noir) : réglages du compte de test.
+vm "install -d -o ankhvm -g ankhvm /home/ankhvm/.config &&
+    printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/ankhvm/.config/kscreenlockerrc &&
+    printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/ankhvm/.config/powerdevilrc &&
+    chown ankhvm:ankhvm /home/ankhvm/.config/kscreenlockerrc /home/ankhvm/.config/powerdevilrc"
 configure_autologin
 wait_desktop 1-bureau
 vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
@@ -412,10 +439,10 @@ screenshot 1-chrome
 check_web_apps
 capture_app 1-vlc vlc
 capture_app 1-onlyoffice onlyoffice-desktopeditors
-check_vscode
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
+check_vscode
 
 log "2/4 Basculement vers une autre version : $other"
 vm bootc switch "$other"
