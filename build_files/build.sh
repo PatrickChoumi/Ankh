@@ -227,6 +227,11 @@ ANSI_COLOR="0;38;2;167;139;250"
 DEFAULT_HOSTNAME="ankh"
 OSRELEASE
 grep -qx 'ID=fedora' "${os_release}"
+# D-034 (correction, vue sur les captures de la PR #9) : la variante
+# « Kinoite » s'affichait dans « À propos de ce système ». VARIANT est retiré
+# et VERSION ne garde que le numéro ; VARIANT_ID, lu par des outils, reste.
+version_id="$(sed -n 's/^VERSION_ID=//p' "${os_release}" | tr -d '"')"
+sed -i -e '/^VARIANT=/d' -e "s/^VERSION=.*/VERSION=\"${version_id}\"/" "${os_release}"
 cat "${os_release}"
 
 # Nom de machine par défaut : « ankh », pour toutes les machines (générique,
@@ -278,6 +283,17 @@ if [[ -n "${retires}" ]]; then
 fi
 # Le cache d'icônes est refait après ce changement de logos (voir D-033).
 gtk-update-icon-cache --force /usr/share/icons/hicolor
+echo "Images de generic-logos : $(rpm -ql generic-logos | grep -E '\.(png|svg)$' | tr '\n' ' ')"
+
+# « À propos de ce système » lit son logo et sa variante dans
+# kcm-about-distrorc, avant os-release. Le réglage de Fedora y désignait
+# l'image de generic-logos (un hot-dog) et la variante « Kinoite » (vu sur les
+# captures de la PR #9). Chaque fichier trouvé, et celui de /etc/xdg, désigne
+# maintenant le logo d'Ankh, sans variante (build_files/regler-a-propos.py).
+mapfile -t about_distro < <(find /etc/xdg /usr/share/kde-settings -name kcm-about-distrorc)
+for f in /etc/xdg/kcm-about-distrorc "${about_distro[@]}"; do
+    python3 /ctx/regler-a-propos.py "${f}"
+done
 
 # Le paquet flatpak de Fedora ajoute au premier démarrage le dépôt
 # « Fedora Flatpaks », visible dans Discover. Il est masqué : les applications
@@ -328,6 +344,25 @@ done
 # « Fedora » et « Default » sont des liens vers le fond de la version (F44).
 rm /usr/share/wallpapers/Fedora /usr/share/wallpapers/Default
 rm -r /usr/share/wallpapers/F[0-9]*
+
+# Écran de démarrage graphique : Plymouth ne l'affiche (logo d'Ankh, et saisie
+# du mot de passe LUKS) que si le noyau reçoit « rhgb » ; « quiet » masque les
+# messages du noyau. L'installateur de Fedora (Anaconda) les ajoute ; avec
+# « bootc install », les arguments du noyau viennent de /usr/lib/bootc/kargs.d,
+# et un changement de ces fichiers s'applique aussi aux machines déjà
+# installées, à la mise à jour suivante (docs/src/building/bootc-kernel-arguments.7.md
+# de https://github.com/bootc-dev/bootc). Les captures de la VM montraient
+# les messages du démarrage au lieu de l'écran d'Ankh. Ajoutés seulement si
+# l'image de base ne les donne pas déjà.
+if grep -qs '"rhgb"' /usr/lib/bootc/kargs.d/*.toml; then
+    echo "« rhgb » déjà donné par l'image de base : $(grep -ls '"rhgb"' /usr/lib/bootc/kargs.d/*.toml)"
+else
+    install -d -m 0755 /usr/lib/bootc/kargs.d
+    cat > /usr/lib/bootc/kargs.d/10-ankh-ecran-de-demarrage.toml << 'TOML'
+# Écran de démarrage graphique d'Ankh (D-034), sans les messages du noyau.
+kargs = ["rhgb", "quiet"]
+TOML
+fi
 
 # Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
 # remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui

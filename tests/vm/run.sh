@@ -263,6 +263,8 @@ check_installed() {
     vm "grep -q '^title Ankh ' /boot/loader/entries/*.conf" ||
         die "le menu de démarrage n'affiche pas Ankh (D-033)"
     [[ $(vm cat /proc/sys/kernel/hostname) == ankh ]] || die "la machine ne s'appelle pas « ankh » (D-033)"
+    # D-034 : écran de démarrage graphique (« rhgb », donné par l'image).
+    vm grep -qw rhgb /proc/cmdline || die "le noyau n'a pas reçu « rhgb » : pas d'écran de démarrage (D-034)"
     # D-004 : /boot n'est pas monté automatiquement par-dessus le montage d'ostree.
     [[ $(vm systemctl is-enabled boot.automount) == masked ]] ||
         die "le montage automatique de /boot n'est pas masqué (D-004)"
@@ -336,6 +338,7 @@ podman run --rm --privileged --pid=host --ipc=host \
     --skip-fetch-check \
     --root-ssh-authorized-keys /output/id_ed25519.pub \
     --karg console=tty0 --karg console=ttyS0,115200n8 \
+    --karg plymouth.ignore-serial-consoles \
     --karg systemd.wants=sshd.service \
     /output/disk.raw
 
