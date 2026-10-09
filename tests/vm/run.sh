@@ -20,7 +20,8 @@
 # par le gestionnaire de connexion),
 # Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic). Après chaque
 # capture de Discover, son journal, pour expliquer un message d'erreur (D-028).
-# À l'étape 1, aperçus de l'identité visuelle sur un compte à part (D-037).
+# À l'étape 1, l'interface d'Ankh (D-037, D-039) : réglages appliqués dans la
+# session, menu, Dolphin, Konsole et réglages des couleurs.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -73,14 +74,6 @@ vm() {
         -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
         root@127.0.0.1 "$@"
-}
-
-# Copie des fichiers dans la VM, en root, par SSH : vm_copy SOURCE... DESTINATION.
-vm_copy() {
-    scp -q -i "$work/id_ed25519" -P "$port" \
-        -o BatchMode=yes -o ConnectTimeout=5 -o LogLevel=ERROR \
-        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-        "${@:1:$#-1}" "root@127.0.0.1:${!#}"
 }
 
 # Commande dans la session graphique d'un compte (par son gestionnaire
@@ -427,63 +420,48 @@ open_discover() {
     fi
 }
 
-# D-037 : aperçus de l'identité visuelle d'Ankh, avant de l'intégrer à
-# l'image. Appliqués avec les outils de Plasma à un compte à part,
-# « ankhapercu » : ni l'image ni le compte de test ne changent.
-#   - Sombre partout : jeu de couleurs « Ankh », graphite et violet
-#     (tests/vm/apercus/Ankh.colors). Le style Plasma Breeze et les
-#     décorations de fenêtres suivent le jeu de couleurs.
-#   - Icônes Breeze sombres : leurs dossiers prennent la couleur d'accent
-#     (classe ColorScheme-Accent de icons/places/64/folder.svg,
-#     https://invent.kde.org/frameworks/breeze-icons).
-#   - Barre flottante : propriété « floating » des panneaux
-#     (shell/scripting/panel.h de https://invent.kde.org/plasma/plasma-workspace).
-#   - Konsole aux couleurs d'Ankh (tests/vm/apercus/Ankh.colorscheme).
-preview_identity() {
-    local user=ankhapercu apercus=$repo/tests/vm/apercus
-    log "Aperçus de l'identité visuelle (D-037), sur le compte à part « $user »"
-    add_test_account "$user" 'Aperçu Ankh'
-    vm "install -d -o $user -g $user /home/$user/.local /home/$user/.local/share \
-        /home/$user/.local/share/color-schemes /home/$user/.local/share/konsole"
-    vm_copy "$apercus/Ankh.colors" "/home/$user/.local/share/color-schemes/"
-    vm_copy "$apercus/Ankh.colorscheme" "$apercus/Ankh.profile" "/home/$user/.local/share/konsole/"
-    vm "printf '[Desktop Entry]\nDefaultProfile=Ankh.profile\n' > /home/$user/.config/konsolerc &&
-        chown -R $user:$user /home/$user/.local /home/$user/.config && restorecon -R /home/$user"
-    configure_autologin "$user"
-    wait_desktop 1-apercu-avant "$user"
-    # Le centre d'accueil de KDE s'ouvre à la première connexion : il est
-    # fermé, pour voir le bureau.
-    if vm pgrep -u "$user" -x plasma-welcome > /dev/null; then
-        vm pkill -u "$user" -x plasma-welcome
-    fi
-    in_session "$user" plasma-apply-colorscheme Ankh
-    in_session "$user" plasma-apply-desktoptheme default
-    in_session "$user" /usr/libexec/plasma-changeicons breeze-dark
-    in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell \
-        evaluateScript s 'panels().forEach(function (p) { p.floating = true; })'
-    sleep 15
-    screenshot 1-apercu-bureau
+# Réglage de KDE tel que le voit la session d'un compte, comparé à la valeur
+# attendue : identity_setting COMPTE DESCRIPTION VALEUR OPTIONS_DE_KREADCONFIG6...
+# Ordre des dossiers de réglages de la session Plasma : ~/.config, puis
+# ~/.config/kdedefaults (réglages du thème global, ajoutés par
+# startkde/startplasma.cpp de plasma-workspace), puis /etc/xdg et ceux de
+# Fedora (plasma-workspace/env/env.sh de kde-settings-plasma).
+identity_setting() {
+    local user=$1 description=$2 valeur=$3 lu
+    shift 3
+    lu=$(in_session "$user" env "XDG_CONFIG_DIRS=/home/$user/.config/kdedefaults:/etc/xdg:/usr/share/kde-settings/kde-profile/default/xdg" \
+        kreadconfig6 "$@")
+    [[ $lu == "$valeur" ]] || die "$description : « $lu » au lieu de « $valeur » (D-037, D-039)"
+    echo "$description : $lu"
+}
+
+# D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de
+# test à sa première session. Vérifie ce que Plasma a réellement appliqué
+# (réglages lus dans la session : ceux de l'image, puis ceux du thème global
+# écrits dans ~/.config/kdedefaults), puis capture le menu, Dolphin,
+# Konsole et les réglages des couleurs.
+check_identity() {
+    local user=ankhvm
+    log "Interface d'Ankh dans la session du compte de test (D-037, D-039)"
+    identity_setting "$user" "Jeu de couleurs" Ankh --group General --key ColorScheme
+    identity_setting "$user" "Thème global" org.fedoraproject.fedoradark.desktop --group KDE --key LookAndFeelPackage
+    identity_setting "$user" "Icônes" breeze-dark --group Icons --key Theme
+    identity_setting "$user" "Police de l'interface" 'Inter,10,-1,5,50,0,0,0,0,0' --group General --key font
+    identity_setting "$user" "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
+    identity_setting "$user" "Profil Konsole" Ankh.profile --file konsolerc --group 'Desktop Entry' --key DefaultProfile
     in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
     sleep 5
-    screenshot 1-apercu-menu
+    screenshot 1-menu
     monitor 'sendkey esc'
     launch_in_session "$user" dolphin "/home/$user"
     sleep 15
-    screenshot 1-apercu-dolphin
+    screenshot 1-dolphin
     launch_in_session "$user" konsole
     sleep 10
-    screenshot 1-apercu-konsole
-    launch_in_session "$user" plasma-discover
-    sleep 30
-    screenshot 1-apercu-discover
+    screenshot 1-konsole
     launch_in_session "$user" systemsettings kcm_colors
     sleep 20
-    screenshot 1-apercu-reglages-couleurs
-    launch_in_session "$user" google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
-    sleep 30
-    screenshot 1-apercu-chrome
-    # Retour au compte de test pour la suite.
-    configure_autologin
+    screenshot 1-reglages-couleurs
 }
 
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
@@ -593,7 +571,7 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_abo
 sleep 20
 screenshot 1-a-propos
 check_vscode
-preview_identity
+check_identity
 
 log "2/4 Mise à jour vers la version publiée : $other"
 # Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,

@@ -1,9 +1,13 @@
-# Couleurs du terminal Konsole pour Ankh (D-037), en aperçu : fond du logo
-# (#0d1117), texte du logo (#e6edf3), violet d'Ankh pour le magenta.
+# Couleurs du terminal Konsole pour Ankh (D-037), validées sur les aperçus en
+# VM : fond du logo (#0d1117), texte du logo (#e6edf3), violet d'Ankh pour le
+# magenta. Fond légèrement translucide et flouté, comme le terminal de macOS
+# (D-039 ; clés « Opacity » et « Blur » de src/colorscheme/ColorScheme.cpp,
+# https://invent.kde.org/utilities/konsole).
 
 [General]
+Blur=true
 Description=Ankh
-Opacity=1
+Opacity=0.92
 
 [Background]
 Color=13,17,23

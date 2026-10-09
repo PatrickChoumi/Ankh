@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 : causes de « Update Issue » trouvées, aperçus de l'identité visuelle).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 : Discover, identité visuelle et interface douce intégrées).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -174,6 +174,15 @@
   - **Aperçus réussis** : bureau, menu, Dolphin, Konsole, Discover et réglages en graphite et violet ; dossiers violets ; Chrome sombre de lui-même.
   - **La barre était déjà flottante** avant l'aperçu : rien à changer.
   - **Vu au passage** : le message de bienvenue de Konsole pousse vers Toolbx et DNF (à remplacer) ; KDE Wallet s'ouvre au premier lancement de Chrome (à vérifier sur ma machine, avec un mot de passe).
+- **Mes choix du 2026-10-09** : le style me convient ; option A pour Discover ; et je veux une interface « bien plus belle et soft », au niveau de Windows 11 ou de macOS.
+  - **Discover** : le défaut est déjà signalé chez KDE ([bug 523258](https://bugs.kde.org/show_bug.cgi?id=523258), confirmé) et chez Fedora. Les micrologiciels restent dans Discover ; la correction viendra avec Discover (D-028).
+  - **Interface d'Ankh dans l'image** (D-037, D-039, PR #11) :
+    - le thème « Ankh Sombre », avec les couleurs graphite et violet ;
+    - les polices Inter (interface) et JetBrains Mono (code) ;
+    - la barre flottante, avec le menu et les applications au centre comme sous Windows 11 ;
+    - les menus translucides et floutés, et des ombres plus douces ;
+    - Konsole aux couleurs d'Ankh, légèrement translucide, sans le message Toolbx.
+  - Vérifié par un nouveau test de l'image (Test 14) et dans la session de la VM ; les captures diront si le résultat me plaît.
 
 ---
 
@@ -190,8 +199,8 @@
 5. **Habillage Ankh** (D-033) : fusionné.
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
-8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Pour le défaut de Discover, j'ai un choix à faire : A, garder les micrologiciels dans Discover et signaler le défaut à KDE (recommandé) ; B, retirer les micrologiciels de Discover.
-9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus en VM réussis (PR #11) ; intégration dans l'image après mon accord.
+8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
+9. **Identité visuelle d'Ankh** (D-037, D-039) : couleurs, polices, barre, Breeze et terminal intégrés dans l'image (PR #11), à valider sur les captures. Ensuite : écrans de démarrage, de connexion et de verrouillage, variante claire, VS Code.
 10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -225,8 +234,7 @@
 
 1. **Dire à Claude** :
    - si la taille des mises à jour (1,2 Go) doit être réduite maintenant ou en phase 10 (D-027) ;
-   - pour Discover : A (garder les micrologiciels dans Discover et signaler le défaut à KDE) ou B (les retirer de Discover) (D-028) ;
-   - si les aperçus de l'identité visuelle me conviennent, pour qu'il les intègre à l'image (D-037).
+   - si l'interface d'Ankh sur les captures de la PR #11 me plaît, avant de fusionner (D-039).
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran. Surtout les aperçus de l'identité visuelle (`1-apercu-…`) : dire si je les valide avant leur intégration (D-037).
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
