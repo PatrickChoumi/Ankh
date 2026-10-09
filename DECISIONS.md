@@ -43,10 +43,11 @@
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
 | D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
-| D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER |
+| D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
 | D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER) |
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
+| D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 
 ---
 
@@ -664,3 +665,19 @@
 - **Raisons** : suivre le projet d'un coup d'œil, sans relire tout le dépôt.
 - **Alternatives rejetées** : un compte rendu seulement dans la conversation (rien n'est conservé dans le dépôt).
 - **Vérification** : chaque compte rendu de Claude contient AVANCEMENT.md à jour.
+
+## D-030 — Variantes avec et sans protection safezone (complète D-026)
+
+- **Statut** : DÉCIDÉ (principe, 2026-10-09), à ma demande. La conception est À DÉCIDER en phase 4.
+- **Contexte** : D-026 prévoyait safezone dans toutes les images Ankh. Je veux des versions avec cette protection et des versions sans.
+- **Décision** :
+  - Chaque variante matérielle (D-021 : Mesa, NVIDIA) existe en deux versions : **avec** safezone et **sans**.
+  - Toutes sont construites, testées et signées par la même CI, à partir du même `build_files/build.sh`. La protection s'ajoute à la fin, par une étape distincte.
+  - Les noms des images sont à choisir en phase 4.
+- **Conséquence à traiter en phase 4** :
+  - Une image sans protection est une porte de sortie toute trouvée : depuis une machine protégée, `bootc switch` vers la version sans protection suffirait.
+  - D-026 prévoyait comme parade un filtre dans toutes les images. Cette parade ne vaut plus.
+  - Piste à étudier : sur une machine protégée, n'accepter que les images protégées. Par exemple, une politique de signature qui limite les images autorisées, plus de la friction sur la modification de cette politique.
+  - Le niveau de difficulté reste celui de safezone : de la friction contre l'impulsion, pas une impossibilité, puisque je garde les droits administrateur (D-025).
+- **Raisons** : pouvoir installer Ankh avec ou sans protection, selon la machine ou l'usage.
+- **Vérification** : en phase 4, tests de safezone sur les versions protégées, et test de la parade contre le basculement vers une version sans protection.
