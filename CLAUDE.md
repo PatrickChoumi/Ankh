@@ -34,8 +34,9 @@
     - captures d'écran de la VM.
   - Fait ([#6](https://github.com/PatrickChoumi/Ankh/pull/6) fusionnée) : le conteneur de dev `ankh-dev`, avec VS Code et les langages fullstack (D-032).
   - Fait ([#7](https://github.com/PatrickChoumi/Ankh/pull/7) fusionnée) : l'habillage Ankh sur le bureau : nom, logo, fonds d'écran (D-033).
-  - En cours : plus rien de Fedora à l'écran, démarrage compris, et une collection de fonds d'écran (D-034).
-  - Ensuite : VLC et OnlyOffice (D-024).
+  - Fait ([#8](https://github.com/PatrickChoumi/Ankh/pull/8) fusionnée) : plus rien de Fedora à l'écran, démarrage compris, et une collection de fonds d'écran (D-034).
+  - En cours : VLC et OnlyOffice dans l'image, LibreOffice retiré, Claude et GitHub dans Chrome, Node.js et Java les plus récents dans le conteneur de dev (D-035).
+  - Ensuite : l'identité visuelle d'Ankh (thème sombre, couleurs, icônes, barre flottante), avec des aperçus avant intégration (D-036, à écrire).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).

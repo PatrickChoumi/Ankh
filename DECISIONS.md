@@ -28,7 +28,7 @@
 | D-008 | Aucune sécurité désactivée pour faire marcher un outil | DÉCIDÉ |
 | D-009 | Hôte reproductible : pas de `rpm-ostree install`, pas de `curl \| bash` | DÉCIDÉ |
 | D-010 | Pas de redémarrage automatique | DÉCIDÉ |
-| D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ |
+| D-011 | Applications en Flatpak, gaming via Steam Flatpak | DÉCIDÉ (applications du quotidien dans l'image : D-035) |
 | D-012 | Environnement dev en conteneur | DÉCIDÉ (précisé par D-032) |
 | D-013 | Outils offensifs hors de l'hôte, Kali via Podman rootless | DÉCIDÉ |
 | D-014 | Malware et labs dans des VMs isolées (libvirt/KVM) | DÉCIDÉ |
@@ -41,7 +41,7 @@
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
 | D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
-| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (mécanismes À VALIDER) |
+| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté) |
@@ -49,9 +49,10 @@
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
-| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09) |
+| D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (CI et VM vertes ; rendu À VALIDER sur les captures) |
+| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI À VENIR) |
 
 ---
 
@@ -269,6 +270,7 @@
   - Aucune bibliothèque 32 bits n'est nécessaire sur l'hôte.
   - Les manettes sont reconnues (des règles udev sur l'hôte pourraient être nécessaires).
 - **Vérification** : test réel sur la machine avec la liste de jeux de Q6 (non exécuté).
+- **Modifiée par D-035 (2026-10-09)** : les applications du quotidien (VLC, OnlyOffice) sont dans l'image, comme Chrome. Les autres applications restent en Flatpak.
 
 ## D-012 — Environnement dev en conteneur
 
@@ -560,6 +562,7 @@
   - L'installation automatique des applications web par la politique Chrome `WebAppInstallForceList`.
   - Le volume téléchargé au premier démarrage (contrainte D-027).
 - **Vérification** : tests CI pour les fichiers de préinstallation et la politique ; test réel au premier démarrage.
+- **Modifiée par D-035 (2026-10-09)** : VLC et OnlyOffice deviennent des paquets de l'image, et non des Flatpaks préinstallés. Claude et GitHub restent des applications web de Chrome, installées par la politique `WebAppInstallForceList`.
 
 ## D-025 — Terminal : le quotidien se fait sans terminal
 
@@ -809,6 +812,7 @@
   - **À VALIDER** :
     - `java -version` affiche la 25, alors que `java-latest-openjdk` est demandé. Il faut vérifier s'il installe une version plus récente à côté, que Maven ne choisit pas par défaut ;
     - Node.js 22 est la version par défaut de Fedora 44. Une version LTS plus récente existe peut-être dans un paquet séparé : à vérifier, puis à me proposer si je veux des outils à la pointe ;
+    - → Java et Node.js : traités par D-035 (les versions les plus récentes de Fedora, à ma demande) ;
     - la création réelle du conteneur et VS Code dans le menu, en VM ou sur la machine.
 
 ## D-033 — Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001)
@@ -897,3 +901,57 @@
     - 12 captures dans l'artefact `captures-ankh-vm`, dont 4 pendant le démarrage (`0-demarrage-1` à `-4`).
   - **Taille mesurée** : passer de cette image à l'image publiée a téléchargé 252,7 Mo (2 couches). La couche d'Ankh contient Chrome, les fonds, les logos et l'initramfs ; toute reconstruction la renouvelle en entier. La part de chacun est À MESURER (D-027).
   - **À VALIDER par moi** : le rendu à l'écran sur les captures (démarrage, connexion, verrouillage, bureau, « À propos »), et l'écran du mot de passe LUKS sur ma machine.
+
+## D-035 — VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents (modifie D-011 et D-024)
+
+- **Statut** : DÉCIDÉ (2026-10-09), à ma demande. Modifie D-011 et D-024 ; précise D-032. Résultats de la CI À VENIR.
+- **Mes choix (2026-10-09)** :
+  - « Je veux que l'OS ait déjà le nécessaire » : VLC, OnlyOffice, Claude et GitHub sont disponibles dès l'installation de l'image.
+  - Forme retenue : **« A. Paquets système, comme Chrome »**, c'est-à-dire des paquets RPM dans l'image, plutôt que des Flatpaks préinstallés.
+  - **LibreOffice est retiré de l'image**, comme Firefox : une seule suite bureautique, OnlyOffice.
+  - « Si Fedora a de nouvelles versions d'outils de dev, ce serait bien de les avoir dans Ankh » : le conteneur de dev prend les versions les plus récentes que Fedora propose.
+- **Ce qui change** :
+  - **D-011** : les applications restent en Flatpak, sauf celles du quotidien listées ici, dans l'image comme Chrome.
+  - **D-024** : VLC et OnlyOffice passent de « Flatpak préinstallé » à « paquet de l'image ». Claude et GitHub ne changent pas (applications web de Chrome) ; leur mécanisme est mis en place ici.
+- **Raisons** :
+  - Tout est là au premier démarrage, sans téléchargement. Un Flatpak préinstallé, lui, se télécharge au premier démarrage, alors que D-027 et D-031 veulent éviter les téléchargements que je n'ai pas lancés.
+  - VLC et OnlyOffice suivent l'image, reconstruite chaque semaine (D-023).
+- **Alternatives rejetées** :
+  - Flatpaks préinstallés (D-024 d'origine) : téléchargement au premier démarrage, et version de Flatpak de la base à vérifier.
+  - Garder LibreOffice à côté d'OnlyOffice : deux suites pour le même usage.
+- **Conséquences** :
+  - **Taille** : l'image grossit d'OnlyOffice et de VLC. Toute reconstruction renouvelle la couche d'Ankh en entier (252,7 Mo avant ce changement, D-034), donc chaque mise à jour hebdomadaire retélécharge aussi OnlyOffice et VLC. Taille À MESURER par la CI (D-027).
+  - **Chrome affiche « Géré par votre organisation »**, à cause de la politique qui installe Claude et GitHub. C'est normal, et la protection de D-026 ajoutera d'autres politiques. Ces deux applications ne se désinstallent pas depuis Chrome.
+  - **Claude et GitHub apparaissent dans le menu après la première ouverture de Chrome**, avec internet : c'est Chrome qui les installe.
+  - **Node.js** : la version la plus récente peut être une version impaire, sans support long (environ 6 mois). La reconstruction hebdomadaire suit les versions proposées par Fedora.
+- **Mise en œuvre** :
+  - **LibreOffice** (`build_files/build.sh`) : tous les paquets `libreoffice*` de la base sont retirés, et la liste de ce qui part est affichée dans le journal de construction. S'il n'y en a aucun, la construction le dit.
+  - **VLC** : paquet `vlc`, depuis les dépôts de la base. `kinoite-main` active en priorité le dépôt multimédia de negativo17, aux codecs complets (`build_files/install.sh` de <https://github.com/ublue-os/main>). Le dépôt utilisé s'affiche dans le journal.
+  - **OnlyOffice** : paquet `onlyoffice-desktopeditors`, depuis le dépôt officiel d'OnlyOffice pour Red Hat et dérivés (`download.onlyoffice.com/repo/centos/main/noarch/`, <https://helpcenter.onlyoffice.com/desktop/installation/desktop-install-rhel.aspx>), installé dans `/opt` comme Chrome, avec vérification des signatures :
+    - la clé est refusée si son empreinte n'est pas `E09CA29F6E178040EF22B4098320CA65CB2DE8E5` ;
+    - la documentation d'OnlyOffice pour Ubuntu désigne la clé par son identifiant court `CB2DE8E5` sur `keyserver.ubuntu.com` (<https://helpcenter.onlyoffice.com/installation/desktop-install-ubuntu.aspx>, vue par une recherche : le site n'est pas accessible depuis l'environnement de Claude) ;
+    - ce serveur donne cette empreinte complète, une clé RSA 4096 de 2016 au nom d'« Ascensio System Limited (ONLYOFFICE) » (vérifié le 2026-10-09). La construction prend la clé sur ce même serveur.
+  - **Applications par défaut** (`/etc/xdg/mimeapps.list`, comme Chrome dans D-023) :
+    - VLC pour chaque format vidéo et audio qu'il déclare dans son lanceur ;
+    - OnlyOffice pour les documents de bureau qu'il déclare : Word, Excel, PowerPoint, OpenDocument, RTF et CSV. Il déclare aussi le PDF et le texte brut, qui ne lui sont **pas** confiés : le PDF reste à Chrome, le texte à l'éditeur de texte ;
+    - le nom des lanceurs est lu dans les paquets, et la construction échoue s'il n'y en a pas exactement un.
+  - **Claude et GitHub** : fichier `/etc/opt/chrome/policies/managed/ankh-applications.json`, politique `WebAppInstallForceList` de Chrome. Chaque application s'ouvre dans sa propre fenêtre, sous le nom « Claude » ou « GitHub » (`custom_name`). La politique existe sous Linux depuis Chrome 75, `custom_name` depuis Chrome 112. Source : `components/policy/resources/templates/policy_definitions/Miscellaneous/WebAppInstallForceList.yaml` de <https://github.com/chromium/chromium>.
+  - **Conteneur de dev** (`dev/build.sh`) :
+    - **Node.js** : Fedora fournit chaque version majeure dans ses propres paquets (`nodejs22`, `nodejs24`…), et leurs sous-paquets `-bin` et `-npm-bin` donnent les commandes `node`, `npm` et `npx` sans numéro. Source : le fichier `nodejsNN.spec`, repris par CentOS Stream (<https://gitlab.com/redhat/centos-stream/rpms/nodejs26>), car le site des paquets de Fedora n'est pas accessible depuis l'environnement de Claude. La construction prend le plus grand numéro proposé par Fedora ;
+    - **Java** : `java-latest-openjdk` devient la version des commandes `java` et `javac` (`alternatives --set`). Maven reste sur la version de référence de Fedora, qu'il installe pour lui-même (la 25 dans D-032). À VALIDER : si un projet Maven a besoin de la dernière version de Java.
+  - **À faire quand Fedora 45 sortira** : passer le conteneur de dev à Fedora 45, ma demande du 2026-10-09, en suivant la procédure de D-017.
+- **Vérification** :
+  - `just test`, Test 12 (`tests/applications.sh`, lancé dans l'image) :
+    - aucun paquet ni lanceur de LibreOffice ;
+    - VLC démarre (`vlc --version`, sous un compte ordinaire, car VLC refuse root) ;
+    - OnlyOffice est dans `/opt`, et toutes ses bibliothèques sont trouvées (`ldd`) ;
+    - VLC et OnlyOffice sont les applications par défaut de formats courants (MP4, MKV, MP3, FLAC ; DOCX, XLSX, PPTX, ODT), et Chrome reste celle du web (`gio mime`, avec `XDG_CURRENT_DESKTOP=KDE`) ;
+    - la politique de Chrome liste Claude et GitHub ;
+  - `just test ankh-dev`, Test 4 : `node` est le plus grand numéro proposé par Fedora, et `java` et `javac` sont ceux de `java-latest-openjdk` ;
+  - en VM : VLC et OnlyOffice présents et LibreOffice absent, à chaque étape ; Chrome, une fois ouvert, crée les lanceurs de Claude et de GitHub dans le menu ; captures de VLC et d'OnlyOffice ouverts (`1-vlc`, `1-onlyoffice`).
+- **À VALIDER** :
+  - si la base contenait LibreOffice (le journal de construction le dira) ;
+  - le dépôt d'où vient VLC, et la lecture des formats courants sur ma machine ;
+  - l'acceptation des signatures d'OnlyOffice par RPM de Fedora 44 ;
+  - l'installation de Claude et de GitHub par Chrome (test en VM) ;
+  - la taille ajoutée à chaque mise à jour (D-027).

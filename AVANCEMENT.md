@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (début d'après-midi).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (après-midi, PR D-035 ouverte).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -137,6 +137,14 @@
   - il a aussi montré que l'écran de verrouillage et l'écran de connexion affichaient encore le fond de Fedora : ils affichent maintenant « Ankh Signal » ;
   - la VM démarre avec l'initramfs reconstruit et Secure Boot actif, et 4 captures sont prises pendant le démarrage ;
   - passer à l'image publiée a téléchargé 252,7 Mo ; la part de l'initramfs est à mesurer (D-027).
+- **PR #8 fusionnée** le 2026-10-09.
+- **Le nécessaire dès l'installation** (D-035, 2026-10-09), à ma demande, en cours de vérification par la CI :
+  - **VLC** et **OnlyOffice** sont des paquets de l'image, comme Chrome (mon choix « A »), et non plus des Flatpaks à télécharger au premier démarrage ;
+  - **LibreOffice est retiré**, comme Firefox ;
+  - VLC ouvre par défaut la vidéo et l'audio, OnlyOffice les documents Word, Excel, PowerPoint et OpenDocument ;
+  - **Claude et GitHub** : Chrome les installe lui-même, chacun dans sa fenêtre, dès sa première ouverture ;
+  - **conteneur de dev** : Node.js dans la version la plus récente que Fedora propose (au lieu de la 22), et la dernière version de Java par défaut (au lieu de la 25).
+- **Ma demande d'identité visuelle** (2026-10-09) : sombre partout (variante claire disponible), barre flottante en bas, icônes KDE avec dossiers violets. Des aperçus me seront montrés avant intégration (D-036, prochaine PR).
 
 ---
 
@@ -146,15 +154,14 @@
 
 1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) : fusionné. Reste à vérifier à l'écran le navigateur par défaut dans KDE (captures).
-3. **Applications par défaut** (D-024) :
-   - VLC et OnlyOffice en Flatpak, préinstallés ;
-   - Claude et GitHub en applications web dans Chrome.
-4. **Conteneur de dev** (D-032) : fusionné. Ensuite :
+3. **Applications par défaut** (D-024, D-035) : PR en cours. VLC et OnlyOffice dans l'image, LibreOffice retiré, Claude et GitHub dans Chrome. Ensuite : vérifier à l'écran (captures de VLC et d'OnlyOffice), et mesurer la taille ajoutée à chaque mise à jour.
+4. **Conteneur de dev** (D-032) : fusionné. Node.js et Java les plus récents : PR D-035 en cours. Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
-   - vérifier la version de Java choisie par défaut, et proposer un Node.js plus récent que la 22 si Fedora en fournit un.
+   - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
 5. **Habillage Ankh** (D-033) : fusionné.
-6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : CI et VM vertes, PR #8 à fusionner après mon regard sur les captures.
-7. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
+7. **Identité visuelle d'Ankh** (D-036, prochaine PR) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
+8. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
@@ -178,6 +185,7 @@
 - **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
 - **Taille des mises à jour** : 252,7 Mo pour passer d'une image Ankh à une autre sur la même base ; la part de Chrome, des fonds et de l'initramfs est à mesurer (D-027).
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
+- **D-035** : la présence de LibreOffice dans la base, le dépôt d'où vient VLC, les signatures d'OnlyOffice, l'installation de Claude et de GitHub par Chrome, et la taille ajoutée à chaque mise à jour. La CI et la VM répondront.
 
 ---
 
