@@ -455,9 +455,14 @@ if [[ -e /usr/share/wallpapers/Next ]]; then
     find /usr/share/wallpapers/Next -type f
     rm -r /usr/share/wallpapers/Next
 fi
-install -d -m 0755 /usr/share/wallpapers/Next/contents/images
-ln -s /usr/share/ankh/assistant/5120x2880.png /usr/share/wallpapers/Next/contents/images/5120x2880.png
-ln -s /usr/share/ankh/assistant/1080x1920.png /usr/share/wallpapers/Next/contents/images/1080x1920.png
+# Dans les deux dossiers : en thème sombre, l'assistant cherche dans
+# images_dark, et son repli vers images ne marche pas (fond resté uni sur les
+# captures de la VM du 2026-10-10, PR #12).
+for dossier in images images_dark; do
+    install -d -m 0755 "/usr/share/wallpapers/Next/contents/${dossier}"
+    ln -s /usr/share/ankh/assistant/5120x2880.png "/usr/share/wallpapers/Next/contents/${dossier}/5120x2880.png"
+    ln -s /usr/share/ankh/assistant/1080x1920.png "/usr/share/wallpapers/Next/contents/${dossier}/1080x1920.png"
+done
 # Sa page « Bienvenue dans Ankh » est un module ajouté par la méthode prévue
 # par KDE (docs/CUSTOM_MODULES.md de plasma-setup), copié plus haut
 # (build_files/files/usr/share/plasma/packages/org.ankh.plasmasetup.bienvenue).

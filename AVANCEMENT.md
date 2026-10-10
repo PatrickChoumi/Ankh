@@ -205,6 +205,9 @@
   - **VS Code** : police JetBrains Mono, violet d'Ankh, et une icône dans le style d'Ankh ;
   - **écran de connexion** : l'image de compte d'Ankh (le A sur un disque graphite) pour chaque nouveau compte. Le reste de cet écran est dessiné par le programme de KDE ; s'il ne suffit pas, l'option est de passer à SDDM avec un écran entièrement d'Ankh (à décider).
   - Déjà fait par KDE, vérifié dans les sources : coins arrondis des fenêtres, flou au plus fort, fenêtres ouvertes au centre.
+- **CI de la PR #12 verte** ([run 38057489422](https://github.com/PatrickChoumi/Ankh/actions/runs/38057489422)) : accueil et raccourcis d'Ankh, menu et barre d'Ankh, recherche au centre, barre de progression au chargement, écran de verrouillage avec l'image de compte d'Ankh ; aucune marque de Fedora sur les captures.
+  - Corrigé ensuite : fond de l'assistant (il restait uni), titre en double sur sa page, capture de l'écran de connexion.
+  - À comprendre : VS Code ouvert à côté de son icône épinglée, et le flou invisible dans la VM (pas de carte graphique).
 
 ---
 

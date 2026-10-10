@@ -83,8 +83,8 @@ done
 # choix « Dark Theme », garde les couleurs d'Ankh ; son fond est celui d'Ankh ;
 # la page « Bienvenue dans Ankh » est installée comme module de l'assistant
 attendu "Jeu de couleurs de Breeze sombre" Ankh --file /usr/share/plasma/look-and-feel/org.kde.breezedark.desktop/contents/defaults --group kdeglobals --group General --key ColorScheme
-for image in 5120x2880.png 1080x1920.png; do
-    chemin="/usr/share/wallpapers/Next/contents/images/${image}"
+for image in {images,images_dark}/{5120x2880,1080x1920}.png; do
+    chemin="/usr/share/wallpapers/Next/contents/${image}"
     if python3 -c 'import sys; sys.exit(open(sys.argv[1], "rb").read(8) != b"\x89PNG\r\n\x1a\n")' "${chemin}" 2> /dev/null; then
         echo "Fond de l'assistant : ${image}"
     else

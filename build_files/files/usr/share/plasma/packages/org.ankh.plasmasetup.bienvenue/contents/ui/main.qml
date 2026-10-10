@@ -17,6 +17,9 @@ PlasmaSetupComponents.SetupModule {
 
     nextEnabled: true
 
+    // Le titre « Bienvenue dans Ankh » est affiché par l'assistant, au-dessus
+    // de la page (nom du module, metadata.json) : il n'est pas répété ici.
+
     contentItem: ColumnLayout {
         spacing: Kirigami.Units.largeSpacing
 
@@ -25,13 +28,6 @@ PlasmaSetupComponents.SetupModule {
             implicitWidth: Kirigami.Units.gridUnit * 6
             implicitHeight: Kirigami.Units.gridUnit * 6
             source: "ankh-logo"
-        }
-
-        Kirigami.Heading {
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
-            text: "Bienvenue dans Ankh"
         }
 
         Label {
@@ -48,7 +44,7 @@ PlasmaSetupComponents.SetupModule {
                     texte: "Les mises à jour arrivent dans Discover. Rien ne s'installe sans toi, et elles s'appliquent au redémarrage que tu choisis."
                 },
                 {
-                    icone: "applications-development",
+                    icone: "ankh-code",
                     texte: "Pour coder, ouvre Visual Studio Code depuis le menu : tout se prépare au premier clic."
                 },
                 {

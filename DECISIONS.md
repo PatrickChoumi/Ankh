@@ -1270,4 +1270,20 @@
 - **Vérification** :
   - `just test`, Test 14 (`tests/identite.sh`) : « Ankh Clair » dans les thèmes clairs, thèmes clair et sombre automatiques, barre translucide, fond clair et sombre, recherche flottante, favoris du menu, applications épinglées dans chaque barre, pages de l'accueil de KDE, image de compte et son lancement automatique ; Test 9 : icône de VS Code ;
   - `just test ankh-dev`, Test 3 : réglages de VS Code lisibles, police JetBrains Mono installée dans le conteneur ;
-  - test en VM (`tests/vm/run.sh`) : recherche flottante dans la session, image de compte enregistrée auprès d'AccountsService ; captures : recherche, page « Raccourcis utiles », thème clair, écran de verrouillage et écran de connexion avec l'image du compte. Dans la VM seulement, le flou est allumé pour le compte de test, pour que les captures montrent ce qu'affiche une vraie machine.
+  - test en VM (`tests/vm/run.sh`) : recherche flottante dans la session, image de compte enregistrée auprès d'AccountsService ; captures : recherche, page « Raccourcis utiles », thème clair, écran de verrouillage et écran de connexion avec l'image du compte. Dans la VM seulement, le test essaie d'allumer le flou pour le compte de test, et affiche le type de rendu de KWin.
+- **Résultats (2026-10-10, [run 38057489422](https://github.com/PatrickChoumi/Ankh/actions/runs/38057489422))**, vérifiés par le test :
+  - les constructions passent : Test 14, Test 11 (aucune marque de Fedora), Test 9, et Test 3 du conteneur de dev ;
+  - dans la session : recherche flottante appliquée ; image de compte enregistrée (`/var/lib/AccountsService/icons/ankhvm`) ;
+  - **vu sur les captures** :
+    - accueil de KDE avec le texte et le logo d'Ankh, et la page « Raccourcis utiles » ;
+    - favoris du menu et applications épinglées d'Ankh, avec l'icône « </> » de VS Code ;
+    - recherche au centre de l'écran, écran de chargement avec sa barre de progression ;
+    - écran de verrouillage : l'image de compte d'Ankh dans un cercle, le champ du mot de passe en violet, le fond flouté ;
+    - aucune marque de Fedora sur les captures d'Ankh. Seule l'étape 4 du test, qui revient à l'image de base sans Ankh, montre celle de Universal Blue, comme prévu ;
+  - **défauts vus, corrigés ensuite** :
+    - le fond de l'assistant restait uni : en thème sombre, l'assistant cherche dans `images_dark`, et son repli vers `images` ne marche pas (code de `src/qml/LandingComponent.qml` ; cause supposée : une adresse vide y passe pour valide). Le fond d'Ankh est maintenant dans les deux dossiers ;
+    - le titre « Bienvenue dans Ankh » de la page de l'assistant était affiché deux fois : l'assistant l'affiche déjà ;
+    - la capture de l'écran de connexion montrait l'heure seule : le clic n'avait pas fait apparaître la liste des comptes. Le test attend maintenant plus longtemps, puis bouge la souris avant de cliquer ;
+  - **à comprendre** :
+    - VS Code ouvert apparaît à côté de son icône épinglée, au lieu de s'y regrouper. Le test affiche maintenant la classe et le fichier `.desktop` de chaque fenêtre vus par KWin, pour corriger le lien ;
+    - le flou ne se voit pas dans la VM (rendu logiciel `llvmpipe`, affiché dans « À propos ») ; le test affiche maintenant si l'effet peut s'y charger. Sur une vraie carte graphique, il est allumé par défaut (À VALIDER sur ma machine).
