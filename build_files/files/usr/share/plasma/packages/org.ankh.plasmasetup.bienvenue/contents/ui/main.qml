@@ -34,22 +34,22 @@ PlasmaSetupComponents.SetupModule {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
-            text: "Ton système pour coder, jouer et explorer la cybersécurité."
+            text: "Votre système pour coder, jouer et explorer la cybersécurité."
         }
 
         Repeater {
             model: [
                 {
                     icone: "system-software-update",
-                    texte: "Les mises à jour arrivent dans Discover. Rien ne s'installe sans toi, et elles s'appliquent au redémarrage que tu choisis."
+                    texte: "Les mises à jour arrivent dans Discover. Rien ne s'installe sans vous, et elles s'appliquent au redémarrage que vous choisissez."
                 },
                 {
-                    icone: "ankh-code",
-                    texte: "Pour coder, ouvre Visual Studio Code depuis le menu : tout se prépare au premier clic."
+                    icone: "ankh-vscode",
+                    texte: "Pour coder, ouvrez Visual Studio Code depuis le menu : tout se prépare au premier clic."
                 },
                 {
                     icone: "edit-undo",
-                    texte: "Une mise à jour ne te plaît pas ? La version précédente est gardée : tu peux y revenir."
+                    texte: "Une mise à jour ne vous plaît pas ? La version précédente est gardée : vous pouvez y revenir."
                 }
             ]
 

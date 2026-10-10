@@ -247,6 +247,20 @@ if [[ -e /etc/hostname ]]; then
 fi
 echo ankh > /etc/hostname
 
+# VS Code dans le menu (D-036) : son icône officielle, tirée du pack que
+# Microsoft publie pour représenter VS Code (https://code.visualstudio.com/brand,
+# « Download the icons » ; version 2021-06-21 selon son README). L'archive
+# est refusée si son empreinte change : une nouvelle version se regarde avant
+# d'entrer dans l'image (D-043). Nom propre à Ankh, pour qu'aucun thème
+# d'icônes ne la remplace.
+vscode_icones=/tmp/visual-studio-code-icons.zip
+curl -fsSL https://code.visualstudio.com/assets/branding/visual-studio-code-icons.zip -o "${vscode_icones}"
+echo "04c5292a117bbc619f1ce574cc59b6c5e2e26374d6e64b92619e848612f2d9cb  ${vscode_icones}" | sha256sum -c -
+python3 -c 'import sys, zipfile; sys.stdout.buffer.write(zipfile.ZipFile(sys.argv[1]).read("visual-studio-code-icons/vscode.svg"))' "${vscode_icones}" \
+    > /usr/share/icons/hicolor/scalable/apps/ankh-vscode.svg
+chmod 0644 /usr/share/icons/hicolor/scalable/apps/ankh-vscode.svg
+rm "${vscode_icones}"
+
 # Logo dans le thème d'icônes : le cache est refait, car ostree met la même
 # date à tous les fichiers et un cache périmé paraîtrait encore valide.
 gtk-update-icon-cache --force /usr/share/icons/hicolor

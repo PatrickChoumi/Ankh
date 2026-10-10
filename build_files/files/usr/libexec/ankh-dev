@@ -22,7 +22,7 @@ case "${1:-}" in
         ;;
     mettre-a-jour)
         if ! podman container exists ankh-dev; then
-            echo "Les outils de dev ne sont pas encore préparés : ouvre VS Code une première fois depuis le menu." >&2
+            echo "Les outils de dev ne sont pas encore préparés : ouvrez VS Code une première fois depuis le menu." >&2
             exit 1
         fi
         distrobox upgrade ankh-dev

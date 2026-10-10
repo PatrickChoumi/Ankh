@@ -145,6 +145,11 @@ grep -q '^Icon=ankh-logo$' /usr/share/plasma/plasma-welcome/intro-customization.
     || echec "première page de l'accueil de KDE : logo d'Ankh absent"
 grep -q 'Raccourcis utiles' /usr/share/plasma/plasma-welcome/extra-pages/01-Raccourcis.qml \
     || echec "page « Raccourcis utiles » de l'accueil de KDE absente"
+# Textes affichés par Ankh : vouvoiement (ma demande du 2026-10-10)
+if grep -nE "(\"|=)[^\"]*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/plasma/plasma-welcome/intro-customization.desktop \
+    /usr/share/plasma/plasma-welcome/extra-pages/*.qml "${module}/contents/ui/main.qml"; then
+    echec "tutoiement dans un texte affiché par Ankh (lignes ci-dessus)"
+fi
 # Image de compte d'Ankh pour chaque nouveau compte, enregistrée pour l'écran
 # de connexion à la première session
 if python3 -c 'import sys; sys.exit(open(sys.argv[1], "rb").read(8) != b"\x89PNG\r\n\x1a\n")' /etc/skel/.face.icon 2> /dev/null; then
