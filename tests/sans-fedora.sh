@@ -101,6 +101,12 @@ while IFS= read -r f; do
     signaler "réglage qui affiche un fond de Fedora" "${f}"
 done < <(grep -rIlsE 'wallpapers/(Fedora|Default|F[0-9]+)/' "${dossiers[@]}")
 
+# Accueil de KDE (Welcome Center) et assistant de premier démarrage : pages
+# ajoutées par une distribution (D-037, D-042)
+while IFS= read -r f; do
+    signaler "page d'accueil ou de l'assistant" "${f}"
+done < <(grep -rIlsi fedora /usr/share/plasma/plasma-welcome /usr/share/plasma/packages/*plasmasetup* 2> /dev/null)
+
 # Schémas de couleurs
 for f in /usr/share/color-schemes/*.colors; do
     if [[ -e "${f}" ]] && grep -qiE '^Name(\[[^]]*\])?=.*fedora' "${f}"; then
