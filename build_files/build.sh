@@ -345,6 +345,110 @@ done
 rm /usr/share/wallpapers/Fedora /usr/share/wallpapers/Default
 rm -r /usr/share/wallpapers/F[0-9]*
 
+# D-037 et D-039 : identité visuelle d'Ankh, validée sur les aperçus en VM le
+# 2026-10-09 : sombre partout, graphite et violet, interface douce au niveau
+# de Windows 11 et de macOS. Ce sont des réglages par défaut, pour chaque
+# compte ; chacun reste modifiable dans les réglages de KDE. Le jeu de
+# couleurs « Ankh » et le profil Konsole sont copiés plus haut
+# (build_files/files).
+#
+# Polices de Fedora : Inter pour l'interface, JetBrains Mono pour le terminal
+# et le code.
+dnf5 -y install rsms-inter-fonts jetbrains-mono-fonts
+
+# Thème global par défaut : « Ankh Sombre » (le thème sombre de Fedora, renommé
+# plus haut). À chaque ouverture de session, Plasma applique les réglages par
+# défaut du thème global choisi (startkde/startplasma.cpp de
+# https://invent.kde.org/plasma/plasma-workspace). Son jeu de couleurs devient
+# « Ankh ». La valeur d'origine est vérifiée : un changement dans la base doit
+# se voir.
+sombre=/usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop
+couleurs="$(kreadconfig6 --file "${sombre}/contents/defaults" --group kdeglobals --group General --key ColorScheme)"
+if [[ "${couleurs}" != BreezeDark ]]; then
+    echo "${sombre} : jeu de couleurs « ${couleurs} » au lieu de BreezeDark : réglage à revoir" >&2
+    exit 1
+fi
+kwriteconfig6 --file "${sombre}/contents/defaults" --group kdeglobals --group General --key ColorScheme Ankh
+# /etc/xdg/kdeglobals (créé plus haut, D-023) passe avant les réglages de Fedora
+# (XDG_CONFIG_DIRS=/etc/xdg:/usr/share/kde-settings/kde-profile/default/xdg,
+# plasma-workspace/env/env.sh du paquet kde-settings-plasma).
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage org.fedoraproject.fedoradark.desktop
+# Polices, au format des réglages de Fedora (kde-profile/default/xdg/kdeglobals).
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key font 'Inter,10,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key menuFont 'Inter,10,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key toolBarFont 'Inter,10,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key smallestReadableFont 'Inter,8,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key fixed 'JetBrains Mono,10,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group WM --key activeFont 'Inter,10,-1,5,63,0,0,0,0,0'
+
+# Barre flottante en bas, menu et applications au centre (build_files/plasma/ankh-barre.js),
+# pour les trois thèmes globaux d'Ankh. Le fichier de Fedora, partagé par les
+# trois, est remplacé dans chacun.
+for theme in fedora fedoradark fedoralight; do
+    barre="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop/contents/layouts/org.kde.plasma.desktop-layout.js"
+    if [[ ! -e "${barre}" ]]; then
+        echo "${barre} absent : disposition du bureau à revoir" >&2
+        exit 1
+    fi
+    rm "${barre}"
+    install -m 0644 /ctx/plasma/ankh-barre.js "${barre}"
+done
+
+# Écran de chargement de la session : celui d'Ankh (build_files/plasma/ankh-splash.qml),
+# fond et logo d'Ankh, dans les trois thèmes globaux d'Ankh. Fedora y désignait
+# celui de KDE (ksplashrc dans contents/defaults) ; chaque thème désigne
+# maintenant le sien (setSplashScreen, libklookandfeel/klookandfeelmanager.cpp
+# de plasma-workspace).
+for theme in fedora fedoradark fedoralight; do
+    dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop"
+    if [[ ! -e "${dossier}/contents/splash/Splash.qml" ]]; then
+        echo "${dossier} : écran de chargement absent : à revoir" >&2
+        exit 1
+    fi
+    rm "${dossier}/contents/splash/Splash.qml"
+    install -m 0644 /ctx/plasma/ankh-splash.qml "${dossier}/contents/splash/Splash.qml"
+    install -m 0644 /usr/share/icons/hicolor/scalable/apps/ankh-logo.svg "${dossier}/contents/splash/images/ankh-logo.svg"
+    kwriteconfig6 --file "${dossier}/contents/defaults" --group ksplashrc --group KSplash --key Theme "org.fedoraproject.${theme}.desktop"
+    chmod 0644 "${dossier}/contents/defaults"
+done
+
+# Breeze plus doux : menus translucides et floutés (MenuOpacity, flou demandé
+# par kstyle/breezestyle.cpp et breezeblurhelper.cpp), ombres des fenêtres
+# plus grandes et plus légères (kdecoration/breezesettingsdata.kcfg de
+# https://invent.kde.org/plasma/breeze).
+if [[ -e /etc/xdg/breezerc ]]; then
+    echo "/etc/xdg/breezerc existe déjà dans la base : réglage à fusionner à la main" >&2
+    exit 1
+fi
+kwriteconfig6 --file /etc/xdg/breezerc --group Style --key MenuOpacity 85
+kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowSize ShadowVeryLarge
+kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowStrength 160
+# Konsole s'ouvre avec le profil Ankh. /etc/xdg/konsolerc vient du paquet
+# konsole-part de Fedora (barre de menus masquée, historique) : il est gardé,
+# le profil par défaut y est seulement ajouté, s'il n'en fixe pas déjà un.
+if [[ -e /etc/xdg/konsolerc ]]; then
+    echo "/etc/xdg/konsolerc de la base ($(rpm -qf /etc/xdg/konsolerc)), gardé :"
+    cat /etc/xdg/konsolerc
+    profil="$(kreadconfig6 --file /etc/xdg/konsolerc --group 'Desktop Entry' --key DefaultProfile)"
+    if [[ -n "${profil}" ]]; then
+        echo "/etc/xdg/konsolerc fixe déjà le profil « ${profil} » : réglage à fusionner à la main" >&2
+        exit 1
+    fi
+fi
+kwriteconfig6 --file /etc/xdg/konsolerc --group 'Desktop Entry' --key DefaultProfile Ankh.profile
+# Lisibles par tous les comptes : KConfig peut créer ses fichiers pour leur
+# seul propriétaire (root ici).
+chmod 0644 /etc/xdg/kdeglobals /etc/xdg/breezerc /etc/xdg/konsolerc "${sombre}/contents/defaults"
+
+# Le premier terminal n'affiche plus le message de Fedora qui conseille Toolbx
+# et DNF (contraire à D-009 et D-036). /etc/profile.d/toolbox.sh (paquet
+# toolbox) ne l'affiche pas si ~/.config/toolbox/host-welcome-shown existe :
+# chaque nouveau compte reçoit ce fichier vide de /etc/skel (build_files/files).
+if ! grep -q 'host-welcome-shown' /etc/profile.d/toolbox.sh; then
+    echo "/etc/profile.d/toolbox.sh ne lit plus host-welcome-shown : message de bienvenue à revoir" >&2
+    exit 1
+fi
+
 # Écran de démarrage graphique : Plymouth ne l'affiche (logo d'Ankh, et saisie
 # du mot de passe LUKS) que si le noyau reçoit « rhgb » ; « quiet » masque les
 # messages du noyau. L'installateur de Fedora (Anaconda) les ajoute ; avec

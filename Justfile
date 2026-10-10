@@ -129,6 +129,9 @@ test variant:
     echo "Test 12 : VLC et OnlyOffice présents et par défaut, LibreOffice absent, Claude et GitHub dans Chrome (D-035)"
     podman run --rm -i --network=none "${image}" bash -s < tests/applications.sh
 
+    echo "Test 14 : identité visuelle d'Ankh et interface douce : couleurs, polices, barre, Breeze, Konsole (D-037, D-039)"
+    podman run --rm -i --network=none "${image}" bash -s < tests/identite.sh
+
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
         echo "Test 13 : module NVIDIA présent pour le noyau de l'image, et signé"
         run 'k="$(ls /usr/lib/modules)"; modinfo -k "${k}" nvidia > /dev/null && [[ -n "$(modinfo -k "${k}" -F signer nvidia)" ]]'

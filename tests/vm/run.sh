@@ -7,7 +7,8 @@
 #
 # Étapes, toutes vérifiées automatiquement :
 #   1. installation de IMAGE sur un disque virtuel, puis démarrage complet ;
-#   2. basculement vers une autre version (ghcr.io/patrickchoumi/ankh:latest) ;
+#   2. mise à jour vers la version publiée (ghcr.io/patrickchoumi/ankh:latest),
+#      le registre que suit le système installé, comme sur ma machine ;
 #   3. retour arrière (bootc rollback) vers IMAGE ;
 #   4. retour à l'image de base épinglée dans bases.env (D-005, D-018).
 # À chaque démarrage : Secure Boot actif (D-006), SELinux en mode enforcing
@@ -17,7 +18,11 @@
 # Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
 # connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement
 # par le gestionnaire de connexion),
-# Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic).
+# Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic). Après chaque
+# capture de Discover, son journal, pour expliquer un message d'erreur (D-028).
+# À l'étape 1, l'interface d'Ankh (D-037, D-039) : réglages appliqués dans la
+# session, menu, Dolphin, Konsole, réglages des couleurs, écrans de connexion
+# et de verrouillage.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
@@ -31,6 +36,7 @@ port=${ANKH_VM_SSH_PORT:-2222}
 ovmf=/usr/share/OVMF
 qemu_pid=
 boot_id=
+autologin_main=no
 
 # Échecs de services propres à la VM de test, avec le message qui les prouve.
 # Tout autre service en échec fait échouer le test.
@@ -71,6 +77,22 @@ vm() {
         root@127.0.0.1 "$@"
 }
 
+# Commande dans la session graphique d'un compte (par son gestionnaire
+# systemd), attendue jusqu'au bout. Les arguments sont protégés du shell de
+# la VM, car ssh les recolle.
+in_session() {
+    local user=$1
+    shift
+    vm "systemd-run --machine=$user@ --user --wait --pipe --quiet $(printf '%q ' "$@")"
+}
+
+# Application lancée dans la session graphique d'un compte, sans l'attendre.
+launch_in_session() {
+    local user=$1
+    shift
+    vm "systemd-run --machine=$user@ --user --collect --quiet $(printf '%q ' "$@")"
+}
+
 # Attend que la VM réponde en SSH après un nouveau démarrage.
 wait_boot() {
     local old=$boot_id deadline=$((SECONDS + 900)) id
@@ -86,10 +108,9 @@ wait_boot() {
     done
 }
 
-# Capture l'écran de la VM en PNG par le moniteur de QEMU (commande screendump).
-screenshot() {
-    local file="$work/captures/$1.png"
-    python3 - "$work/monitor.sock" "screendump $file -f png" << 'PY'
+# Commande au moniteur de QEMU : capture d'écran, touche du clavier…
+monitor() {
+    python3 - "$work/monitor.sock" "$1" << 'PY'
 import socket, sys
 sock = socket.socket(socket.AF_UNIX)
 sock.settimeout(30)
@@ -108,17 +129,24 @@ sock.sendall(sys.argv[2].encode() + b"\n")
 until_prompt()  # nouvelle invite : la commande est terminée
 sock.close()
 PY
+}
+
+# Capture l'écran de la VM en PNG (commande screendump du moniteur de QEMU).
+screenshot() {
+    local file="$work/captures/$1.png"
+    monitor "screendump $file -f png"
     [[ -s $file ]] || die "capture d'écran impossible : $file"
     echo "Capture : $file"
 }
 
-# Attend le bureau Plasma du compte de test, puis le capture.
+# Attend le bureau Plasma d'un compte (par défaut, le compte de test), puis
+# le capture.
 wait_desktop() {
-    local name=$1 deadline=$((SECONDS + 180))
-    until vm pgrep -u ankhvm -x plasmashell > /dev/null; do
+    local name=$1 user=${2:-ankhvm} deadline=$((SECONDS + 180))
+    until vm pgrep -u "$user" -x plasmashell > /dev/null; do
         if ((SECONDS >= deadline)); then
             screenshot "$name-echec"
-            die "le bureau Plasma ne démarre pas pour le compte de test"
+            die "le bureau Plasma ne démarre pas pour le compte $user"
         fi
         sleep 5
     done
@@ -126,12 +154,25 @@ wait_desktop() {
     screenshot "$name"
 }
 
-# Connexion automatique du compte de test, pour le gestionnaire de connexion
+# Crée un compte de test. Ni verrouillage ni écran éteint pendant le test
+# (sinon les captures montrent l'écran de verrouillage, puis un écran noir).
+# Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
+# valables après chaque basculement.
+add_test_account() {
+    local user=$1 comment=$2
+    vm "useradd -m -c '$comment' $user &&
+        install -d -o $user -g $user /home/$user/.config &&
+        printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/$user/.config/kscreenlockerrc &&
+        printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/$user/.config/powerdevilrc &&
+        chown $user:$user /home/$user/.config/kscreenlockerrc /home/$user/.config/powerdevilrc"
+}
+
+# Connexion automatique d'un compte (par défaut, le compte de test), pour le gestionnaire de connexion
 # actif : Plasma Login (Fedora 44 KDE) ou SDDM. Plasma Login, dérivé de SDDM,
 # lit la même section [Autologin] dans /etc/plasmalogin.conf ou
 # /etc/plasmalogin.conf.d/ (https://wiki.archlinux.org/title/Plasma_Login_Manager).
 configure_autologin() {
-    local dm dir
+    local user=${1:-ankhvm} dm dir
     dm=$(vm systemctl show -p Id --value display-manager.service)
     echo "Gestionnaire de connexion : $dm"
     case $dm in
@@ -139,11 +180,15 @@ configure_autologin() {
         sddm.service) dir=/etc/sddm.conf.d ;;
         *) die "gestionnaire de connexion inattendu : $dm" ;;
     esac
-    vm "mkdir -p $dir && printf '[Autologin]\nUser=ankhvm\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
+    vm "mkdir -p $dir && printf '[Autologin]\nUser=$user\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
     if [[ $dm == plasmalogin.service ]]; then
         # Le dossier .conf.d est parfois ignoré (https://bugs.kde.org/show_bug.cgi?id=522006) :
-        # le fichier principal est écrit aussi s'il n'existe pas.
-        vm "test -e /etc/plasmalogin.conf || cp $dir/ankh-vmtest.conf /etc/plasmalogin.conf"
+        # le fichier principal est écrit aussi s'il n'existe pas, ou s'il
+        # vient déjà de ce test.
+        if [[ $autologin_main == yes ]] || ! vm test -e /etc/plasmalogin.conf; then
+            vm cp "$dir/ankh-vmtest.conf" /etc/plasmalogin.conf
+            autologin_main=yes
+        fi
     fi
     vm systemctl restart display-manager.service
 }
@@ -335,6 +380,106 @@ explain_vscode() {
     done
 }
 
+# D-028 : ouvre Discover sur la page des mises à jour, le capture, puis
+# affiche ce qu'il a écrit dans son journal. La fenêtre « Update Issue » ne
+# dit pas quelle source de Discover a échoué : système (rpm-ostree, qui
+# interroge le registre avec skopeo), Flatpak, micrologiciels (fwupd), KDE
+# Store ou avis. Chacune écrit son erreur dans le journal
+# (libdiscover/backends de https://invent.kde.org/plasma/discover).
+open_discover() {
+    local name=$1 unit=ankh-test-discover-${1%%-*} since ref cmd
+    since=$(vm date +%s)
+    # ssh recolle les arguments : la règle de journalisation est protégée du
+    # shell de la VM. Les messages de détail de la source « système » sont
+    # ajoutés aux avertissements, toujours écrits.
+    vm "systemd-run --machine=ankhvm@ --user --collect --quiet --unit=$unit \
+        --property=Type=simple --property=ExitType=cgroup \
+        --setenv=QT_LOGGING_RULES='org.kde.plasma.libdiscover.backend.rpm-ostree.debug=true' \
+        plasma-discover --mode update"
+    sleep 60
+    screenshot "$name"
+    log "Journal de Discover et des services qu'il interroge ($name)"
+    for cmd in \
+        "journalctl --no-pager -o short-monotonic -n 300 _SYSTEMD_USER_UNIT=$unit.service | cut -c 1-400" \
+        "journalctl --no-pager -o short-monotonic --since=@$since -u polkit.service -u fwupd.service -u rpm-ostreed.service -u flatpak-system-helper.service" \
+        "rpm -qa 'plasma-discover*' skopeo fwupd flatpak" \
+        'rpm-ostree status --booted' \
+        'flatpak remotes --system --show-details' \
+        'id ankhvm'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+    # La vérification de Discover pour le système, refaite à la main, au nom
+    # du compte de test : version d'Ankh publiée dans le registre.
+    ref=$(booted image.image)
+    echo "--- skopeo inspect --no-tags docker://$ref (version publiée)"
+    if ! vm "systemd-run --machine=ankhvm@ --user --wait --pipe --quiet skopeo inspect --no-tags docker://$ref" |
+        jq -r '.Labels["org.opencontainers.image.version"]'; then
+        echo "(commande en échec)"
+    fi
+}
+
+# Réglage de KDE tel que le voit la session d'un compte, comparé à la valeur
+# attendue : identity_setting COMPTE DESCRIPTION VALEUR OPTIONS_DE_KREADCONFIG6...
+# Ordre des dossiers de réglages de la session Plasma : ~/.config, puis
+# ~/.config/kdedefaults (réglages du thème global, ajoutés par
+# startkde/startplasma.cpp de plasma-workspace), puis /etc/xdg et ceux de
+# Fedora (plasma-workspace/env/env.sh de kde-settings-plasma).
+identity_setting() {
+    local user=$1 description=$2 valeur=$3 lu
+    shift 3
+    lu=$(in_session "$user" env "XDG_CONFIG_DIRS=/home/$user/.config/kdedefaults:/etc/xdg:/usr/share/kde-settings/kde-profile/default/xdg" \
+        kreadconfig6 "$@")
+    [[ $lu == "$valeur" ]] || die "$description : « $lu » au lieu de « $valeur » (D-037, D-039)"
+    echo "$description : $lu"
+}
+
+# D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de
+# test à sa première session. Vérifie ce que Plasma a réellement appliqué
+# (réglages lus dans la session : ceux de l'image, puis ceux du thème global
+# écrits dans ~/.config/kdedefaults), puis capture le menu, Dolphin,
+# Konsole et les réglages des couleurs.
+check_identity() {
+    local user=ankhvm
+    log "Interface d'Ankh dans la session du compte de test (D-037, D-039)"
+    identity_setting "$user" "Jeu de couleurs" Ankh --group General --key ColorScheme
+    identity_setting "$user" "Thème global" org.fedoraproject.fedoradark.desktop --group KDE --key LookAndFeelPackage
+    identity_setting "$user" "Icônes" breeze-dark --group Icons --key Theme
+    identity_setting "$user" "Police de l'interface" 'Inter,10,-1,5,50,0,0,0,0,0' --group General --key font
+    identity_setting "$user" "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
+    identity_setting "$user" "Profil Konsole" Ankh.profile --file konsolerc --group 'Desktop Entry' --key DefaultProfile
+    identity_setting "$user" "Écran de chargement" org.fedoraproject.fedoradark.desktop --file ksplashrc --group KSplash --key Theme
+    in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
+    sleep 5
+    screenshot 1-menu
+    monitor 'sendkey esc'
+    launch_in_session "$user" dolphin "/home/$user"
+    sleep 15
+    screenshot 1-dolphin
+    launch_in_session "$user" konsole
+    sleep 10
+    screenshot 1-konsole
+    launch_in_session "$user" systemsettings kcm_colors
+    sleep 20
+    screenshot 1-reglages-couleurs
+    # Écran de verrouillage : verrouillé puis déverrouillé par logind, que
+    # l'écran de verrouillage de KDE écoute (le compte de test n'a pas de mot
+    # de passe à taper).
+    vm loginctl lock-sessions
+    sleep 10
+    screenshot 1-ecran-de-verrouillage
+    vm loginctl unlock-sessions
+    sleep 5
+    # Écran de chargement de la session, rejoué en mode test (il se ferme seul
+    # après 6 secondes : ksplash/ksplashqml/splashapp.cpp de plasma-workspace).
+    launch_in_session "$user" ksplashqml --test
+    sleep 3
+    screenshot 1-ecran-de-chargement
+    sleep 5
+}
+
 # D-024, D-035 : Chrome installe lui-même les applications web Claude et
 # GitHub (politique WebAppInstallForceList) et leur crée un lanceur dans le
 # menu. Chrome doit avoir été ouvert une fois, avec internet.
@@ -380,12 +525,16 @@ log "Installation de $image sur le disque virtuel"
 # Méthode officielle : https://github.com/bootc-dev/bootc/blob/main/docs/src/bootc-installation.7.md
 # Les arguments du noyau et la clé SSH de root deviennent l'état local de la
 # machine : ils restent valables après chaque basculement d'image.
+# --target-imgref : le système installé suit le registre d'Ankh pour ses mises
+# à jour, comme ma machine installée depuis ce registre (D-027), au lieu du
+# stockage local de la CI. Sans cela, Discover cherchait les mises à jour dans
+# un registre « localhost » inexistant et affichait « Update Issue » (D-028).
 podman run --rm --privileged --pid=host --ipc=host \
     --security-opt label=type:unconfined_t \
     -v /dev:/dev -v /var/lib/containers:/var/lib/containers -v "$work:/output" \
     "$image" \
     bootc install to-disk --generic-image --via-loopback --filesystem btrfs \
-    --skip-fetch-check \
+    --skip-fetch-check --target-imgref "$other" \
     --root-ssh-authorized-keys /output/id_ed25519.pub \
     --karg console=tty0 --karg console=ttyS0,115200n8 \
     --karg plymouth.ignore-serial-consoles \
@@ -423,21 +572,15 @@ check_installed
 screenshot 1-ecran-de-connexion
 
 log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
-# Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
-# valables après chaque basculement, pour capturer le bureau de chaque image.
-# ssh recolle les arguments : la commande est passée en une seule chaîne.
-vm "useradd -m -c 'Compte de test Ankh' ankhvm"
-# Ni verrouillage ni écran éteint pendant le test (sinon les captures montrent
-# l'écran de verrouillage, puis un écran noir) : réglages du compte de test.
-vm "install -d -o ankhvm -g ankhvm /home/ankhvm/.config &&
-    printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/ankhvm/.config/kscreenlockerrc &&
-    printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/ankhvm/.config/powerdevilrc &&
-    chown ankhvm:ankhvm /home/ankhvm/.config/kscreenlockerrc /home/ankhvm/.config/powerdevilrc"
+add_test_account ankhvm 'Compte de test Ankh'
+# D-037 : écran de connexion, une fois un compte créé (sans compte, c'est
+# l'assistant de premier démarrage de KDE qui s'affiche, capturé plus haut).
+vm systemctl restart display-manager.service
+sleep 30
+screenshot 1-ecran-de-connexion-compte
 configure_autologin
 wait_desktop 1-bureau
-vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
-sleep 30
-screenshot 1-discover-mises-a-jour
+open_discover 1-discover-mises-a-jour
 vm systemd-run --machine=ankhvm@ --user --collect --quiet \
     google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
 sleep 30
@@ -449,21 +592,20 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_abo
 sleep 20
 screenshot 1-a-propos
 check_vscode
+check_identity
 
-log "2/4 Basculement vers une autre version : $other"
-vm bootc switch "$other"
+log "2/4 Mise à jour vers la version publiée : $other"
+# Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,
+# pas un basculement (celui-ci est testé à l'étape 4).
+vm bootc upgrade
 show_boot_state
 reboot_vm
 check_boot
 check_ankh
 wait_desktop 2-bureau-ankh-publiee
-# D-028 : Discover cherche les mises à jour dans le vrai registre (l'image
-# installée à l'étape 1 vient du stockage local de la CI, sans registre).
-vm systemd-run --machine=ankhvm@ --user --collect --quiet plasma-discover --mode update
-sleep 30
-screenshot 2-discover-mises-a-jour
+open_discover 2-discover-mises-a-jour
 [[ $(booted image.image) == "$other" ]] || { explain_deployment; die "l'image démarrée n'est pas $other"; }
-[[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "le basculement n'a pas changé de version"; }
+[[ $(booted imageDigest) != "$installed" ]] || { explain_deployment; die "la mise à jour n'a pas changé de version"; }
 
 log "3/4 Retour arrière (bootc rollback)"
 vm bootc rollback
@@ -482,4 +624,4 @@ check_boot
 [[ $(booted imageDigest) == "$base_digest" ]] || { explain_deployment; die "l'image démarrée n'est pas la base $base_digest"; }
 wait_desktop 4-bureau-image-de-base
 
-log "Réussi : démarrage, basculement, retour arrière et retour à la base."
+log "Réussi : démarrage, mise à jour, retour arrière et retour à la base."

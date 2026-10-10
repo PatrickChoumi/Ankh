@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (soir, PR #10 verte, à fusionner).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 verte : interface d'Ankh vérifiée en VM, captures envoyées).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -12,13 +12,13 @@
 | 1. Base et chaîne de build | ✅ Terminée le 2026-10-07 |
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ⏳ En cours depuis le 2026-10-08 |
-| 4. Protection (safezone) | À faire |
-| 5. Gaming | À faire (questions matérielles à répondre avant) |
+| 5. Gaming | À faire (questions 6 à 9 à répondre avant) |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
 | 9. Bascule sur ma vraie machine | À faire |
-| 10. Vivre avec Ankh, puis V1 | À faire |
+| 10. Vivre avec Ankh | À faire |
+| 4. Protection (safezone), puis V1 | À faire, en dernier (D-040) |
 
 ---
 
@@ -166,6 +166,25 @@
   - « À propos » montre le logo et le site d'Ankh ; l'écran de démarrage d'Ankh s'affiche ;
   - **Discover affiche encore « Update Issue »**, même sur le système venu du vrai registre : à comprendre (D-028) ;
   - **taille mesurée** : une mise à jour d'Ankh télécharge maintenant **1,2 Go** (501 Mo avant OnlyOffice et VLC).
+- **PR #10 fusionnée** le 2026-10-09.
+- **Discover, « Update Issue »** (D-028) : cette fenêtre ne dit pas quelle source a échoué. Le test en VM affiche maintenant le journal de Discover ([run 37975438997](https://github.com/PatrickChoumi/Ankh/actions/runs/37975438997)). Deux causes trouvées :
+  - **propre au test** : le système de test, installé depuis la CI, cherchait ses mises à jour dans un registre « localhost » qui n'existe pas. Le test suit maintenant le registre d'Ankh, comme ma machine ; son étape 2 devient une mise à jour (`bootc upgrade`) au lieu d'un basculement (D-004, à relire) ;
+  - **un défaut de Discover** : sa partie « micrologiciels » (fwupd) télécharge deux fois de suite le catalogue des micrologiciels, et fwupd refuse le second téléchargement. Le premier réussit : seul le message est faux. Il dépend du minutage. À moi de choisir quoi faire (D-028).
+- **Identité visuelle** (D-037, écrite le 2026-10-09) : mes choix (sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets) sont notés. Un jeu de couleurs « Ankh » et des couleurs de Konsole sont prêts. Le test en VM les applique à un compte à part, sans toucher l'image, et capture le résultat.
+  - **Aperçus réussis** : bureau, menu, Dolphin, Konsole, Discover et réglages en graphite et violet ; dossiers violets ; Chrome sombre de lui-même.
+  - **La barre était déjà flottante** avant l'aperçu : rien à changer.
+  - **Vu au passage** : le message de bienvenue de Konsole pousse vers Toolbx et DNF (à remplacer) ; KDE Wallet s'ouvre au premier lancement de Chrome (à vérifier sur ma machine, avec un mot de passe).
+- **Mes choix du 2026-10-09** : le style me convient ; option A pour Discover ; et je veux une interface « bien plus belle et soft », au niveau de Windows 11 ou de macOS.
+  - **Discover** : le défaut est déjà signalé chez KDE ([bug 523258](https://bugs.kde.org/show_bug.cgi?id=523258), confirmé) et chez Fedora. Les micrologiciels restent dans Discover ; la correction viendra avec Discover (D-028).
+  - **Interface d'Ankh dans l'image** (D-037, D-039, PR #11) :
+    - le thème « Ankh Sombre », avec les couleurs graphite et violet ;
+    - les polices Inter (interface) et JetBrains Mono (code) ;
+    - la barre flottante, avec le menu et les applications au centre comme sous Windows 11 ;
+    - les menus translucides et floutés, et des ombres plus douces ;
+    - Konsole aux couleurs d'Ankh, légèrement translucide, sans le message Toolbx.
+  - Vérifié par un nouveau test de l'image (Test 14) et dans la session de la VM.
+- **PR #11 verte** ([run 37986772808](https://github.com/PatrickChoumi/Ankh/actions/runs/37986772808)) : interface d'Ankh partout, de l'assistant de premier démarrage à l'écran de verrouillage ; écran de chargement d'Ankh ; Discover sans « Update Issue » au premier démarrage du test. Reste : l'assistant de premier démarrage affiche « Welcome to Plasma Desktop » (D-037).
+- **Mes choix (2026-10-09, suite)** : réduire la taille des mises à jour en phase 10 ; safezone (phase 4) en dernier, après la phase 10 (D-040).
 
 ---
 
@@ -176,27 +195,28 @@
 1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) : fusionné. Reste à vérifier à l'écran le navigateur par défaut dans KDE (captures).
 3. **Applications par défaut** (D-024, D-035) : fusionné. Ensuite : regarder les captures de VLC et d'OnlyOffice, vérifier les codecs de VLC sur ma machine, et mesurer la taille d'une mise à jour.
-4. **Conteneur de dev** (D-032) : fusionné. Dernières versions LTS (Node.js 24, Java 25) : PR #10, CI verte (D-038). Ensuite :
+4. **Conteneur de dev** (D-032) : fusionné, avec les dernières versions LTS (Node.js 24, Java 25, D-038). Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
    - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
 5. **Habillage Ankh** (D-033) : fusionné.
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
-7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : PR #10 verte, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
-8. **Discover** (D-028) : comprendre « Update Issue », visible même sur le système venu du vrai registre.
-9. **Identité visuelle d'Ankh** (D-037) : thème sombre graphite et violet, barre flottante, icônes à dossiers violets, polices, terminal, écrans de démarrage et de connexion. Aperçus montrés avant intégration.
+7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
+8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
+9. **Identité visuelle d'Ankh** (D-037, D-039) : couleurs, polices, barre, Breeze et terminal intégrés dans l'image (PR #11), à valider sur les captures. Ensuite : écrans de démarrage, de connexion et de verrouillage, variante claire, VS Code.
 10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
-- **Phase 4 — Protection** : concevoir puis intégrer safezone dans Ankh (D-026), en versions avec et sans protection (D-030). Il faudra traiter le basculement d'image (surtout vers une version sans protection), le retour arrière et `/etc`.
-- **Phases 5 à 7 — Gaming, Cyber, Labs** : elles demandent mes réponses aux questions matérielles Q1 à Q11 (ANKH-SPEC.md §6).
+- **Phases 5 à 7 — Gaming, Cyber, Labs** : elles demandent mes réponses aux questions 6 à 9 de ANKH-SPEC.md (jeux et anticheat, IA locale, analyse de malware, Wi-Fi offensif).
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
   - sauvegarder ma distro actuelle ;
   - installer Ankh avec LUKS ;
-  - valider le matériel (GPU, son, réseau, veille, écrans, jeux, filtrage) ;
+  - valider le matériel (GPU, son, réseau, veille, écrans, jeux) ;
   - utiliser Ankh une semaine.
-- **Phase 10 — Vivre avec Ankh** : corriger les irritations, mesurer la taille réelle des mises à jour, puis sortir la V1.
+  - Avant : répondre aux questions 1 à 5 et 10 à 12 de ANKH-SPEC.md.
+- **Phase 10 — Vivre avec Ankh** : corriger les irritations, mesurer puis réduire la taille des mises à jour (mon choix du 2026-10-09, D-027).
+- **Phase 4 — Protection, en dernier** (mon choix du 2026-10-09, D-040) : concevoir puis intégrer safezone dans Ankh (D-026), en versions avec et sans protection (D-030). Il faudra traiter le basculement d'image (surtout vers une version sans protection), le retour arrière et `/etc`. Le filtrage se vérifie alors sur ma machine. Ensuite : Ankh V1.
 
 ### Points à vérifier (À VALIDER)
 
@@ -215,8 +235,8 @@
 
 ## Ce que je dois faire
 
-1. **Fusionner la PR #10** ([lien](https://github.com/PatrickChoumi/Ankh/pull/10)) une fois sa CI verte : versions LTS, VS Code dans le menu, corrections de « À propos » et de l'écran de démarrage.
+1. **Dire à Claude** si l'interface d'Ankh sur les captures de la PR #11 me plaît, avant de fusionner (D-039).
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-5. **Avant la phase 5** : répondre aux questions matérielles Q1 à Q11 de ANKH-SPEC.md.
+5. **Avant la phase 5** : répondre aux questions 6 à 9 de ANKH-SPEC.md (jeux et leur anticheat, IA locale, analyse de malware, Wi-Fi offensif), et aux détails du gaming (§4.3 : autres launchers, manettes, écrans, OBS, mode console).
