@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "KDE/PlasmaSetup",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Description": "Présente Ankh au premier démarrage (D-037).",
+        "Id": "org.ankh.plasmasetup.bienvenue",
+        "License": "GPL-2.0-or-later",
+        "Name": "Bienvenue dans Ankh",
+        "Version": "1.0"
+    },
+    "NoDisplay": true,
+    "X-KDE-ParentApp": "org.kde.plasmasetup",
+    "X-KDE-Weight": -1
+}

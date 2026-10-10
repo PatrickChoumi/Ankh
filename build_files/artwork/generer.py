@@ -1,4 +1,4 @@
-"""Dessine le logo, les fonds d'écran et le logo de démarrage d'Ankh (D-033, D-034).
+"""Dessine le logo, les fonds d'écran et le logo de démarrage d'Ankh (D-033, D-034, D-037).
 
 Le logo : un A sans barre, dont la barre devient un curseur de terminal, sur
 une touche de clavier graphite. Un seul accent de couleur, violet.
@@ -138,6 +138,18 @@ def main() -> None:
     signal.resize((1920, 1080), Image.LANCZOS).save(apercus / "fullscreenpreview.jpg", quality=90)
     verrou = signal.resize((800, 450), Image.LANCZOS).point(lambda v: int(v * 0.6))
     verrou.save(apercus / "lockscreen.png", optimize=True)
+
+    # Fond de l'assistant de premier démarrage (D-037) : « Ankh Signal », aux
+    # noms de fichiers que l'assistant cherche (src/qml/LandingComponent.qml de
+    # plasma-setup) ; paysage réduit et portrait recadré au centre.
+    assistant = RACINE / "ankh" / "assistant"
+    assistant.mkdir(parents=True, exist_ok=True)
+    signal.convert("RGB").resize((2560, 1440), Image.LANCZOS).save(assistant / "5120x2880.png", optimize=True)
+    hauteur = 1920
+    largeur = round(signal.width * hauteur / signal.height)
+    gauche = (largeur - 1080) // 2
+    portrait = signal.convert("RGB").resize((largeur, hauteur), Image.LANCZOS)
+    portrait.crop((gauche, 0, gauche + 1080, hauteur)).save(assistant / "1080x1920.png", optimize=True)
 
     cible = RACINE / "ankh" / "plymouth" / "watermark.png"
     cible.parent.mkdir(parents=True, exist_ok=True)

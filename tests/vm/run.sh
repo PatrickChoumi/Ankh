@@ -131,6 +131,45 @@ sock.close()
 PY
 }
 
+# Clic de souris à la position (X, Y) de l'écran de la VM (1280x800), par le
+# protocole QMP de QEMU (commande input-send-event) : la tablette USB de la VM
+# donne un pointeur absolu, de 0 à 32767 sur chaque axe
+# (https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html).
+click() {
+    python3 - "$work/qmp.sock" "$1" "$2" << 'PY'
+import json, socket, sys
+sock = socket.socket(socket.AF_UNIX)
+sock.settimeout(30)
+sock.connect(sys.argv[1])
+f = sock.makefile("rw")
+
+def cmd(name, arguments=None):
+    message = {"execute": name}
+    if arguments:
+        message["arguments"] = arguments
+    f.write(json.dumps(message) + "\n")
+    f.flush()
+    while True:  # les événements asynchrones de QEMU sont ignorés
+        reponse = json.loads(f.readline())
+        if "return" in reponse:
+            return
+        if "error" in reponse:
+            sys.exit(reponse["error"]["desc"])
+
+def evenements(*liste):
+    cmd("input-send-event", {"events": list(liste)})
+
+json.loads(f.readline())  # message d'accueil de QMP
+cmd("qmp_capabilities")
+x = int(sys.argv[2]) * 32767 // 1280
+y = int(sys.argv[3]) * 32767 // 800
+evenements({"type": "abs", "data": {"axis": "x", "value": x}},
+           {"type": "abs", "data": {"axis": "y", "value": y}})
+evenements({"type": "btn", "data": {"down": True, "button": "left"}})
+evenements({"type": "btn", "data": {"down": False, "button": "left"}})
+PY
+}
+
 # Capture l'écran de la VM en PNG (commande screendump du moniteur de QEMU).
 screenshot() {
     local file="$work/captures/$1.png"
@@ -553,8 +592,10 @@ qemu-system-x86_64 \
     -device virtio-net-pci,netdev=net0 \
     -device virtio-rng-pci \
     -device virtio-vga -display none \
+    -device qemu-xhci -device usb-tablet \
     -serial "file:$work/serial.log" \
-    -monitor "unix:$work/monitor.sock,server=on,wait=off" &
+    -monitor "unix:$work/monitor.sock,server=on,wait=off" \
+    -qmp "unix:$work/qmp.sock,server=on,wait=off" &
 qemu_pid=$!
 
 log "1/4 Premier démarrage de $image"
@@ -570,6 +611,11 @@ check_ankh
 installed=$(booted imageDigest)
 check_installed
 screenshot 1-ecran-de-connexion
+# D-037 : la page « Bienvenue dans Ankh » de l'assistant, après un clic sur
+# « Begin Setup » (au centre de l'écran, vu sur les captures).
+click 640 397
+sleep 5
+screenshot 1-assistant-bienvenue
 
 log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
 add_test_account ankhvm 'Compte de test Ankh'

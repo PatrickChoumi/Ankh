@@ -382,35 +382,73 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key fixed 'JetBrains 
 kwriteconfig6 --file /etc/xdg/kdeglobals --group WM --key activeFont 'Inter,10,-1,5,63,0,0,0,0,0'
 
 # Barre flottante en bas, menu et applications au centre (build_files/plasma/ankh-barre.js),
-# pour les trois thèmes globaux d'Ankh. Le fichier de Fedora, partagé par les
-# trois, est remplacé dans chacun.
-for theme in fedora fedoradark fedoralight; do
-    barre="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop/contents/layouts/org.kde.plasma.desktop-layout.js"
-    if [[ ! -e "${barre}" ]]; then
-        echo "${barre} absent : disposition du bureau à revoir" >&2
+# et écran de chargement de la session d'Ankh (build_files/plasma/ankh-splash.qml),
+# dans tous les thèmes globaux : ceux de Fedora (renommés « Ankh ») et ceux de
+# KDE (Breeze). L'assistant de premier démarrage applique un thème Breeze si
+# l'on touche à son choix clair/sombre (D-037) ; Ankh garde alors sa barre et
+# son écran de chargement. Les thèmes sans écran de chargement à eux désignent
+# celui de Breeze, devenu celui d'Ankh. Les fichiers partagés entre thèmes sont
+# remplacés dans chacun.
+mapfile -t themes < <(find /usr/share/plasma/look-and-feel -mindepth 1 -maxdepth 1 -type d | sort)
+for attendu in org.fedoraproject.fedora.desktop org.fedoraproject.fedoradark.desktop \
+    org.fedoraproject.fedoralight.desktop org.kde.breeze.desktop org.kde.breezedark.desktop; do
+    if [[ ! -d "/usr/share/plasma/look-and-feel/${attendu}" ]]; then
+        echo "Thème global ${attendu} absent : intégration à revoir" >&2
         exit 1
     fi
-    rm "${barre}"
-    install -m 0644 /ctx/plasma/ankh-barre.js "${barre}"
 done
-
-# Écran de chargement de la session : celui d'Ankh (build_files/plasma/ankh-splash.qml),
-# fond et logo d'Ankh, dans les trois thèmes globaux d'Ankh. Fedora y désignait
-# celui de KDE (ksplashrc dans contents/defaults) ; chaque thème désigne
-# maintenant le sien (setSplashScreen, libklookandfeel/klookandfeelmanager.cpp
-# de plasma-workspace).
+for dossier in "${themes[@]}"; do
+    barre="${dossier}/contents/layouts/org.kde.plasma.desktop-layout.js"
+    if [[ -e "${barre}" ]]; then
+        rm "${barre}"
+        install -m 0644 /ctx/plasma/ankh-barre.js "${barre}"
+        echo "Barre d'Ankh : $(basename "${dossier}")"
+    fi
+    if [[ -e "${dossier}/contents/splash/Splash.qml" ]]; then
+        rm "${dossier}/contents/splash/Splash.qml"
+        install -m 0644 /ctx/plasma/ankh-splash.qml "${dossier}/contents/splash/Splash.qml"
+        install -m 0644 /usr/share/icons/hicolor/scalable/apps/ankh-logo.svg "${dossier}/contents/splash/images/ankh-logo.svg"
+        echo "Écran de chargement d'Ankh : $(basename "${dossier}")"
+    fi
+done
+# Chaque thème de Fedora désigne son propre écran de chargement, devenu celui
+# d'Ankh ; Fedora y désignait celui de KDE (ksplashrc dans contents/defaults ;
+# setSplashScreen, libklookandfeel/klookandfeelmanager.cpp de plasma-workspace).
 for theme in fedora fedoradark fedoralight; do
     dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop"
-    if [[ ! -e "${dossier}/contents/splash/Splash.qml" ]]; then
-        echo "${dossier} : écran de chargement absent : à revoir" >&2
-        exit 1
-    fi
-    rm "${dossier}/contents/splash/Splash.qml"
-    install -m 0644 /ctx/plasma/ankh-splash.qml "${dossier}/contents/splash/Splash.qml"
-    install -m 0644 /usr/share/icons/hicolor/scalable/apps/ankh-logo.svg "${dossier}/contents/splash/images/ankh-logo.svg"
     kwriteconfig6 --file "${dossier}/contents/defaults" --group ksplashrc --group KSplash --key Theme "org.fedoraproject.${theme}.desktop"
     chmod 0644 "${dossier}/contents/defaults"
 done
+# « Breeze sombre » de KDE prend aussi le jeu de couleurs d'Ankh : c'est le
+# thème qu'applique l'assistant de premier démarrage pour « Dark Theme »
+# (modules/prepareutil/prepareutil.cpp de plasma-setup).
+brise_sombre=/usr/share/plasma/look-and-feel/org.kde.breezedark.desktop/contents/defaults
+couleurs="$(kreadconfig6 --file "${brise_sombre}" --group kdeglobals --group General --key ColorScheme)"
+if [[ "${couleurs}" != BreezeDark ]]; then
+    echo "${brise_sombre} : jeu de couleurs « ${couleurs} » au lieu de BreezeDark : réglage à revoir" >&2
+    exit 1
+fi
+kwriteconfig6 --file "${brise_sombre}" --group kdeglobals --group General --key ColorScheme Ankh
+chmod 0644 "${brise_sombre}"
+
+# Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
+# d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup),
+# absent de l'image. Le fond d'Ankh y est mis, aux noms attendus
+# (build_files/files/usr/share/ankh/assistant, tirés d'« Ankh Signal »).
+# Ce dossier n'est pas proposé comme fond d'écran : sans fichier de
+# description, ce n'est pas un paquet, et les images rangées sous
+# contents/images, comme les liens, sont ignorées (wallpapers/image/plugin/finder,
+# packagefinder.cpp et imagefinder.cpp de plasma-workspace).
+if [[ -e /usr/share/wallpapers/Next ]]; then
+    echo "/usr/share/wallpapers/Next existe dans la base : fond de l'assistant à revoir" >&2
+    exit 1
+fi
+install -d -m 0755 /usr/share/wallpapers/Next/contents/images
+ln -s /usr/share/ankh/assistant/5120x2880.png /usr/share/wallpapers/Next/contents/images/5120x2880.png
+ln -s /usr/share/ankh/assistant/1080x1920.png /usr/share/wallpapers/Next/contents/images/1080x1920.png
+# Sa page « Bienvenue dans Ankh » est un module ajouté par la méthode prévue
+# par KDE (docs/CUSTOM_MODULES.md de plasma-setup), copié plus haut
+# (build_files/files/usr/share/plasma/packages/org.ankh.plasmasetup.bienvenue).
 
 # Breeze plus doux : menus translucides et floutés (MenuOpacity, flou demandé
 # par kstyle/breezestyle.cpp et breezeblurhelper.cpp), ombres des fenêtres
