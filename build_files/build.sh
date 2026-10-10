@@ -432,16 +432,28 @@ kwriteconfig6 --file "${brise_sombre}" --group kdeglobals --group General --key 
 chmod 0644 "${brise_sombre}"
 
 # Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
-# d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup),
-# absent de l'image. Le fond d'Ankh y est mis, aux noms attendus
+# d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup).
+# Le fond d'Ankh y est mis, aux noms attendus
 # (build_files/files/usr/share/ankh/assistant, tirés d'« Ankh Signal »).
 # Ce dossier n'est pas proposé comme fond d'écran : sans fichier de
 # description, ce n'est pas un paquet, et les images rangées sous
 # contents/images, comme les liens, sont ignorées (wallpapers/image/plugin/finder,
 # packagefinder.cpp et imagefinder.cpp de plasma-workspace).
+# Le fond « Next » de KDE est arrivé dans la base le 2026-10-10, avec le
+# paquet plasma-breeze-common de Fedora 44 (vu par la construction de la CI,
+# arrêtée par cette vérification). Il est retiré comme les fonds de Fedora
+# plus haut : aucun thème global ne le désigne plus (fond « Ankh Signal »),
+# et les fonds proposés restent ceux d'Ankh. S'il vient d'un autre paquet, la
+# construction s'arrête pour qu'on regarde.
 if [[ -e /usr/share/wallpapers/Next ]]; then
-    echo "/usr/share/wallpapers/Next existe dans la base : fond de l'assistant à revoir" >&2
-    exit 1
+    proprietaire="$(rpm -qf --qf '%{NAME}\n' /usr/share/wallpapers/Next | sort -u)"
+    if [[ "${proprietaire}" != plasma-breeze-common ]]; then
+        echo "/usr/share/wallpapers/Next vient de « ${proprietaire} » : fond de l'assistant à revoir" >&2
+        exit 1
+    fi
+    echo "Fond « Next » de KDE (${proprietaire}) retiré, remplacé par celui de l'assistant d'Ankh :"
+    find /usr/share/wallpapers/Next -type f
+    rm -r /usr/share/wallpapers/Next
 fi
 install -d -m 0755 /usr/share/wallpapers/Next/contents/images
 ln -s /usr/share/ankh/assistant/5120x2880.png /usr/share/wallpapers/Next/contents/images/5120x2880.png
