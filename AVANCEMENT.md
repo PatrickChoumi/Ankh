@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 verte : interface d'Ankh vérifiée en VM, captures envoyées).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-10** (PR #12 : assistant de premier démarrage, interface poussée au niveau de macOS et de Windows 11, écran de connexion d'Ankh, D-037 et D-042).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -12,7 +12,7 @@
 | 1. Base et chaîne de build | ✅ Terminée le 2026-10-07 |
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ⏳ En cours depuis le 2026-10-08 |
-| 5. Gaming | À faire (questions 6 à 9 à répondre avant) |
+| 5. Gaming | À faire (questions 6 à 9 remplies le 2026-10-10 ; D-041) |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -185,6 +185,29 @@
   - Vérifié par un nouveau test de l'image (Test 14) et dans la session de la VM.
 - **PR #11 verte** ([run 37986772808](https://github.com/PatrickChoumi/Ankh/actions/runs/37986772808)) : interface d'Ankh partout, de l'assistant de premier démarrage à l'écran de verrouillage ; écran de chargement d'Ankh ; Discover sans « Update Issue » au premier démarrage du test. Reste : l'assistant de premier démarrage affiche « Welcome to Plasma Desktop » (D-037).
 - **Mes choix (2026-10-09, suite)** : réduire la taille des mises à jour en phase 10 ; safezone (phase 4) en dernier, après la phase 10 (D-040).
+- **PR #11 fusionnée** le 2026-10-10.
+- **Mes réponses du 2026-10-10** :
+  - assistant de premier démarrage : retouches et page « Bienvenue dans Ankh » (D-037) ;
+  - questions 6 à 9 (ANKH-SPEC.md) : jeux Steam et hors Steam, sans anticheat compétitif ; IA locale importante ; pas d'analyse de malware ni de Wi-Fi offensif pour l'instant, mais Ankh doit les permettre plus tard ;
+  - gaming : le plus d'outils possible, comme Garuda ou CachyOS, avec des réglages sûrs et le noyau de Fedora (D-041) ;
+  - améliorer encore toute l'interface, au niveau de macOS et de Windows 11, après l'assistant.
+- **Assistant de premier démarrage** (D-037, [PR #12](https://github.com/PatrickChoumi/Ankh/pull/12)) : fond d'Ankh, thème sombre d'Ankh même si l'on touche au choix clair/sombre, et une page « Bienvenue dans Ankh » en premier.
+  - La première construction a échoué sur une vérification prévue pour ça : Fedora 44 livre depuis le 2026-10-10 le fond d'écran « Next » de KDE. Il est retiré et remplacé par celui d'Ankh ; les constructions passent.
+- **Mes demandes du 2026-10-10 (suite)** : l'écran de connexion n'a pas le design d'Ankh ; pousser encore le design, au niveau de macOS et de Windows 11 ou au-dessus, après des recherches, sans aucune marque de Fedora, avec créativité.
+- **Interface, deuxième passe** (D-042, PR #12), d'après les guides officiels d'Apple et de Microsoft (verre pour la navigation au-dessus du contenu, géométrie douce, couleur de marque cohérente en clair et en sombre, mouvement utile) :
+  - **thème clair aux couleurs d'Ankh** (« Ankh Clair ») et **clair/sombre automatiques** selon l'heure, si je l'active ;
+  - **fond « Ankh Signal » en version claire**, qui suit le thème ;
+  - **barre toujours en verre**, même quand une fenêtre est agrandie ;
+  - **recherche au milieu de l'écran** (Alt+Espace), comme Spotlight ;
+  - **écran de chargement** avec une fine barre de progression, comme au démarrage d'un Mac ;
+  - **menu et barre** avec les applications d'Ankh (VS Code, Chrome, fichiers, terminal, Discover, réglages) ;
+  - **accueil de KDE** au nom d'Ankh, avec une page « Raccourcis utiles » ;
+  - **VS Code** : police JetBrains Mono, violet d'Ankh, et une icône dans le style d'Ankh ;
+  - **écran de connexion** : l'image de compte d'Ankh (le A sur un disque graphite) pour chaque nouveau compte. Le reste de cet écran est dessiné par le programme de KDE ; s'il ne suffit pas, l'option est de passer à SDDM avec un écran entièrement d'Ankh (à décider).
+  - Déjà fait par KDE, vérifié dans les sources : coins arrondis des fenêtres, flou au plus fort, fenêtres ouvertes au centre.
+- **CI de la PR #12 verte** ([run 38057489422](https://github.com/PatrickChoumi/Ankh/actions/runs/38057489422)) : accueil et raccourcis d'Ankh, menu et barre d'Ankh, recherche au centre, barre de progression au chargement, écran de verrouillage avec l'image de compte d'Ankh ; aucune marque de Fedora sur les captures.
+  - Corrigé ensuite : fond de l'assistant (il restait uni), titre en double sur sa page, capture de l'écran de connexion.
+  - À comprendre : VS Code ouvert à côté de son icône épinglée, et le flou invisible dans la VM (pas de carte graphique).
 
 ---
 
@@ -202,7 +225,7 @@
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
-9. **Identité visuelle d'Ankh** (D-037, D-039) : couleurs, polices, barre, Breeze et terminal intégrés dans l'image (PR #11), à valider sur les captures. Ensuite : écrans de démarrage, de connexion et de verrouillage, variante claire, VS Code.
+9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11) ; assistant de premier démarrage, thème clair, VS Code, écran de connexion et finitions dans la PR #12, à valider sur les captures. Proposé ensuite : un écran de démarrage (Plymouth) entièrement d'Ankh, avec barre de progression (touche au démarrage et à LUKS, à décider).
 10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -226,6 +249,7 @@
 - **mcelog** : son comportement sur ma vraie machine (phase 9).
 - **Variante NVIDIA** : elle ne se teste pas en VM, seulement par des contrôles statiques en CI.
 - **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
+- **KDE Wallet** : sa fenêtre s'ouvre au premier lancement de Chrome dans la VM (compte sans mot de passe) ; à vérifier sur ma machine.
 - **Taille des mises à jour** : 252,7 Mo pour passer d'une image Ankh à une autre sur la même base ; la part de Chrome, des fonds et de l'initramfs est à mesurer (D-027).
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
 - **D-035** : les codecs de VLC sur ma machine. Taille d'une mise à jour mesurée : 1,2 Go ; la réduire est une piste (D-027).
@@ -235,8 +259,8 @@
 
 ## Ce que je dois faire
 
-1. **Dire à Claude** si l'interface d'Ankh sur les captures de la PR #11 me plaît, avant de fusionner (D-039).
+1. **Regarder les captures de la PR #12** (assistant, thème clair, recherche, raccourcis, écrans de connexion et de verrouillage) et dire à Claude ce qui me plaît ou non, avant de fusionner (D-037, D-042). Dire aussi si je veux l'écran de démarrage entièrement d'Ankh, ou SDDM pour l'écran de connexion.
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-5. **Avant la phase 5** : répondre aux questions 6 à 9 de ANKH-SPEC.md (jeux et leur anticheat, IA locale, analyse de malware, Wi-Fi offensif), et aux détails du gaming (§4.3 : autres launchers, manettes, écrans, OBS, mode console).
+5. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).

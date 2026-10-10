@@ -131,6 +131,45 @@ sock.close()
 PY
 }
 
+# Clic de souris à la position (X, Y) de l'écran de la VM (1280x800), par le
+# protocole QMP de QEMU (commande input-send-event) : la tablette USB de la VM
+# donne un pointeur absolu, de 0 à 32767 sur chaque axe
+# (https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html).
+click() {
+    python3 - "$work/qmp.sock" "$1" "$2" << 'PY'
+import json, socket, sys
+sock = socket.socket(socket.AF_UNIX)
+sock.settimeout(30)
+sock.connect(sys.argv[1])
+f = sock.makefile("rw")
+
+def cmd(name, arguments=None):
+    message = {"execute": name}
+    if arguments:
+        message["arguments"] = arguments
+    f.write(json.dumps(message) + "\n")
+    f.flush()
+    while True:  # les événements asynchrones de QEMU sont ignorés
+        reponse = json.loads(f.readline())
+        if "return" in reponse:
+            return
+        if "error" in reponse:
+            sys.exit(reponse["error"]["desc"])
+
+def evenements(*liste):
+    cmd("input-send-event", {"events": list(liste)})
+
+json.loads(f.readline())  # message d'accueil de QMP
+cmd("qmp_capabilities")
+x = int(sys.argv[2]) * 32767 // 1280
+y = int(sys.argv[3]) * 32767 // 800
+evenements({"type": "abs", "data": {"axis": "x", "value": x}},
+           {"type": "abs", "data": {"axis": "y", "value": y}})
+evenements({"type": "btn", "data": {"down": True, "button": "left"}})
+evenements({"type": "btn", "data": {"down": False, "button": "left"}})
+PY
+}
+
 # Capture l'écran de la VM en PNG (commande screendump du moniteur de QEMU).
 screenshot() {
     local file="$work/captures/$1.png"
@@ -362,6 +401,35 @@ check_vscode() {
     sleep 45
     screenshot 1-vscode
     echo "VS Code ouvert au premier clic, environnement de dev préparé"
+    show_windows
+}
+
+# Fenêtres ouvertes vues par KWin : classe, nom et fichier .desktop. La barre
+# relie une fenêtre à son lanceur par ces valeurs (windowUrlFromMetadata,
+# libtaskmanager/tasktools.cpp de plasma-workspace) ; diagnostic seulement.
+show_windows() {
+    local user=ankhvm script
+    script='for (const w of workspace.windowList()) {
+    if (w.normalWindow) {
+        console.warn("ANKH-FENETRE classe=" + w.resourceClass + " nom=" + w.resourceName +
+                     " desktop=" + w.desktopFileName + " titre=" + w.caption);
+    }
+}'
+    # vm() ne lit pas l'entrée standard (ssh -n) : le script passe par la
+    # commande, protégé pour le shell de la VM.
+    vm "printf '%s\n' $(printf '%q' "$script") > /tmp/ankh-fenetres.js && chmod 0644 /tmp/ankh-fenetres.js"
+    if in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting loadScript ss /tmp/ankh-fenetres.js ankh-fenetres &&
+        in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting start; then
+        sleep 3
+        if ! vm "journalctl --no-pager -b _UID=$(vm id -u "$user") --grep ANKH-FENETRE --output cat"; then
+            echo "(fenêtres : rien dans le journal)"
+        fi
+        if ! in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting unloadScript s ankh-fenetres; then
+            echo "(fenêtres : script de KWin non retiré)"
+        fi
+    else
+        echo "(fenêtres : script de KWin impossible à charger)"
+    fi
 }
 
 # Quand VS Code ne s'ouvre pas : journal de la préparation, sortie du
@@ -436,6 +504,15 @@ identity_setting() {
     echo "$description : $lu"
 }
 
+# Ferme une application de la session d'un compte, si elle est ouverte.
+close_app() {
+    local user=$1 name=$2
+    if vm pgrep -u "$user" -x "$name" > /dev/null; then
+        vm pkill -u "$user" -x "$name"
+        sleep 2
+    fi
+}
+
 # D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de
 # test à sa première session. Vérifie ce que Plasma a réellement appliqué
 # (réglages lus dans la session : ceux de l'image, puis ceux du thème global
@@ -451,6 +528,29 @@ check_identity() {
     identity_setting "$user" "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
     identity_setting "$user" "Profil Konsole" Ankh.profile --file konsolerc --group 'Desktop Entry' --key DefaultProfile
     identity_setting "$user" "Écran de chargement" org.fedoraproject.fedoradark.desktop --file ksplashrc --group KSplash --key Theme
+    identity_setting "$user" "Recherche flottante (D-042)" true --file krunnerrc --group General --key FreeFloating
+    # D-042 : l'image de compte d'Ankh, enregistrée auprès d'AccountsService
+    # à la première session, pour l'écran de connexion.
+    local uid icone
+    uid=$(vm id -u "$user")
+    icone=$(vm busctl --json=short get-property org.freedesktop.Accounts "/org/freedesktop/Accounts/User$uid" \
+        org.freedesktop.Accounts.User IconFile | jq -r .data)
+    [[ $icone == "/var/lib/AccountsService/icons/$user" ]] || die "image de compte non enregistrée : « $icone » (D-042)"
+    echo "Image de compte : $icone"
+    # Le flou de KWin est éteint par défaut sans carte graphique (rendu
+    # logiciel, BlurEffect::enabledByDefault de src/plugins/blur/blur.cpp,
+    # https://invent.kde.org/plasma/kwin) : il est allumé pour ce compte de
+    # test, pour que les captures montrent ce qu'affiche une vraie machine.
+    # Le réglage garde le flou allumé ; l'effet est aussi chargé tout de suite
+    # (interface org.kde.kwin.Effects, src/org.kde.kwin.Effects.xml de KWin).
+    echo "Rendu de KWin : $(in_session "$user" busctl --user get-property org.kde.KWin /Compositor org.kde.kwin.Compositing compositingType)"
+    in_session "$user" kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
+    if in_session "$user" busctl --user call org.kde.KWin /Effects org.kde.kwin.Effects loadEffect s blur | grep -qx 'b true'; then
+        echo "Flou de KWin : chargé"
+    else
+        echo "Flou de KWin : impossible à charger dans cette VM (pris en charge : $(in_session "$user" busctl --user call org.kde.KWin /Effects org.kde.kwin.Effects isEffectSupported s blur))"
+    fi
+    sleep 5
     in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
     sleep 5
     screenshot 1-menu
@@ -467,8 +567,36 @@ check_identity() {
     # Écran de verrouillage : verrouillé puis déverrouillé par logind, que
     # l'écran de verrouillage de KDE écoute (le compte de test n'a pas de mot
     # de passe à taper).
+    # D-042 : recherche au milieu de l'écran (Alt+Espace), comme Spotlight.
+    in_session "$user" busctl --user call org.kde.krunner /App org.kde.krunner.App query s code
+    sleep 5
+    screenshot 1-recherche
+    monitor 'sendkey esc'
+    # D-042 : la page « Raccourcis utiles » de l'accueil de KDE, ouverte seule
+    # (l'accueil n'a qu'une fenêtre : celle de la première session est fermée).
+    close_app "$user" plasma-welcome
+    launch_in_session "$user" plasma-welcome --pages 01-Raccourcis.qml
+    sleep 10
+    screenshot 1-accueil-raccourcis
+    close_app "$user" plasma-welcome
+    # D-042 : le thème « Ankh Clair », appliqué le temps d'une capture, puis
+    # retour au thème sombre par défaut.
+    # Les fenêtres ouvertes sont masquées (bureau dégagé) pour que le fond
+    # clair se voie autour de Dolphin.
+    in_session "$user" plasma-apply-lookandfeel -a org.fedoraproject.fedoralight.desktop
+    sleep 10
+    in_session "$user" busctl --user call org.kde.KWin /KWin org.kde.KWin showDesktop b true
+    sleep 3
+    launch_in_session "$user" dolphin "/home/$user"
+    sleep 10
+    screenshot 1-theme-clair
+    in_session "$user" plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop
+    sleep 10
     vm loginctl lock-sessions
     sleep 10
+    # Un clic fait apparaître l'image du compte et le bouton pour déverrouiller.
+    click 40 40
+    sleep 3
     screenshot 1-ecran-de-verrouillage
     vm loginctl unlock-sessions
     sleep 5
@@ -553,8 +681,10 @@ qemu-system-x86_64 \
     -device virtio-net-pci,netdev=net0 \
     -device virtio-rng-pci \
     -device virtio-vga -display none \
+    -device qemu-xhci -device usb-tablet \
     -serial "file:$work/serial.log" \
-    -monitor "unix:$work/monitor.sock,server=on,wait=off" &
+    -monitor "unix:$work/monitor.sock,server=on,wait=off" \
+    -qmp "unix:$work/qmp.sock,server=on,wait=off" &
 qemu_pid=$!
 
 log "1/4 Premier démarrage de $image"
@@ -570,6 +700,11 @@ check_ankh
 installed=$(booted imageDigest)
 check_installed
 screenshot 1-ecran-de-connexion
+# D-037 : la page « Bienvenue dans Ankh » de l'assistant, après un clic sur
+# « Begin Setup » (au centre de l'écran, vu sur les captures).
+click 640 397
+sleep 5
+screenshot 1-assistant-bienvenue
 
 log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
 add_test_account ankhvm 'Compte de test Ankh'
@@ -593,6 +728,19 @@ sleep 20
 screenshot 1-a-propos
 check_vscode
 check_identity
+# D-042 : écran de connexion d'Ankh, avec l'image du compte, enregistrée à sa
+# première session. La session du compte de test est fermée ; la connexion
+# automatique ne se refait qu'au démarrage suivant. Un clic fait apparaître
+# la liste des comptes (Main.qml de plasma-login-manager).
+vm loginctl terminate-user ankhvm
+sleep 45
+# Le pointeur est déjà en (40, 40) depuis l'écran de verrouillage : il est
+# déplacé avant le clic, pour que l'écran de connexion voie un mouvement.
+click 60 60
+sleep 2
+click 40 40
+sleep 5
+screenshot 1-ecran-de-connexion-ankh
 
 log "2/4 Mise à jour vers la version publiée : $other"
 # Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,

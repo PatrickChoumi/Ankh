@@ -58,6 +58,8 @@
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
+| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; mise en œuvre en phase 5) |
+| D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 
 ---
 
@@ -1116,6 +1118,14 @@
     - son image de fond est cherchée dans le fond d'écran « Next » de KDE ; absent de l'image, il laisse un fond gris uni ;
     - son choix clair/sombre applique les thèmes globaux Breeze de KDE (`modules/prepareutil/prepareutil.cpp`), puis les réglages de l'assistant sont copiés dans le nouveau compte (`src/auth/authhelper.cpp`). Toucher ce choix remplacerait donc le thème d'Ankh par celui de KDE ;
     - à traiter : options à présenter, après les captures avec le nouveau thème par défaut.
+    - **Options présentées le 2026-10-10** : retouches et page Ankh (recommandée) ; retouches seulement ; laisser tel quel ; reconstruire l'assistant (déconseillé : notre propre version du programme de KDE à suivre). Vérifié dans le code : le titre est compilé dans le programme (`src/qml`, `ecm_add_qml_module`) ; les pages de l'assistant sont des paquets KPackage chargés au démarrage, et une distribution peut ajouter les siennes (`docs/CUSTOM_MODULES.md`) ; le compte créé est administrateur (groupe `wheel`, `src/accountcontroller.cpp`).
+    - **Décision (mon choix du 2026-10-10) : retouches et page Ankh.** Le fond d'Ankh derrière l'assistant ; le bouton « Dark Theme » garde les couleurs d'Ankh ; une page « Bienvenue dans Ankh ». Le titre « Welcome to Plasma Desktop » reste.
+    - **Mise en œuvre (2026-10-10)**, vérifiée dans le code de `plasma-setup` 6.6.4, la version de Fedora 44 :
+      - **fond** : l'image d'« Ankh Signal », aux noms que l'assistant cherche (`wallpapers/Next/contents/images/5120x2880.png` et `1080x1920.png`, `src/qml/LandingComponent.qml`). Les images sont dans `/usr/share/ankh/assistant` (faites par `build_files/artwork/generer.py`) et liées depuis `/usr/share/wallpapers/Next`. Ce dossier n'est pas proposé comme fond d'écran : pas de fichier de description, et images sous `contents/images` (`packagefinder.cpp`, `imagefinder.cpp` de plasma-workspace) ;
+      - **« Dark Theme »** applique le thème global « Breeze sombre » de KDE (`modules/prepareutil/prepareutil.cpp`). Il prend le jeu de couleurs d'Ankh. Tous les thèmes globaux, de Fedora comme de KDE, ont maintenant la barre et l'écran de chargement d'Ankh : toucher à ce choix ne fait plus perdre l'apparence d'Ankh. Seul « clair » donne des couleurs claires (Breeze clair) ;
+      - **page « Bienvenue dans Ankh »** : module `org.ankh.plasmasetup.bienvenue` (`/usr/share/plasma/packages`), chargé par l'assistant avec ses propres pages (`src/pagesmodel.cpp`). Elle vient en premier, juste après « Begin Setup » (poids -1 ; langue : 0) : le logo d'Ankh, et trois points sur les mises à jour, VS Code et le retour à la version précédente. Texte en français ;
+      - **vérification** : Test 14 (thèmes globaux, « Breeze sombre », fond de l'assistant, page installée) ; en VM, un clic sur « Begin Setup » (tablette USB virtuelle et commande QMP `input-send-event` de QEMU), puis capture de la page.
+      - **Correction du 2026-10-10** ([PR #12](https://github.com/PatrickChoumi/Ankh/pull/12)) : la première construction s'est arrêtée sur la vérification prévue, car le fond « Next » de KDE est maintenant dans la base (paquet `plasma-breeze-common` de Fedora 44, vérifié dans <https://mdapi.fedoraproject.org>). Le dossier est retiré quand il vient de ce paquet, comme les fonds de Fedora (D-034) : aucun thème global ne le désigne (fond « Ankh Signal »), et les fonds proposés restent ceux d'Ankh. S'il vient d'un autre paquet, la construction s'arrête toujours.
 - **Pas encore traité** : polices (Inter, JetBrains Mono : présence dans Fedora À VALIDER), icône de VS Code dans le style d'Ankh, images de `generic-logos` (voir D-034), curseurs, effets.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
@@ -1194,3 +1204,86 @@
   - La conception détaillée (D-026, D-030) reste À DÉCIDER au début de la phase 4.
 - **Raisons** : avancer d'abord sur le quotidien, le gaming, la cybersécurité, les labs, la sauvegarde et la bascule.
 - **Vérification** : la feuille de route de CLAUDE.md (§5) suit cet ordre.
+
+## D-041 — Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036)
+
+- **Statut** : DÉCIDÉ (2026-10-10), mon choix. Mise en œuvre en phase 5.
+- **Contexte** : mes réponses aux questions 6 à 9 (ANKH-SPEC.md) : jeux Steam en solo ou en coop et jeux hors Steam, sans jeux compétitifs à anticheat. « Mets le plus d'outils de gaming, un peu comme dans Garuda Linux ou CachyOS. Vas-tu rendre l'OS super optimisé pour le gaming ? » Et : « l'OS ne doit pas me limiter et doit me permettre de faire tout ce que je veux quand je l'envisage. »
+- **Options présentées** :
+  1. **outils et réglages sûrs** (recommandée, choisie) ;
+  2. la même chose, plus un noyau optimisé pour le jeu (façon CachyOS ou Bazzite), signé par ma propre clé Secure Boot (MOK), que je crée, enregistre et garde moi-même. Gain souvent de quelques pour cent, plus d'entretien ;
+  3. les outils seulement.
+- **Décision** :
+  - **Lanceurs dans le menu, prêts au premier clic** (comme VS Code, D-036 ; rien ne se télécharge sans moi, D-031) : Steam, Heroic (Epic, GOG, Amazon), Lutris (Battle.net, EA, Ubisoft…), Bottles, ProtonPlus (versions de Proton plus récentes) et Protontricks, depuis Flathub.
+  - **Dans l'image** : GameMode, MangoHud (compteur d'images par seconde, températures), Gamescope, vkBasalt, et les règles des manettes et casques de Steam (`steam-devices`).
+  - **Disponibles sans être imposés** : OBS Studio, Discord, mode console (Steam en plein écran). Leur forme exacte se décide en phase 5.
+  - **Réglages du système pour le jeu** : seulement ceux qui ne touchent ni au noyau ni à Secure Boot. Chacun avec sa source et mesuré en VM, en phase 5.
+  - **Noyau** : celui de Fedora. Secure Boot reste actif sans clé à gérer (D-006, règle 7).
+- **Vérifié le 2026-10-10** (<https://mdapi.fedoraproject.org>, Fedora 44 ; <https://flathub.org>) :
+  - dans Fedora 44 : `gamemode` 1.8.2, `mangohud` 0.8.3, `gamescope` 3.16.29, `vkBasalt` 0.3.2, `wine` 11.0, `steam-devices` ; `goverlay` et `lutris` seulement dans `updates-testing` ;
+  - absents de Fedora 44 : les ordonnanceurs `scx` de CachyOS (`scx-scheds`) ;
+  - sur Flathub : Steam, Heroic, Lutris, Bottles, ProtonPlus, ProtonUp-Qt et Protontricks.
+- **Alternatives rejetées** :
+  - Tout recompiler pour les processeurs récents, comme CachyOS : impossible sur une base Fedora, et contraire à l'image générique (D-021).
+  - Un noyau tiers : il demande ma propre clé Secure Boot et plus d'entretien. Réexaminable après des mesures, par une nouvelle décision.
+- **IA locale** (question 7 : oui, important) : CUDA ou ROCm dans un conteneur, selon mon GPU (question 3, inconnue). À concevoir avec le dev ou le gaming, quand le GPU sera connu.
+- **Vérification** : en phase 5, chaque outil présent et lancé en VM ; captures ; jeux testés sur ma machine en phase 9 (D-011).
+
+## D-042 — Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039)
+
+- **Statut** : DÉCIDÉ (2026-10-10), ma demande. Les réglages sont choisis par Claude, sur les sources ci-dessous ; je les valide sur les captures de la VM avant de fusionner.
+- **Contexte** : mes demandes du 2026-10-10 : « si tu peux encore améliorer toute l'interface pour qu'elle n'ait rien à envier à macOS ou à Windows 11, fais-le. Ne lésine pas sur les moyens. » Puis : « l'écran de connexion n'a pas le design propre à Ankh. » Puis : « pousse encore plus loin le design visuel d'Ankh, au niveau de macOS et de Windows 11, voire au-dessus. Fais des recherches sur ce qui rend ces systèmes magnifiques, vérifie qu'il n'y a aucune marque de Fedora, sois créatif. »
+- **Ce qui rend macOS et Windows 11 beaux, d'après leurs guides officiels** (lus le 2026-10-10) :
+  - **une couche de navigation en verre au-dessus du contenu** : chez Apple, Liquid Glass est réservé aux commandes et à la navigation (barres, menus), qui flottent au-dessus du contenu et le laissent transparaître, sans nuire à la lisibilité ; le contenu garde des matières plus sobres (Human Interface Guidelines, « Materials », <https://developer.apple.com/design/human-interface-guidelines/materials>). Chez Microsoft, Mica teinte le fond des fenêtres avec le fond d'écran et montre quelle fenêtre est active ; Acrylic, translucide, sert aux menus et volets passagers (<https://learn.microsoft.com/windows/apps/design/style/mica>) ;
+  - **une géométrie douce et régulière** : coins de 8 pixels pour les fenêtres, menus et dialogues, 4 pixels pour les boutons et les champs ; pas de coins arrondis pour une fenêtre agrandie ou ancrée (<https://learn.microsoft.com/windows/apps/design/signature-experiences/geometry>) ;
+  - **une couleur de marque cohérente**, toujours avec le même sens, et **chaque couleur en version claire et sombre**, avec un mode automatique qui passe de l'une à l'autre dans la journée (HIG, « Color » et « Dark Mode ») ;
+  - **une typographie lisible** : 13 points par défaut sur macOS, des graisses moyennes plutôt que fines, peu de polices différentes (HIG, « Typography ») ;
+  - **un mouvement utile, bref et précis**, jamais gratuit, et désactivable (HIG, « Motion »).
+- **Ce qui était déjà fait par KDE** (Plasma 6.7, vérifié dans les sources le 2026-10-10) :
+  - **coins arrondis des fenêtres**, en haut et en bas : `RoundedCorners`, vrai par défaut (`kdecoration/breezesettingsdata.kcfg` et `breezedecoration.cpp` de <https://invent.kde.org/plasma/breeze>). Le point « coins arrondis » de D-039 est donc réglé sans rien ajouter ;
+  - **flou derrière les menus, la barre et le terminal** : au plus fort par défaut, avec grain et saturation, comme sous macOS (`BlurStrength` 15 sur 15, `NoiseStrength` 5, `Saturation` 150, `src/plugins/blur/blur.kcfg` de <https://invent.kde.org/plasma/kwin>). Il est éteint seulement sans carte graphique (rendu logiciel : `BlurEffect::enabledByDefault`), comme dans la VM de test ;
+  - **fenêtres nouvelles au centre de l'écran** (`Placement`, `src/kwin.kcfg`).
+- **Décision** : toujours avec des paquets de Fedora et des réglages par défaut de KDE, modifiables par chaque compte, sans thème tiers.
+  1. **Thème clair aux couleurs d'Ankh** : jeu de couleurs « Ankh Clair » (`AnkhClair.colors`, dérivé de Breeze clair) : gris très clair, texte graphite, violet foncé du logo pour les sélections et le focus (contraste 5,7 avec du texte blanc ; texte secondaire 4,8 ; liens 7,1). Il remplace Breeze clair dans tous les thèmes globaux clairs : « Ankh », « Ankh Clair », et Breeze clair de KDE (celui de l'assistant de premier démarrage).
+  2. **Clair et sombre automatiques**, comme sous macOS, si je l'active dans les réglages : entre « Ankh Clair » et « Ankh Sombre », au lieu de Breeze (`DefaultLightLookAndFeel` et `DefaultDarkLookAndFeel`, `kcms/lookandfeel/lookandfeelsettings.kcfg` de plasma-workspace). Par défaut : toujours sombre.
+  3. **Recherche au milieu de l'écran**, comme Spotlight : Alt+Espace ouvre la recherche au tiers de la hauteur de l'écran, au lieu d'un bandeau collé en haut (`FreeFloating`, `krunner/view.cpp` de plasma-workspace).
+  4. **Menu et barre** : favoris du menu (navigateur, VS Code, fichiers, terminal, Discover, VLC, OnlyOffice, réglages) au lieu de ceux de Fedora (KWrite, Kontact), lus à la création du menu de chaque compte (`kicker-extra-favoritesrc`, `portOldFavorites` de `applets/kicker/kastatsfavoritesmodel.cpp`) ; applications épinglées dans la barre : fichiers, navigateur, VS Code, terminal, Discover, réglages (`launchers`, `applets/taskmanager/main.xml` de plasma-desktop).
+  5. **Accueil de KDE (Welcome Center)**, ouvert à la première session : texte et logo d'Ankh sur la première page, à la place de Konqi, et une page « Raccourcis utiles » (menu, recherche, vue d'ensemble, moitié d'écran, fichiers, terminal, presse-papiers, capture d'écran, émojis, verrouillage). Méthode prévue par KDE (`intro-customization.desktop` et `extra-pages`, README.md de <https://invent.kde.org/plasma/plasma-welcome>). Les raccourcis sont ceux de KDE par défaut, vérifiés un par un : `shell/shellcorona.cpp` (Windows), `krunner/org.kde.krunner.desktop.cmake` (Alt+Espace), `src/plugins/overview/overvieweffect.cpp` (Windows+W) et `src/useractions.cpp` (Windows+flèches) de KWin, `org.kde.dolphin.desktop` (Windows+E), `org.kde.konsole.desktop` (Ctrl+Alt+T), `klipper/klipper.cpp` (Windows+V), `org.kde.spectacle.desktop.cmake` (Impr. écran, Windows+Maj+S), `emojier/app/org.kde.plasma.emojier.desktop` (Windows+.), `settings/kscreensaversettings.cpp` de kscreenlocker (Windows+L).
+  6. **VS Code** (conteneur de dev) : police JetBrains Mono, et le violet d'Ankh à la place du bleu dans le thème sombre de VS Code (`workbench.colorCustomizations` limité à « Default Dark Modern », <https://code.visualstudio.com/api/references/theme-color>). Réglages écrits à la création du conteneur, seulement s'il n'en a pas déjà.
+  7. **Barre toujours en verre** : translucide et floutée même quand une fenêtre est agrandie, comme le Dock de macOS et la barre des tâches de Windows 11 (`panel.opacity = "translucent"`, `PanelView::OpacityMode` de `shell/panelview.h` et `shell/scripting/panel.cpp` de plasma-workspace). Par défaut, Plasma la rend opaque dans ce cas.
+  8. **Écran de chargement** : sous le logo, une fine barre de progression violette qui avance à chaque étape du chargement de la session (six étapes, `ksplash/ksplashqml/splashapp.cpp`), comme au démarrage d'un Mac, au lieu de l'indicateur qui tourne.
+  9. **Fond « Ankh Signal » en clair et en sombre** : mêmes rubans, en violet et cyan foncés sur un gris très clair, rangés dans `contents/images` ; la version sombre passe dans `contents/images_dark`. Plasma prend celle qui va avec le jeu de couleurs : le fond suit le thème clair ou sombre, et le mode automatique (`build_files/artwork/fonds.py`).
+  10. **Icône de VS Code** dans le style d'Ankh : la touche graphite du logo, avec « </> » en blanc et la barre oblique violette (`ankh-code.svg`), au lieu de l'icône générique de KDE. VS Code ouvert garde son icône à lui.
+  11. **Écran de connexion et de verrouillage** :
+     - ce que l'on peut régler : le gestionnaire de connexion de Fedora 44 (Plasma Login) dessine son écran dans son propre programme (`Main.qml` compilé, `src/frontend/greeter/main.cpp` de <https://invent.kde.org/plasma/plasma-login-manager>) ; sa disposition ne se change pas. Il prend déjà le fond d'Ankh, le jeu de couleurs et les polices du thème global (`src/frontend/startkde/startplasma.cpp`), et floute le fond quand on s'en sert ;
+     - ce qui manquait : l'**image du compte**. Sans image, c'est la silhouette de KDE. Chaque nouveau compte reçoit maintenant l'image d'Ankh (le A et son curseur sur un disque graphite, `build_files/artwork/generer.py`), dans `/etc/skel/.face.icon`, que la session et l'écran de verrouillage lisent ;
+     - l'écran de connexion ne peut pas lire le dossier personnel : il ne voit que l'image enregistrée auprès d'AccountsService (`KUser::faceIconPath`, `src/lib/util/kuser_unix.cpp` de kcoreaddons). À la première session, `/usr/libexec/ankh-image-de-compte` l'enregistre (méthode `SetIconFile`, que chaque compte peut appeler pour lui-même, `src/user.c` de <https://gitlab.freedesktop.org/accountsservice/accountsservice>). Une seule fois par compte : une image choisie ensuite, ou retirée, est respectée ;
+     - **option si cela ne suffit pas** (à décider par moi, pas faite) : remplacer Plasma Login par SDDM, avec un écran de connexion entièrement dessiné pour Ankh. Plus de liberté, mais un changement du gestionnaire de connexion, donc du démarrage de la session : à tester en VM, et à surveiller à chaque version de Fedora.
+- **Alternatives rejetées** : thèmes et décorations tiers (Klassy, Lightly, Kvantum, thèmes macOS) : hors de Fedora, à suivre nous-mêmes, souvent cassés par une nouvelle version de Plasma ; un écran de connexion modifié dans le programme de KDE : notre propre version à maintenir.
+- **Mise en œuvre** : `build_files/build.sh` (bloc D-042), `build_files/plasma/ankh-barre.js` et `ankh-splash.qml`, `build_files/artwork` (image de compte, icône de VS Code, fond clair), `build_files/files` (jeu de couleurs, accueil de KDE, image de compte et son lancement automatique), `dev/setup.sh` et `dev/packages.txt`. La construction échoue si la base fixe déjà l'un de ces réglages (`krunnerrc`, `kicker-extra-favoritesrc`, `/etc/skel/.face.icon`, page d'accueil de Fedora) ou si un thème global attendu ne prend plus Breeze clair.
+- **Proposé pour plus tard, à décider par moi** : un écran de démarrage (Plymouth) entièrement d'Ankh, logo et barre de progression comme au démarrage d'un Mac, au lieu du thème de Fedora dont seul le logo du bas est changé (D-034). Il touche au démarrage et à la saisie du mot de passe LUKS : à tester en VM avec LUKS avant de l'adopter.
+- **À VALIDER** :
+  - l'aspect sur les captures de la VM, puis sur ma machine ;
+  - l'image de compte sur l'écran de connexion de ma machine (vérifiée en VM par le test) ;
+  - le flou de la barre translucide sur une carte graphique modeste ;
+  - les raccourcis « Windows » sur mon clavier.
+- **Vérification** :
+  - `just test`, Test 14 (`tests/identite.sh`) : « Ankh Clair » dans les thèmes clairs, thèmes clair et sombre automatiques, barre translucide, fond clair et sombre, recherche flottante, favoris du menu, applications épinglées dans chaque barre, pages de l'accueil de KDE, image de compte et son lancement automatique ; Test 9 : icône de VS Code ;
+  - `just test ankh-dev`, Test 3 : réglages de VS Code lisibles, police JetBrains Mono installée dans le conteneur ;
+  - test en VM (`tests/vm/run.sh`) : recherche flottante dans la session, image de compte enregistrée auprès d'AccountsService ; captures : recherche, page « Raccourcis utiles », thème clair, écran de verrouillage et écran de connexion avec l'image du compte. Dans la VM seulement, le test essaie d'allumer le flou pour le compte de test, et affiche le type de rendu de KWin.
+- **Résultats (2026-10-10, [run 38057489422](https://github.com/PatrickChoumi/Ankh/actions/runs/38057489422))**, vérifiés par le test :
+  - les constructions passent : Test 14, Test 11 (aucune marque de Fedora), Test 9, et Test 3 du conteneur de dev ;
+  - dans la session : recherche flottante appliquée ; image de compte enregistrée (`/var/lib/AccountsService/icons/ankhvm`) ;
+  - **vu sur les captures** :
+    - accueil de KDE avec le texte et le logo d'Ankh, et la page « Raccourcis utiles » ;
+    - favoris du menu et applications épinglées d'Ankh, avec l'icône « </> » de VS Code ;
+    - recherche au centre de l'écran, écran de chargement avec sa barre de progression ;
+    - écran de verrouillage : l'image de compte d'Ankh dans un cercle, le champ du mot de passe en violet, le fond flouté ;
+    - aucune marque de Fedora sur les captures d'Ankh. Seule l'étape 4 du test, qui revient à l'image de base sans Ankh, montre celle de Universal Blue, comme prévu ;
+  - **défauts vus, corrigés ensuite** :
+    - le fond de l'assistant restait uni : en thème sombre, l'assistant cherche dans `images_dark`, et son repli vers `images` ne marche pas (code de `src/qml/LandingComponent.qml` ; cause supposée : une adresse vide y passe pour valide). Le fond d'Ankh est maintenant dans les deux dossiers ;
+    - le titre « Bienvenue dans Ankh » de la page de l'assistant était affiché deux fois : l'assistant l'affiche déjà ;
+    - la capture de l'écran de connexion montrait l'heure seule : le clic n'avait pas fait apparaître la liste des comptes. Le test attend maintenant plus longtemps, puis bouge la souris avant de cliquer ;
+  - **à comprendre** :
+    - VS Code ouvert apparaît à côté de son icône épinglée, au lieu de s'y regrouper. Le test affiche maintenant la classe et le fichier `.desktop` de chaque fenêtre vus par KWin, pour corriger le lien ;
+    - le flou ne se voit pas dans la VM (rendu logiciel `llvmpipe`, affiché dans « À propos ») ; le test affiche maintenant si l'effet peut s'y charger. Sur une vraie carte graphique, il est allumé par défaut (À VALIDER sur ma machine).
