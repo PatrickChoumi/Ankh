@@ -1,0 +1,11 @@
+# Première page de l'accueil de KDE (Welcome Center) personnalisée pour Ankh
+# (D-042), par le fichier prévu par KDE (README.md de
+# https://invent.kde.org/plasma/plasma-welcome, « Customizing the first
+# page ») : le texte d'Ankh passe avant celui de KDE, et le logo d'Ankh
+# remplace Konqi, la mascotte de KDE.
+[Desktop Entry]
+# Obligatoire dans un fichier .desktop ; ignoré par l'accueil
+Type=Application
+Name=Bienvenue dans Ankh, ton système pour coder, jouer et explorer la cybersécurité. Tes applications sont dans le menu, et rien ne s'installe ni ne se met à jour sans toi.
+Icon=ankh-logo
+Comment=Le logo d'Ankh : un A dont la barre est un curseur de terminal.

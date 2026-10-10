@@ -57,7 +57,8 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
     theme="$(basename "${dossier}")"
     barre="${dossier}contents/layouts/org.kde.plasma.desktop-layout.js"
     if [[ -e "${barre}" ]]; then
-        if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = true' "${barre}"; then
+        if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = true' "${barre}" \
+            && grep -q '^panel.opacity = "translucent"' "${barre}"; then
             barres=$((barres + 1))
         else
             echec "barre de ${theme} : pas celle d'Ankh"
@@ -111,6 +112,49 @@ attendu "Couleurs du profil Konsole" Ankh --file /usr/share/konsole/Ankh.profile
 
 # Pas de message de Fedora qui conseille Toolbx et DNF au premier terminal
 [[ -f /etc/skel/.config/toolbox/host-welcome-shown ]] || echec "message de bienvenue de Toolbx non désactivé pour les nouveaux comptes"
+
+# D-042 : finitions au niveau de macOS et de Windows 11
+# Thèmes clairs aux couleurs d'Ankh, et clair/sombre automatiques entre les
+# deux thèmes d'Ankh
+attendu "Jeu de couleurs Ankh Clair présent" AnkhClair --file /usr/share/color-schemes/AnkhClair.colors --group General --key ColorScheme
+for theme in org.fedoraproject.fedora.desktop org.fedoraproject.fedoralight.desktop org.kde.breeze.desktop; do
+    attendu "Jeu de couleurs de ${theme}" AnkhClair --file "/usr/share/plasma/look-and-feel/${theme}/contents/defaults" --group kdeglobals --group General --key ColorScheme
+done
+attendu "Thème clair automatique" org.fedoraproject.fedoralight.desktop --group KDE --key DefaultLightLookAndFeel
+attendu "Thème sombre automatique" org.fedoraproject.fedoradark.desktop --group KDE --key DefaultDarkLookAndFeel
+# « Ankh Signal », fond par défaut, en version claire et sombre : Plasma
+# prend celle qui va avec le jeu de couleurs
+for variante in images images_dark; do
+    [[ -f "/usr/share/wallpapers/Ankh-Signal/contents/${variante}/3840x2160.jpg" ]] \
+        || echec "fond « Ankh Signal » : version ${variante} absente"
+done
+# Recherche au milieu de l'écran, favoris du menu et applications épinglées
+attendu "Recherche flottante" true --file krunnerrc --group General --key FreeFloating
+favoris="$(reglage --file kicker-extra-favoritesrc --group General --key Prepend)"
+if [[ "${favoris}" == "preferred://browser;ankh-vscode.desktop;"* ]]; then
+    echo "Favoris du menu : ${favoris}"
+else
+    echec "favoris du menu : « ${favoris} »"
+fi
+attendu "Favoris de Fedora ignorés" true --file kicker-extra-favoritesrc --group General --key IgnoreDefaults
+for barre in /usr/share/plasma/look-and-feel/*/contents/layouts/org.kde.plasma.desktop-layout.js; do
+    grep -q '"applications:ankh-vscode.desktop"' "${barre}" || echec "applications épinglées absentes : ${barre}"
+done
+# Accueil de KDE (Welcome Center) : première page et page « Raccourcis utiles » d'Ankh
+grep -q '^Icon=ankh-logo$' /usr/share/plasma/plasma-welcome/intro-customization.desktop \
+    || echec "première page de l'accueil de KDE : logo d'Ankh absent"
+grep -q 'Raccourcis utiles' /usr/share/plasma/plasma-welcome/extra-pages/01-Raccourcis.qml \
+    || echec "page « Raccourcis utiles » de l'accueil de KDE absente"
+# Image de compte d'Ankh pour chaque nouveau compte, enregistrée pour l'écran
+# de connexion à la première session
+if python3 -c 'import sys; sys.exit(open(sys.argv[1], "rb").read(8) != b"\x89PNG\r\n\x1a\n")' /etc/skel/.face.icon 2> /dev/null; then
+    echo "Image de compte d'Ankh : /etc/skel/.face.icon"
+else
+    echec "image de compte d'Ankh absente ou illisible : /etc/skel/.face.icon"
+fi
+[[ -x /usr/libexec/ankh-image-de-compte ]] || echec "/usr/libexec/ankh-image-de-compte absent ou non exécutable"
+attendu "Image de compte enregistrée à la première session" /usr/libexec/ankh-image-de-compte \
+    --file /etc/xdg/autostart/ankh-image-de-compte.desktop --group 'Desktop Entry' --key Exec
 
 if ((echecs > 0)); then
     echo "ÉCHEC : ${echecs} réglage(s) de l'identité visuelle manquant(s)" >&2

@@ -39,6 +39,9 @@ mariadb
 sqlite
 valkey
 
+# Police du code dans VS Code, celle du terminal d'Ankh (D-042)
+jetbrains-mono-fonts
+
 # Piloter le Podman du système depuis le conteneur de dev
 podman-remote
 podman-compose

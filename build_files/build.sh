@@ -499,6 +499,100 @@ if ! grep -q 'host-welcome-shown' /etc/profile.d/toolbox.sh; then
     exit 1
 fi
 
+# D-042 : finitions au niveau de macOS et de Windows 11 (complète D-039).
+# Toujours des réglages par défaut de KDE, modifiables par chaque compte ;
+# la construction échoue si la base fixe déjà l'un d'eux.
+#
+# Thèmes clairs aux couleurs d'Ankh : chaque thème global qui prend Breeze
+# clair (« Ankh », « Ankh Clair », Breeze clair de KDE…) prend le jeu « Ankh
+# Clair » (build_files/files/usr/share/color-schemes/AnkhClair.colors).
+clairs=()
+for dossier in "${themes[@]}"; do
+    reglages="${dossier}/contents/defaults"
+    if [[ -e "${reglages}" && "$(kreadconfig6 --file "${reglages}" --group kdeglobals --group General --key ColorScheme)" == BreezeLight ]]; then
+        kwriteconfig6 --file "${reglages}" --group kdeglobals --group General --key ColorScheme AnkhClair
+        chmod 0644 "${reglages}"
+        clairs+=("$(basename "${dossier}")")
+    fi
+done
+echo "Jeu de couleurs « Ankh Clair » : ${clairs[*]}"
+for attendu in org.fedoraproject.fedora.desktop org.fedoraproject.fedoralight.desktop org.kde.breeze.desktop; do
+    if [[ " ${clairs[*]} " != *" ${attendu} "* ]]; then
+        echo "${attendu} ne prenait pas Breeze clair : jeu de couleurs clair à revoir" >&2
+        exit 1
+    fi
+done
+# Clair et sombre automatiques (selon l'heure, comme sous macOS), si je
+# l'active dans les réglages du thème global : entre « Ankh Clair » et « Ankh
+# Sombre », au lieu de Breeze (DefaultLightLookAndFeel et
+# DefaultDarkLookAndFeel de kcms/lookandfeel/lookandfeelsettings.kcfg,
+# https://invent.kde.org/plasma/plasma-workspace).
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key DefaultLightLookAndFeel org.fedoraproject.fedoralight.desktop
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key DefaultDarkLookAndFeel org.fedoraproject.fedoradark.desktop
+
+# Recherche (Alt+Espace) au milieu de l'écran, comme Spotlight sous macOS,
+# au lieu d'un bandeau collé en haut : réglage FreeFloating de KRunner
+# (krunner/view.cpp de plasma-workspace : fenêtre posée au tiers de la
+# hauteur de l'écran).
+for f in /etc/xdg/krunnerrc /usr/share/kde-settings/kde-profile/default/xdg/krunnerrc; do
+    if [[ -e "${f}" ]]; then
+        echo "${f} existe déjà dans la base : réglage de la recherche à fusionner à la main" >&2
+        exit 1
+    fi
+done
+kwriteconfig6 --file /etc/xdg/krunnerrc --group General --key FreeFloating true
+
+# Favoris du menu : les applications d'Ankh, au lieu de celles de Fedora
+# (KWrite, Kontact). Le menu les lit dans kicker-extra-favoritesrc à sa
+# création pour chaque compte (portOldFavorites, applets/kicker/kastatsfavoritesmodel.cpp
+# de plasma-workspace) ; /etc/xdg passe avant le fichier de Fedora
+# (kde-profile/default/xdg/kicker-extra-favoritesrc, paquet kde-settings).
+# Les applications épinglées dans la barre sont dans ankh-barre.js.
+if [[ -e /etc/xdg/kicker-extra-favoritesrc ]]; then
+    echo "/etc/xdg/kicker-extra-favoritesrc existe déjà dans la base : favoris à fusionner à la main" >&2
+    exit 1
+fi
+favoris=(preferred://browser ankh-vscode.desktop org.kde.dolphin.desktop org.kde.konsole.desktop
+    org.kde.discover.desktop "$(basename "${vlc_lanceur}")" "$(basename "${onlyoffice_lanceur}")" systemsettings.desktop)
+for favori in "${favoris[@]}"; do
+    if [[ "${favori}" == *.desktop && ! -e "/usr/share/applications/${favori}" ]]; then
+        echo "Favori du menu introuvable : /usr/share/applications/${favori}" >&2
+        exit 1
+    fi
+done
+kwriteconfig6 --file /etc/xdg/kicker-extra-favoritesrc --group General --key Prepend "$(IFS=';'; echo "${favoris[*]}")"
+kwriteconfig6 --file /etc/xdg/kicker-extra-favoritesrc --group General --key IgnoreDefaults true
+
+# Accueil de KDE (Welcome Center), ouvert à la première session : texte et
+# logo d'Ankh sur sa première page, et une page « Raccourcis utiles », par
+# les fichiers prévus par KDE (README.md de https://invent.kde.org/plasma/plasma-welcome),
+# copiés plus haut (build_files/files/usr/share/plasma/plasma-welcome).
+# Le paquet de Fedora qui fait la même chose pour Fedora est absent (Test 11).
+rpm -q plasma-welcome
+if ! grep -q 'Bienvenue dans Ankh' /usr/share/plasma/plasma-welcome/intro-customization.desktop; then
+    echo "Première page de l'accueil de KDE : ce n'est pas celle d'Ankh" >&2
+    exit 1
+fi
+
+chmod 0644 /etc/xdg/kdeglobals /etc/xdg/krunnerrc /etc/xdg/kicker-extra-favoritesrc
+
+# Écran de connexion et de verrouillage d'Ankh (ma demande du 2026-10-10) :
+# le gestionnaire de connexion de KDE (Plasma Login) dessine son écran dans
+# son propre programme (src/frontend/greeter/main.cpp de
+# https://invent.kde.org/plasma/plasma-login-manager : Main.qml compilé) ;
+# il prend le fond d'écran d'Ankh (plus haut), le jeu de couleurs et les
+# polices du thème global (src/frontend/startkde/startplasma.cpp). Il manque
+# l'image du compte : sans image, c'est la silhouette de KDE. Chaque nouveau
+# compte reçoit celle d'Ankh (build_files/artwork/generer.py), enregistrée
+# pour l'écran de connexion à la première session
+# (build_files/files/usr/libexec/ankh-image-de-compte et son lancement
+# automatique dans /etc/xdg/autostart).
+if [[ -e /etc/skel/.face.icon ]]; then
+    echo "/etc/skel/.face.icon existe déjà dans la base : image de compte à revoir" >&2
+    exit 1
+fi
+install -m 0644 /usr/share/ankh/avatar.png /etc/skel/.face.icon
+
 # Écran de démarrage graphique : Plymouth ne l'affiche (logo d'Ankh, et saisie
 # du mot de passe LUKS) que si le noyau reçoit « rhgb » ; « quiet » masque les
 # messages du noyau. L'installateur de Fedora (Anaconda) les ajoute ; avec

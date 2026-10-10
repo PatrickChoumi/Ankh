@@ -100,7 +100,7 @@ test variant:
         command -v distrobox konsole podman > /dev/null &&
         desktop-file-validate /usr/share/applications/ankh-vscode.desktop /usr/share/applications/ankh-dev-mettre-a-jour.desktop &&
         test ! -e /usr/share/applications/ankh-dev-creer.desktop &&
-        find /usr/share/icons -name "applications-development.*" | grep -q . &&
+        test -f /usr/share/icons/hicolor/scalable/apps/ankh-code.svg && grep -aq ankh-code /usr/share/icons/hicolor/icon-theme.cache &&
         test -L /etc/systemd/user/sockets.target.wants/podman.socket'
 
     echo "Test 10 : habillage Ankh sur le bureau, ID de Fedora conservé (D-033)"
@@ -190,7 +190,10 @@ _test-dev:
             grep -qx "$(echo "${e}" | tr "[:upper:]" "[:lower:]")" <<< "${installees}" || { echo "Extension absente : ${e}" >&2; exit 1; }
         done
         echo "${attendues} extensions installées"
-        grep -q "\"extensions.autoUpdate\": false" "${HOME}/.config/Code/User/settings.json"'
+        grep -q "\"extensions.autoUpdate\": false" "${HOME}/.config/Code/User/settings.json"
+        python3 -c "import json, sys; r = json.load(open(sys.argv[1])); assert \"JetBrains Mono\" in r[\"editor.fontFamily\"], r" "${HOME}/.config/Code/User/settings.json"
+        fc-match -f "%{family}\n" "JetBrains Mono" | grep -q "JetBrains Mono"
+        echo "VS Code : police et couleurs Ankh (D-042)"'
 
     echo "Test 4 : Node.js et Java dans leur dernière version LTS proposée par Fedora (D-038)"
     podman run --rm -v "${PWD}/dev/lts.py:/lts.py:ro" "${image}" bash -c 'set -euo pipefail

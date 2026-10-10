@@ -1,4 +1,4 @@
-"""Dessine le logo, les fonds d'écran et le logo de démarrage d'Ankh (D-033, D-034, D-037).
+"""Dessine le logo, les fonds d'écran, le logo de démarrage et l'image de compte d'Ankh (D-033, D-034, D-037, D-042).
 
 Le logo : un A sans barre, dont la barre devient un curseur de terminal, sur
 une touche de clavier graphite. Un seul accent de couleur, violet.
@@ -47,6 +47,41 @@ def logo() -> str:
 <rect x="6" y="6" width="244" height="244" rx="56" fill="url(#touche)"/>
 <rect x="7.5" y="7.5" width="241" height="241" rx="54.5" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="3"/>
 {marque(BLANC)}
+</svg>
+"""
+
+
+def icone_code() -> str:
+    """Icône de VS Code dans le menu et la barre (D-042) : la touche graphite
+    du logo, avec « </> » en blanc et la barre oblique en violet."""
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="touche" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#232a35"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
+</defs>
+<rect x="6" y="6" width="244" height="244" rx="56" fill="url(#touche)"/>
+<rect x="7.5" y="7.5" width="241" height="241" rx="54.5" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="3"/>
+<path d="M 96 86 L 54 128 L 96 170 M 160 86 L 202 128 L 160 170" fill="none" stroke="{BLANC}"
+ stroke-width="20" stroke-linejoin="miter" stroke-miterlimit="10"/>
+<path d="M 142 76 L 114 180" fill="none" stroke="{VIOLET}" stroke-width="20"/>
+</svg>
+"""
+
+
+def avatar() -> str:
+    """Image de compte par défaut (D-042) : la marque sur un disque graphite,
+    avec une lueur violette ; rognée en cercle par KDE, sans coin coupé."""
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<radialGradient id="fond" cx="128" cy="96" r="190" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#2a3240"/><stop offset="1" stop-color="#0d1117"/></radialGradient>
+<radialGradient id="lueur" cx="128" cy="150" r="80" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="{VIOLET}" stop-opacity="0.22"/>
+<stop offset="1" stop-color="{VIOLET}" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="256" height="256" fill="url(#fond)"/>
+<rect width="256" height="256" fill="url(#lueur)"/>
+<g transform="translate(128 132) scale(0.78) translate(-128 -128)">{marque(BLANC)}</g>
 </svg>
 """
 
@@ -111,6 +146,7 @@ def main() -> None:
     icone = RACINE / "icons" / "hicolor" / "scalable" / "apps" / "ankh-logo.svg"
     icone.parent.mkdir(parents=True, exist_ok=True)
     icone.write_text(logo())
+    (icone.parent / "ankh-code.svg").write_text(icone_code())
 
     # Le fond épuré (D-033), en version claire et sombre.
     paquet = RACINE / "wallpapers" / "Ankh"
@@ -120,18 +156,23 @@ def main() -> None:
         tramer(rendre(fond(sombre), 3840, 2160)).save(cible, quality=92, subsampling=0, optimize=True)
     decrire(paquet, "Ankh Épuré")
 
-    # Les fonds travaillés (D-034), sombres.
+    # Les fonds travaillés (D-034), sombres, et la version claire de ceux qui
+    # en ont une (D-042).
     for ident, nom, dessin in fonds.COLLECTION:
         paquet = RACINE / "wallpapers" / ident
-        cible = paquet / "contents" / "images" / "3840x2160.jpg"
-        cible.parent.mkdir(parents=True, exist_ok=True)
-        toile = fonds.Toile(3840, 2160)
-        dessin(toile)
-        toile.image().save(cible, quality=90, subsampling=0, optimize=True)
+        variantes = [("images", dessin)]
+        if ident in fonds.CLAIRS:
+            variantes = [("images_dark", dessin), ("images", fonds.CLAIRS[ident])]
+        for dossier, fonction in variantes:
+            cible = paquet / "contents" / dossier / "3840x2160.jpg"
+            cible.parent.mkdir(parents=True, exist_ok=True)
+            toile = fonds.Toile(3840, 2160)
+            fonction(toile)
+            toile.image().save(cible, quality=90, subsampling=0, optimize=True)
         decrire(paquet, nom)
 
     # Aperçus des thèmes globaux (D-034) : le fond par défaut, « Ankh Signal ».
-    signal = Image.open(RACINE / "wallpapers" / "Ankh-Signal" / "contents" / "images" / "3840x2160.jpg")
+    signal = Image.open(RACINE / "wallpapers" / "Ankh-Signal" / "contents" / "images_dark" / "3840x2160.jpg")
     apercus = RACINE / "ankh" / "apercus"
     apercus.mkdir(parents=True, exist_ok=True)
     signal.resize((800, 450), Image.LANCZOS).save(apercus / "preview.png", optimize=True)
@@ -150,6 +191,9 @@ def main() -> None:
     gauche = (largeur - 1080) // 2
     portrait = signal.convert("RGB").resize((largeur, hauteur), Image.LANCZOS)
     portrait.crop((gauche, 0, gauche + 1080, hauteur)).save(assistant / "1080x1920.png", optimize=True)
+
+    # Image de compte par défaut (D-042), donnée à chaque nouveau compte.
+    rendre(avatar(), 512, 512).save(RACINE / "ankh" / "avatar.png", optimize=True)
 
     cible = RACINE / "ankh" / "plymouth" / "watermark.png"
     cible.parent.mkdir(parents=True, exist_ok=True)

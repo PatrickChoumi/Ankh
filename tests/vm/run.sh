@@ -475,6 +475,15 @@ identity_setting() {
     echo "$description : $lu"
 }
 
+# Ferme une application de la session d'un compte, si elle est ouverte.
+close_app() {
+    local user=$1 name=$2
+    if vm pgrep -u "$user" -x "$name" > /dev/null; then
+        vm pkill -u "$user" -x "$name"
+        sleep 2
+    fi
+}
+
 # D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de
 # test à sa première session. Vérifie ce que Plasma a réellement appliqué
 # (réglages lus dans la session : ceux de l'image, puis ceux du thème global
@@ -490,6 +499,22 @@ check_identity() {
     identity_setting "$user" "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
     identity_setting "$user" "Profil Konsole" Ankh.profile --file konsolerc --group 'Desktop Entry' --key DefaultProfile
     identity_setting "$user" "Écran de chargement" org.fedoraproject.fedoradark.desktop --file ksplashrc --group KSplash --key Theme
+    identity_setting "$user" "Recherche flottante (D-042)" true --file krunnerrc --group General --key FreeFloating
+    # D-042 : l'image de compte d'Ankh, enregistrée auprès d'AccountsService
+    # à la première session, pour l'écran de connexion.
+    local uid icone
+    uid=$(vm id -u "$user")
+    icone=$(vm busctl --json=short get-property org.freedesktop.Accounts "/org/freedesktop/Accounts/User$uid" \
+        org.freedesktop.Accounts.User IconFile | jq -r .data)
+    [[ $icone == "/var/lib/AccountsService/icons/$user" ]] || die "image de compte non enregistrée : « $icone » (D-042)"
+    echo "Image de compte : $icone"
+    # Le flou de KWin est éteint par défaut sans carte graphique (rendu
+    # logiciel, BlurEffect::enabledByDefault de src/plugins/blur/blur.cpp,
+    # https://invent.kde.org/plasma/kwin) : il est allumé pour ce compte de
+    # test, pour que les captures montrent ce qu'affiche une vraie machine.
+    in_session "$user" kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
+    in_session "$user" busctl --user call org.kde.KWin /KWin org.kde.KWin reconfigure
+    sleep 5
     in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
     sleep 5
     screenshot 1-menu
@@ -506,8 +531,32 @@ check_identity() {
     # Écran de verrouillage : verrouillé puis déverrouillé par logind, que
     # l'écran de verrouillage de KDE écoute (le compte de test n'a pas de mot
     # de passe à taper).
+    # D-042 : recherche au milieu de l'écran (Alt+Espace), comme Spotlight.
+    in_session "$user" busctl --user call org.kde.krunner /App org.kde.krunner.App query s code
+    sleep 5
+    screenshot 1-recherche
+    monitor 'sendkey esc'
+    # D-042 : la page « Raccourcis utiles » de l'accueil de KDE, ouverte seule
+    # (l'accueil n'a qu'une fenêtre : celle de la première session est fermée).
+    close_app "$user" plasma-welcome
+    launch_in_session "$user" plasma-welcome --pages 01-Raccourcis.qml
+    sleep 10
+    screenshot 1-accueil-raccourcis
+    close_app "$user" plasma-welcome
+    # D-042 : le thème « Ankh Clair », appliqué le temps d'une capture, puis
+    # retour au thème sombre par défaut.
+    in_session "$user" plasma-apply-lookandfeel -a org.fedoraproject.fedoralight.desktop
+    sleep 10
+    launch_in_session "$user" dolphin "/home/$user"
+    sleep 10
+    screenshot 1-theme-clair
+    in_session "$user" plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop
+    sleep 10
     vm loginctl lock-sessions
     sleep 10
+    # Un clic fait apparaître l'image du compte et le bouton pour déverrouiller.
+    click 40 40
+    sleep 3
     screenshot 1-ecran-de-verrouillage
     vm loginctl unlock-sessions
     sleep 5
@@ -639,6 +688,15 @@ sleep 20
 screenshot 1-a-propos
 check_vscode
 check_identity
+# D-042 : écran de connexion d'Ankh, avec l'image du compte, enregistrée à sa
+# première session. La session du compte de test est fermée ; la connexion
+# automatique ne se refait qu'au démarrage suivant. Un clic fait apparaître
+# la liste des comptes (Main.qml de plasma-login-manager).
+vm loginctl terminate-user ankhvm
+sleep 20
+click 40 40
+sleep 3
+screenshot 1-ecran-de-connexion-ankh
 
 log "2/4 Mise à jour vers la version publiée : $other"
 # Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,
