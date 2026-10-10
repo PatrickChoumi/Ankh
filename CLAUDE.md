@@ -40,11 +40,14 @@
     - les dernières versions LTS de Node.js et de Java dans le conteneur de dev (D-038) ;
     - un seul Ankh : VS Code dans le menu dès l'installation, prêt au premier clic, sans « ankh-dev » à gérer (D-036) ;
     - corrections vues sur les captures : logo et variante de « À propos », écran de démarrage graphique (D-034).
-  - Ensuite :
-    - En cours ([#11](https://github.com/PatrickChoumi/Ankh/pull/11), à fusionner seulement si les captures me plaisent) :
-      - « Update Issue » dans Discover (D-028) : causes trouvées ; celle du test est corrigée ; pour le défaut de Discover, j'ai choisi l'option A (il est déjà suivi chez KDE, bug 523258) ;
-      - l'identité visuelle validée (D-037) et une interface douce, au niveau de Windows 11 et de macOS (D-039), intégrées dans l'image.
-    - Ensuite : écrans de démarrage, de connexion et de verrouillage aux couleurs d'Ankh (deuxième partie de D-037), puis la phase 5 (gaming), qui attend mes réponses aux questions 6 à 9 de ANKH-SPEC.md.
+  - Fait ([#11](https://github.com/PatrickChoumi/Ankh/pull/11) fusionnée) :
+    - « Update Issue » dans Discover (D-028) : cause du test corrigée ; défaut de Discover suivi chez KDE (bug 523258, option A) ;
+    - l'identité visuelle (D-037) et une interface douce, au niveau de Windows 11 et de macOS (D-039), dans l'image ; écran de chargement d'Ankh.
+  - Questions 6 à 9 de ANKH-SPEC.md remplies le 2026-10-10 ; gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (D-041).
+  - Ensuite, dans cet ordre (ma demande du 2026-10-10) :
+    1. l'assistant de premier démarrage : fond d'Ankh, thème sombre d'Ankh, page « Bienvenue dans Ankh » (D-037) ;
+    2. pousser toute l'interface au niveau de macOS et de Windows 11, « sans lésiner sur les moyens » ;
+    3. la phase 5 (gaming, D-041).
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.

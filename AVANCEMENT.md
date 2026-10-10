@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-09** (nuit, PR #11 verte : interface d'Ankh vérifiée en VM, captures envoyées).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-10** (PR #11 fusionnée ; questions 6 à 9 remplies ; gaming décidé, D-041).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -12,7 +12,7 @@
 | 1. Base et chaîne de build | ✅ Terminée le 2026-10-07 |
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ⏳ En cours depuis le 2026-10-08 |
-| 5. Gaming | À faire (questions 6 à 9 à répondre avant) |
+| 5. Gaming | À faire (questions 6 à 9 remplies le 2026-10-10 ; D-041) |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -185,6 +185,12 @@
   - Vérifié par un nouveau test de l'image (Test 14) et dans la session de la VM.
 - **PR #11 verte** ([run 37986772808](https://github.com/PatrickChoumi/Ankh/actions/runs/37986772808)) : interface d'Ankh partout, de l'assistant de premier démarrage à l'écran de verrouillage ; écran de chargement d'Ankh ; Discover sans « Update Issue » au premier démarrage du test. Reste : l'assistant de premier démarrage affiche « Welcome to Plasma Desktop » (D-037).
 - **Mes choix (2026-10-09, suite)** : réduire la taille des mises à jour en phase 10 ; safezone (phase 4) en dernier, après la phase 10 (D-040).
+- **PR #11 fusionnée** le 2026-10-10.
+- **Mes réponses du 2026-10-10** :
+  - assistant de premier démarrage : retouches et page « Bienvenue dans Ankh » (D-037) ;
+  - questions 6 à 9 (ANKH-SPEC.md) : jeux Steam et hors Steam, sans anticheat compétitif ; IA locale importante ; pas d'analyse de malware ni de Wi-Fi offensif pour l'instant, mais Ankh doit les permettre plus tard ;
+  - gaming : le plus d'outils possible, comme Garuda ou CachyOS, avec des réglages sûrs et le noyau de Fedora (D-041) ;
+  - améliorer encore toute l'interface, au niveau de macOS et de Windows 11, après l'assistant.
 
 ---
 
@@ -239,4 +245,4 @@
 2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-5. **Avant la phase 5** : répondre aux questions 6 à 9 de ANKH-SPEC.md (jeux et leur anticheat, IA locale, analyse de malware, Wi-Fi offensif), et aux détails du gaming (§4.3 : autres launchers, manettes, écrans, OBS, mode console).
+5. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).

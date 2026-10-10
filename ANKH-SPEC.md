@@ -40,10 +40,10 @@ Ces réponses peuvent modifier l'architecture. Depuis D-021 (image générique),
 | 3 | GPU (modèle exact) ? | UNKNOWN | Variante d'Ankh que j'installerai (D-021), Secure Boot avec un pilote tiers (D-006), CUDA/ROCm |
 | 4 | RAM ? | UNKNOWN | Nombre de VMs et de conteneurs en parallèle d'un jeu |
 | 5 | Stockage disponible (disques, tailles, espace libre) ? | UNKNOWN | Place pour les VMs, images de conteneurs, jeux, sauvegardes locales |
-| 6 | Jeux principaux + anticheat de chacun ? | TODO | Un jeu dont l'anticheat refuse Linux est injouable : ni Windows ni dual boot (D-003) |
-| 7 | Besoin d'IA locale / CUDA / ROCm ? | TODO | Calcul GPU dans les conteneurs, choix de l'image de base (D-005) |
-| 8 | Analyse de malware : sous Windows, sous Linux, ou aucune ? | TODO | VM Windows (licence), isolation réseau du lab, outils de reverse (D-014) |
-| 9 | Wi-Fi offensif : oui/non ? Adaptateur USB déjà possédé (modèle) ? | TODO | Achat d'un adaptateur, passthrough USB vers une VM (D-014) |
+| 6 | Jeux principaux + anticheat de chacun ? | Jeux Steam en solo ou en coop, et jeux hors Steam ; pas de jeux compétitifs en ligne à anticheat. Je veux le plus d'outils de gaming possible, comme Garuda ou CachyOS (2026-10-10). Noms des jeux : TODO | Un jeu dont l'anticheat refuse Linux est injouable : ni Windows ni dual boot (D-003) |
+| 7 | Besoin d'IA locale / CUDA / ROCm ? | **Oui, important** (2026-10-10). CUDA ou ROCm selon mon GPU (Q3, UNKNOWN) | Calcul GPU dans les conteneurs, choix de l'image de base (D-005) |
+| 8 | Analyse de malware : sous Windows, sous Linux, ou aucune ? | Aucune pour l'instant ; Ankh doit le permettre plus tard, en VM isolée (2026-10-10) | VM Windows (licence), isolation réseau du lab, outils de reverse (D-014) |
+| 9 | Wi-Fi offensif : oui/non ? Adaptateur USB déjà possédé (modèle) ? | Pas pour l'instant ; Ankh doit le permettre plus tard (2026-10-10) | Achat d'un adaptateur, passthrough USB vers une VM (D-014) |
 | 10 | Distro actuelle, et ce qu'il faut conserver (outils, données, comportements) ? | Distro : UNKNOWN — Outils : TODO — Données : TODO — Comportements : TODO | Liste de migration, volume à sauvegarder avant l'installation |
 | 11 | Temps disponible pour le projet chaque semaine ? | TODO | Périmètre de la V1 |
 | 12 | Connexion internet : débit, limite de données, stabilité ? | Connexion **lente**, mais les mises à jour sont faisables (2026-10-07). Débit exact : UNKNOWN | Où et comment installer, fréquence des mises à jour (D-027) |
@@ -130,13 +130,12 @@ Points ouverts dans cette architecture :
 ### 4.3 Gaming
 
 - **Steam** : DÉCIDÉ, en Flatpak (D-011)
-- **Autres launchers** (Heroic, Lutris, …) : TODO
+- **Autres launchers** (Heroic, Lutris, …) : tous ceux qui sont utiles, comme Garuda ou CachyOS ; mes jeux viennent aussi d'autres magasins que Steam (2026-10-10)
 - **Jeux principaux** : voir Q6
 - **Proton** : besoin d'une version particulière ? TODO
-- **Manettes** (modèles, filaire ou sans fil) : TODO
-- **VRR / HDR / multi-écran** : TODO
-- **Streaming / enregistrement** (OBS, …) : TODO
-- **Mode console** (Steam plein écran) : TODO
+- **Manettes** (modèles, filaire ou sans fil) : toutes (Xbox, PlayStation, autres), filaires et sans fil (2026-10-10)
+- **VRR / HDR / multi-écran** : écran simple, caractéristiques inconnues (2026-10-10)
+- **Streaming / enregistrement** (OBS, …) et **mode console** (Steam plein écran) : pas de besoin précis ; « l'OS ne doit pas me limiter et doit me permettre de faire tout ce que je veux quand je l'envisage » (2026-10-10). Disponibles, rien d'imposé.
 
 ### 4.4 Cyber
 
@@ -209,7 +208,7 @@ Avant la phase 1 (base et chaîne de build) :
 - [x] D-017 et D-018 validées
 
 Avant les phases 5 à 7 (gaming, cyber, labs) :
-- [ ] Questions 6 à 9 remplies
+- [x] Questions 6 à 9 remplies (2026-10-10 ; noms des jeux encore TODO)
 
 Avant la phase 9 (bascule sur ma machine) :
 - [ ] Questions 1 à 5 et 10 à 12 remplies

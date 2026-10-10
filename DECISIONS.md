@@ -58,6 +58,7 @@
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
+| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; mise en œuvre en phase 5) |
 
 ---
 
@@ -1116,6 +1117,8 @@
     - son image de fond est cherchée dans le fond d'écran « Next » de KDE ; absent de l'image, il laisse un fond gris uni ;
     - son choix clair/sombre applique les thèmes globaux Breeze de KDE (`modules/prepareutil/prepareutil.cpp`), puis les réglages de l'assistant sont copiés dans le nouveau compte (`src/auth/authhelper.cpp`). Toucher ce choix remplacerait donc le thème d'Ankh par celui de KDE ;
     - à traiter : options à présenter, après les captures avec le nouveau thème par défaut.
+    - **Options présentées le 2026-10-10** : retouches et page Ankh (recommandée) ; retouches seulement ; laisser tel quel ; reconstruire l'assistant (déconseillé : notre propre version du programme de KDE à suivre). Vérifié dans le code : le titre est compilé dans le programme (`src/qml`, `ecm_add_qml_module`) ; les pages de l'assistant sont des paquets KPackage chargés au démarrage, et une distribution peut ajouter les siennes (`docs/CUSTOM_MODULES.md`) ; le compte créé est administrateur (groupe `wheel`, `src/accountcontroller.cpp`).
+    - **Décision (mon choix du 2026-10-10) : retouches et page Ankh.** Le fond d'Ankh derrière l'assistant ; le bouton « Dark Theme » garde les couleurs d'Ankh ; une page « Bienvenue dans Ankh ». Le titre « Welcome to Plasma Desktop » reste.
 - **Pas encore traité** : polices (Inter, JetBrains Mono : présence dans Fedora À VALIDER), icône de VS Code dans le style d'Ankh, images de `generic-logos` (voir D-034), curseurs, effets.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
@@ -1194,3 +1197,27 @@
   - La conception détaillée (D-026, D-030) reste À DÉCIDER au début de la phase 4.
 - **Raisons** : avancer d'abord sur le quotidien, le gaming, la cybersécurité, les labs, la sauvegarde et la bascule.
 - **Vérification** : la feuille de route de CLAUDE.md (§5) suit cet ordre.
+
+## D-041 — Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036)
+
+- **Statut** : DÉCIDÉ (2026-10-10), mon choix. Mise en œuvre en phase 5.
+- **Contexte** : mes réponses aux questions 6 à 9 (ANKH-SPEC.md) : jeux Steam en solo ou en coop et jeux hors Steam, sans jeux compétitifs à anticheat. « Mets le plus d'outils de gaming, un peu comme dans Garuda Linux ou CachyOS. Vas-tu rendre l'OS super optimisé pour le gaming ? » Et : « l'OS ne doit pas me limiter et doit me permettre de faire tout ce que je veux quand je l'envisage. »
+- **Options présentées** :
+  1. **outils et réglages sûrs** (recommandée, choisie) ;
+  2. la même chose, plus un noyau optimisé pour le jeu (façon CachyOS ou Bazzite), signé par ma propre clé Secure Boot (MOK), que je crée, enregistre et garde moi-même. Gain souvent de quelques pour cent, plus d'entretien ;
+  3. les outils seulement.
+- **Décision** :
+  - **Lanceurs dans le menu, prêts au premier clic** (comme VS Code, D-036 ; rien ne se télécharge sans moi, D-031) : Steam, Heroic (Epic, GOG, Amazon), Lutris (Battle.net, EA, Ubisoft…), Bottles, ProtonPlus (versions de Proton plus récentes) et Protontricks, depuis Flathub.
+  - **Dans l'image** : GameMode, MangoHud (compteur d'images par seconde, températures), Gamescope, vkBasalt, et les règles des manettes et casques de Steam (`steam-devices`).
+  - **Disponibles sans être imposés** : OBS Studio, Discord, mode console (Steam en plein écran). Leur forme exacte se décide en phase 5.
+  - **Réglages du système pour le jeu** : seulement ceux qui ne touchent ni au noyau ni à Secure Boot. Chacun avec sa source et mesuré en VM, en phase 5.
+  - **Noyau** : celui de Fedora. Secure Boot reste actif sans clé à gérer (D-006, règle 7).
+- **Vérifié le 2026-10-10** (<https://mdapi.fedoraproject.org>, Fedora 44 ; <https://flathub.org>) :
+  - dans Fedora 44 : `gamemode` 1.8.2, `mangohud` 0.8.3, `gamescope` 3.16.29, `vkBasalt` 0.3.2, `wine` 11.0, `steam-devices` ; `goverlay` et `lutris` seulement dans `updates-testing` ;
+  - absents de Fedora 44 : les ordonnanceurs `scx` de CachyOS (`scx-scheds`) ;
+  - sur Flathub : Steam, Heroic, Lutris, Bottles, ProtonPlus, ProtonUp-Qt et Protontricks.
+- **Alternatives rejetées** :
+  - Tout recompiler pour les processeurs récents, comme CachyOS : impossible sur une base Fedora, et contraire à l'image générique (D-021).
+  - Un noyau tiers : il demande ma propre clé Secure Boot et plus d'entretien. Réexaminable après des mesures, par une nouvelle décision.
+- **IA locale** (question 7 : oui, important) : CUDA ou ROCm dans un conteneur, selon mon GPU (question 3, inconnue). À concevoir avec le dev ou le gaming, quand le GPU sera connu.
+- **Vérification** : en phase 5, chaque outil présent et lancé en VM ; captures ; jeux testés sur ma machine en phase 9 (D-011).
