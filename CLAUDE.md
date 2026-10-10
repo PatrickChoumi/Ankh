@@ -44,10 +44,10 @@
     - « Update Issue » dans Discover (D-028) : cause du test corrigée ; défaut de Discover suivi chez KDE (bug 523258, option A) ;
     - l'identité visuelle (D-037) et une interface douce, au niveau de Windows 11 et de macOS (D-039), dans l'image ; écran de chargement d'Ankh.
   - Questions 6 à 9 de ANKH-SPEC.md remplies le 2026-10-10 ; gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (D-041).
-  - Ensuite, dans cet ordre (ma demande du 2026-10-10) :
-    1. l'assistant de premier démarrage : fond d'Ankh, thème sombre d'Ankh, page « Bienvenue dans Ankh » (D-037) ;
-    2. pousser toute l'interface au niveau de macOS et de Windows 11, « sans lésiner sur les moyens » ;
-    3. la phase 5 (gaming, D-041).
+  - En cours ([#12](https://github.com/PatrickChoumi/Ankh/pull/12), à fusionner seulement si les captures me plaisent) :
+    - l'assistant de premier démarrage : fond d'Ankh, thème sombre d'Ankh, page « Bienvenue dans Ankh » (D-037) ;
+    - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil et VS Code d'Ankh, écran de connexion avec l'image de compte d'Ankh (D-042).
+  - Ensuite : la phase 5 (gaming, D-041). Proposé, à décider : écran de démarrage entièrement d'Ankh ; SDDM pour un écran de connexion entièrement dessiné (D-042).
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
