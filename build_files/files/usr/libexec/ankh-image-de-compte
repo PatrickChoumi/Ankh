@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+# D-042 : image de compte d'Ankh par défaut. Chaque nouveau compte reçoit
+# ~/.face.icon (copiée de /etc/skel), que la session et l'écran de
+# verrouillage lisent directement. L'écran de connexion, lui, ne peut pas
+# lire le dossier personnel : il ne voit que l'image enregistrée auprès
+# d'AccountsService, dans /var/lib/AccountsService/icons (KUser::faceIconPath,
+# src/lib/util/kuser_unix.cpp de https://invent.kde.org/frameworks/kcoreaddons).
+# À la première session, cette image y est donc enregistrée, comme le fait la
+# page « Utilisateurs » des réglages (méthode SetIconFile, que chaque compte
+# peut appeler pour lui-même). Une seule fois par compte : une image choisie
+# ensuite, ou retirée, est respectée.
+set -euo pipefail
+
+fait="${XDG_CONFIG_HOME:-${HOME}/.config}/ankh/image-de-compte"
+image="${HOME}/.face.icon"
+if [[ -e "${fait}" || ! -f "${image}" ]]; then
+    exit 0
+fi
+
+compte="$(busctl --json=short call org.freedesktop.Accounts /org/freedesktop/Accounts \
+    org.freedesktop.Accounts FindUserById x "$(id -u)" | python3 -c 'import json, sys; print(json.load(sys.stdin)["data"][0])')"
+actuelle="$(busctl --json=short get-property org.freedesktop.Accounts "${compte}" \
+    org.freedesktop.Accounts.User IconFile | python3 -c 'import json, sys; print(json.load(sys.stdin)["data"])')"
+# Une image déjà enregistrée (choisie à la création du compte) est gardée.
+if [[ "${actuelle}" != /var/lib/AccountsService/icons/* ]]; then
+    busctl call org.freedesktop.Accounts "${compte}" org.freedesktop.Accounts.User SetIconFile s "${image}"
+    echo "Image de compte d'Ankh enregistrée pour l'écran de connexion"
+fi
+mkdir -p "$(dirname "${fait}")"
+touch "${fait}"

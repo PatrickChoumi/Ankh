@@ -1,6 +1,7 @@
 """Fonds d'écran « travaillés » d'Ankh (D-034), dessinés autour du logo.
 
-Appelé par generer.py. Chaque fond est sombre, graphite et violet.
+Appelé par generer.py. Chaque fond est sombre, graphite et violet ; « Ankh
+Signal » a aussi une version claire (D-042).
 """
 
 import io
@@ -77,6 +78,20 @@ class Toile:
         d2 = ((x - cx * self.s) ** 2 + (y - cy * self.s) ** 2) / (r * self.s) ** 2
         self.img *= (1 - force * np.exp(-d2))[..., None]
 
+    def voile(self, rgba, rayon, force):
+        """Lueur pour un fond clair : le calque flouté est posé par-dessus
+        (une lueur additive disparaîtrait dans le clair)."""
+        flou = Image.fromarray((rgba * 255).clip(0, 255).astype(np.uint8), "RGBA")
+        flou = flou.filter(ImageFilter.GaussianBlur(rayon * self.s))
+        self.dessus(np.asarray(flou, dtype=np.float32) / 255, force)
+
+    def teinter(self, cx, cy, r, couleur, force):
+        """Halo pour un fond clair : mélange vers une couleur, sans éclaircir."""
+        y, x = np.mgrid[0:self.h, 0:self.w].astype(np.float32)
+        d2 = ((x - cx * self.s) ** 2 + (y - cy * self.s) ** 2) / (r * self.s) ** 2
+        w = (np.exp(-d2) * force)[..., None]
+        self.img = self.img * (1 - w) + hexrgb(couleur) * w
+
     def image(self):
         rng = np.random.default_rng(33)
         bruit = rng.integers(-1, 2, size=(self.h, self.w, 1)).astype(np.float32) / 255
@@ -111,6 +126,33 @@ def signal(t: Toile):
     t.halo(2760, 760, 520, "#7c3aed", 0.20)
     m = t.svg(placer(2760, 760, 2.6))
     t.lueur(m, 40, 0.5)
+    t.dessus(m)
+
+
+def signal_clair(t: Toile):
+    """Version claire d'« Ankh Signal » (D-042), pour le thème « Ankh Clair » :
+    mêmes rubans, en violet et cyan foncés sur un gris très clair."""
+    t.fond(haut="#f5f6f8", bas="#e3e7ee", vignette=0.10)
+    lignes = []
+    n = 80
+    for k in range(n):
+        u = k / (n - 1)
+        pts = []
+        for x in range(-40, VW + 41, 20):
+            p = x / VW * 2 * math.pi
+            y = (1560 - u * 520 + 230 * math.sin(p * 1.05 + 0.6 + u * 1.4)
+                 + 120 * math.sin(p * 2.2 + 1.9 + u * 3.1) + 40 * math.sin(p * 5.0 + u * 7))
+            pts.append(f"{x},{y:.1f}")
+        coul = melange("#6d28d9", "#0e7490", u) if u > 0.5 else melange("#9333ea", "#6d28d9", u * 2)
+        op = 0.10 + 0.55 * (1 - abs(u - 0.5) * 2) ** 3
+        lignes.append(f'<polyline points="{" ".join(pts)}" fill="none" stroke="{coul}" '
+                      f'stroke-opacity="{op:.3f}" stroke-width="2.4"/>')
+    calque = t.svg("".join(lignes))
+    t.voile(calque, 26, 0.6)
+    t.dessus(calque)
+    t.teinter(2760, 760, 520, "#ddd6fe", 0.55)
+    m = t.svg(placer(2760, 760, 2.6, lettre="#1b212b", accent="#7c3aed"))
+    t.voile(m, 40, 0.25)
     t.dessus(m)
 
 
@@ -306,6 +348,11 @@ def code(t: Toile):
     ia[..., 3] = np.asarray(inv, dtype=np.float32) / 255 * 0.7
     t.dessus(ia)
 
+
+# Versions claires (D-042) : rangées dans contents/images, la version sombre
+# passant dans contents/images_dark. Plasma prend l'une ou l'autre selon le
+# jeu de couleurs, clair ou sombre (wallpapers/image de plasma-workspace).
+CLAIRS = {"Ankh-Signal": signal_clair}
 
 # Collection : (identifiant du paquet, nom affiché, fonction de dessin).
 COLLECTION = [

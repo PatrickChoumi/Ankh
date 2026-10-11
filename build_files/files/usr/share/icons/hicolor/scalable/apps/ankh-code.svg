@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="touche" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#232a35"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
+</defs>
+<rect x="6" y="6" width="244" height="244" rx="56" fill="url(#touche)"/>
+<rect x="7.5" y="7.5" width="241" height="241" rx="54.5" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="3"/>
+<path d="M 96 86 L 54 128 L 96 170 M 160 86 L 202 128 L 160 170" fill="none" stroke="#e6edf3"
+ stroke-width="20" stroke-linejoin="miter" stroke-miterlimit="10"/>
+<path d="M 142 76 L 114 180" fill="none" stroke="#a78bfa" stroke-width="20"/>
+</svg>

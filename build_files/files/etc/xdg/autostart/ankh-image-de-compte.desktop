@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Image de compte d'Ankh
+Comment=Montre l'image de compte d'Ankh sur l'écran de connexion (D-042)
+Exec=/usr/libexec/ankh-image-de-compte
+NoDisplay=true
+OnlyShowIn=KDE;
