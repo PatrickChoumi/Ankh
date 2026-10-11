@@ -8,4 +8,4 @@ Icon=ankh-vscode
 Terminal=false
 Categories=Development;IDE;
 Keywords=vscode;code;dev;
-StartupWMClass=Code
+StartupWMClass=com.microsoft.VSCode

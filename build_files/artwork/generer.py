@@ -16,7 +16,7 @@ import pathlib
 import random
 
 import cairosvg
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 import fonds
 
@@ -173,6 +173,15 @@ def main() -> None:
     gauche = (largeur - 1080) // 2
     portrait = signal.convert("RGB").resize((largeur, hauteur), Image.LANCZOS)
     portrait.crop((gauche, 0, gauche + 1080, hauteur)).save(assistant / "1080x1920.png", optimize=True)
+
+    # Fond de l'écran de connexion (D-043) : « Ankh Signal » flouté et un peu
+    # assombri, comme le fond de l'écran de connexion de Windows 11. Préparé
+    # ici pour que l'écran de connexion n'ait aucun effet à calculer.
+    connexion = signal.convert("RGB").resize((2560, 1440), Image.LANCZOS).filter(ImageFilter.GaussianBlur(36))
+    connexion = connexion.point(lambda v: int(v * 0.85))
+    cible = RACINE / "sddm" / "themes" / "ankh" / "fond.jpg"
+    cible.parent.mkdir(parents=True, exist_ok=True)
+    tramer(connexion).save(cible, quality=90, subsampling=0, optimize=True)
 
     # Image de compte par défaut (D-042), donnée à chaque nouveau compte.
     rendre(avatar(), 512, 512).save(RACINE / "ankh" / "avatar.png", optimize=True)

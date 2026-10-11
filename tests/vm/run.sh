@@ -206,30 +206,50 @@ add_test_account() {
         chown $user:$user /home/$user/.config/kscreenlockerrc /home/$user/.config/powerdevilrc"
 }
 
-# Connexion automatique d'un compte (par défaut, le compte de test), pour le gestionnaire de connexion
-# actif : Plasma Login (Fedora 44 KDE) ou SDDM. Plasma Login, dérivé de SDDM,
-# lit la même section [Autologin] dans /etc/plasmalogin.conf ou
-# /etc/plasmalogin.conf.d/ (https://wiki.archlinux.org/title/Plasma_Login_Manager).
+# Connexion automatique d'un compte (par défaut, le compte de test). Elle est
+# réglée pour les deux gestionnaires de connexion, car les étapes du test
+# démarrent des images qui utilisent l'un ou l'autre : SDDM pour Ankh (D-043),
+# Plasma Login pour l'image de base et les versions d'Ankh d'avant D-043.
+# Plasma Login, dérivé de SDDM, lit la même section [Autologin] dans
+# /etc/plasmalogin.conf ou /etc/plasmalogin.conf.d/
+# (https://wiki.archlinux.org/title/Plasma_Login_Manager).
 configure_autologin() {
     local user=${1:-ankhvm} dm dir
     dm=$(vm systemctl show -p Id --value display-manager.service)
     echo "Gestionnaire de connexion : $dm"
     case $dm in
-        plasmalogin.service) dir=/etc/plasmalogin.conf.d ;;
-        sddm.service) dir=/etc/sddm.conf.d ;;
+        plasmalogin.service | sddm.service) ;;
         *) die "gestionnaire de connexion inattendu : $dm" ;;
     esac
-    vm "mkdir -p $dir && printf '[Autologin]\nUser=$user\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
-    if [[ $dm == plasmalogin.service ]]; then
-        # Le dossier .conf.d est parfois ignoré (https://bugs.kde.org/show_bug.cgi?id=522006) :
-        # le fichier principal est écrit aussi s'il n'existe pas, ou s'il
-        # vient déjà de ce test.
-        if [[ $autologin_main == yes ]] || ! vm test -e /etc/plasmalogin.conf; then
-            vm cp "$dir/ankh-vmtest.conf" /etc/plasmalogin.conf
-            autologin_main=yes
-        fi
+    for dir in /etc/sddm.conf.d /etc/plasmalogin.conf.d; do
+        vm "mkdir -p $dir && printf '[Autologin]\nUser=$user\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
+    done
+    # Plasma Login ignore parfois le dossier .conf.d (https://bugs.kde.org/show_bug.cgi?id=522006) :
+    # le fichier principal est écrit aussi s'il n'existe pas, ou s'il vient
+    # déjà de ce test.
+    if [[ $autologin_main == yes ]] || ! vm test -e /etc/plasmalogin.conf; then
+        vm cp /etc/plasmalogin.conf.d/ankh-vmtest.conf /etc/plasmalogin.conf
+        autologin_main=yes
     fi
     vm systemctl restart display-manager.service
+}
+
+# Fin de l'assistant de premier démarrage, comme il la marque lui-même
+# (README.md et src/bootutil/bootutil.cpp de https://invent.kde.org/plasma/plasma-setup) :
+# fichier /etc/plasma-setup-done, et sa connexion automatique retirée. Sans
+# cela, le gestionnaire de connexion rouvrirait l'assistant.
+finish_setup() {
+    vm "touch /etc/plasma-setup-done &&
+        rm -f /etc/sddm.conf.d/99-plasma-setup.conf /etc/plasmalogin.conf.d/99-plasma-setup.conf"
+}
+
+# Tape un texte au clavier de la VM, touche par touche (lettres minuscules
+# et chiffres : noms des touches de la commande sendkey du moniteur de QEMU).
+type_text() {
+    local i
+    for ((i = 0; i < ${#1}; i++)); do
+        monitor "sendkey ${1:i:1}"
+    done
 }
 
 # État de /boot avant un redémarrage qui doit appliquer une version préparée :
@@ -700,6 +720,12 @@ check_ankh
 installed=$(booted imageDigest)
 check_installed
 screenshot 1-ecran-de-connexion
+# D-037 : fond de l'assistant resté uni sur les captures. Fichiers vus dans
+# la VM, et messages de l'assistant sur les images (diagnostic seulement).
+if ! vm 'ls -laL /usr/share/wallpapers/Next/contents/*/ &&
+    journalctl -b --no-pager -o cat _UID="$(id -u plasma-setup)" | grep -iE "png|image|qml|wallpaper|locate" | tail -n 30'; then
+    echo "(diagnostic du fond de l'assistant : rien trouvé)"
+fi
 # D-037 : la page « Bienvenue dans Ankh » de l'assistant, après un clic sur
 # « Begin Setup » (au centre de l'écran, vu sur les captures).
 click 640 397
@@ -708,8 +734,10 @@ screenshot 1-assistant-bienvenue
 
 log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
 add_test_account ankhvm 'Compte de test Ankh'
-# D-037 : écran de connexion, une fois un compte créé (sans compte, c'est
-# l'assistant de premier démarrage de KDE qui s'affiche, capturé plus haut).
+finish_setup
+# D-043 : écran de connexion d'Ankh (SDDM), une fois un compte créé (sans
+# compte, c'est l'assistant de premier démarrage de KDE qui s'affiche,
+# capturé plus haut).
 vm systemctl restart display-manager.service
 sleep 30
 screenshot 1-ecran-de-connexion-compte
@@ -728,19 +756,20 @@ sleep 20
 screenshot 1-a-propos
 check_vscode
 check_identity
-# D-042 : écran de connexion d'Ankh, avec l'image du compte, enregistrée à sa
-# première session. La session du compte de test est fermée ; la connexion
-# automatique ne se refait qu'au démarrage suivant. Un clic fait apparaître
-# la liste des comptes (Main.qml de plasma-login-manager).
+# D-043 : connexion par l'écran de connexion d'Ankh, avec un mot de passe,
+# d'abord faux (message d'erreur), puis juste. La session du compte de test
+# est fermée ; la connexion automatique ne se refait qu'au démarrage suivant.
+vm "echo 'ankhvm:ankhtest42' | chpasswd"
 vm loginctl terminate-user ankhvm
-sleep 45
-# Le pointeur est déjà en (40, 40) depuis l'écran de verrouillage : il est
-# déplacé avant le clic, pour que l'écran de connexion voie un mouvement.
-click 60 60
-sleep 2
-click 40 40
-sleep 5
+sleep 30
 screenshot 1-ecran-de-connexion-ankh
+type_text faux
+monitor 'sendkey ret'
+sleep 8
+screenshot 1-ecran-de-connexion-erreur
+type_text ankhtest42
+monitor 'sendkey ret'
+wait_desktop 1-bureau-apres-connexion
 
 log "2/4 Mise à jour vers la version publiée : $other"
 # Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,

@@ -612,6 +612,61 @@ if [[ -e /etc/skel/.face.icon ]]; then
 fi
 install -m 0644 /usr/share/ankh/avatar.png /etc/skel/.face.icon
 
+# D-043 : écran de connexion entièrement dessiné pour Ankh (mon choix du
+# 2026-10-10), avec SDDM au lieu de Plasma Login, dont l'écran ne se change
+# pas. SDDM 0.21 de Fedora 44 charge un thème en QML, Qt 6
+# (build_files/files/usr/share/sddm/themes/ankh) ; son écran d'accueil
+# tourne sous Wayland, dans KWin (paquet sddm-wayland-plasma, fichier
+# /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf). L'assistant de premier
+# démarrage sait travailler avec SDDM : il y écrit sa connexion automatique
+# dès que Plasma Login n'est pas activé (src/bootutil/bootutil.cpp de
+# https://invent.kde.org/plasma/plasma-setup).
+# Ce changement touche au démarrage de la session graphique : à relire.
+dnf5 -y install sddm sddm-wayland-plasma
+# Plasma Login et sa page des réglages (qui ne réglerait plus rien) sont
+# retirés, s'ils sont dans la base. La liste de ce qui part est affichée.
+mapfile -t plasma_login < <(rpm -q --qf '%{NAME}\n' plasma-login-manager kcm-plasmalogin | grep -v 'not installed')
+if [[ ${#plasma_login[@]} -gt 0 ]]; then
+    dnf5 -y remove "${plasma_login[@]}"
+fi
+for p in sddm sddm-wayland-plasma plasma-workspace plasma-setup kwin-wayland; do
+    rpm -q "${p}"
+done
+# Le service d'affichage passe de Plasma Login à SDDM. Le lien de la base,
+# s'il existe, doit être celui de Plasma Login.
+lien=/etc/systemd/system/display-manager.service
+if [[ -L "${lien}" ]]; then
+    if [[ "$(basename "$(readlink "${lien}")")" != plasmalogin.service ]]; then
+        echo "${lien} désigne $(readlink "${lien}") : gestionnaire de connexion à revoir" >&2
+        exit 1
+    fi
+    rm "${lien}"
+fi
+systemctl enable sddm.service
+if [[ "$(basename "$(readlink "${lien}")")" != sddm.service ]]; then
+    echo "${lien} ne désigne pas sddm.service : $(readlink "${lien}")" >&2
+    exit 1
+fi
+# Réglages de SDDM pour Ankh, dans le dossier des réglages fournis par le
+# système : /etc/sddm.conf.d (connexion automatique de l'assistant, ou mes
+# propres réglages) passe après. Image de compte par défaut : celle d'Ankh,
+# que SDDM cherche dans le dossier faces du thème (UserModel.cpp de
+# https://github.com/sddm/sddm, version 0.21.0).
+if grep -rqs '^Current=' /usr/lib/sddm/sddm.conf.d /etc/sddm.conf.d /etc/sddm.conf; then
+    echo "Un thème SDDM est déjà choisi par la base : $(grep -rs '^Current=' /usr/lib/sddm/sddm.conf.d /etc/sddm.conf.d /etc/sddm.conf)" >&2
+    exit 1
+fi
+install -d -m 0755 /usr/lib/sddm/sddm.conf.d /usr/share/sddm/themes/ankh/faces
+cat > /usr/lib/sddm/sddm.conf.d/ankh.conf << 'CONF'
+# Écran de connexion d'Ankh (D-043)
+[Theme]
+Current=ankh
+CursorTheme=breeze_cursors
+Font=Inter,10,-1,5,50,0,0,0,0,0
+CONF
+chmod 0644 /usr/lib/sddm/sddm.conf.d/ankh.conf
+install -m 0644 /usr/share/ankh/avatar.png /usr/share/sddm/themes/ankh/faces/.face.icon
+
 # Écran de démarrage graphique : Plymouth ne l'affiche (logo d'Ankh, et saisie
 # du mot de passe LUKS) que si le noyau reçoit « rhgb » ; « quiet » masque les
 # messages du noyau. L'installateur de Fedora (Anaconda) les ajoute ; avec

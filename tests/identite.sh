@@ -161,6 +161,33 @@ fi
 attendu "Image de compte enregistrée à la première session" /usr/libexec/ankh-image-de-compte \
     --file /etc/xdg/autostart/ankh-image-de-compte.desktop --group 'Desktop Entry' --key Exec
 
+# D-043 : écran de connexion d'Ankh, avec SDDM au lieu de Plasma Login
+lien="$(readlink /etc/systemd/system/display-manager.service)"
+[[ "$(basename "${lien}")" == sddm.service ]] || echec "le service d'affichage est « ${lien} », pas SDDM"
+if rpm -q plasma-login-manager > /dev/null; then
+    echec "Plasma Login est encore installé"
+fi
+attendu "Thème de SDDM" ankh --file /usr/lib/sddm/sddm.conf.d/ankh.conf --group Theme --key Current
+theme=/usr/share/sddm/themes/ankh
+attendu "Thème de SDDM en Qt 6" 6 --file "${theme}/metadata.desktop" --group SddmGreeterTheme --key QtVersion
+for f in Main.qml fond.jpg faces/.face.icon; do
+    [[ -s "${theme}/${f}" ]] || echec "thème de SDDM : ${f} absent"
+done
+# Le thème est chargé hors écran, en mode test de SDDM (sddm-greeter-qt6
+# --test-mode --theme, src/greeter/GreeterApp.cpp de https://github.com/sddm/sddm) :
+# toute erreur de son QML fait échouer le test. Il tourne jusqu'à être arrêté
+# au bout de 20 secondes (code 124 de timeout) ; s'il s'arrête avant, c'est
+# une erreur.
+code=0
+sortie="$(timeout 20 env QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software XDG_RUNTIME_DIR=/tmp \
+    sddm-greeter-qt6 --test-mode --theme "${theme}" 2>&1)" || code=$?
+if [[ ${code} -ne 124 ]] || grep -E "Main\.qml:[0-9]+" <<< "${sortie}"; then
+    echo "${sortie}" >&2
+    echec "l'écran de connexion d'Ankh ne se charge pas (code ${code})"
+else
+    echo "Écran de connexion d'Ankh : chargé par SDDM sans erreur"
+fi
+
 if ((echecs > 0)); then
     echo "ÉCHEC : ${echecs} réglage(s) de l'identité visuelle manquant(s)" >&2
     exit 1
