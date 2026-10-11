@@ -1330,7 +1330,18 @@
 - **Vérification** :
   - `just test`, Test 14 (`tests/identite.sh`) : SDDM est le gestionnaire de connexion, Plasma Login est absent, le thème « ankh » est choisi et complet ; le thème est chargé par SDDM en mode test, hors écran, et la moindre erreur QML fait échouer la construction ; aucun tutoiement dans les pages d'Ankh. Test 9 : icône officielle de VS Code. Test 11 (`tests/sans-fedora.sh`) : thème Plymouth « ankh » choisi, et présent à l'identique dans l'initramfs ;
   - test en VM (`tests/vm/run.sh`) : captures de l'écran de connexion, d'un faux mot de passe, puis connexion par cet écran avec le bon ; Plymouth lancé à la main pour capturer l'écran de démarrage et la saisie du mot de passe.
-- **Résultats** : première construction de la PR #13 en échec, `package kwin-wayland is not installed` : ce paquet n'existe pas sous ce nom dans Fedora 44. La construction vérifie maintenant le réglage de KWin et son programme. Résultats suivants : à venir.
+- **Résultats** : première construction de la PR #13 en échec, `package kwin-wayland is not installed` : ce paquet n'existe pas sous ce nom dans Fedora 44. La construction vérifie maintenant le réglage de KWin et son programme.
+- **Résultats (2026-10-11, [run 38156340145](https://github.com/PatrickChoumi/Ankh/actions/runs/38156340145), commit f5afd3f)**, vérifiés par la CI et vus sur les captures :
+  - les trois constructions passent : Test 14 (thème SDDM chargé sans erreur QML), Test 11 (thème Plymouth dans l'initramfs), Test 12 ;
+  - le test en VM réussit ses quatre étapes ; le gestionnaire de connexion est `sddm.service` ;
+  - **écran de connexion d'Ankh** : fond flouté, horloge, image de compte d'Ankh, champ en pilule, boutons ronds ; un faux mot de passe affiche « Mot de passe incorrect », puis **la connexion par cet écran réussit** avec le bon mot de passe ;
+  - **écran de démarrage d'Ankh** : logo et barre de progression violette ; **saisie du mot de passe du disque** dans le style d'Ankh (lancée à la main : la VM n'a pas de disque chiffré) ;
+  - VS Code apparaît avec son logo officiel dans la barre ;
+  - **défauts vus, corrigés ensuite** :
+    - la date de l'écran de connexion suivait la langue du système (en anglais dans la VM) : elle est maintenant toujours en français, comme les autres textes de cet écran ;
+    - la carte remontait de 17 pixels à l'apparition du message d'erreur : un `Column` de Qt ne place pas un élément de largeur nulle (texte vide). Le message a maintenant une largeur fixe ;
+    - les points du mot de passe du disque commençaient contre le bord du champ. Plymouth place la puce n à `x + n × L + L / 2` (`src/libply-splash-graphics/ply-entry.c`, ligne 209). Une puce de 15 pixels, avec le point à droite, met le premier point à 18,5 pixels du bord (aperçu calculé avec cette formule) ;
+  - **toujours à comprendre** : le fond de l'assistant de premier démarrage reste uni. Les fichiers sont là et lisibles, et aucune erreur de chargement n'est signalée. Le test affiche maintenant l'environnement de l'assistant (dossiers XDG), dont dépend la recherche de l'image.
 
 ## D-044 — Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036)
 

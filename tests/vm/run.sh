@@ -734,6 +734,14 @@ if ! vm 'ls -laL /usr/share/wallpapers/Next/contents/*/ &&
     journalctl -b --no-pager -o cat _UID="$(id -u plasma-setup)" | grep -iE "png|image|qml|wallpaper|locate" | tail -n 30'; then
     echo "(diagnostic du fond de l'assistant : rien trouvé)"
 fi
+# Les fichiers sont là et aucune erreur de chargement n'est signalée : l'image
+# est cherchée avec StandardPaths.locate (src/qml/LandingComponent.qml de
+# plasma-setup), qui dépend des dossiers XDG de l'environnement de
+# l'assistant. Cet environnement est affiché (diagnostic seulement).
+if ! vm 'pid="$(pgrep -u plasma-setup -x plasma-setup | head -n 1)" &&
+    tr "\0" "\n" < "/proc/${pid}/environ" | grep -E "^(XDG_|QT_|HOME=|KDE_|PATH=)"'; then
+    echo "(diagnostic du fond de l'assistant : environnement de l'assistant introuvable)"
+fi
 # D-037 : la page « Bienvenue dans Ankh » de l'assistant, après un clic sur
 # « Begin Setup » (au centre de l'écran, vu sur les captures).
 click 640 397

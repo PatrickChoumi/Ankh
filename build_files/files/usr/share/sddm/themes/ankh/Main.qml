@@ -141,7 +141,9 @@ Rectangle {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: {
-                    const jour = horloge.maintenant.toLocaleDateString(Qt.locale(), "dddd d MMMM");
+                    // En français, comme tous les textes de cet écran, quelle
+                    // que soit la langue du système (la VM de test est en anglais).
+                    const jour = horloge.maintenant.toLocaleDateString(Qt.locale("fr_FR"), "dddd d MMMM");
                     return jour.charAt(0).toUpperCase() + jour.slice(1);
                 }
                 color: racine.texteDiscret
@@ -294,11 +296,15 @@ Rectangle {
                 }
             }
 
-            // Erreur, ou touche Verr. Maj activée
+            // Erreur, ou touche Verr. Maj activée. Largeur fixe : un Column ne
+            // place pas un élément de largeur nulle (texte vide), et la carte
+            // remontait d'un coup à l'apparition du message (captures de la VM).
             Text {
                 id: message
                 anchors.horizontalCenter: parent.horizontalCenter
+                width: 360 * racine.k
                 height: 20 * racine.k
+                horizontalAlignment: Text.AlignHCenter
                 text: ""
                 color: racine.erreur
                 font.family: racine.police

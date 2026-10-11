@@ -128,8 +128,14 @@ def plymouth(dossier: pathlib.Path) -> None:
              '<rect x="1" y="1" width="298" height="38" rx="19" fill="#161b22" '
              f'stroke="{VIOLET}" stroke-width="2"/></svg>')
     rendre_rgba(champ, 300, 40).save(dossier / "entry.png", optimize=True)
-    puce = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="{BLANC}"/></svg>'
-    rendre_rgba(puce, 10, 10).save(dossier / "bullet.png", optimize=True)
+    # Puce : Plymouth dessine la puce n à x + n × L + L / 2 du bord du champ,
+    # L étant la largeur de l'image (src/libply-splash-graphics/ply-entry.c de
+    # https://gitlab.freedesktop.org/plymouth/plymouth). Une image de 15 px,
+    # avec le point à droite, met le premier point à 18,5 px du bord : hors de
+    # l'arrondi de la pilule, comme le texte du champ de l'écran de connexion.
+    puce = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15">'
+            f'<circle cx="11" cy="7.5" r="3.5" fill="{BLANC}"/></svg>')
+    rendre_rgba(puce, 15, 15).save(dossier / "bullet.png", optimize=True)
     cadenas = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 24">'
                f'<path d="M5 10 V7 a5 5 0 0 1 10 0 V10" fill="none" stroke="{BLANC}" stroke-width="2.2"/>'
                f'<rect x="2" y="10" width="16" height="12" rx="3" fill="{BLANC}"/></svg>')
