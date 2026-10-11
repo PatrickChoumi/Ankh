@@ -63,8 +63,9 @@
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
-| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix) ; lieu du choix et fabrication de l'ISO À VALIDER |
+| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; fabrication de l'ISO : D-048 |
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
+| D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | PROPOSÉE — À DÉCIDER (mise en œuvre au début de la phase 9) |
 
 ---
 
@@ -1407,6 +1408,36 @@
   - phase 3 : la page de choix et la page des réglages, pour Simple et Dev, testées en VM. Sans ISO pour l'instant : ce qui est choisi se télécharge ;
   - phases 5 à 7 : elles remplissent Gaming et Hacking ;
   - phase 9 : l'ISO, construite et testée en VM avant d'installer ma machine.
+- **Précisé le 2026-10-11** (mes réponses) :
+  - le choix se fait **au premier démarrage**, dans l'assistant de KDE (plasma-setup), sur une page d'Ankh ;
+  - il vaut **pour toute la machine**.
+- **Mise en œuvre prévue du choix (fin de la phase 3)** :
+  1. **Page « Que voulez-vous installer ? »** dans l'assistant, ajoutée comme « Bienvenue dans Ankh » (module QML, `docs/CUSTOM_MODULES.md` de <https://invent.kde.org/plasma/plasma-setup>). Elle montre :
+     - Simple : toujours incluse, cochée et grisée ;
+     - Dev, Gaming et Hacking : des cases ;
+     - Complète : coche les trois.
+
+     Gaming et Hacking restent grisés, marqués « bientôt », tant que les phases 5 à 7 ne les ont pas remplis.
+  2. **La page n'applique rien elle-même.**
+     - Un module QML n'a aucun moyen de changer le système. Les pages de KDE passent par des actions autorisées par polkit au compte spécial de l'assistant, `plasma-setup` (`files/plasma-setup-polkit.rules` : création du compte, nom de la machine, langue…).
+     - La page d'Ankh démarre donc un service d'Ankh, `ankh-options@<choix>.service` (par exemple `ankh-options@dev.service`), qui tourne en root et applique le choix.
+     - Une règle polkit d'Ankh permet au compte `plasma-setup` de démarrer ce service, et rien d'autre. Elle repose sur l'action `org.freedesktop.systemd1.manage-units`, avec les détails `unit` et `verb`, que systemd transmet à polkit depuis sa version 226 (`NEWS`, et `src/core/dbus-util.c` de <https://github.com/systemd/systemd>).
+     - **Touche à polkit : à relire.**
+  3. **Lancer la commande depuis la page** : par le moteur « executable » de Plasma5Support, utilisé par les widgets de Plasma. À VALIDER au premier essai. Repli : un petit module compilé, comme ceux de KDE.
+  4. **Le service** écrit le choix dans `/etc/ankh/options`, puis rend visibles les entrées des options choisies.
+     - Les lanceurs de chaque option sont rangés dans l'image hors du menu (`/usr/share/ankh/options/<option>/`).
+     - Le service pose un lien vers eux dans `/usr/local/share/applications`, que KDE lit avant `/usr/share` (spécification XDG). Sur Fedora Atomic, `/usr/local` est modifiable.
+     - Une option non choisie n'a donc aucune entrée : ni dans le menu, ni dans la recherche, ni dans les favoris.
+     - Les fichiers restent ceux de l'image : rien n'est installé en dehors d'elle (D-009).
+  5. **Préparation des outils** : au premier clic, comme aujourd'hui (D-036). Avec l'ISO (phase 9), au premier démarrage, depuis la copie de l'ISO.
+  6. **Page des réglages « Options d'Ankh »** :
+     - les mêmes cases, dans la Configuration du système ;
+     - le même service, démarré cette fois avec le mot de passe administrateur (règle par défaut de systemd) ;
+     - retirer une option fait disparaître ses entrées. Ses données (projets, VMs) restent, sauf si je demande à les supprimer.
+  7. **Sans choix enregistré** (machine installée avant cette page, ou test) : Ankh se comporte comme avec Complète. Aucun outil ne disparaît sans qu'on l'ait demandé.
+  8. **Tests** :
+     - dans l'image : la page se charge hors écran sans erreur QML ; le service et la règle polkit sont présents ; chaque choix produit les bons liens ;
+     - en VM : capture de la page de l'assistant ; le compte `plasma-setup` démarre bien le service, et rien d'autre ; menu sans VS Code avec Simple, puis avec VS Code après l'ajout de Dev dans les réglages (captures).
 - **Vérification** :
   - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
   - ajout puis retrait d'une option dans les réglages ;
@@ -1423,3 +1454,51 @@
 - **Vérification** :
   - `just test`, Test 12 (`tests/applications.sh`) : aucune politique de Chrome n'installe d'application web ;
   - le test en VM ne vérifie plus ces fenêtres.
+
+## D-048 — ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046)
+
+- **Statut** : PROPOSÉE — À DÉCIDER par moi. Mise en œuvre au début de la phase 9 (D-046).
+- **Contexte** : mes questions du 2026-10-11 :
+  - peut-on faire une ISO qui détecte toute seule si le PC a une carte AMD ou Intel, ou une carte NVIDIA, au lieu de deux ISO ?
+  - peut-on construire l'ISO et l'héberger avec GitHub ?
+- **Recherche du 2026-10-11**. Les sources sont citées. « Mesuré » veut dire lu par Claude dans les manifests du registre `ghcr.io`, le 2026-10-11 :
+  - **Outils** :
+    - `bootc-image-builder` est déprécié au profit de `image-builder` (<https://osbuild.org/docs/bootc/deprecation-notice/>) ;
+    - son type `anaconda-iso` est en fin de vie, et il n'embarque qu'une image, en écrivant lui-même la ligne d'installation (README de <https://github.com/osbuild/bootc-image-builder>, version a686afe). Il ne permet donc pas de choisir entre deux images ;
+    - Bazzite, Bluefin et Aurora construisent leurs ISO avec `titanoboa` (<https://github.com/ublue-os/titanoboa>). C'est une ISO « live » : l'environnement d'installation est lui-même une image de conteneur, qui peut contenir les images à installer et les Flatpaks (`.github/workflows/build_iso.yml` et `installer/` de <https://github.com/ublue-os/bazzite>).
+  - **Détection de la carte graphique** :
+    - l'installateur (Anaconda) exécute un script `%pre` avant l'installation. Ce script peut écrire la ligne d'installation, lue ensuite par `%include` (<https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html>) ;
+    - lire `/sys/bus/pci/devices/*/vendor` suffit à reconnaître NVIDIA (`0x10de`). Supposé, non testé ;
+    - aucun projet trouvé ne le fait : Bazzite, Bluefin et Aurora publient une ISO par variante graphique.
+  - **Taille (mesurée)** :
+    - `ankh` fait 5,46 Go compressés, `ankh-nvidia` 6,47 Go (et non plus 4,3 et 5,2 Go comme en phase 1) ;
+    - elles partagent 3,34 Go de couches de Fedora (`kinoite-main` et `kinoite-nvidia` sortent du même Containerfile, sans rechunk : <https://github.com/ublue-os/main>) ;
+    - mettre les deux images dans une ISO coûte donc environ 3,1 Go de plus. Avec les Flatpaks et les conteneurs des options, l'ISO ferait 15 à 20 Go (estimé).
+  - **Construction sur GitHub Actions** :
+    - le runner standard est gratuit pour un dépôt public : 4 processeurs, 16 Go de mémoire, 14 Go de disque documentés, 6 h maximum par tâche (<https://docs.github.com/en/actions/reference/runners/github-hosted-runners>, <https://docs.github.com/en/actions/reference/limits>) ;
+    - les runners plus gros sont toujours payants ;
+    - Bazzite libère de la place sur le runner avant de construire (`jlumbroso/free-disk-space`). Que la place suffise pour Ankh est À VALIDER.
+  - **Hébergement** :
+    - **Release GitHub** : chaque fichier fait moins de 2 Gio, mais la taille totale et la bande passante sont illimitées, sans compte pour télécharger (<https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases>). L'ISO doit donc être découpée en morceaux, que l'on recolle après le téléchargement ;
+    - **artefacts de GitHub Actions** : gardés 90 jours au plus, et téléchargeables seulement avec un compte GitHub connecté. Utiles pour les tests ;
+    - **Cloudflare R2**, utilisé par Universal Blue : 10 Go gratuits, puis 0,015 $ par Go et par mois (<https://developers.cloudflare.com/r2/pricing/>) ; il faut un compte ;
+    - **construire l'ISO soi-même**, sur sa machine Linux, avec `image-builder` ou `titanoboa` dans un conteneur.
+  - **Options au premier démarrage depuis l'ISO** :
+    - les Flatpaks se copient sur le disque comme sur une clé USB, puis s'installent sans réseau (`flatpak create-usb` et `--sideload-repo`, <https://docs.flatpak.org/en/latest/usb-drives.html>) ;
+    - les images des conteneurs se chargent avec `podman load`. Supposé.
+- **Options présentées** :
+  1. **Une seule ISO, qui détecte la carte graphique** (recommandée) :
+     - ISO live de type `titanoboa`, qui contient `ankh` et `ankh-nvidia` ;
+     - un court script `%pre` choisit l'image selon la carte ;
+     - pour : je n'ai pas besoin de connaître ma carte graphique (question 3 encore inconnue), et une seule ISO à construire et à publier ;
+     - contre : environ 3,1 Go de plus. Personne ne le fait encore, donc c'est à tester par nous. La VM n'a pas de carte NVIDIA : il faut un moyen de forcer le choix NVIDIA pour le tester (paramètre au démarrage de l'ISO) ;
+     - les portables avec deux cartes (Intel et NVIDIA) prennent `ankh-nvidia` (D-021).
+  2. **Deux ISO**, comme Bazzite, Bluefin et Aurora : chacune plus petite et plus simple, mais il faut savoir laquelle prendre.
+- **Hébergement proposé** : construction sur GitHub Actions ; publication dans une Release GitHub du dépôt, en morceaux de moins de 2 Gio, avec leurs sommes de contrôle. C'est gratuit, sans compte pour télécharger et sans limite de bande passante. Les artefacts servent aux tests.
+- **À relire** :
+  - l'ISO touche au démarrage et à Secure Boot. Bazzite inscrit la clé de signature d'Universal Blue pendant l'installation, pour les pilotes NVIDIA ;
+  - une Release publique rend l'ISO téléchargeable par tous. Les images d'Ankh le sont déjà sur `ghcr.io`, et Ankh reste personnel, sans support (D-001).
+- **Vérification** (phase 9) :
+  - l'ISO est construite par la CI ;
+  - en VM sans réseau : installation avec chaque choix d'options ; branche Mesa détectée, et branche NVIDIA forcée ;
+  - recollage des morceaux et sommes de contrôle vérifiés.

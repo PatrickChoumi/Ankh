@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; une seule version avec des options choisies à l'installation, D-046 ; plus de fenêtres Claude ni GitHub, D-047 ; portrait final dans VISION.md, D-045).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; une seule version avec des options choisies à l'installation, D-046 ; plus de fenêtres Claude ni GitHub, D-047 ; portrait final dans VISION.md, D-045 ; ISO, D-048).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -225,6 +225,13 @@
     - les options se changent ensuite dans les réglages ;
     - une ISO d'Ankh contient tout, pour installer sans internet. Elle se fait juste avant la bascule sur ma machine (phase 9).
   - **Plus de fenêtres Claude ni GitHub** installées par Chrome : je les installerai moi-même (D-047). Retirées de l'image dans la PR #13.
+  - **Mes réponses (suite)** : le choix des options se fait au premier démarrage, et vaut pour toute la machine. Claude a préparé la page de l'assistant et le service qui applique le choix (plan dans D-046).
+  - **L'ISO** (D-048, proposée, à décider) :
+    - une seule ISO qui reconnaît la carte graphique est faisable : un court script de l'installateur choisit `ankh` ou `ankh-nvidia`. Personne ne le fait encore, et elle coûte environ 3,1 Go de plus ;
+    - elle peut être construite gratuitement sur GitHub Actions, comme les ISO de Bazzite ;
+    - elle peut être hébergée gratuitement dans une Release GitHub, découpée en morceaux de moins de 2 Gio ;
+    - taille estimée avec les options : 15 à 20 Go.
+  - **Taille des images mesurée** (registre, 2026-10-11) : `ankh` 5,46 Go compressés, `ankh-nvidia` 6,47 Go, dont 3,34 Go de Fedora en commun.
 - **Le portrait d'Ankh une fois terminé** est écrit dans [VISION.md](VISION.md) (D-045), pour vérifier qu'on ne dévie pas.
 
 ---
@@ -244,7 +251,7 @@
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
 9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11 et PR #12). Écran de démarrage et écran de connexion entièrement d'Ankh dans la PR #13 (D-043), à valider sur les captures. Reste : le fond de l'assistant de premier démarrage, toujours uni (D-037).
-10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et la page des réglages pour les changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. À étudier d'abord : où se fait le choix, et s'il vaut pour la machine ou pour chaque compte.
+10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et la page des réglages pour les changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. Le choix se fait dans l'assistant de premier démarrage et vaut pour toute la machine ; plan dans D-046 (prochaine PR, après la fusion de la #13).
 11. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -254,7 +261,7 @@
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
   - sauvegarder ma distro actuelle ;
-  - construire l'ISO d'Ankh, et la tester en VM sans réseau (D-046) ;
+  - construire l'ISO d'Ankh, et la tester en VM sans réseau (D-046, D-048) ;
   - installer Ankh depuis l'ISO, avec LUKS ;
   - valider le matériel (GPU, son, réseau, veille, écrans, jeux) ;
   - utiliser Ankh une semaine.
@@ -282,8 +289,9 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Regarder les captures de la PR #13** (écran de démarrage, saisie du mot de passe du disque, écran de connexion) quand Claude les envoie, puis fusionner si elles me plaisent (D-043).
-3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
-5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-6. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).
+2. **Décider pour l'ISO** (D-048) : une seule ISO qui reconnaît la carte graphique (recommandée) ou deux ; publication dans une Release GitHub en morceaux (proposée). Rien ne presse : elle se fait au début de la phase 9.
+3. **Regarder les captures de la PR #13** (écran de démarrage, saisie du mot de passe du disque, écran de connexion) quand Claude les envoie, puis fusionner si elles me plaisent (D-043).
+4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
+5. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
+6. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+7. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).

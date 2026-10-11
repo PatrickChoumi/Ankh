@@ -31,7 +31,7 @@ Comme l'installation d'Ubuntu, adaptée à Ankh : des cases à cocher, combinabl
 - **Les options se changent après l'installation**, dans les réglages. Ce qui est ajouté se télécharge quand je le décide ; ce qui est retiré libère sa place (D-031, D-046).
 - **Le système reste le même pour tous** : une seule image, pour les cartes graphiques AMD et Intel (Mesa) et NVIDIA récentes (D-021), avec et sans la protection contre le contenu pour adultes (D-030).
 - Dans le menu, chaque outil installé apparaît comme une application ordinaire, et reste isolé dessous (D-036).
-- **À VALIDER** : le choix se fait dans l'installateur, ou juste après, au premier démarrage, selon ce que permet l'installateur de Fedora (D-046).
+- **Le choix se fait au premier démarrage**, dans l'assistant d'Ankh, et vaut pour toute la machine (D-046).
 
 ## Ce que toutes les installations ont en commun
 
@@ -145,8 +145,7 @@ C'est mon exigence générale (ANKH-SPEC.md).
 
 | Point ouvert | Où | Quand |
 |---|---|---|
-| Lieu du choix des options, par machine ou par compte | D-046 | Phase 3 |
-| Fabrication de l'ISO, sa taille, son hébergement | D-046 | Avant la phase 9 |
+| Une seule ISO pour toutes les cartes graphiques, ou deux ; son hébergement | D-048 | Avant la phase 9 |
 | Mon matériel et ma distro actuelle (questions 1 à 5 et 10 à 12) | ANKH-SPEC.md §1 | Avant la phase 9 |
 | Réseau bas niveau pour le hacking | D-013 | Phase 6 |
 | Sauvegarde et récupération | D-019 | Phase 8 |
