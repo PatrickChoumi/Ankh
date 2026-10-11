@@ -655,25 +655,6 @@ check_identity() {
     sleep 5
 }
 
-# D-024, D-035 : Chrome installe lui-même les applications web Claude et
-# GitHub (politique WebAppInstallForceList) et leur crée un lanceur dans le
-# menu. Chrome doit avoir été ouvert une fois, avec internet.
-check_web_apps() {
-    local dir=/home/ankhvm/.local/share/applications deadline=$((SECONDS + 300)) app
-    for app in Claude GitHub; do
-        until vm "grep -lsx 'Name=$app' $dir/chrome-*.desktop"; do
-            if ((SECONDS >= deadline)); then
-                if ! vm "grep -H '^Name=' $dir/*.desktop"; then
-                    echo "Aucun lanceur dans $dir"
-                fi
-                die "Chrome n'a pas installé l'application web $app (D-024)"
-            fi
-            sleep 10
-        done
-    done
-    echo "Applications web installées par Chrome : Claude et GitHub"
-}
-
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"
 [[ -e /dev/kvm ]] || die "/dev/kvm absent : KVM est nécessaire"
 for f in OVMF_CODE_4M.secboot.fd OVMF_VARS_4M.ms.fd; do
@@ -775,7 +756,6 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet \
     google-chrome --no-first-run --no-default-browser-check https://github.com/PatrickChoumi/Ankh
 sleep 30
 screenshot 1-chrome
-check_web_apps
 capture_app 1-vlc vlc
 capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro

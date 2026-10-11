@@ -161,12 +161,9 @@ for t in "${onlyoffice_formats[@]}"; do
     echo "${t}=$(basename "${onlyoffice_lanceur}")"
 done >> /etc/xdg/mimeapps.list
 
-# Claude et GitHub (D-024) : applications web que Chrome installe lui-même,
-# dans leur propre fenêtre, par sa politique WebAppInstallForceList
-# (fichier /etc/opt/chrome/policies/managed/ankh-applications.json, copié
-# avec les autres fichiers d'Ankh plus bas). Définition de la politique :
-# components/policy/resources/templates/policy_definitions/Miscellaneous/WebAppInstallForceList.yaml
-# dans https://github.com/chromium/chromium.
+# D-047 : Chrome n'installe plus d'applications web de lui-même (Claude et
+# GitHub, D-024) : je les installe moi-même si je les veux. Aucune politique
+# WebAppInstallForceList n'est fournie (vérifié par le Test 12).
 
 # D-031 : aucune mise à jour automatique sur la machine. Je décide quand mettre
 # à jour ; Discover me prévient qu'une mise à jour existe (D-028).

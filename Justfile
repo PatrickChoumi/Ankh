@@ -126,7 +126,7 @@ test variant:
     echo "Test 11 : plus rien de Fedora à l'écran, démarrage compris (D-034)"
     podman run --rm -i --network=none "${image}" bash -s < tests/sans-fedora.sh
 
-    echo "Test 12 : VLC et OnlyOffice présents et par défaut, LibreOffice absent, Claude et GitHub dans Chrome (D-035)"
+    echo "Test 12 : VLC et OnlyOffice présents et par défaut, LibreOffice absent, aucune application web imposée par Chrome (D-035, D-047)"
     podman run --rm -i --network=none "${image}" bash -s < tests/applications.sh
 
     echo "Test 14 : identité visuelle d'Ankh et interface douce : couleurs, polices, barre, Breeze, Konsole (D-037, D-039)"
