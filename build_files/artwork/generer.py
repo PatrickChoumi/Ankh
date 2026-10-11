@@ -1,4 +1,4 @@
-"""Dessine le logo, les fonds d'écran, le logo de démarrage et l'image de compte d'Ankh (D-033, D-034, D-037, D-042).
+"""Dessine le logo, les fonds d'écran, l'écran de démarrage, l'écran de connexion et l'image de compte d'Ankh (D-033, D-034, D-037, D-042, D-043).
 
 Le logo : un A sans barre, dont la barre devient un curseur de terminal, sur
 une touche de clavier graphite. Un seul accent de couleur, violet.
@@ -16,7 +16,7 @@ import pathlib
 import random
 
 import cairosvg
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageFilter
 
 import fonds
 
@@ -115,14 +115,25 @@ def decrire(paquet: pathlib.Path, nom: str) -> None:
     (paquet / "metadata.json").write_text(json.dumps(fiche, indent=4, ensure_ascii=False) + "\n")
 
 
-def filigrane() -> Image.Image:
-    """Logo de l'écran de démarrage : le A et « ankh », en blanc sur fond transparent."""
-    image = Image.new("RGBA", (330, 112), (0, 0, 0, 0))
-    svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">{marque(BLANC)}</svg>'
-    a = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), output_width=112, output_height=112)))
-    image.alpha_composite(a.convert("RGBA"), (0, 0))
-    ImageDraw.Draw(image).text((122, 56), "ankh", fill=BLANC, font=fonds.police_mono(58), anchor="lm")
-    return image
+def plymouth(dossier: pathlib.Path) -> None:
+    """Images de l'écran de démarrage d'Ankh (D-043), thème Plymouth « ankh » :
+    le logo (même taille que sur l'écran de chargement de la session), et le
+    champ du mot de passe du disque, sa puce et son cadenas."""
+    dossier.mkdir(parents=True, exist_ok=True)
+    rendre_rgba = lambda svg, l, h: Image.open(io.BytesIO(cairosvg.svg2png(
+        bytestring=svg.encode(), output_width=l, output_height=h))).convert("RGBA")
+    rendre_rgba(logo(), 144, 144).save(dossier / "watermark.png", optimize=True)
+    # Champ en pilule, comme celui de l'écran de connexion
+    champ = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 40">'
+             '<rect x="1" y="1" width="298" height="38" rx="19" fill="#161b22" '
+             f'stroke="{VIOLET}" stroke-width="2"/></svg>')
+    rendre_rgba(champ, 300, 40).save(dossier / "entry.png", optimize=True)
+    puce = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="{BLANC}"/></svg>'
+    rendre_rgba(puce, 10, 10).save(dossier / "bullet.png", optimize=True)
+    cadenas = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 24">'
+               f'<path d="M5 10 V7 a5 5 0 0 1 10 0 V10" fill="none" stroke="{BLANC}" stroke-width="2.2"/>'
+               f'<rect x="2" y="10" width="16" height="12" rx="3" fill="{BLANC}"/></svg>')
+    rendre_rgba(cadenas, 20, 24).save(dossier / "lock.png", optimize=True)
 
 
 def main() -> None:
@@ -186,9 +197,7 @@ def main() -> None:
     # Image de compte par défaut (D-042), donnée à chaque nouveau compte.
     rendre(avatar(), 512, 512).save(RACINE / "ankh" / "avatar.png", optimize=True)
 
-    cible = RACINE / "ankh" / "plymouth" / "watermark.png"
-    cible.parent.mkdir(parents=True, exist_ok=True)
-    filigrane().save(cible, optimize=True)
+    plymouth(RACINE / "plymouth" / "themes" / "ankh")
 
 
 if __name__ == "__main__":

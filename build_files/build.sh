@@ -686,19 +686,32 @@ kargs = ["rhgb", "quiet"]
 TOML
 fi
 
-# Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
-# remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui
-# de Fedora ; seule son image de filigrane change.
-theme="$(plymouth-set-default-theme)"
-images="$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")"
-# Fedora écrit ce chemin avec « // » : il est normalisé.
-images="$(realpath -m "${images}")"
-if [[ -z "${images}" || ! -d "${images}" ]]; then
-    echo "Thème Plymouth « ${theme} » : dossier d'images introuvable (« ${images} »)" >&2
+# D-043 : écran de démarrage entièrement d'Ankh (mon choix du 2026-10-10),
+# où se tape aussi le mot de passe LUKS. Thème Plymouth « ankh »
+# (build_files/files/usr/share/plymouth/themes/ankh) : le même dessin que
+# l'écran de chargement de la session, sans le logo du fabricant du PC. Le
+# champ du mot de passe, sa puce et le cadenas sont ceux d'Ankh ; les
+# indicateurs de clavier (Verr. Maj, disposition) sont repris du thème
+# « spinner » de Plymouth, celui que Fedora utilise. Remplace le seul
+# changement de filigrane de D-034.
+# Ce changement touche au démarrage et à la saisie du mot de passe LUKS : à relire.
+theme_ankh=/usr/share/plymouth/themes/ankh
+for image in capslock.png keyboard.png keymap-render.png; do
+    if [[ ! -f "/usr/share/plymouth/themes/spinner/${image}" ]]; then
+        echo "Thème Plymouth « spinner » : ${image} absent : écran de démarrage à revoir" >&2
+        exit 1
+    fi
+    install -m 0644 "/usr/share/plymouth/themes/spinner/${image}" "${theme_ankh}/${image}"
+done
+for image in watermark.png entry.png bullet.png lock.png; do
+    [[ -s "${theme_ankh}/${image}" ]] || { echo "Thème Plymouth d'Ankh : ${image} absent" >&2; exit 1; }
+done
+echo "Thème Plymouth de la base : $(plymouth-set-default-theme)"
+plymouth-set-default-theme ankh
+if [[ "$(plymouth-set-default-theme)" != ankh ]]; then
+    echo "Le thème Plymouth d'Ankh n'est pas choisi : $(plymouth-set-default-theme)" >&2
     exit 1
 fi
-echo "Thème Plymouth « ${theme} », images dans ${images}"
-install -m 0644 /usr/share/ankh/plymouth/watermark.png "${images}/watermark.png"
 
 # L'écran de démarrage vit dans l'initramfs : il est reconstruit avec la
 # commande qu'Universal Blue utilise pour cette même base (build_files/initramfs.sh

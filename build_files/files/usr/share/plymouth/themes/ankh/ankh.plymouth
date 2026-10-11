@@ -1,0 +1,75 @@
+# Écran de démarrage d'Ankh (D-043) : le même que l'écran de chargement de la
+# session (build_files/plasma/ankh-splash.qml), du démarrage au bureau. Fond
+# graphite, logo d'Ankh au centre, fine barre de progression violette en
+# dessous ; la saisie du mot de passe du disque (LUKS) apparaît sous le logo.
+# Module « two-step » de Plymouth : clés lues par src/plugins/splash/two-step/plugin.c
+# (https://gitlab.freedesktop.org/plymouth/plymouth, version 24.004.60 de
+# Fedora 44), sur le modèle du thème « spinner ».
+[Plymouth Theme]
+Name=Ankh
+Description=Écran de démarrage d'Ankh
+ModuleName=two-step
+
+[two-step]
+Font=Inter 12
+TitleFont=Inter Medium 22
+ImageDir=/usr/share/plymouth/themes/ankh
+WatermarkHorizontalAlignment=.5
+WatermarkVerticalAlignment=.5
+HorizontalAlignment=.5
+VerticalAlignment=.64
+DialogHorizontalAlignment=.5
+DialogVerticalAlignment=.72
+TitleHorizontalAlignment=.5
+TitleVerticalAlignment=.74
+Transition=none
+TransitionDuration=0.0
+BackgroundStartColor=0x0d1117
+BackgroundEndColor=0x0d1117
+ProgressBarBackgroundColor=0x262c36
+ProgressBarForegroundColor=0xa78bfa
+ProgressBarWidth=144
+ProgressBarHeight=3
+DialogClearsFirmwareBackground=true
+MessageBelowAnimation=true
+
+[boot-up]
+UseEndAnimation=false
+UseProgressBar=true
+UseFirmwareBackground=false
+
+[shutdown]
+UseEndAnimation=false
+UseFirmwareBackground=false
+
+[reboot]
+UseEndAnimation=false
+UseFirmwareBackground=false
+
+[updates]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Installation des mises à jour…
+SubTitle=N'éteignez pas l'ordinateur
+
+[system-upgrade]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Mise à niveau du système…
+SubTitle=N'éteignez pas l'ordinateur
+
+[firmware-upgrade]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Mise à jour des micrologiciels…
+SubTitle=N'éteignez pas l'ordinateur
+
+[system-reset]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Réinitialisation du système…
+SubTitle=N'éteignez pas l'ordinateur

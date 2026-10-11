@@ -132,19 +132,20 @@ if ! grep -qs '"rhgb"' /usr/lib/bootc/kargs.d/*.toml; then
     signaler "écran de démarrage non affiché (« rhgb » absent des arguments du noyau)" /usr/lib/bootc/kargs.d
 fi
 
-# Écran de démarrage : le filigrane d'Ankh, dans le thème et dans l'initramfs
+# Écran de démarrage : le thème Plymouth d'Ankh (D-043), choisi, et présent
+# dans l'initramfs avec son logo
 theme="$(plymouth-set-default-theme)"
-images="$(realpath -m "$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")")"
-echo "Thème Plymouth : ${theme} (${images})"
-reference=/usr/share/ankh/plymouth/watermark.png
-if ! cmp -s "${reference}" "${images}/watermark.png"; then
-    signaler "logo de l'écran de démarrage" "${images}/watermark.png"
+echo "Thème Plymouth : ${theme}"
+if [[ "${theme}" != ankh ]]; then
+    signaler "thème de l'écran de démarrage (« ${theme} »)" /etc/plymouth/plymouthd.conf
 fi
 kver="$(basename /usr/lib/modules/*)"
 initramfs="/usr/lib/modules/${kver}/initramfs.img"
-if ! lsinitrd -f "${images#/}/watermark.png" "${initramfs}" | cmp -s "${reference}" -; then
-    signaler "logo de l'écran de démarrage dans l'initramfs" "${initramfs}"
-fi
+for f in ankh.plymouth watermark.png entry.png; do
+    if ! lsinitrd -f "usr/share/plymouth/themes/ankh/${f}" "${initramfs}" | cmp -s "/usr/share/plymouth/themes/ankh/${f}" -; then
+        signaler "écran de démarrage d'Ankh absent de l'initramfs (${f})" "${initramfs}"
+    fi
+done
 
 if ((trouves > 0)); then
     # Inventaire pour savoir quoi traiter : contenu des paquets d'habillage de

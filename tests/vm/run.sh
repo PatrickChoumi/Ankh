@@ -243,6 +243,33 @@ finish_setup() {
         rm -f /etc/sddm.conf.d/99-plasma-setup.conf /etc/plasmalogin.conf.d/99-plasma-setup.conf"
 }
 
+# D-043 : l'écran de démarrage d'Ankh avec la saisie du mot de passe du
+# disque, que la VM de test n'a pas (pas de LUKS). Plymouth est lancé à la
+# main, l'écran de connexion arrêté le temps des captures, puis la demande de
+# mot de passe affichée et quelques caractères tapés (plymouthd et plymouth
+# ask-for-password, https://gitlab.freedesktop.org/plymouth/plymouth).
+# Diagnostic visuel : un échec est affiché sans arrêter le test.
+check_boot_screen() {
+    log "Écran de démarrage d'Ankh et saisie du mot de passe du disque (D-043)"
+    vm systemctl stop display-manager.service
+    sleep 5
+    if vm 'plymouthd --mode=boot --tty=tty1 && plymouth show-splash'; then
+        sleep 5
+        screenshot 1-demarrage-ankh
+        vm "systemd-run --unit=ankh-plymouth-mdp --collect --quiet plymouth ask-for-password --prompt='Mot de passe du disque chiffré'"
+        sleep 3
+        type_text ankh
+        sleep 2
+        screenshot 1-demarrage-mot-de-passe
+        if ! vm 'plymouth quit'; then
+            echo "(Plymouth : arrêt impossible)"
+        fi
+    else
+        echo "(Plymouth : lancement à la main impossible, pas de capture du mot de passe)"
+    fi
+    vm systemctl start display-manager.service
+}
+
 # Tape un texte au clavier de la VM, touche par touche (lettres minuscules
 # et chiffres : noms des touches de la commande sendkey du moniteur de QEMU).
 type_text() {
@@ -770,6 +797,8 @@ screenshot 1-ecran-de-connexion-erreur
 type_text ankhtest42
 monitor 'sendkey ret'
 wait_desktop 1-bureau-apres-connexion
+check_boot_screen
+wait_desktop 1-bureau-apres-demarrage-test
 
 log "2/4 Mise à jour vers la version publiée : $other"
 # Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,
