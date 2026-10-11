@@ -221,7 +221,8 @@
     - écran de démarrage d'Ankh, et saisie du mot de passe du disque dans le style d'Ankh ;
     - VS Code avec son logo officiel ;
   - corrigé ensuite, d'après les captures : la date de l'écran de connexion en français, la carte qui ne bouge plus quand un message apparaît, et les points du mot de passe du disque, décollés du bord du champ ;
-  - toujours à comprendre : le fond de l'assistant de premier démarrage reste uni. Le test affiche maintenant l'environnement de l'assistant.
+  - ces trois corrections sont vérifiées sur les captures ([run 38159636158](https://github.com/PatrickChoumi/Ankh/actions/runs/38159636158), CI verte) ;
+  - toujours à comprendre : le fond de l'assistant de premier démarrage reste uni (gris graphite d'Ankh). Son image est bien trouvable, mais elle n'est pas dessinée, sans erreur signalée. Impact faible : la page reste propre.
 - **Ma vision affinée** (2026-10-11) : Ankh reste sur Fedora Kinoite 44 (D-005).
   - J'ai d'abord voulu quatre éditions : Dev, Gaming, Hacking, et Complète qui les réunit (D-044).
   - Puis j'ai choisi **une seule version, à la carte, comme l'installation d'Ubuntu** (D-046, qui remplace D-044) :

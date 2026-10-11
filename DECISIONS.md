@@ -1341,7 +1341,8 @@
     - la date de l'écran de connexion suivait la langue du système (en anglais dans la VM) : elle est maintenant toujours en français, comme les autres textes de cet écran ;
     - la carte remontait de 17 pixels à l'apparition du message d'erreur : un `Column` de Qt ne place pas un élément de largeur nulle (texte vide). Le message a maintenant une largeur fixe ;
     - les points du mot de passe du disque commençaient contre le bord du champ. Plymouth place la puce n à `x + n × L + L / 2` (`src/libply-splash-graphics/ply-entry.c`, ligne 209). Une puce de 15 pixels, avec le point à droite, met le premier point à 18,5 pixels du bord (aperçu calculé avec cette formule) ;
-  - **toujours à comprendre** : le fond de l'assistant de premier démarrage reste uni. Les fichiers sont là et lisibles, et aucune erreur de chargement n'est signalée. Le test affiche maintenant l'environnement de l'assistant (dossiers XDG), dont dépend la recherche de l'image.
+  - **corrections vérifiées** ([run 38159636158](https://github.com/PatrickChoumi/Ankh/actions/runs/38159636158), commit d159255) : date « Dimanche 11 octobre » ; la carte reste au pixel près à la même place quand le message d'erreur apparaît (comparaison des deux captures) ; les points du mot de passe du disque sont décollés du bord du champ ;
+  - **toujours à comprendre** : le fond de l'assistant de premier démarrage reste uni (gris graphite d'Ankh). Les fichiers sont là et lisibles, l'environnement de l'assistant contient bien `/usr/share` dans `XDG_DATA_DIRS`, et aucune erreur de chargement n'est signalée. Impact faible : la page reste propre.
 
 ## D-044 — Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036)
 
