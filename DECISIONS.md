@@ -51,15 +51,18 @@
 | D-031 | Aucune mise à jour automatique : je décide quand tout se met à jour (complète D-010, D-027, D-028) | DÉCIDÉ |
 | D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
-| D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage) |
+| D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage ; écran de démarrage entièrement d'Ankh : D-043) |
 | D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
-| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; gaming en phase 5, hacking en phase 6) |
+| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; « un seul Ankh » modifié par D-044 : quatre éditions, les outils restent dans le menu et isolés dessous) |
 | D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (aperçus validés le 2026-10-09 ; intégré dans l'image avec D-039) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
 | D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; mise en œuvre en phase 5) |
-| D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
+| D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043) |
+| D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
+| D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | DÉCIDÉ (2026-10-11, mon choix) pour le principe ; construction À DÉCIDER avant la phase 5 |
+| D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
 
 ---
 
@@ -1287,3 +1290,71 @@
   - **à comprendre** :
     - VS Code ouvert apparaît à côté de son icône épinglée, au lieu de s'y regrouper. Le test affiche maintenant la classe et le fichier `.desktop` de chaque fenêtre vus par KWin, pour corriger le lien ;
     - le flou ne se voit pas dans la VM (rendu logiciel `llvmpipe`, affiché dans « À propos ») ; le test affiche maintenant si l'effet peut s'y charger. Sur une vraie carte graphique, il est allumé par défaut (À VALIDER sur ma machine).
+
+## D-043 — Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042)
+
+- **Statut** : DÉCIDÉ (2026-10-10), mes demandes. Les dessins sont de Claude ; je les valide sur les captures de la VM avant de fusionner ([PR #13](https://github.com/PatrickChoumi/Ankh/pull/13)).
+- **Contexte** : mes demandes du 2026-10-10 : « fais l'écran de démarrage entièrement d'Ankh et passe à SDDM. Remets le logo initial de VS Code, et ne tutoie pas dans tes textes. » Ce sont les deux propositions laissées ouvertes par D-042 (option du point 11, et « proposé pour plus tard »).
+- **Ce changement touche au démarrage, à la saisie du mot de passe LUKS et au gestionnaire de connexion : à relire.**
+- **Décision** :
+  1. **Écran de connexion : SDDM au lieu de Plasma Login** (modifie D-042, point 11).
+     - Pourquoi : l'écran de Plasma Login est compilé dans son programme et ne se redessine pas (D-042). SDDM charge un thème écrit en QML, que l'on dessine entièrement.
+     - Paquets de Fedora 44 : `sddm` 0.21 et `sddm-wayland-plasma` (son écran tourne sous Wayland, dans KWin : `/usr/lib/sddm/sddm.conf.d/plasma-wayland.conf`). `plasma-login-manager` et sa page des réglages (`kcm-plasmalogin`) sont retirés ; `display-manager.service` désigne `sddm.service`. La construction échoue si la base désigne un autre gestionnaire que Plasma Login, si un thème SDDM y est déjà choisi, ou si le réglage de KWin ou son programme manquent.
+     - L'assistant de premier démarrage sait travailler avec SDDM : il y écrit sa connexion automatique dès que Plasma Login n'est pas activé (`src/bootutil/bootutil.cpp` de <https://invent.kde.org/plasma/plasma-setup>).
+     - **Thème « ankh »** (`/usr/share/sddm/themes/ankh`, Qt 6) : fond « Ankh Signal » flouté et assombri, grande horloge et date en français, image du compte dans un cercle (celle d'Ankh par défaut, dans `faces/.face.icon`, `UserModel.cpp` de <https://github.com/sddm/sddm>, version 0.21.0), champ du mot de passe en pilule avec le focus violet, secousse et message si le mot de passe est faux, alerte « Verr. Maj est activé », boutons ronds translucides (veille, redémarrage, arrêt), choix du compte, de la session et de la disposition du clavier s'il y en a plusieurs. Choisi par `/usr/lib/sddm/sddm.conf.d/ankh.conf` ; mes propres réglages, dans `/etc/sddm.conf.d`, passent après.
+     - Pas de page des réglages de SDDM : `sddm-kcm` n'existe dans Fedora 44 qu'en version 6.6.4, plus ancienne que Plasma 6.7 (À VALIDER à chaque version). L'écran se change dans ce dépôt.
+  2. **Écran de démarrage : thème Plymouth « ankh »** (modifie D-034, qui ne changeait que le filigrane du thème de Fedora).
+     - Module `two-step` de Plymouth 24 : fond graphite, logo d'Ankh au centre, fine barre de progression violette dessous, comme l'écran de chargement de la session ; sans le logo du fabricant du PC.
+     - **Saisie du mot de passe du disque (LUKS)** : champ en pilule au contour violet, puces et cadenas d'Ankh, comme l'écran de connexion. Les indicateurs de clavier (Verr. Maj, disposition) sont repris du thème « spinner » de Plymouth, celui que Fedora utilise. La construction échoue s'ils manquent.
+     - Textes des modes de mise à jour du système en français, en vouvoyant (« N'éteignez pas l'ordinateur »).
+     - Choisi par `plymouth-set-default-theme ankh`, puis copié dans l'initramfs, reconstruit à la fin de la construction (D-034).
+  3. **Logo officiel de VS Code** (remplace D-042, point 10) : l'icône du pack que Microsoft publie pour représenter VS Code (<https://code.visualstudio.com/brand>), téléchargée à la construction et refusée si son empreinte SHA-256 change. L'icône « </> » d'Ankh est retirée. VS Code ouvert se regroupe maintenant avec son icône épinglée : sous Wayland, sa fenêtre s'appelle `com.microsoft.VSCode` (vu par le test en VM), écrit dans `StartupWMClass`.
+  4. **Vouvoiement** : les textes affichés par Ankh vouvoient (page de l'assistant, accueil de KDE, raccourcis, messages des outils de dev). Les réponses de Claude aussi.
+- **Alternatives rejetées** :
+  - garder Plasma Login et modifier son programme : notre propre version à maintenir ;
+  - un thème SDDM ou Plymouth tiers : hors de Fedora, à suivre nous-mêmes ;
+  - le thème Plymouth « spinner » avec seulement d'autres images : il garde le logo du fabricant du PC et la disposition de Fedora.
+- **À VALIDER** :
+  - l'aspect sur les captures de la VM, puis sur ma machine ;
+  - la saisie du mot de passe LUKS sur ma machine : la VM de test n'a pas de disque chiffré, l'écran y est lancé à la main ;
+  - le portefeuille de KDE (KWallet) déverrouillé à la connexion par SDDM, comme avec Plasma Login (module `pam_kwallet` dans la configuration PAM de SDDM) ;
+  - SDDM et `sddm-wayland-plasma` à chaque nouvelle version de Fedora (D-017).
+- **Vérification** :
+  - `just test`, Test 14 (`tests/identite.sh`) : SDDM est le gestionnaire de connexion, Plasma Login est absent, le thème « ankh » est choisi et complet ; le thème est chargé par SDDM en mode test, hors écran, et la moindre erreur QML fait échouer la construction ; aucun tutoiement dans les pages d'Ankh. Test 9 : icône officielle de VS Code. Test 11 (`tests/sans-fedora.sh`) : thème Plymouth « ankh » choisi, et présent à l'identique dans l'initramfs ;
+  - test en VM (`tests/vm/run.sh`) : captures de l'écran de connexion, d'un faux mot de passe, puis connexion par cet écran avec le bon ; Plymouth lancé à la main pour capturer l'écran de démarrage et la saisie du mot de passe.
+- **Résultats** : première construction de la PR #13 en échec, `package kwin-wayland is not installed` : ce paquet n'existe pas sous ce nom dans Fedora 44. La construction vérifie maintenant le réglage de KWin et son programme. Résultats suivants : à venir.
+
+## D-044 — Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036)
+
+- **Statut** : DÉCIDÉ (2026-10-11) pour le principe, mon choix. **La façon de les construire est À DÉCIDER** par moi (options ci-dessous), avant la phase 5.
+- **Contexte** : « Ma vision s'est affinée. Je veux une version d'Ankh pour le dev, une pour le gaming, une pour le hacking, et une qui réunit toutes les versions. » D-036 avait fixé « un seul Ankh », avec tous les outils dans le menu.
+- **Décision (ce que je veux)** :
+  - **Ankh Dev** : coder (D-012, D-032, D-038, D-043). **Ankh Gaming** : jouer (D-011, D-041). **Ankh Hacking** : la cybersécurité, les labs et plus tard l'analyse de malware (D-013, D-014). **Ankh Complète** : les trois réunies.
+  - Toutes partagent le même socle : identité visuelle, sécurité (Secure Boot, LUKS, SELinux, pare-feu), mises à jour sans rien d'automatique, retour arrière, applications du quotidien, sauvegarde (phase 8) et protection (phase 4). Chacune existe pour Mesa et pour NVIDIA (D-021), avec et sans protection (D-030).
+  - **Ce qui ne change pas** : les règles 5, 7 et 8. Même dans Ankh Hacking, aucun outil offensif ni malware sur l'hôte : ils restent dans le conteneur Kali ou dans une VM. De D-036, je garde : chaque outil apparaît dans le menu comme une application ordinaire, isolé dessous, préparé au premier clic avec sa progression, sans « ankh-dev » à gérer. Ce qui change : une édition ne montre que ses outils.
+  - Noms (proposés, à confirmer) : Ankh Dev, Ankh Gaming, Ankh Hacking, Ankh Complète. Le nom `ankh-dev` est déjà celui de l'image du conteneur de dev (D-032) : l'un des deux devra être renommé.
+- **Options présentées pour la construction (À DÉCIDER)** :
+  1. **Quatre images construites en couches sur un socle commun** (recommandée).
+     - La CI construit une fois le socle, puis chaque édition par-dessus ; Ankh Complète empile les trois couches. Avec Mesa et NVIDIA : 8 images ; 16 avec les versions protégées de la phase 4 (D-030), sauf si la protection devient elle-même une couche.
+     - Changer d'édition, c'est `bootc switch` vers une autre image, appliqué au redémarrage que je choisis (D-010), avec retour arrière. Seules les couches qui diffèrent se téléchargent. Indice : en phase 2, un basculement entre deux images Ankh de même base n'a téléchargé que 641 octets (D-004). Le gain réel entre éditions est À VALIDER : il suppose que le socle soit construit une seule fois et réutilisé tel quel.
+     - Pour : de vraies versions, chacune ne contient que ce qu'elle utilise (Ankh Gaming n'a ni libvirt ni les outils des labs, Ankh Dev n'a pas les réglages du jeu) ; chacune est signée, testée et réversible comme aujourd'hui.
+     - Contre : quatre fois plus de constructions et de tests en VM à chaque changement. Ils peuvent tourner en parallèle ; leur gratuité pour un dépôt public est À VALIDER. Plus d'images à surveiller à chaque version de Fedora (D-017). Il faut redémarrer pour changer d'édition.
+  2. **Une seule image complète ; l'édition se choisit au premier démarrage, puis dans les réglages.**
+     - L'assistant demande « Dev, Gaming, Hacking ou Complète » ; le choix décide de ce que montrent le menu et la barre, et des outils préparés. Il se change à tout moment, sans redémarrer ni rien télécharger.
+     - Pour : le moins de travail (2 images, 4 avec la protection) ; changement instantané.
+     - Contre : ce ne sont pas de vraies versions. Tout ce qui est dans l'image est présent dans chaque édition, même caché (libvirt dans Ankh Gaming, par exemple). La différence de taille est faible, car le lourd (conteneur de dev, Steam, Kali) se télécharge au premier clic dans les deux options.
+  3. **Quatre images indépendantes, sans socle commun** : déconseillée. Le socle est construit quatre fois, les couches ne se partagent pas, et changer d'édition retélécharge presque toute l'image (D-027).
+- **Recommandation : option 1.** Elle colle à la vision (de vraies versions), garde le modèle image-based (une édition est une image signée, testée, réversible), et Ankh Complète est exactement la somme des trois. Son coût est surtout pour la CI, pas pour moi.
+- **Conséquences sur la feuille de route** : la phase 3 fait le contenu d'Ankh Dev, la phase 5 celui d'Ankh Gaming, les phases 6 et 7 celui d'Ankh Hacking. Avec l'option 1, une étape vient avant la phase 5 : séparer `build_files/build.sh` en socle et éditions, puis construire et tester les quatre éditions en CI. Avec l'option 2 : une page de choix dans l'assistant de premier démarrage.
+- **Vérification** : selon l'option choisie. Pour l'option 1 : chaque édition construite, testée et signée en CI ; démarrage en VM des éditions Mesa ; en VM, passage d'une édition à l'autre et retour arrière, avec la taille téléchargée mesurée.
+
+## D-045 — VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas
+
+- **Statut** : DÉCIDÉ (2026-10-11), ma demande.
+- **Contexte** : « Fais-moi un document qui dit les caractéristiques et les spécificités qu'Ankh devrait avoir à la toute fin, afin que je me rassure qu'on n'a pas dévié de ma vision. » La règle 11 demande une décision pour tout nouveau document.
+- **Décision** :
+  - [VISION.md](VISION.md) décrit Ankh une fois terminé : ses quatre éditions (D-044), ce qu'elles ont en commun, et ce que chacune apporte.
+  - Il ne crée ni besoin ni choix : chaque trait renvoie à mon besoin (ANKH-SPEC.md) ou à sa décision (D-xxx). Ce qui n'est pas encore tranché y est marqué `À DÉCIDER`, `TODO` ou `À VALIDER`, comme ailleurs.
+  - Il ne contient ni l'état d'avancement (AVANCEMENT.md), ni les raisons et les sources (DECISIONS.md), ni les étapes (CLAUDE.md, §5).
+  - **Garde-fou** : une décision qui change un trait de VISION.md met ce fichier à jour dans le même commit, et le compte rendu le signale. En cas de contradiction, DECISIONS.md fait foi pour les choix et ANKH-SPEC.md pour les besoins ; VISION.md est alors à corriger.
+- **Vérification** : je relis VISION.md ; chaque compte rendu dit s'il a changé.

@@ -9,6 +9,7 @@
 > | Chaque choix, ses raisons, ses sources et ses tests (`D-xxx`) | [DECISIONS.md](DECISIONS.md) |
 > | La présentation, l'architecture et la récupération après panne | [README.md](README.md) |
 > | Tout ce qui a été fait depuis le début, et ce qui reste à faire | [AVANCEMENT.md](AVANCEMENT.md) (D-029) |
+> | Le portrait d'Ankh une fois terminé, pour vérifier qu'on ne dévie pas | [VISION.md](VISION.md) (D-045) |
 > | Les règles, la méthode, la feuille de route et l'état du projet | ce fichier |
 >
 > En cas de contradiction : **DECISIONS.md fait foi pour les choix**, **ANKH-SPEC.md pour les besoins**. Ce fichier est alors à corriger.
@@ -17,7 +18,7 @@
 
 ## 1. Ankh en cinq lignes
 
-- Mon OS **personnel** (pas une distribution publique) pour le dev, le gaming et la cybersécurité. Image **générique**, conçue pour fonctionner sur le maximum de PC x86_64 (D-001, D-021).
+- Mon OS **personnel** (pas une distribution publique) pour le dev, le gaming et la cybersécurité, en quatre éditions : Dev, Gaming, Hacking, et Complète qui les réunit (D-044). Image **générique**, conçue pour fonctionner sur le maximum de PC x86_64 (D-001, D-021).
 - Système **image-based** : Fedora Atomic (Kinoite) + bootc, mises à jour d'un bloc, retour arrière (D-004).
 - Hôte minimal et protégé : Secure Boot, LUKS, rien d'installé en dehors de l'image (D-006 à D-009).
 - Applications en Flatpak, dev en conteneur, Kali en Podman rootless, malware et labs en VMs isolées (D-011 à D-014).
@@ -44,10 +45,12 @@
     - « Update Issue » dans Discover (D-028) : cause du test corrigée ; défaut de Discover suivi chez KDE (bug 523258, option A) ;
     - l'identité visuelle (D-037) et une interface douce, au niveau de Windows 11 et de macOS (D-039), dans l'image ; écran de chargement d'Ankh.
   - Questions 6 à 9 de ANKH-SPEC.md remplies le 2026-10-10 ; gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (D-041).
-  - En cours ([#12](https://github.com/PatrickChoumi/Ankh/pull/12), à fusionner seulement si les captures me plaisent) :
+  - Fait ([#12](https://github.com/PatrickChoumi/Ankh/pull/12) fusionnée) :
     - l'assistant de premier démarrage : fond d'Ankh, thème sombre d'Ankh, page « Bienvenue dans Ankh » (D-037) ;
-    - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil et VS Code d'Ankh, écran de connexion avec l'image de compte d'Ankh (D-042).
-  - Ensuite : la phase 5 (gaming, D-041). Proposé, à décider : écran de démarrage entièrement d'Ankh ; SDDM pour un écran de connexion entièrement dessiné (D-042).
+    - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil d'Ankh, image de compte d'Ankh (D-042).
+  - En cours ([#13](https://github.com/PatrickChoumi/Ankh/pull/13), à fusionner seulement si les captures me plaisent) : écran de démarrage (Plymouth) et écran de connexion (SDDM) entièrement d'Ankh, logo officiel de VS Code, vouvoiement (D-043). Touche au démarrage et à LUKS : à relire.
+  - Vision affinée le 2026-10-11 : quatre éditions, Dev, Gaming, Hacking et Complète (D-044) ; portrait final dans [VISION.md](VISION.md) (D-045). **À DÉCIDER par moi avant la phase 5 : la façon de construire les éditions** (D-044, options 1 à 3).
+  - Ensuite : la phase 5 (gaming, D-041), qui fait le contenu d'Ankh Gaming.
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
@@ -149,6 +152,8 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | **9. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Installation en ligne avec LUKS, même lente (D-027). Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux (le filtrage vient avec la phase 4, D-040). Une semaine d'usage sans retour arrière définitif |
 | **10. Vivre avec Ankh** | Corriger selon mes vraies irritations | Plusieurs semaines d'usage. Irritations notées, puis traitées une par une. Taille des mises à jour mesurée et réduite (D-027) |
 | **4. Protection** *(déplacée à la fin, D-040)* | safezone adapté et intégré (D-026, D-030) | Conception tranchée dans DECISIONS.md. Les tests de safezone passent sur l'image Ankh. Les contournements propres au modèle image-based (`bootc switch`, retour arrière, `/etc`) sont traités ou documentés. Filtrage vérifié sur ma machine. → **Ankh V1** |
+
+**Éditions (D-044)** : la phase 3 fait le contenu d'Ankh Dev, la phase 5 celui d'Ankh Gaming, les phases 6 et 7 celui d'Ankh Hacking ; Ankh Complète les réunit. La façon de les construire est À DÉCIDER avant la phase 5 ; selon le choix, une étape s'ajoute avant la phase 5.
 
 **Repoussé hors V1** : le matériel exclu par D-021 (NVIDIA ancien), distribution publique, ISO custom (l'ISO hors ligne envisagée par D-027 est abandonnée), CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
 

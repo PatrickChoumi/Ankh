@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-10** (PR #12 : assistant de premier démarrage, interface poussée au niveau de macOS et de Windows 11, écran de connexion d'Ankh, D-037 et D-042).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; quatre éditions, D-044 ; portrait final dans VISION.md, D-045).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -208,6 +208,16 @@
 - **CI de la PR #12 verte** ([run 38057489422](https://github.com/PatrickChoumi/Ankh/actions/runs/38057489422)) : accueil et raccourcis d'Ankh, menu et barre d'Ankh, recherche au centre, barre de progression au chargement, écran de verrouillage avec l'image de compte d'Ankh ; aucune marque de Fedora sur les captures.
   - Corrigé ensuite : fond de l'assistant (il restait uni), titre en double sur sa page, capture de l'écran de connexion.
   - À comprendre : VS Code ouvert à côté de son icône épinglée, et le flou invisible dans la VM (pas de carte graphique).
+- **PR #12 fusionnée** le 2026-10-11.
+- **Mes demandes du 2026-10-10 (fin)** : l'écran de démarrage entièrement d'Ankh, SDDM pour l'écran de connexion, le logo d'origine de VS Code, et ne plus tutoyer.
+- **Démarrage et connexion entièrement d'Ankh** (D-043, [PR #13](https://github.com/PatrickChoumi/Ankh/pull/13)) :
+  - **écran de démarrage** (Plymouth) : fond graphite, logo d'Ankh, fine barre de progression violette, sans le logo du fabricant du PC ; la saisie du mot de passe du disque (LUKS) prend le style d'Ankh ;
+  - **écran de connexion** : SDDM remplace Plasma Login, avec un écran dessiné pour Ankh : fond flouté, grande horloge, image du compte dans un cercle, champ du mot de passe en pilule, boutons ronds ;
+  - **VS Code** reprend son logo officiel, et se regroupe avec son icône épinglée ;
+  - **vouvoiement** dans tous les textes d'Ankh ; un test refuse le tutoiement ;
+  - la première construction a échoué : un paquet « kwin-wayland » n'existe pas dans Fedora 44. La construction vérifie maintenant le programme de KWin lui-même. La CI tourne de nouveau.
+- **Ma vision affinée** (2026-10-11) : Ankh reste sur Fedora Kinoite 44 (D-005), et je veux **quatre éditions** : Dev, Gaming, Hacking, et Complète qui les réunit (D-044). La façon de les construire est à choisir par moi ; Claude recommande quatre images construites sur un socle commun.
+- **Le portrait d'Ankh une fois terminé** est écrit dans [VISION.md](VISION.md) (D-045), pour vérifier qu'on ne dévie pas.
 
 ---
 
@@ -225,12 +235,14 @@
 6. **Plus rien de Fedora à l'écran et collection de fonds** (D-034) : fusionné.
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
-9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11) ; assistant de premier démarrage, thème clair, VS Code, écran de connexion et finitions dans la PR #12, à valider sur les captures. Proposé ensuite : un écran de démarrage (Plymouth) entièrement d'Ankh, avec barre de progression (touche au démarrage et à LUKS, à décider).
+9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11 et PR #12). Écran de démarrage et écran de connexion entièrement d'Ankh dans la PR #13 (D-043), à valider sur les captures. Reste : le fond de l'assistant de premier démarrage, toujours uni (D-037).
 10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
-- **Phases 5 à 7 — Gaming, Cyber, Labs** : elles demandent mes réponses aux questions 6 à 9 de ANKH-SPEC.md (jeux et anticheat, IA locale, analyse de malware, Wi-Fi offensif).
+- **Avant la phase 5 — Éditions** (D-044) : choisir comment construire les quatre éditions. Selon le choix, une étape s'ajoute : séparer la construction en socle et éditions (option 1), ou une page de choix dans l'assistant (option 2).
+- **Phase 5 — Gaming** : le contenu d'Ankh Gaming (D-041). Questions 6 à 9 répondues ; noms des jeux encore à donner.
+- **Phases 6 et 7 — Cyber, Labs** : le contenu d'Ankh Hacking (D-013, D-014). Les questions de ANKH-SPEC.md §4.4 sont à répondre avant.
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
   - sauvegarder ma distro actuelle ;
@@ -248,7 +260,8 @@
 - **Discover** : la notification et l'affichage des mises à jour, à l'écran (D-028).
 - **mcelog** : son comportement sur ma vraie machine (phase 9).
 - **Variante NVIDIA** : elle ne se teste pas en VM, seulement par des contrôles statiques en CI.
-- **Écran du mot de passe LUKS** : avec le logo d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS, D-034).
+- **Écran du mot de passe LUKS** : thème d'Ankh, à vérifier sur ma machine (le test en VM n'a pas de LUKS : l'écran y est lancé à la main, D-043).
+- **KDE Wallet avec SDDM** : déverrouillé à la connexion comme avec Plasma Login, à vérifier sur ma machine (D-043).
 - **KDE Wallet** : sa fenêtre s'ouvre au premier lancement de Chrome dans la VM (compte sans mot de passe) ; à vérifier sur ma machine.
 - **Taille des mises à jour** : 252,7 Mo pour passer d'une image Ankh à une autre sur la même base ; la part de Chrome, des fonds et de l'initramfs est à mesurer (D-027).
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
@@ -259,8 +272,10 @@
 
 ## Ce que je dois faire
 
-1. **Regarder les captures de la PR #12** (assistant, thème clair, recherche, raccourcis, écrans de connexion et de verrouillage) et dire à Claude ce qui me plaît ou non, avant de fusionner (D-037, D-042). Dire aussi si je veux l'écran de démarrage entièrement d'Ankh, ou SDDM pour l'écran de connexion.
-2. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-3. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
-4. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-5. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).
+1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
+2. **Choisir comment construire les éditions** (D-044) : option 1 (quatre images sur un socle commun, recommandée), option 2 (une seule image, édition choisie au premier démarrage) ou option 3 (quatre images indépendantes, déconseillée). Dire aussi si les noms Ankh Dev, Gaming, Hacking et Complète me conviennent.
+3. **Regarder les captures de la PR #13** (écran de démarrage, saisie du mot de passe du disque, écran de connexion) quand Claude les envoie, puis fusionner si elles me plaisent (D-043).
+4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
+5. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
+6. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+7. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).
