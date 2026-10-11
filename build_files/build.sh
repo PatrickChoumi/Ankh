@@ -629,9 +629,14 @@ mapfile -t plasma_login < <(rpm -q --qf '%{NAME}\n' plasma-login-manager kcm-pla
 if [[ ${#plasma_login[@]} -gt 0 ]]; then
     dnf5 -y remove "${plasma_login[@]}"
 fi
-for p in sddm sddm-wayland-plasma plasma-workspace plasma-setup kwin-wayland; do
+for p in sddm sddm-wayland-plasma plasma-workspace plasma-setup; do
     rpm -q "${p}"
 done
+# L'écran d'accueil de SDDM est lancé dans KWin par le réglage de
+# sddm-wayland-plasma : ce réglage et le programme de KWin doivent exister.
+# Le nom du paquet de KWin n'est pas vérifié ici, seulement le programme.
+grep -H '^CompositorCommand=kwin_wayland' /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf
+rpm -qf /usr/bin/kwin_wayland
 # Le service d'affichage passe de Plasma Login à SDDM. Le lien de la base,
 # s'il existe, doit être celui de Plasma Login.
 lien=/etc/systemd/system/display-manager.service
