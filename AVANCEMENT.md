@@ -215,7 +215,13 @@
   - **écran de connexion** : SDDM remplace Plasma Login, avec un écran dessiné pour Ankh : fond flouté, grande horloge, image du compte dans un cercle, champ du mot de passe en pilule, boutons ronds ;
   - **VS Code** reprend son logo officiel, et se regroupe avec son icône épinglée ;
   - **vouvoiement** dans tous les textes d'Ankh ; un test refuse le tutoiement ;
-  - la première construction a échoué : un paquet « kwin-wayland » n'existe pas dans Fedora 44. La construction vérifie maintenant le programme de KWin lui-même. La CI tourne de nouveau.
+  - la première construction a échoué : un paquet « kwin-wayland » n'existe pas dans Fedora 44. La construction vérifie maintenant le programme de KWin lui-même ;
+  - **CI de la PR #13 verte** ([run 38156340145](https://github.com/PatrickChoumi/Ankh/actions/runs/38156340145)) :
+    - écran de connexion d'Ankh, message « Mot de passe incorrect », puis connexion réussie par cet écran ;
+    - écran de démarrage d'Ankh, et saisie du mot de passe du disque dans le style d'Ankh ;
+    - VS Code avec son logo officiel ;
+  - corrigé ensuite, d'après les captures : la date de l'écran de connexion en français, la carte qui ne bouge plus quand un message apparaît, et les points du mot de passe du disque, décollés du bord du champ ;
+  - toujours à comprendre : le fond de l'assistant de premier démarrage reste uni. Le test affiche maintenant l'environnement de l'assistant.
 - **Ma vision affinée** (2026-10-11) : Ankh reste sur Fedora Kinoite 44 (D-005).
   - J'ai d'abord voulu quatre éditions : Dev, Gaming, Hacking, et Complète qui les réunit (D-044).
   - Puis j'ai choisi **une seule version, à la carte, comme l'installation d'Ubuntu** (D-046, qui remplace D-044) :
