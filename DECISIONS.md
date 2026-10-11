@@ -18,7 +18,7 @@
 
 | ID | Décision | Statut |
 |---|---|---|
-| D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021 ; « pas de branding » modifié par D-033) |
+| D-001 | Poste personnel, pas une distribution | DÉCIDÉ (« une seule machine » remplacé par D-021 ; « pas de branding » modifié par D-033 ; « pas d'ISO » modifié par D-046) |
 | D-002 | Une seule machine, un seul GPU en V1 | REMPLACÉE par D-021 |
 | D-003 | Linux uniquement, pas de dual boot | DÉCIDÉ |
 | D-004 | Système image-based : Fedora Atomic (Kinoite) + bootc | DÉCIDÉ (principe ; mise à jour non appliquée corrigée le 2026-10-09 ; étape 2 du test en VM devenue une mise à jour le 2026-10-09) |
@@ -41,10 +41,10 @@
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
 | D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
-| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035) |
+| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035 ; Claude et GitHub retirés : D-047) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
-| D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté ; réduction de la taille des mises à jour en phase 10) |
+| D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté ; réduction de la taille des mises à jour en phase 10 ; ISO hors ligne reprise par D-046) |
 | D-028 | Mises à jour du système dans Discover (complète D-025) | DÉCIDÉ (comportement dans l'interface À VALIDER ; « Update Issue » : causes trouvées ; option A choisie pour les micrologiciels, défaut suivi chez KDE) |
 | D-029 | AVANCEMENT.md : état de tout ce qui est fait et de ce qui reste | DÉCIDÉ |
 | D-030 | Variantes avec et sans protection safezone (complète D-026) | DÉCIDÉ (principe), conception À DÉCIDER en phase 4 |
@@ -53,7 +53,7 @@
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage ; écran de démarrage entièrement d'Ankh : D-043) |
 | D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
-| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; « un seul Ankh » modifié par D-044 : quatre éditions, les outils restent dans le menu et isolés dessous) |
+| D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; une seule version avec des options choisies à l'installation : D-046) |
 | D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (aperçus validés le 2026-10-09 ; intégré dans l'image avec D-039) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
@@ -61,8 +61,10 @@
 | D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; mise en œuvre en phase 5) |
 | D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043) |
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
-| D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | DÉCIDÉ (2026-10-11, mon choix) pour le principe ; construction À DÉCIDER avant la phase 5 |
+| D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
+| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix) ; lieu du choix et fabrication de l'ISO À VALIDER |
+| D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 
 ---
 
@@ -78,6 +80,7 @@
 - **Vérification** : décision de périmètre, pas technique. Critère d'application : tout ajout qui ne sert qu'à du matériel ou à des usages absents d'ANKH-SPEC.md est refusé.
 - **Modifiée par** : D-021 (2026-10-07). « Une seule machine » est remplacé par « une image générique pour le maximum de PC ». Le caractère personnel et non public reste inchangé.
 - **Modifiée par** : D-033 (2026-10-09). « Pas de branding » devient « habillage Ankh sur le bureau seulement » : nom, logo et fonds d'écran. Pas d'ISO custom, pas de changement au démarrage.
+- **Modifiée par** : D-046 (2026-10-11). Une ISO d'installation d'Ankh est faite pour la V1, avant la bascule sur ma machine. Ankh reste personnel : pas de distribution publique.
 
 ## D-002 — Une seule machine, un seul GPU en V1
 
@@ -588,6 +591,7 @@
   - Le volume téléchargé au premier démarrage (contrainte D-027).
 - **Vérification** : tests CI pour les fichiers de préinstallation et la politique ; test réel au premier démarrage.
 - **Modifiée par D-035 (2026-10-09)** : VLC et OnlyOffice deviennent des paquets de l'image, et non des Flatpaks préinstallés. Claude et GitHub restent des applications web de Chrome, installées par la politique `WebAppInstallForceList`.
+- **Modifiée par D-047 (2026-10-11)** : Chrome n'installe plus Claude ni GitHub. Je les installe moi-même si je les veux ; GitHub reste accessible dans VS Code par Git.
 
 ## D-025 — Terminal : le quotidien se fait sans terminal
 
@@ -658,6 +662,7 @@
   - Le module ne pèse que 256 Kio. Le reste vient probablement de la base de données RPM, réécrite dès qu'on installe un paquet (supposé, À VALIDER).
   - Avec Chrome (140 Mio), une mise à jour d'Ankh sur la même base devrait donc coûter de l'ordre de 180 Mo. À mesurer après la fusion de Chrome.
 - **Réduction de la taille des mises à jour : en phase 10** (mon choix du 2026-10-09). Mesurée à 1,2 Go depuis VLC et OnlyOffice (D-035). La piste (découper l'image en couches qui ne changent pas à chaque fois) attend la phase 10, comme le veut la règle « on optimise après avoir vécu avec le système ».
+- **Modifiée par D-046 (2026-10-11)** : le point 4 revient. L'installation se fait depuis une ISO d'Ankh qui contient le système et tous les outils des options, sans internet.
 
 ## D-028 — Mises à jour du système dans Discover (complète D-025)
 
@@ -1043,6 +1048,7 @@
     - l'image installée passe de 9,9 Go à 11,3 Go (taille décompressée affichée par `bootc install`) ;
     - la couche d'Ankh publiée sur `main` (sans OnlyOffice) se télécharge en 501,1 Mo. Avec OnlyOffice, une mise à jour devrait approcher 870 Mo (501 + 366, estimation). À MESURER après la fusion (D-027).
     - **Mesuré le 2026-10-09** ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515)) : passer à l'image publiée sur `main`, avec OnlyOffice et VLC, a téléchargé **1,2 Go** (2 couches), contre 501,1 Mo avant D-035. Comme toute reconstruction renouvelle la couche d'Ankh en entier, c'est la taille de chaque mise à jour que je lance. Réduire cette taille (découper l'image en couches qui ne changent pas à chaque fois) est une piste pour la phase 10 (D-027), ou plus tôt si je le décide.
+- **Modifiée par D-047 (2026-10-11)** : plus d'applications web Claude et GitHub installées par Chrome.
 
 ## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
 
@@ -1081,6 +1087,7 @@
     - la session de test se verrouillait puis éteignait l'écran : le compte de test ne le fait plus (réglage de la VM, pas de l'image) ;
     - le test lançait le raccourci comme un service systemd ordinaire, que systemd arrête avec tout ce qu'il a démarré quand le lanceur se termine : le conteneur et VS Code mouraient deux secondes après leur démarrage. Le menu de KDE lance ses applications comme des services avec `ExitType=cgroup` (`src/gui/systemd/systemdprocessrunner.cpp` de <https://invent.kde.org/frameworks/kio>), et le test fait maintenant de même. Le raccourci n'a pas changé.
   - La préparation garde son journal dans `~/.cache/ankh/preparation-dev.log`.
+- **Modifiée par D-044 puis par D-046 (2026-10-11)** : une seule version d'Ankh, avec des options choisies à l'installation (Simple, Dev, Gaming, Hacking, Complète). Le principe reste : chaque outil dans le menu, isolé dessous.
 
 ## D-037 — Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034)
 
@@ -1326,7 +1333,7 @@
 
 ## D-044 — Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036)
 
-- **Statut** : DÉCIDÉ (2026-10-11) pour le principe, mon choix. **La façon de les construire est À DÉCIDER** par moi (options ci-dessous), avant la phase 5.
+- **Statut** : REMPLACÉE par D-046 (2026-10-11), le jour même, après mes réponses sur la façon de les construire. Était : DÉCIDÉ (2026-10-11) pour le principe, construction À DÉCIDER.
 - **Contexte** : « Ma vision s'est affinée. Je veux une version d'Ankh pour le dev, une pour le gaming, une pour le hacking, et une qui réunit toutes les versions. » D-036 avait fixé « un seul Ankh », avec tous les outils dans le menu.
 - **Décision (ce que je veux)** :
   - **Ankh Dev** : coder (D-012, D-032, D-038, D-043). **Ankh Gaming** : jouer (D-011, D-041). **Ankh Hacking** : la cybersécurité, les labs et plus tard l'analyse de malware (D-013, D-014). **Ankh Complète** : les trois réunies.
@@ -1358,3 +1365,61 @@
   - Il ne contient ni l'état d'avancement (AVANCEMENT.md), ni les raisons et les sources (DECISIONS.md), ni les étapes (CLAUDE.md, §5).
   - **Garde-fou** : une décision qui change un trait de VISION.md met ce fichier à jour dans le même commit, et le compte rendu le signale. En cas de contradiction, DECISIONS.md fait foi pour les choix et ANKH-SPEC.md pour les besoins ; VISION.md est alors à corriger.
 - **Vérification** : je relis VISION.md ; chaque compte rendu dit s'il a changé.
+- **Modifiée par D-046 (2026-10-11)** : VISION.md décrit maintenant une seule version et ses options, au lieu des quatre éditions de D-044.
+
+## D-046 — Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036)
+
+- **Statut** : DÉCIDÉ (2026-10-11), mes choix. Le lieu exact du choix et la fabrication de l'ISO sont À VALIDER (ci-dessous).
+- **Contexte** : D-044 proposait quatre éditions et trois façons de les construire. Mes réponses du 2026-10-11 :
+  - « Et si on faisait juste une version complète, et c'est lors de l'installation que chacun choisit ce qu'il veut ? »
+  - « Comme Ubuntu, qui à l'installation propose la version complète ou la version simple, mais adapté pour Ankh. »
+  - « Tous les outils dans un ISO, et on installe juste ce qu'on veut : VS Code ne devrait être installé que si l'on a choisi l'option dev. »
+- **Décision** :
+  - **Une seule image du système**, complète. Elle existe toujours pour Mesa et pour NVIDIA (D-021), avec et sans protection (D-030). Les quatre éditions de D-044 sont abandonnées.
+  - **À l'installation, des cases à cocher**, combinables. Toutes ont le bureau d'Ankh :
+    - **Simple**, toujours incluse : Chrome, VLC et OnlyOffice ;
+    - **Dev** : VS Code et le conteneur de dev (D-032, D-036, D-038) ;
+    - **Gaming** : les lanceurs et les outils de D-041 ;
+    - **Hacking** : Kali (D-013) et les labs en VMs isolées (D-014) ;
+    - **Complète** : coche Dev, Gaming et Hacking.
+  - **Ce qui n'est pas choisi** : les gros outils sont absents du disque (conteneur de dev et VS Code, Steam et les lanceurs en Flatpak, conteneur Kali). Les petites pièces du système qui les servent restent dans l'image, cachées et à l'arrêt : outils du jeu (GameMode, MangoHud, Gamescope…), moteur des VMs. Leur taille est à mesurer.
+  - **Après l'installation**, une page des réglages permet d'ajouter ou de retirer une option. Ce qui est ajouté se télécharge quand je le décide (D-031). Ce qui est retiré libère sa place.
+  - **ISO d'installation d'Ankh** : elle contient le système et tous les outils des options, pour installer sans internet. Elle est construite par la CI et testée en VM juste avant la bascule sur ma machine (phase 9). Cela modifie D-001 (« pas d'ISO custom en V1 ») et reprend le point 4 de D-027, abandonné le 2026-10-07. L'ISO sert mes machines : Ankh n'est pas une distribution publique (D-001).
+  - **Les règles ne changent pas** :
+    - placement (règle 5) ;
+    - rien n'est installé sur l'hôte en dehors de l'image (D-009) : une option n'ajoute que des Flatpaks et des conteneurs, à leur place ;
+    - aucun outil offensif sur l'hôte (D-013).
+- **Raisons** :
+  - une seule image à construire et à tester, au lieu de 8 à 16 avec les éditions de D-044 ;
+  - les options se combinent (Dev et Gaming, par exemple) et se changent sans redémarrer ;
+  - avec l'ISO, l'installation ne dépend pas de ma connexion lente (D-027).
+- **Alternatives rejetées** :
+  - les quatre images de D-044 (option 1) : changer d'édition demande un redémarrage, et la CI travaille quatre fois plus ;
+  - rien d'absent du disque, même les petites pièces du système : il faudrait une image par combinaison d'options ;
+  - l'ISO tout de suite : elle grossirait à chaque phase et serait à refaire et à retester à chaque fois.
+- **À VALIDER**, à la mise en œuvre :
+  - **où se fait le choix**. L'installateur de Fedora (Anaconda) ne propose sans doute pas de choisir des logiciels pour un système image-based. Pistes : une extension de l'installateur, ou l'assistant de premier démarrage, juste après l'installation, qui piocherait dans ce que l'ISO a copié ;
+  - **par machine ou par compte**. Les conteneurs (dev, Kali) appartiennent à chaque compte ; les Flatpaks peuvent servir toute la machine ;
+  - **comment l'ISO embarque les Flatpaks et les images des conteneurs**, et l'outil qui la construit (`bootc-image-builder` ou un autre) ;
+  - **la taille de l'ISO** (10 à 15 Go, estimés) et **où l'héberger** : les fichiers d'une version publiée sur GitHub sont limités à 2 Gio ;
+  - **les données d'une option retirée** (projets du conteneur de dev, VMs des labs) : gardées, sauf si je demande à les supprimer.
+- **Feuille de route** :
+  - phase 3 : la page de choix et la page des réglages, pour Simple et Dev, testées en VM. Sans ISO pour l'instant : ce qui est choisi se télécharge ;
+  - phases 5 à 7 : elles remplissent Gaming et Hacking ;
+  - phase 9 : l'ISO, construite et testée en VM avant d'installer ma machine.
+- **Vérification** :
+  - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
+  - ajout puis retrait d'une option dans les réglages ;
+  - avec l'ISO : installation en VM sans réseau.
+
+## D-047 — Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035)
+
+- **Statut** : DÉCIDÉ (2026-10-11), mon choix : « Finalement, laisse tomber toutes les fenêtres de Chrome. Je vais les installer moi-même. »
+- **Décision** :
+  - La politique de Chrome qui installait Claude et GitHub dans leur propre fenêtre (`WebAppInstallForceList`, D-024 et D-035) est retirée de l'image.
+  - Je les installe moi-même depuis Chrome, si je le veux. GitHub reste accessible dans VS Code par Git (D-024).
+  - Les exigences « Claude installé par défaut » et « client GitHub installé par défaut » sont retirées de ANKH-SPEC.md (4.2).
+- **Conséquence** : aucune machine n'a encore Ankh, donc rien à nettoyer.
+- **Vérification** :
+  - `just test`, Test 12 (`tests/applications.sh`) : aucune politique de Chrome n'installe d'application web ;
+  - le test en VM ne vérifie plus ces fenêtres.

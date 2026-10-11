@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; quatre éditions, D-044 ; portrait final dans VISION.md, D-045).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; une seule version avec des options choisies à l'installation, D-046 ; plus de fenêtres Claude ni GitHub, D-047 ; portrait final dans VISION.md, D-045).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -216,7 +216,15 @@
   - **VS Code** reprend son logo officiel, et se regroupe avec son icône épinglée ;
   - **vouvoiement** dans tous les textes d'Ankh ; un test refuse le tutoiement ;
   - la première construction a échoué : un paquet « kwin-wayland » n'existe pas dans Fedora 44. La construction vérifie maintenant le programme de KWin lui-même. La CI tourne de nouveau.
-- **Ma vision affinée** (2026-10-11) : Ankh reste sur Fedora Kinoite 44 (D-005), et je veux **quatre éditions** : Dev, Gaming, Hacking, et Complète qui les réunit (D-044). La façon de les construire est à choisir par moi ; Claude recommande quatre images construites sur un socle commun.
+- **Ma vision affinée** (2026-10-11) : Ankh reste sur Fedora Kinoite 44 (D-005).
+  - J'ai d'abord voulu quatre éditions : Dev, Gaming, Hacking, et Complète qui les réunit (D-044).
+  - Puis j'ai choisi **une seule version, à la carte, comme l'installation d'Ubuntu** (D-046, qui remplace D-044) :
+    - Simple (Chrome, VLC, OnlyOffice), toujours incluse ;
+    - des cases Dev, Gaming et Hacking, combinables, et une case Complète qui coche tout ;
+    - ce qui n'est pas coché n'est pas installé ;
+    - les options se changent ensuite dans les réglages ;
+    - une ISO d'Ankh contient tout, pour installer sans internet. Elle se fait juste avant la bascule sur ma machine (phase 9).
+  - **Plus de fenêtres Claude ni GitHub** installées par Chrome : je les installerai moi-même (D-047). Retirées de l'image dans la PR #13.
 - **Le portrait d'Ankh une fois terminé** est écrit dans [VISION.md](VISION.md) (D-045), pour vérifier qu'on ne dévie pas.
 
 ---
@@ -227,7 +235,7 @@
 
 1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) : fusionné. Reste à vérifier à l'écran le navigateur par défaut dans KDE (captures).
-3. **Applications par défaut** (D-024, D-035) : fusionné. Ensuite : regarder les captures de VLC et d'OnlyOffice, vérifier les codecs de VLC sur ma machine, et mesurer la taille d'une mise à jour.
+3. **Applications par défaut** (D-024, D-035) : fusionné. Claude et GitHub retirés (D-047, PR #13). Ensuite : vérifier les codecs de VLC sur ma machine, et mesurer la taille d'une mise à jour.
 4. **Conteneur de dev** (D-032) : fusionné, avec les dernières versions LTS (Node.js 24, Java 25, D-038). Ensuite :
    - le tester pour de vrai (création, VS Code, une base de données) en VM ou sur la machine ;
    - le passer à Fedora 45 quand elle sortira (ma demande, procédure de D-017).
@@ -236,17 +244,18 @@
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
 9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11 et PR #12). Écran de démarrage et écran de connexion entièrement d'Ankh dans la PR #13 (D-043), à valider sur les captures. Reste : le fond de l'assistant de premier démarrage, toujours uni (D-037).
-10. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et la page des réglages pour les changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. À étudier d'abord : où se fait le choix, et s'il vaut pour la machine ou pour chaque compte.
+11. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
-- **Avant la phase 5 — Éditions** (D-044) : choisir comment construire les quatre éditions. Selon le choix, une étape s'ajoute : séparer la construction en socle et éditions (option 1), ou une page de choix dans l'assistant (option 2).
-- **Phase 5 — Gaming** : le contenu d'Ankh Gaming (D-041). Questions 6 à 9 répondues ; noms des jeux encore à donner.
-- **Phases 6 et 7 — Cyber, Labs** : le contenu d'Ankh Hacking (D-013, D-014). Les questions de ANKH-SPEC.md §4.4 sont à répondre avant.
+- **Phase 5 — Gaming** : remplit l'option Gaming (D-041, D-046). Questions 6 à 9 répondues ; noms des jeux encore à donner.
+- **Phases 6 et 7 — Cyber, Labs** : remplissent l'option Hacking (D-013, D-014, D-046). Les questions de ANKH-SPEC.md §4.4 sont à répondre avant.
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
   - sauvegarder ma distro actuelle ;
-  - installer Ankh avec LUKS ;
+  - construire l'ISO d'Ankh, et la tester en VM sans réseau (D-046) ;
+  - installer Ankh depuis l'ISO, avec LUKS ;
   - valider le matériel (GPU, son, réseau, veille, écrans, jeux) ;
   - utiliser Ankh une semaine.
   - Avant : répondre aux questions 1 à 5 et 10 à 12 de ANKH-SPEC.md.
@@ -273,9 +282,8 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Choisir comment construire les éditions** (D-044) : option 1 (quatre images sur un socle commun, recommandée), option 2 (une seule image, édition choisie au premier démarrage) ou option 3 (quatre images indépendantes, déconseillée). Dire aussi si les noms Ankh Dev, Gaming, Hacking et Complète me conviennent.
-3. **Regarder les captures de la PR #13** (écran de démarrage, saisie du mot de passe du disque, écran de connexion) quand Claude les envoie, puis fusionner si elles me plaisent (D-043).
-4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-5. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
-6. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-7. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).
+2. **Regarder les captures de la PR #13** (écran de démarrage, saisie du mot de passe du disque, écran de connexion) quand Claude les envoie, puis fusionner si elles me plaisent (D-043).
+3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
+4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
+5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+6. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).

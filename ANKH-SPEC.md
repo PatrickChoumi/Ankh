@@ -26,6 +26,7 @@
   - Les applications restent à jour.
 - **Usage du terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ, sens « confort » (D-025), voir 4.7.
 - **Accès au contenu pour adultes extrêmement difficile** — EXIGÉ, voir 4.8.
+- **Installation à la carte, comme Ubuntu** — EXIGÉ (2026-10-11) : une version Simple (Chrome, VLC, OnlyOffice), toujours incluse, et des cases Dev, Gaming, Hacking et Complète, combinables. Tout est dans une ISO, et seul ce que je coche est installé. Les options se changent ensuite dans les réglages. Réalisation : D-046.
 
 ---
 
@@ -70,7 +71,7 @@ Pour Q6, vérifier chaque jeu sur <https://areweanticheatyet.com> et <https://ww
 | Décision | Référence |
 |---|---|
 | Ankh est strictement personnel. Pas de distribution publique | D-001 |
-| Pas d'ISO custom en V1. À l'écran, plus rien de Fedora ; sous le capot, Fedora reste | D-001, D-033, D-034 |
+| Une ISO d'installation d'Ankh, pour mes machines, avant la bascule. À l'écran, plus rien de Fedora ; sous le capot, Fedora reste | D-001, D-033, D-034, D-046 |
 | Image générique, pour le maximum de PC (couverture matérielle proposée dans D-021) | D-021 |
 | Linux uniquement, pas de dual boot | D-003 |
 | Système immuable / image-based | D-004 |
@@ -120,9 +121,9 @@ Points ouverts dans cette architecture :
 - **Langages** : TODO
 - **IDE / éditeur** : Visual Studio Code, installé par défaut — EXIGÉ. Mode d'installation (Flatpak, image ou conteneur dev) : À DÉCIDER en phase 3
 - **Git / GitHub** (comptes, clés SSH, signature des commits) : TODO
-- **Client GitHub installé par défaut** — EXIGÉ. Application web github.com dans Chrome, plus Git dans VS Code — DÉCIDÉ (D-024)
+- **Client GitHub** : Git dans VS Code (D-024). Pas d'application web installée d'office : je l'installe moi-même si je veux (2026-10-11, D-047)
 - **IA / CLI** (assistants, outils en ligne de commande) : TODO
-- **Claude installé par défaut** — EXIGÉ. Application web claude.ai dans Chrome — DÉCIDÉ (D-024)
+- **Claude** : pas installé d'office ; je l'installe moi-même si je veux (2026-10-11, D-047)
 - **Conteneurs** : besoin d'une compatibilité Docker (socket, compose) ? TODO
 - **Bases de données** : TODO
 - **Autres outils** : TODO
@@ -156,8 +157,8 @@ Points ouverts dans cette architecture :
 - **Communication** : TODO
 - **Musique** : TODO
 - **Cloud / synchronisation** : TODO
-- **Multimédia** (vidéo, photo) : VLC en Flatpak préinstallé — DÉCIDÉ (D-024). Photo : TODO
-- **Bureautique** : OnlyOffice en Flatpak préinstallé — DÉCIDÉ (D-024)
+- **Multimédia** (vidéo, photo) : VLC, dans l'image, version Simple — DÉCIDÉ (D-035, D-046). Photo : TODO
+- **Bureautique** : OnlyOffice, dans l'image, version Simple — DÉCIDÉ (D-035, D-046)
 
 ### 4.6 Sécurité, sauvegarde et secrets
 
@@ -184,7 +185,7 @@ Points ouverts dans cette architecture :
 ## 5. Ce que je ne veux PAS
 
 - Pas de distribution publique.
-- Pas d'ISO custom en V1.
+- Pas d'ISO publiée comme une distribution : l'ISO d'Ankh sert à installer mes machines (D-046).
 - Pas de nom ni de logo de Fedora à l'écran (D-034). Sous le capot, Fedora ne me dérange pas.
 - Pas de réglage propre à une seule machine dans l'image (D-021).
 - Pas de dual boot ni de Windows installé en natif (une VM Windows reste possible, voir Q8).
