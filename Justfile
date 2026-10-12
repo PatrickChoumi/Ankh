@@ -132,7 +132,7 @@ test variant:
     echo "Test 14 : identité visuelle d'Ankh et interface douce : couleurs, polices, barre, Breeze, Konsole (D-037, D-039)"
     podman run --rm -i --network=none "${image}" bash -s < tests/identite.sh
 
-    echo "Test 15 : options d'Ankh, Simple toujours incluse, Dev choisie ou non (D-046)"
+    echo "Test 15 : options d'Ankh, Simple toujours incluse, Dev choisie ou non, fenêtre « Options d'Ankh » (D-046)"
     podman run --rm -i --network=none "${image}" bash -s < tests/options.sh
 
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then

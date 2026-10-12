@@ -28,7 +28,7 @@ Comme l'installation d'Ubuntu, adaptée à Ankh : des cases à cocher, combinabl
 
 - **Une seule ISO d'installation d'Ankh** pour tous les PC, publiée dans une Release GitHub : elle contient le système, qui s'installe sans internet. Les options cochées se téléchargent ensuite, seulement elles. Sur un PC NVIDIA, Ankh propose sa version NVIDIA (D-048, D-049).
 - **Ce qui n'est pas coché n'est pas installé** : sans la case Dev, pas de VS Code ; sans Gaming, pas de Steam ; sans Hacking, pas de Kali. Seules quelques petites pièces du système restent présentes, cachées et à l'arrêt (D-046).
-- **Les options se changent après l'installation**, dans les réglages. Ce qui est ajouté se télécharge quand je le décide ; ce qui est retiré libère sa place (D-031, D-046).
+- **Les options se changent après l'installation**, dans la fenêtre « Options d'Ankh » des réglages, avec les mêmes cartes qu'à l'installation et le mot de passe d'un administrateur. Ce qui est ajouté se télécharge quand je le décide ; ce qui est retiré libère sa place (D-031, D-046).
 - **Le système reste le même pour tous** : une seule image, pour les cartes graphiques AMD et Intel (Mesa) et NVIDIA récentes (D-021), avec et sans la protection contre le contenu pour adultes (D-030).
 - Dans le menu, chaque outil installé apparaît comme une application ordinaire, et reste isolé dessous (D-036).
 - **Le choix se fait au premier démarrage**, dans l'assistant d'Ankh, et vaut pour toute la machine (D-046).

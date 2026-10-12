@@ -150,8 +150,13 @@ grep -q 'Raccourcis utiles' /usr/share/plasma/plasma-welcome/extra-pages/01-Racc
 if LC_ALL=C.UTF-8 grep -nE "(\"|=)[^\"]*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/plasma/plasma-welcome/intro-customization.desktop \
     /usr/share/plasma/plasma-welcome/extra-pages/*.qml "${module}/contents/ui/main.qml" \
     /usr/share/plasma/packages/org.ankh.plasmasetup.options/contents/ui/main.qml \
+    /usr/lib64/qt6/qml/org/ankh/composants/*.qml /usr/share/plasma/plasmoids/org.ankh.options/contents/ui/*.qml \
     /usr/share/applications/ankh-options.desktop /usr/libexec/ankh-options-reglages; then
     echec "tutoiement dans un texte affiché par Ankh (lignes ci-dessus)"
+fi
+# Le message de la fenêtre du mot de passe, dans l'action polkit des options
+if LC_ALL=C.UTF-8 grep -nE "<(message|description)>.*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/polkit-1/actions/org.ankh.options.policy; then
+    echec "tutoiement dans le message de l'action polkit des options (lignes ci-dessus)"
 fi
 # Image de compte d'Ankh pour chaque nouveau compte, enregistrée pour l'écran
 # de connexion à la première session

@@ -208,7 +208,11 @@ systemctl --global enable podman.socket
 # - « Options d'Ankh », dans la Configuration du système (catégorie
 #   Système, dossier plasma/systemsettings/externalmodules lu par
 #   app/kcmmetadatahelpers.h de https://invent.kde.org/plasma/systemsettings)
-#   et dans le menu, permet de changer d'avis (mot de passe administrateur).
+#   et dans le menu, permet de changer d'avis : une fenêtre aux mêmes cartes
+#   que la page de l'assistant (widget org.ankh.options, ouvert par
+#   plasmawindowed ; cartes du module QML org.ankh.composants), qui applique
+#   le choix par pkexec avec le mot de passe d'un administrateur (action
+#   polkit org.ankh.options.appliquer).
 # Ce changement touche à polkit : à relire.
 systemctl enable ankh-options.service
 for f in /usr/share/applications/*.desktop; do
@@ -222,21 +226,28 @@ done
 desktop-file-validate /usr/share/ankh/options/*/applications/*.desktop /usr/share/applications/ankh-options.desktop
 install -d -m 0755 /usr/share/plasma/systemsettings/externalmodules
 ln -s /usr/share/applications/ankh-options.desktop /usr/share/plasma/systemsettings/externalmodules/ankh-options.desktop
-# La page de l'assistant lance sa commande par le moteur « executable » de
-# Plasma5Support (src/dataengines/executable de
-# https://invent.kde.org/plasma/plasma5support), et la page des réglages
-# montre ses cases avec kdialog : les deux doivent être là.
+# La page de l'assistant et la fenêtre des réglages lancent leurs commandes
+# par le moteur « executable » de Plasma5Support (src/dataengines/executable
+# de https://invent.kde.org/plasma/plasma5support). La fenêtre s'ouvre par
+# plasmawindowed, applique le choix par pkexec, puis met à jour le menu
+# (kbuildsycoca6) et la barre (busctl) de la session : tout doit être là.
 moteur="$(find /usr/lib64/qt6/plugins -name 'plasma_engine_executable.so' -print -quit)"
 if [[ -z "${moteur}" ]]; then
-    echo "Moteur « executable » de Plasma5Support introuvable : page de l'assistant à revoir" >&2
+    echo "Moteur « executable » de Plasma5Support introuvable : options d'Ankh à revoir" >&2
     exit 1
 fi
 echo "Moteur « executable » : ${moteur} ($(rpm -qf "${moteur}"))"
 test -d /usr/lib64/qt6/qml/org/kde/plasma/plasma5support
-if ! command -v kdialog > /dev/null; then
-    dnf5 -y install kdialog
-fi
-command -v kdialog
+for outil in plasmawindowed pkexec kbuildsycoca6 busctl; do
+    if ! chemin="$(command -v "${outil}")"; then
+        echo "${outil} introuvable : options d'Ankh à revoir" >&2
+        exit 1
+    fi
+    paquet="$(rpm -qf "${chemin}")"
+    echo "${outil} : ${chemin} (${paquet})"
+done
+# La fenêtre du mot de passe de pkexec : l'agent polkit de KDE
+rpm -q polkit-kde
 
 # D-033 : habillage Ankh, sur le bureau seulement (modifie D-001). Le logo et
 # les fonds d'écran viennent de build_files/artwork et sont copiés juste au-dessus.

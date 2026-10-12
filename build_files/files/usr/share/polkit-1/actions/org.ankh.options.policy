@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!--
+  Options d'Ankh (D-046) : la fenêtre « Options d'Ankh » applique le choix
+  pour toute la machine par « pkexec /usr/libexec/ankh-options appliquer
+  <choix> » (/usr/libexec/ankh-options-reglages). pkexec retient cette action
+  pour ce programme (annotation org.freedesktop.policykit.exec.path, pkexec(1)) :
+  le mot de passe d'un administrateur est toujours demandé (auth_admin et
+  auth_admin_keep, polkit(8)), comme pour démarrer un service de systemd.
+  Ce fichier touche à polkit : à relire.
+-->
+<policyconfig>
+  <vendor>Ankh</vendor>
+  <icon_name>ankh-logo</icon_name>
+
+  <action id="org.ankh.options.appliquer">
+    <description>Changer les options d'Ankh</description>
+    <message>Changer les outils installés sur cette machine demande le mot de passe d'un administrateur.</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/ankh-options</annotate>
+  </action>
+</policyconfig>

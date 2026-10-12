@@ -10,6 +10,9 @@
 // le moteur « executable » de Plasma5Support, celui des widgets de Plasma
 // (src/dataengines/executable de https://invent.kde.org/plasma/plasma5support).
 // Le choix est appliqué à l'affichage de la page, puis à chaque changement.
+// Les cartes viennent du module org.ankh.composants
+// (/usr/lib64/qt6/qml/org/ankh/composants), partagé avec la fenêtre
+// « Options d'Ankh ».
 
 import QtQuick
 import QtQuick.Controls
@@ -20,15 +23,13 @@ import org.kde.plasma.plasma5support as P5Support
 
 import org.kde.plasmasetup.components as PlasmaSetupComponents
 
+import org.ankh.composants as Ankh
+
 PlasmaSetupComponents.SetupModule {
     id: root
 
-    // Options proposées aujourd'hui. Gaming et Hacking arrivent avec les
-    // phases 5 à 7 (CLAUDE.md, §5) : elles sont montrées, grisées.
-    property bool dev: true
-
     // Choix au format du service : « simple », ou les options séparées par « _ »
-    readonly property string choix: dev ? "dev" : "simple"
+    readonly property string choix: liste.choix
     property string applique: ""
     property bool enCours: false
     property string erreur: ""
@@ -69,87 +70,6 @@ PlasmaSetupComponents.SetupModule {
         }
     }
 
-    // Une option : icône, nom, contenu, et sa case
-    component Option: Rectangle {
-        id: option
-
-        property string icone
-        property string titre
-        property string detail
-        property string mention: ""
-        property bool coche: false
-        property bool modifiable: true
-        signal basculee(bool coche)
-
-        Layout.fillWidth: true
-        implicitHeight: ligne.implicitHeight + Kirigami.Units.largeSpacing * 2
-        radius: Kirigami.Units.cornerRadius
-        color: Kirigami.Theme.alternateBackgroundColor
-        border.width: 1
-        border.color: coche && modifiable
-            ? Kirigami.Theme.highlightColor
-            : Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.12)
-        opacity: modifiable || coche ? 1 : 0.55
-
-        // Toute la carte se clique ; la case, au-dessus, garde ses propres clics.
-        MouseArea {
-            anchors.fill: parent
-            enabled: option.modifiable
-            cursorShape: Qt.PointingHandCursor
-            onClicked: option.basculee(!option.coche)
-        }
-
-        RowLayout {
-            id: ligne
-            anchors.fill: parent
-            anchors.margins: Kirigami.Units.largeSpacing
-            spacing: Kirigami.Units.largeSpacing
-
-            Kirigami.Icon {
-                Layout.alignment: Qt.AlignVCenter
-                implicitWidth: Kirigami.Units.iconSizes.medium
-                implicitHeight: Kirigami.Units.iconSizes.medium
-                source: option.icone
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 0
-
-                RowLayout {
-                    spacing: Kirigami.Units.smallSpacing
-                    Label {
-                        text: option.titre
-                        font.weight: Font.DemiBold
-                    }
-                    Label {
-                        visible: option.mention.length > 0
-                        text: option.mention
-                        font: Kirigami.Theme.smallFont
-                        opacity: 0.7
-                    }
-                }
-                Label {
-                    Layout.fillWidth: true
-                    text: option.detail
-                    wrapMode: Text.Wrap
-                    opacity: 0.8
-                }
-            }
-
-            CheckBox {
-                Layout.alignment: Qt.AlignVCenter
-                checked: option.coche
-                enabled: option.modifiable
-                Accessible.name: option.titre
-                onToggled: {
-                    option.basculee(checked);
-                    checked = Qt.binding(() => option.coche);
-                }
-            }
-        }
-    }
-
     contentItem: ScrollView {
         id: defilement
         contentWidth: availableWidth
@@ -165,49 +85,10 @@ PlasmaSetupComponents.SetupModule {
                 text: "Cochez ce que vous voulez installer. Ce qui n'est pas coché n'est pas installé. Vous pourrez changer d'avis à tout moment dans la Configuration du système, page « Options d'Ankh »."
             }
 
-            Option {
-                icone: "checkbox"
-                titre: "Complète"
-                detail: "Tout ce qui est proposé ci-dessous."
-                coche: root.dev
-                onBasculee: coche => root.dev = coche
-            }
-
-            Kirigami.Separator {
+            // Les cartes, communes avec la fenêtre « Options d'Ankh »
+            Ankh.ListeOptions {
+                id: liste
                 Layout.fillWidth: true
-            }
-
-            Option {
-                icone: "applications-internet"
-                titre: "Simple"
-                mention: "Toujours incluse"
-                detail: "Le bureau d'Ankh, Chrome, VLC et OnlyOffice."
-                coche: true
-                modifiable: false
-            }
-
-            Option {
-                icone: "ankh-vscode"
-                titre: "Dev"
-                detail: "VS Code, Java, Python, JavaScript, C et C++, bases de données. Se prépare au premier lancement de VS Code."
-                coche: root.dev
-                onBasculee: coche => root.dev = coche
-            }
-
-            Option {
-                icone: "applications-games"
-                titre: "Gaming"
-                mention: "Bientôt"
-                detail: "Steam, Heroic, Lutris, Bottles, les manettes."
-                modifiable: false
-            }
-
-            Option {
-                icone: "security-high"
-                titre: "Hacking"
-                mention: "Bientôt"
-                detail: "Kali dans un conteneur isolé, labs dans des VMs isolées."
-                modifiable: false
             }
 
             Kirigami.InlineMessage {

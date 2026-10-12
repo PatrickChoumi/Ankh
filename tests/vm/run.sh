@@ -454,32 +454,52 @@ check_vscode() {
     show_windows
 }
 
+# Script de KWin lancé dans la session d'un compte : kwin_script COMPTE NOM
+# ÉTIQUETTE SCRIPT. Ses lignes console.warn() qui portent l'étiquette sont
+# lues dans le journal de la session, puis affichées.
+kwin_script() {
+    local user=$1 nom=$2 etiquette=$3 script=$4 debut
+    debut=$(vm date +%s)
+    # vm() ne lit pas l'entrée standard (ssh -n) : le script passe par la
+    # commande, protégé pour le shell de la VM.
+    vm "printf '%s\n' $(printf '%q' "$script") > /tmp/$nom.js && chmod 0644 /tmp/$nom.js"
+    if in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting loadScript ss "/tmp/$nom.js" "$nom" &&
+        in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting start; then
+        sleep 3
+        if ! vm "journalctl --no-pager -b --since=@$debut _UID=$(vm id -u "$user") --grep $etiquette --output cat"; then
+            echo "($nom : rien dans le journal)"
+        fi
+        if ! in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting unloadScript s "$nom"; then
+            echo "($nom : script de KWin non retiré)"
+        fi
+    else
+        echo "($nom : script de KWin impossible à charger)"
+    fi
+}
+
 # Fenêtres ouvertes vues par KWin : classe, nom et fichier .desktop. La barre
 # relie une fenêtre à son lanceur par ces valeurs (windowUrlFromMetadata,
 # libtaskmanager/tasktools.cpp de plasma-workspace) ; diagnostic seulement.
 show_windows() {
-    local user=ankhvm script
-    script='for (const w of workspace.windowList()) {
+    kwin_script ankhvm ankh-fenetres ANKH-FENETRE 'for (const w of workspace.windowList()) {
     if (w.normalWindow) {
         console.warn("ANKH-FENETRE classe=" + w.resourceClass + " nom=" + w.resourceName +
                      " desktop=" + w.desktopFileName + " titre=" + w.caption);
     }
 }'
-    # vm() ne lit pas l'entrée standard (ssh -n) : le script passe par la
-    # commande, protégé pour le shell de la VM.
-    vm "printf '%s\n' $(printf '%q' "$script") > /tmp/ankh-fenetres.js && chmod 0644 /tmp/ankh-fenetres.js"
-    if in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting loadScript ss /tmp/ankh-fenetres.js ankh-fenetres &&
-        in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting start; then
-        sleep 3
-        if ! vm "journalctl --no-pager -b _UID=$(vm id -u "$user") --grep ANKH-FENETRE --output cat"; then
-            echo "(fenêtres : rien dans le journal)"
-        fi
-        if ! in_session "$user" busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting unloadScript s ankh-fenetres; then
-            echo "(fenêtres : script de KWin non retiré)"
-        fi
-    else
-        echo "(fenêtres : script de KWin impossible à charger)"
-    fi
+}
+
+# Rend active, dans la session du compte de test, la fenêtre dont le nom de
+# fichier .desktop vu par KWin contient $1 : le clavier de la VM va vers elle.
+# Sa place à l'écran est affichée (diagnostic).
+activate_window() {
+    kwin_script ankhvm ankh-activer ANKH-ACTIVEE "for (const w of workspace.windowList()) {
+    if (String(w.desktopFileName).includes('$1')) {
+        workspace.activeWindow = w;
+        const g = w.frameGeometry;
+        console.warn('ANKH-ACTIVEE ' + w.desktopFileName + ' titre=' + w.caption + ' place=' + g.x + ',' + g.y + ' ' + g.width + 'x' + g.height);
+    }
+}"
 }
 
 # Quand VS Code ne s'ouvre pas : journal de la préparation, sortie du
@@ -597,21 +617,131 @@ check_options_assistant() {
     echo "Options : Simple seule retire VS Code du menu, Dev le remet ; le compte de l'assistant ne démarre que ankh-options@"
 }
 
-# D-046 : « Options d'Ankh » dans la Configuration du système (catégorie
-# Système). L'ouvrir lance sa fenêtre à cases ; elle est fermée par Échap,
-# ce qui ne change rien.
+# Quand « Options d'Ankh » ne fait pas ce qui est attendu : choix enregistré,
+# menu, et messages de la fenêtre, de pkexec et de polkit.
+explain_options() {
+    local cmd
+    log "Diagnostic : Options d'Ankh"
+    for cmd in \
+        'cat /etc/ankh/options' \
+        'ls -la /usr/local/share/applications/' \
+        "journalctl --no-pager -b -o cat _UID=$(vm id -u ankhvm) | grep -iE 'plasmawindowed|org.ankh|ankh-options|pkexec|polkit|qml' | tail -n 40" \
+        'journalctl --no-pager -b -o cat -u polkit.service | tail -n 20' \
+        'pgrep -a -u ankhvm -f "plasmawindowed|polkit|pkexec|ankh-options"'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+}
+
+# Applications épinglées dans la barre du compte de test, lues dans Plasma
+# par son script (méthode evaluateScript, comme ankh-options-reglages).
+pinned_apps() {
+    in_session ankhvm busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell evaluateScript s \
+        'for (const p of panels()) { for (const w of p.widgets("org.kde.plasma.icontasks")) { w.currentConfigGroup = ["General"]; print(w.readConfig("launchers", []).join(",")); } }'
+}
+
+# Choix d'options fait au clavier dans la fenêtre « Options d'Ankh » ouverte,
+# comme on le ferait : Espace sur la première case (Complète, qui a le clavier
+# à l'ouverture), Entrée pour appliquer, puis le mot de passe du compte de test
+# dans la fenêtre de polkit. Captures : la fenêtre juste avant d'appliquer,
+# puis la fenêtre du mot de passe. Attend ensuite que le choix enregistré soit
+# $3 (une minute au plus).
+choose_options() {
+    local avant=$1 mot_de_passe=$2 attendu=$3 deadline
+    activate_window org.kde.plasmawindowed
+    monitor 'sendkey spc'
+    sleep 2
+    screenshot "$avant"
+    monitor 'sendkey ret'
+    sleep 8
+    activate_window polkit
+    screenshot "$mot_de_passe"
+    type_text ankhtest42
+    monitor 'sendkey ret'
+    deadline=$((SECONDS + 60))
+    until [[ $(vm "sed -n 's/^OPTIONS=//p' /etc/ankh/options") == "$attendu" ]]; do
+        if ((SECONDS >= deadline)); then
+            screenshot "$avant-echec"
+            explain_options
+            die "« Options d'Ankh » n'a pas enregistré le choix « $attendu » (D-046)"
+        fi
+        sleep 5
+    done
+    # Le temps que le menu, la barre et la fenêtre suivent
+    sleep 15
+}
+
+# D-046 : « Options d'Ankh », dans la Configuration du système (catégorie
+# Système). Sa fenêtre (widget org.ankh.options, ouvert par plasmawindowed)
+# est capturée, puis utilisée au clavier : Dev retirée, puis remise. Chaque
+# fois, le mot de passe d'un administrateur est demandé par polkit (pkexec),
+# et le menu et la barre suivent. Le compte de test est administrateur
+# (groupe wheel) le temps de cet essai, comme le compte créé par l'assistant.
 check_options_reglages() {
+    local user=ankhvm epinglees
+    vm "echo 'ankhvm:ankhtest42' | chpasswd && usermod -aG wheel ankhvm"
     # VS Code, ouvert par check_vscode, cacherait la fenêtre
-    close_app ankhvm code
-    launch_in_session ankhvm systemsettings ankh-options
+    close_app "$user" code
+    launch_in_session "$user" systemsettings ankh-options
     sleep 20
     screenshot 1-options-reglages
+    if ! vm pgrep -u "$user" -x plasmawindowed > /dev/null; then
+        explain_options
+        die "la fenêtre « Options d'Ankh » ne s'est pas ouverte (D-046)"
+    fi
+    show_windows
+    if ! epinglees=$(pinned_apps); then
+        die "barre du compte de test illisible"
+    fi
+    echo "Barre avant : $epinglees"
+
+    log "Options d'Ankh : Dev retirée"
+    choose_options 1-options-reglages-simple 1-options-mot-de-passe ""
+    screenshot 1-options-reglages-fait
+    if vm test -e /usr/local/share/applications/ankh-vscode.desktop; then
+        die "VS Code reste dans le menu après le retrait de Dev (D-046)"
+    fi
+    if ! epinglees=$(pinned_apps); then
+        die "barre du compte de test illisible"
+    fi
+    echo "Barre après le retrait de Dev : $epinglees"
+    [[ $epinglees != *ankh-vscode.desktop* ]] || die "VS Code reste épinglé dans la barre après le retrait de Dev (D-046)"
+    close_app "$user" plasmawindowed
+    close_app "$user" systemsettings
+    screenshot 1-options-barre-sans-dev
+    # La fenêtre propose alors de supprimer l'environnement de dev (capture
+    # 1-options-reglages-fait) : la commande de son bouton « Supprimer » est
+    # essayée ici. Le conteneur et son image doivent partir.
+    in_session "$user" /usr/libexec/ankh-dev supprimer
+    if in_session "$user" podman container exists ankh-dev ||
+        in_session "$user" podman image exists ghcr.io/patrickchoumi/ankh-dev:latest; then
+        die "l'environnement de dev existe encore après « ankh-dev supprimer » (D-046)"
+    fi
+    echo "Environnement de dev supprimé : conteneur et image"
+
+    log "Options d'Ankh : Dev remise"
+    launch_in_session "$user" plasmawindowed org.ankh.options
+    sleep 15
+    choose_options 1-options-reglages-dev 1-options-mot-de-passe-dev dev
+    screenshot 1-options-reglages-dev-fait
+    vm test -e /usr/local/share/applications/ankh-vscode.desktop ||
+        die "VS Code ne revient pas dans le menu avec Dev (D-046)"
+    if ! epinglees=$(pinned_apps); then
+        die "barre du compte de test illisible"
+    fi
+    echo "Barre après le retour de Dev : $epinglees"
+    [[ $epinglees == *ankh-vscode.desktop* ]] || die "VS Code n'est pas épinglé dans la barre au retour de Dev (D-046)"
+    # Échap ferme la fenêtre
+    activate_window org.kde.plasmawindowed
     monitor 'sendkey esc'
     sleep 3
-    close_app ankhvm kdialog
-    close_app ankhvm systemsettings
-    vm grep -qx "OPTIONS=dev" /etc/ankh/options ||
-        die "fermer « Options d'Ankh » sans valider a changé le choix (D-046)"
+    if vm pgrep -u "$user" -x plasmawindowed > /dev/null; then
+        die "Échap ne ferme pas la fenêtre « Options d'Ankh » (D-046)"
+    fi
+    vm gpasswd -d ankhvm wheel
+    echo "Options d'Ankh : Dev retirée puis remise avec le mot de passe, menu et barre à jour"
 }
 
 # D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de
