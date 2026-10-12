@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Options d'Ankh
+GenericName=Choix des outils installés
+Comment=Ajouter ou retirer des outils : Dev, Gaming, Hacking. Simple (Chrome, VLC, OnlyOffice) est toujours là.
+Exec=/usr/libexec/ankh-options-reglages
+Icon=ankh-logo
+Terminal=false
+Categories=Settings;System;
+Keywords=options;outils;dev;gaming;hacking;installer;
+X-KDE-System-Settings-Parent-Category=system-administration
+X-KDE-Weight=20

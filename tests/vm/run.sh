@@ -382,10 +382,13 @@ check_installed() {
     # D-031 : rien ne se télécharge ni ne s'installe sans moi.
     [[ $(vm systemctl is-enabled rpm-ostreed-automatic.timer) == masked ]] ||
         die "le téléchargement automatique du système n'est pas désactivé (D-031)"
-    # D-036 : VS Code dans le menu dès l'installation (le premier clic est
-    # testé une fois, dans la session de test, par check_vscode).
-    vm test -x /usr/libexec/ankh-vscode -a -f /usr/share/applications/ankh-vscode.desktop ||
-        die "VS Code absent du menu (D-036)"
+    # D-036, D-046 : VS Code dans le menu dès l'installation, par l'option
+    # Dev (lien posé au démarrage par ankh-options.service ; sans choix
+    # enregistré, toutes les options sont là). Le premier clic est testé une
+    # fois, dans la session de test, par check_vscode.
+    vm test -x /usr/libexec/ankh-vscode -a -L /usr/local/share/applications/ankh-vscode.desktop \
+        -a -f /usr/local/share/applications/ankh-vscode.desktop ||
+        die "VS Code absent du menu (D-036, D-046)"
     # D-033 : le système s'appelle Ankh, jusque dans le menu de démarrage
     # (titre écrit par ostree à partir de PRETTY_NAME).
     # shellcheck disable=SC2016 # variables lues dans la VM
@@ -558,6 +561,55 @@ close_app() {
         vm pkill -u "$user" -x "$name"
         sleep 2
     fi
+}
+
+# D-046 : la page « Choisissez vos outils » de l'assistant, deux pages après
+# « Bienvenue dans Ankh » (puis la langue). Elle applique son choix par défaut
+# (Dev) dès qu'elle s'affiche, par le service ankh-options@dev, que le compte
+# de l'assistant peut démarrer sans mot de passe (règle polkit d'Ankh), et
+# lui seul. Le bouton « Next » est au même endroit sur chaque page (captures).
+check_options_assistant() {
+    click 835 646
+    sleep 5
+    click 835 646
+    sleep 10
+    screenshot 1-assistant-options
+    if ! vm grep -qx "OPTIONS=dev" /etc/ankh/options; then
+        # shellcheck disable=SC2016 # variables lues dans la VM
+        if ! vm 'cat /etc/ankh/options; journalctl -b --no-pager -o cat -u "ankh-options@*";
+            journalctl -b --no-pager -o cat _UID="$(id -u plasma-setup)" | tail -n 30'; then
+            echo "(diagnostic des options : rien trouvé)"
+        fi
+        die "la page de l'assistant n'a pas enregistré le choix des options (D-046)"
+    fi
+    echo "Choix enregistré par la page de l'assistant : $(vm grep -x 'OPTIONS=.*' /etc/ankh/options)"
+    if vm runuser -u plasma-setup -- systemctl --no-ask-password start ankh-options.service; then
+        die "le compte de l'assistant a pu démarrer un autre service que ankh-options@ (D-046)"
+    fi
+    vm runuser -u plasma-setup -- systemctl --no-ask-password start ankh-options@simple.service ||
+        die "le compte de l'assistant ne peut pas appliquer un choix (D-046)"
+    if vm test -e /usr/local/share/applications/ankh-vscode.desktop; then
+        die "VS Code reste dans le menu avec Simple seule (D-046)"
+    fi
+    vm systemctl start ankh-options@dev.service
+    vm test -e /usr/local/share/applications/ankh-vscode.desktop ||
+        die "VS Code ne revient pas dans le menu avec Dev (D-046)"
+    echo "Options : Simple seule retire VS Code du menu, Dev le remet ; le compte de l'assistant ne démarre que ankh-options@"
+}
+
+# D-046 : « Options d'Ankh » dans la Configuration du système (catégorie
+# Système). L'ouvrir lance sa fenêtre à cases ; elle est fermée par Échap,
+# ce qui ne change rien.
+check_options_reglages() {
+    launch_in_session ankhvm systemsettings ankh-options
+    sleep 20
+    screenshot 1-options-reglages
+    monitor 'sendkey esc'
+    sleep 3
+    close_app ankhvm kdialog
+    close_app ankhvm systemsettings
+    vm grep -qx "OPTIONS=dev" /etc/ankh/options ||
+        die "fermer « Options d'Ankh » sans valider a changé le choix (D-046)"
 }
 
 # D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de
@@ -747,6 +799,7 @@ fi
 click 640 397
 sleep 5
 screenshot 1-assistant-bienvenue
+check_options_assistant
 
 log "Bureau de test : compte « ankhvm » connecté automatiquement, Discover, Chrome et « À propos »"
 add_test_account ankhvm 'Compte de test Ankh'
@@ -770,6 +823,7 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_abo
 sleep 20
 screenshot 1-a-propos
 check_vscode
+check_options_reglages
 check_identity
 # D-043 : connexion par l'écran de connexion d'Ankh, avec un mot de passe,
 # d'abord faux (message d'erreur), puis juste. La session du compte de test

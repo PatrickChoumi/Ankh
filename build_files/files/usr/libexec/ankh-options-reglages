@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+# « Options d'Ankh » (D-046), dans la Configuration du système et le menu :
+# ajouter ou retirer des options après l'installation. Le choix vaut pour
+# toute la machine : il est appliqué par le service ankh-options@<choix>,
+# avec le mot de passe administrateur (règle par défaut de systemd).
+# Ce qui est ajouté se prépare au premier clic, comme VS Code (D-031, D-036).
+# Retirer Dev propose de supprimer l'environnement de dev de ce compte ; les
+# fichiers et projets restent dans le dossier personnel.
+set -euo pipefail
+
+titre="Options d'Ankh"
+actuelles=" $(/usr/libexec/ankh-options choix) "
+
+etat() { # $1 : option
+    if [[ "${actuelles}" == *" $1 "* ]]; then echo on; else echo off; fi
+}
+
+# kdialog rend 1 quand on annule : rien ne change alors.
+if ! cochees="$(kdialog --title "${titre}" --separate-output --checklist \
+    "Simple (Chrome, VLC, OnlyOffice) est toujours installée. Cochez les options voulues. Gaming et Hacking arrivent bientôt." \
+    dev "Dev : VS Code, Java, Python, JavaScript, C et C++, bases de données" "$(etat dev)")"; then
+    exit 0
+fi
+
+choix="$(paste -sd _ <<< "${cochees}")"
+if [[ -z "${choix}" ]]; then
+    choix=simple
+fi
+
+if ! systemctl start "ankh-options@${choix}.service"; then
+    kdialog --title "${titre}" --error "Le choix n'a pas pu être appliqué. Rien n'a changé."
+    exit 1
+fi
+# Le menu de cette session voit tout de suite les entrées ajoutées ou retirées.
+kbuildsycoca6
+
+if [[ "${actuelles}" == *" dev "* && " $(/usr/libexec/ankh-options choix) " != *" dev "* ]] &&
+    podman container exists ankh-dev; then
+    if kdialog --title "${titre}" --yesno \
+        "Supprimer aussi l'environnement de dev de votre compte, pour libérer sa place ? Vos fichiers et vos projets restent dans votre dossier personnel."; then
+        /usr/libexec/ankh-dev supprimer
+    fi
+fi
+
+kdialog --title "${titre}" --msgbox "C'est fait. Les outils choisis sont dans le menu : ils se préparent au premier clic."

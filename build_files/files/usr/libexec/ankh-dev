@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# Crée ou met à jour le conteneur de dev (D-032), seulement quand je le
+# Crée, met à jour ou supprime le conteneur de dev (D-032), seulement quand je le
 # décide (D-031) : la création se fait au premier lancement de VS Code depuis
 # le menu (D-036, /usr/libexec/ankh-vscode), la mise à jour par l'entrée
 # « Mettre à jour les outils de dev ».
@@ -28,8 +28,19 @@ case "${1:-}" in
         distrobox upgrade ankh-dev
         echo "Terminé. Cette fenêtre peut être fermée."
         ;;
+    supprimer)
+        # Option Dev retirée (D-046) : le conteneur et son image partent ; le
+        # dossier personnel, partagé avec le conteneur, reste tel quel.
+        if podman container exists ankh-dev; then
+            podman rm --force ankh-dev
+        fi
+        image="$(sed -n 's/^image=//p' /usr/share/ankh/distrobox.ini)"
+        if podman image exists "${image}"; then
+            podman image rm "${image}"
+        fi
+        ;;
     *)
-        echo "Usage : ankh-dev creer | mettre-a-jour" >&2
+        echo "Usage : ankh-dev creer | mettre-a-jour | supprimer" >&2
         exit 2
         ;;
 esac

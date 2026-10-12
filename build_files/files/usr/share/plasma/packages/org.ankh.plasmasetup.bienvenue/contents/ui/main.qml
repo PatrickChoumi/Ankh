@@ -45,7 +45,7 @@ PlasmaSetupComponents.SetupModule {
                 },
                 {
                     icone: "ankh-vscode",
-                    texte: "Pour coder, ouvrez Visual Studio Code depuis le menu : tout se prépare au premier clic."
+                    texte: "Vous choisissez ensuite vos outils : Dev aujourd'hui, Gaming et Hacking bientôt. Chacun se prépare au premier clic."
                 },
                 {
                     icone: "edit-undo",

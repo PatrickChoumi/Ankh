@@ -37,11 +37,18 @@ panel.addWidget("org.kde.plasma.kickoff")
 // Applications épinglées (D-042) : fichiers, navigateur, VS Code, terminal,
 // Discover et réglages. Les deux premières sont les applications par défaut
 // du système (preferred://, applets/taskmanager/main.xml de plasma-desktop).
+// VS Code n'est épinglé que si l'option Dev est choisie (D-046) : son entrée
+// n'existe pas sinon (applicationExists, shell/scripting/scriptengine_v1.cpp
+// de plasma-workspace).
+var epinglees = ["preferred://filemanager", "preferred://browser"]
+if (applicationExists("ankh-vscode.desktop")) {
+    epinglees.push("applications:ankh-vscode.desktop")
+}
+epinglees.push("applications:org.kde.konsole.desktop", "applications:org.kde.discover.desktop",
+               "applications:systemsettings.desktop")
 var taches = panel.addWidget("org.kde.plasma.icontasks")
 taches.currentConfigGroup = ["General"]
-taches.writeConfig("launchers", ["preferred://filemanager", "preferred://browser",
-                                 "applications:ankh-vscode.desktop", "applications:org.kde.konsole.desktop",
-                                 "applications:org.kde.discover.desktop", "applications:systemsettings.desktop"])
+taches.writeConfig("launchers", epinglees)
 panel.addWidget("org.kde.plasma.panelspacer")
 
 // Méthode de saisie pour les langues qui en ont besoin, comme dans le modèle.

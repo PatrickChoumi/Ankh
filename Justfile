@@ -95,10 +95,10 @@ test variant:
     [[ "$(readlink /etc/systemd/user/flatpak-user-update.timer)" == /dev/null ]] &&
         grep -qx "AutomaticUpdatePolicy=none" /etc/rpm-ostreed.conf'
 
-    echo "Test 9 : VS Code dans le menu, prêt au premier clic, et socket Podman de l'utilisateur (D-032, D-036)"
+    echo "Test 9 : VS Code dans l'option Dev, prêt au premier clic, et socket Podman de l'utilisateur (D-032, D-036, D-046)"
     run 'test -x /usr/libexec/ankh-dev && test -x /usr/libexec/ankh-vscode && test -f /usr/share/ankh/distrobox.ini &&
         command -v distrobox konsole podman > /dev/null &&
-        desktop-file-validate /usr/share/applications/ankh-vscode.desktop /usr/share/applications/ankh-dev-mettre-a-jour.desktop &&
+        desktop-file-validate /usr/share/ankh/options/dev/applications/ankh-vscode.desktop /usr/share/ankh/options/dev/applications/ankh-dev-mettre-a-jour.desktop &&
         test ! -e /usr/share/applications/ankh-dev-creer.desktop &&
         test -f /usr/share/icons/hicolor/scalable/apps/ankh-vscode.svg && grep -aq ankh-vscode /usr/share/icons/hicolor/icon-theme.cache &&
         test -L /etc/systemd/user/sockets.target.wants/podman.socket'
@@ -131,6 +131,9 @@ test variant:
 
     echo "Test 14 : identité visuelle d'Ankh et interface douce : couleurs, polices, barre, Breeze, Konsole (D-037, D-039)"
     podman run --rm -i --network=none "${image}" bash -s < tests/identite.sh
+
+    echo "Test 15 : options d'Ankh, Simple toujours incluse, Dev choisie ou non (D-046)"
+    podman run --rm -i --network=none "${image}" bash -s < tests/options.sh
 
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
         echo "Test 13 : module NVIDIA présent pour le noyau de l'image, et signé"
