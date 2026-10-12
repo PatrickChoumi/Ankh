@@ -232,7 +232,18 @@
     - Gaming et Hacking, grisés, « bientôt ».
   - **sans Dev, VS Code n'apparaît nulle part** : ni dans le menu, ni dans la recherche, ni dans la barre ;
   - **« Options d'Ankh »**, dans la Configuration du système, permet de changer d'avis avec le mot de passe administrateur. Retirer Dev propose de libérer la place de l'environnement de dev ; vos fichiers restent ;
-  - **un service d'Ankh applique le choix** pour toute la machine. Une règle polkit permet à l'assistant de le démarrer, et rien d'autre (à relire).
+  - **un service d'Ankh applique le choix** pour toute la machine. Une règle polkit permet à l'assistant de le démarrer, et rien d'autre (à relire) ;
+  - **vérifié en VM** ([run 38214652308](https://github.com/PatrickChoumi/Ankh/actions/runs/38214652308)) :
+    - la page de l'assistant enregistre « dev » dès qu'elle s'affiche ;
+    - le compte de l'assistant ne peut démarrer aucun autre service ;
+    - VS Code quitte le menu avec Simple seule, puis y revient avec Dev ;
+  - **constructions en échec, corrigé ensuite** : dans le conteneur de test, `/usr/local` est un lien qui ne mène encore nulle part ;
+  - **à soigner plus tard** : « Options d'Ankh » est une simple fenêtre de KDE. Elle pourra prendre le même dessin que la page de l'assistant (programme `plasmawindowed`, déjà dans l'image).
+- **Mes choix pour l'ISO** (2026-10-12) :
+  - une seule ISO, publiée dans une Release GitHub (D-048) ;
+  - allégée (D-049) : le système seul, environ 5,5 Go ;
+  - les options cochées se téléchargent ensuite, seulement elles ;
+  - sur un PC NVIDIA, Ankh propose sa version NVIDIA, environ 3 Go à télécharger.
 - **Ma vision affinée** (2026-10-11) : Ankh reste sur Fedora Kinoite 44 (D-005).
   - J'ai d'abord voulu quatre éditions : Dev, Gaming, Hacking, et Complète qui les réunit (D-044).
   - Puis j'ai choisi **une seule version, à la carte, comme l'installation d'Ubuntu** (D-046, qui remplace D-044) :
@@ -306,9 +317,8 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Décider pour l'ISO** (D-048) : une seule ISO qui reconnaît la carte graphique (recommandée) ou deux ; publication dans une Release GitHub en morceaux (proposée). Rien ne presse : elle se fait au début de la phase 9.
-3. **Regarder les captures de la PR #14** (page « Choisissez vos outils », « Options d'Ankh ») quand Claude les envoie, puis fusionner si elles me plaisent (D-046).
-4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-5. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
-6. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-7. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).
+2. **Regarder les captures de la PR #14** (page « Choisissez vos outils », « Options d'Ankh ») quand Claude les envoie, puis fusionner si elles me plaisent (D-046).
+3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
+4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
+5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+6. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).

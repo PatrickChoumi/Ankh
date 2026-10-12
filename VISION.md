@@ -26,7 +26,7 @@ Comme l'installation d'Ubuntu, adaptée à Ankh : des cases à cocher, combinabl
 | **Hacking** | Kali dans un conteneur isolé, les labs dans des VMs isolées ; plus tard, l'analyse de malware et le Wi-Fi offensif |
 | **Complète** | Coche Dev, Gaming et Hacking |
 
-- **Une ISO d'installation d'Ankh** contient le système et tous les outils des options : l'installation se fait sans internet (D-046, D-027).
+- **Une seule ISO d'installation d'Ankh** pour tous les PC, publiée dans une Release GitHub : elle contient le système, qui s'installe sans internet. Les options cochées se téléchargent ensuite, seulement elles. Sur un PC NVIDIA, Ankh propose sa version NVIDIA (D-048, D-049).
 - **Ce qui n'est pas coché n'est pas installé** : sans la case Dev, pas de VS Code ; sans Gaming, pas de Steam ; sans Hacking, pas de Kali. Seules quelques petites pièces du système restent présentes, cachées et à l'arrêt (D-046).
 - **Les options se changent après l'installation**, dans les réglages. Ce qui est ajouté se télécharge quand je le décide ; ce qui est retiré libère sa place (D-031, D-046).
 - **Le système reste le même pour tous** : une seule image, pour les cartes graphiques AMD et Intel (Mesa) et NVIDIA récentes (D-021), avec et sans la protection contre le contenu pour adultes (D-030).
@@ -50,7 +50,7 @@ C'est mon exigence générale (ANKH-SPEC.md).
 - Les mises à jour se font dans Discover, sans terminal (D-028).
 - Elles s'appliquent au redémarrage que je choisis. Jamais de redémarrage automatique (D-010).
 - Ma connexion est lente (D-027) :
-  - l'installation se fait depuis l'ISO, sans internet ;
+  - le système s'installe depuis l'ISO, sans internet ; seuls les outils choisis se téléchargent (D-049) ;
   - les gros tests se font dans le cloud ;
   - la taille des mises à jour sera mesurée et réduite en phase 10.
 
@@ -145,7 +145,7 @@ C'est mon exigence générale (ANKH-SPEC.md).
 
 | Point ouvert | Où | Quand |
 |---|---|---|
-| Une seule ISO pour toutes les cartes graphiques, ou deux ; son hébergement | D-048 | Avant la phase 9 |
+| Comment Ankh propose sa version NVIDIA au premier démarrage | D-049 | Phase 9 |
 | Mon matériel et ma distro actuelle (questions 1 à 5 et 10 à 12) | ANKH-SPEC.md §1 | Avant la phase 9 |
 | Réseau bas niveau pour le hacking | D-013 | Phase 6 |
 | Sauvegarde et récupération | D-019 | Phase 8 |

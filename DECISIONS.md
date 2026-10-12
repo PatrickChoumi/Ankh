@@ -65,7 +65,8 @@
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
 | D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre le 2026-10-12 (Simple et Dev), à vérifier en VM ; fabrication de l'ISO : D-048 |
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
-| D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | PROPOSÉE — À DÉCIDER (mise en œuvre au début de la phase 9) |
+| D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
+| D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
 
 ---
 
@@ -1484,7 +1485,7 @@
 
 ## D-048 — ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046)
 
-- **Statut** : PROPOSÉE — À DÉCIDER par moi. Mise en œuvre au début de la phase 9 (D-046).
+- **Statut** : DÉCIDÉ (2026-10-12), mon choix : une seule ISO, publiée dans une Release GitHub. Son contenu est allégé par D-049 : elle ne contient plus que le système en version AMD et Intel. Mise en œuvre au début de la phase 9 (D-046).
 - **Contexte** : mes questions du 2026-10-11 :
   - peut-on faire une ISO qui détecte toute seule si le PC a une carte AMD ou Intel, ou une carte NVIDIA, au lieu de deux ISO ?
   - peut-on construire l'ISO et l'héberger avec GitHub ?
@@ -1529,3 +1530,41 @@
   - l'ISO est construite par la CI ;
   - en VM sans réseau : installation avec chaque choix d'options ; branche Mesa détectée, et branche NVIDIA forcée ;
   - recollage des morceaux et sommes de contrôle vérifiés.
+
+## D-049 — ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048)
+
+- **Statut** : DÉCIDÉ (2026-10-12), mes choix. Mise en œuvre au début de la phase 9.
+- **Contexte** : « Après réflexion, l'ISO sera trop lourde. Comment la rendre moins lourde ? » Tailles mesurées le 2026-10-12, dans les registres :
+  - système Ankh (`ghcr.io/patrickchoumi/ankh`) : 5,46 Go compressés ; la version NVIDIA en ajoute 3,1 (D-048) ;
+  - option Dev, conteneur `ankh-dev` : 1,57 Go ;
+  - option Gaming, sur Flathub (API `https://flathub.org/api/v2/summary/<application>`) :
+    - Steam : 36 Mo, plus sa partie 32 bits (140 Mo) ;
+    - Heroic : 326 Mo ; Lutris : 334 Mo ; Bottles : 176 Mo ;
+    - plus leurs bases d'exécution : Freedesktop 25.08 et 26.08, GNOME 49 et 50. Leur taille n'a pas pu être lue (À VALIDER). Environ 2 Go en tout (estimé) ;
+  - option Hacking : la base de Kali fait 53 Mo, plus les outils choisis en phase 6.
+- **Options présentées** :
+  - **Pour le contenu** :
+    - système seul (recommandé, choisi) ;
+    - système et Dev : 1,6 Go de plus ;
+    - tout, mais allégé : environ 10 à 12 Go.
+  - **Pour NVIDIA** :
+    - version téléchargée si besoin (recommandé, choisi) ;
+    - version NVIDIA construite au-dessus d'Ankh : environ 1 Go de plus, mais c'est nous qui assemblerions les pilotes ;
+    - les deux versions entières : 3,1 Go de plus.
+- **Décision** :
+  - **L'ISO contient le système seul**, en version AMD et Intel : environ 5,5 Go, plus l'installateur (à mesurer quand l'ISO existera).
+  - **Les options cochées se téléchargent ensuite**, seulement elles, au premier clic de chaque outil (D-031, D-036), comme aujourd'hui sans ISO.
+  - **Sur un PC NVIDIA** :
+    - l'ISO voit la carte (fabricant `0x10de`) ;
+    - au premier démarrage, Ankh propose de passer à la version NVIDIA (`bootc switch`, environ 3 Go à télécharger) ;
+    - le passage s'applique au redémarrage que je choisis (D-010) ;
+    - rien ne change dans la fabrication des images.
+  - **Toujours une seule ISO** pour tous les PC, publiée dans une Release GitHub en morceaux de moins de 2 Gio (D-048).
+- **Ce qui change par rapport à D-046** : l'ISO n'installe plus tout sans internet. Le système s'installe sans réseau ; les options et la version NVIDIA en demandent. Au total, je télécharge moins : seulement ce que je choisis (D-027).
+- **Alternatives rejetées** : celles des options présentées ci-dessus ; la version NVIDIA construite au-dessus d'Ankh toucherait aux pilotes et à Secure Boot.
+- **À DÉCIDER en phase 9** : comment Ankh propose la version NVIDIA (une ligne de la page « Choisissez vos outils », ou un message au premier démarrage).
+- **À VALIDER en phase 9** : sur un PC NVIDIA, Secure Boot et l'inscription de la clé d'Universal Blue après le passage (D-006, D-021).
+- **Vérification** (phase 9) :
+  - taille de l'ISO mesurée ;
+  - installation en VM sans réseau ;
+  - proposition NVIDIA testée en forçant la détection, puisque la VM n'a pas de carte NVIDIA.

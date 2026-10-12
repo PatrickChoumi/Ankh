@@ -26,7 +26,7 @@
   - Les applications restent à jour.
 - **Usage du terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ, sens « confort » (D-025), voir 4.7.
 - **Accès au contenu pour adultes extrêmement difficile** — EXIGÉ, voir 4.8.
-- **Installation à la carte, comme Ubuntu** — EXIGÉ (2026-10-11) : une version Simple (Chrome, VLC, OnlyOffice), toujours incluse, et des cases Dev, Gaming, Hacking et Complète, combinables. Tout est dans une ISO, et seul ce que je coche est installé. Les options se changent ensuite dans les réglages. Réalisation : D-046.
+- **Installation à la carte, comme Ubuntu** — EXIGÉ (2026-10-11) : une version Simple (Chrome, VLC, OnlyOffice), toujours incluse, et des cases Dev, Gaming, Hacking et Complète, combinables. Une seule ISO pour tous les PC, publiée dans une Release GitHub ; elle contient le système, et les options cochées se téléchargent ensuite, seulement elles (2026-10-12). Les options se changent ensuite dans les réglages. Réalisation : D-046, D-048, D-049.
 
 ---
 
