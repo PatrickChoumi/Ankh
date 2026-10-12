@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; une seule version avec des options choisies à l'installation, D-046 ; plus de fenêtres Claude ni GitHub, D-047 ; portrait final dans VISION.md, D-045 ; ISO, D-048). Puis, le 2026-10-12 : PR #13 fusionnée, choix des options en cours.
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-12** (PR #14 : choix des options au premier démarrage et fenêtre « Options d'Ankh » redessinée, vérifiés en VM, D-046 ; ISO légère, D-048 et D-049 ; précisions sur le gaming, D-041).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -224,21 +224,31 @@
   - ces trois corrections sont vérifiées sur les captures ([run 38159636158](https://github.com/PatrickChoumi/Ankh/actions/runs/38159636158), CI verte) ;
   - toujours à comprendre : le fond de l'assistant de premier démarrage reste uni (gris graphite d'Ankh). Son image est bien trouvable, mais elle n'est pas dessinée, sans erreur signalée. Impact faible : la page reste propre.
 - **PR #13 fusionnée** le 2026-10-12.
-- **Choix des options** (D-046), en cours :
+- **Choix des options** (D-046), fait dans la PR #14, vérifié en VM, à fusionner :
   - **au premier démarrage**, l'assistant montre la page « Choisissez vos outils » :
     - Complète ;
     - Simple, toujours incluse ;
     - Dev ;
     - Gaming et Hacking, grisés, « bientôt ».
   - **sans Dev, VS Code n'apparaît nulle part** : ni dans le menu, ni dans la recherche, ni dans la barre ;
-  - **« Options d'Ankh »**, dans la Configuration du système, permet de changer d'avis avec le mot de passe administrateur. Retirer Dev propose de libérer la place de l'environnement de dev ; vos fichiers restent ;
+  - **« Options d'Ankh »**, dans la Configuration du système, permet de changer d'avis avec le mot de passe d'un administrateur. Retirer Dev propose de libérer la place de l'environnement de dev ; vos fichiers restent ;
   - **un service d'Ankh applique le choix** pour toute la machine. Une règle polkit permet à l'assistant de le démarrer, et rien d'autre (à relire) ;
   - **vérifié en VM** ([run 38214652308](https://github.com/PatrickChoumi/Ankh/actions/runs/38214652308)) :
     - la page de l'assistant enregistre « dev » dès qu'elle s'affiche ;
     - le compte de l'assistant ne peut démarrer aucun autre service ;
     - VS Code quitte le menu avec Simple seule, puis y revient avec Dev ;
   - **constructions en échec, corrigé ensuite** : dans le conteneur de test, `/usr/local` est un lien qui ne mène encore nulle part ;
-  - **à soigner plus tard** : « Options d'Ankh » est une simple fenêtre de KDE. Elle pourra prendre le même dessin que la page de l'assistant (programme `plasmawindowed`, déjà dans l'image).
+  - **« Options d'Ankh » redessinée** (ma réponse du 2026-10-12 : « Oui, maintenant ») :
+    - une vraie fenêtre d'Ankh, avec les mêmes cartes que la page de l'assistant ;
+    - « Appliquer » demande le mot de passe d'un administrateur, avec un message d'Ankh ;
+    - le menu et la barre suivent tout de suite : VS Code quitte la barre quand Dev est retirée (avant, il y restait avec une icône vide), et y revient quand Dev est remise ;
+    - retirer Dev propose « Supprimer » ou « Garder » l'environnement de dev ;
+    - le mot de passe passe par `pkexec` et une action polkit d'Ankh (à relire). systemd n'attend le mot de passe que 25 secondes, d'après son code ; `pkexec` attend sans limite ;
+  - **vérifié en VM** ([run 38284941203](https://github.com/PatrickChoumi/Ankh/actions/runs/38284941203), CI verte) : la fenêtre s'ouvre, Dev est retirée puis remise au clavier avec le mot de passe, le menu et la barre suivent, l'environnement de dev se supprime, Échap ferme la fenêtre.
+- **Mes réponses sur le gaming** (2026-10-12, D-041) :
+  - Discord et OBS font partie de l'option Gaming, prêts au premier clic ;
+  - le mode console est une session à choisir sur l'écran de connexion : Steam en plein écran ;
+  - les noms de mes jeux viendront plus tard.
 - **Mes choix pour l'ISO** (2026-10-12) :
   - une seule ISO, publiée dans une Release GitHub (D-048) ;
   - allégée (D-049) : le système seul, environ 5,5 Go ;
@@ -279,12 +289,12 @@
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
 9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11 et PR #12). Écran de démarrage et écran de connexion entièrement d'Ankh dans la PR #13 (D-043), à valider sur les captures. Reste : le fond de l'assistant de premier démarrage, toujours uni (D-037).
-10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et « Options d'Ankh » pour changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. Construites, à vérifier en VM (PR #14).
+10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et « Options d'Ankh » pour changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. Vérifiées en VM, CI verte : à fusionner (PR #14).
 11. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
 
-- **Phase 5 — Gaming** : remplit l'option Gaming (D-041, D-046). Questions 6 à 9 répondues ; noms des jeux encore à donner.
+- **Phase 5 — Gaming** : remplit l'option Gaming (D-041, D-046) : lanceurs, Discord et OBS au premier clic, outils du jeu, session console à la connexion. Questions 6 à 9 répondues ; noms des jeux plus tard.
 - **Phases 6 et 7 — Cyber, Labs** : remplissent l'option Hacking (D-013, D-014, D-046). Les questions de ANKH-SPEC.md §4.4 sont à répondre avant.
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
@@ -311,14 +321,15 @@
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
 - **D-035** : les codecs de VLC sur ma machine. Taille d'une mise à jour mesurée : 1,2 Go ; la réduire est une piste (D-027).
 - **Mise à jour non appliquée** (D-004) : corrigée et vérifiée en VM. Reste à comprendre pourquoi le même test passait sur `main` juste avant.
+- **« Options d'Ankh »** (D-046) : non testés en VM, le mot de passe refusé ou non donné, et les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée). Limite connue : seule la barre du compte qui ouvre la fenêtre suit ; un autre compte de la machine garderait VS Code épinglé.
 
 ---
 
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Regarder les captures de la PR #14** (page « Choisissez vos outils », « Options d'Ankh ») quand Claude les envoie, puis fusionner si elles me plaisent (D-046).
+2. **Regarder les captures de la PR #14** (page « Choisissez vos outils », fenêtre « Options d'Ankh », fenêtre du mot de passe), relire les deux pièces polkit (la règle de l'assistant et l'action de la fenêtre, D-046), puis fusionner si tout me plaît.
 3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-6. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).
+6. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; le critère de la phase 5 les attend. Et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).

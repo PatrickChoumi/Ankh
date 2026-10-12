@@ -63,7 +63,7 @@
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
-| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre et vérifié en VM le 2026-10-12 (Simple et Dev) ; « Options d'Ankh » redessinée le 2026-10-12, à vérifier en VM ; fabrication de l'ISO : D-048 |
+| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre et vérifié en VM le 2026-10-12 (Simple et Dev) ; « Options d'Ankh » redessinée et vérifiée en VM le 2026-10-12 ; fabrication de l'ISO : D-048 |
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 | D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
 | D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
@@ -1490,6 +1490,14 @@
     - Dev retirée au clavier, avec le mot de passe (captures de la fenêtre et de celle de polkit) : VS Code quitte le menu et la barre ; la fenêtre propose de supprimer l'environnement de dev (capture) ; `ankh-dev supprimer` retire le conteneur et son image ;
     - Dev remise de la même façon : VS Code revient dans le menu et dans la barre ;
     - Échap ferme la fenêtre.
+- **Vérifié en VM le 2026-10-12** ([run 38284941203](https://github.com/PatrickChoumi/Ankh/actions/runs/38284941203), CI verte) :
+  - la fenêtre s'ouvre depuis la Configuration du système, avec le logo d'Ankh dans sa barre de titre et dans la barre des tâches ;
+  - la fenêtre de polkit montre le message d'Ankh (« Changer les outils installés sur cette machine demande le mot de passe d'un administrateur. ») ;
+  - Dev retirée : VS Code quitte le menu et la barre ; la fenêtre dit « C'est fait » et propose « Supprimer » ou « Garder » l'environnement de dev ;
+  - `ankh-dev supprimer` retire le conteneur et son image ;
+  - Dev remise : VS Code revient dans le menu et dans la barre, après le navigateur ;
+  - Échap ferme la fenêtre.
+  - Non testés en VM : les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée), le mot de passe refusé ou non donné, et les autres comptes de la machine.
 - **Vérification** :
   - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
   - ajout puis retrait d'une option dans les réglages ;
