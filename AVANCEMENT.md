@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; une seule version avec des options choisies à l'installation, D-046 ; plus de fenêtres Claude ni GitHub, D-047 ; portrait final dans VISION.md, D-045 ; ISO, D-048).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-11** (PR #13 : démarrage et connexion entièrement d'Ankh, D-043 ; une seule version avec des options choisies à l'installation, D-046 ; plus de fenêtres Claude ni GitHub, D-047 ; portrait final dans VISION.md, D-045 ; ISO, D-048). Puis, le 2026-10-12 : PR #13 fusionnée, choix des options en cours.
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -223,6 +223,16 @@
   - corrigé ensuite, d'après les captures : la date de l'écran de connexion en français, la carte qui ne bouge plus quand un message apparaît, et les points du mot de passe du disque, décollés du bord du champ ;
   - ces trois corrections sont vérifiées sur les captures ([run 38159636158](https://github.com/PatrickChoumi/Ankh/actions/runs/38159636158), CI verte) ;
   - toujours à comprendre : le fond de l'assistant de premier démarrage reste uni (gris graphite d'Ankh). Son image est bien trouvable, mais elle n'est pas dessinée, sans erreur signalée. Impact faible : la page reste propre.
+- **PR #13 fusionnée** le 2026-10-12.
+- **Choix des options** (D-046), en cours :
+  - **au premier démarrage**, l'assistant montre la page « Choisissez vos outils » :
+    - Complète ;
+    - Simple, toujours incluse ;
+    - Dev ;
+    - Gaming et Hacking, grisés, « bientôt ».
+  - **sans Dev, VS Code n'apparaît nulle part** : ni dans le menu, ni dans la recherche, ni dans la barre ;
+  - **« Options d'Ankh »**, dans la Configuration du système, permet de changer d'avis avec le mot de passe administrateur. Retirer Dev propose de libérer la place de l'environnement de dev ; vos fichiers restent ;
+  - **un service d'Ankh applique le choix** pour toute la machine. Une règle polkit permet à l'assistant de le démarrer, et rien d'autre (à relire).
 - **Ma vision affinée** (2026-10-11) : Ankh reste sur Fedora Kinoite 44 (D-005).
   - J'ai d'abord voulu quatre éditions : Dev, Gaming, Hacking, et Complète qui les réunit (D-044).
   - Puis j'ai choisi **une seule version, à la carte, comme l'installation d'Ubuntu** (D-046, qui remplace D-044) :
@@ -258,7 +268,7 @@
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
 9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11 et PR #12). Écran de démarrage et écran de connexion entièrement d'Ankh dans la PR #13 (D-043), à valider sur les captures. Reste : le fond de l'assistant de premier démarrage, toujours uni (D-037).
-10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et la page des réglages pour les changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. Le choix se fait dans l'assistant de premier démarrage et vaut pour toute la machine ; plan dans D-046 (prochaine PR, après la fusion de la #13).
+10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et « Options d'Ankh » pour changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. Construites, à vérifier en VM (PR #14).
 11. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
 
 ### Phases suivantes
@@ -297,7 +307,7 @@
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
 2. **Décider pour l'ISO** (D-048) : une seule ISO qui reconnaît la carte graphique (recommandée) ou deux ; publication dans une Release GitHub en morceaux (proposée). Rien ne presse : elle se fait au début de la phase 9.
-3. **Regarder les captures de la PR #13** (écran de démarrage, saisie du mot de passe du disque, écran de connexion) quand Claude les envoie, puis fusionner si elles me plaisent (D-043).
+3. **Regarder les captures de la PR #14** (page « Choisissez vos outils », « Options d'Ankh ») quand Claude les envoie, puis fusionner si elles me plaisent (D-046).
 4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 5. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 6. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.

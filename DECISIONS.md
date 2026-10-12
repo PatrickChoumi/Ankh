@@ -63,7 +63,7 @@
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
-| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; fabrication de l'ISO : D-048 |
+| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre le 2026-10-12 (Simple et Dev), à vérifier en VM ; fabrication de l'ISO : D-048 |
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 | D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | PROPOSÉE — À DÉCIDER (mise en œuvre au début de la phase 9) |
 
@@ -1450,6 +1450,21 @@
   8. **Tests** :
      - dans l'image : la page se charge hors écran sans erreur QML ; le service et la règle polkit sont présents ; chaque choix produit les bons liens ;
      - en VM : capture de la page de l'assistant ; le compte `plasma-setup` démarre bien le service, et rien d'autre ; menu sans VS Code avec Simple, puis avec VS Code après l'ajout de Dev dans les réglages (captures).
+- **Mise en œuvre (2026-10-12, après la fusion de la PR #13)** : le plan ci-dessus, avec ces précisions :
+  - **entrées de Dev** : `ankh-vscode.desktop` et « Mettre à jour les outils de dev » passent dans `/usr/share/ankh/options/dev/applications`. La construction échoue si une entrée de Dev reste dans `/usr/share/applications` ;
+  - **`/usr/libexec/ankh-options`** : `appliquer <choix>`, `synchroniser` et `choix`. Le choix est vérifié : `simple`, ou des options connues séparées par « _ ». Tout autre texte est refusé ;
+  - **`ankh-options.service`** remet les liens en place à chaque démarrage, y compris après une mise à jour qui ajoute ou retire une entrée ;
+  - **page de l'assistant** (`org.ankh.plasmasetup.options`, poids 1, après la langue) : elle s'applique quand elle s'affiche (`onPageActivated`, comme les pages de KDE), puis à chaque changement. Elle lance `systemctl --no-ask-password` : si la règle polkit refusait, aucune fenêtre de mot de passe n'apparaîtrait dans l'assistant. En cas d'erreur, un message propose de réessayer, et le bouton « Next » reste utilisable ;
+  - **page des réglages « Options d'Ankh »** : une fenêtre de KDE à cases (`kdialog`), ouverte depuis la Configuration du système (catégorie Système) ou le menu. Elle applique le choix avec le mot de passe administrateur, puis rafraîchit le menu de la session (`kbuildsycoca6`). Retirer Dev propose de supprimer l'environnement de dev du compte (`ankh-dev supprimer` : le conteneur et son image) ; les fichiers et projets restent dans le dossier personnel ;
+  - **barre** : VS Code n'est épinglé que si son entrée existe (`applicationExists`, `shell/scripting/scriptengine_v1.cpp` de plasma-workspace) ;
+  - **page « Bienvenue dans Ankh »** : elle annonce le choix des outils, au lieu de renvoyer directement à VS Code.
+- **Tests de la mise en œuvre** :
+  - `just test`, Test 15 (`tests/options.sh`) : fichiers, service activé, règle polkit, page de l'assistant, page des réglages ; sans choix enregistré, comme Complète ; Simple seule retire VS Code du menu ; Dev le remet ; choix invalides refusés ;
+  - test en VM :
+    - capture de la page de l'assistant ; la page a bien enregistré « dev » en s'affichant ;
+    - le compte de l'assistant démarre `ankh-options@simple`, mais pas un autre service ;
+    - VS Code quitte puis retrouve le menu ;
+    - capture de « Options d'Ankh » dans la Configuration du système.
 - **Vérification** :
   - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
   - ajout puis retrait d'une option dans les réglages ;

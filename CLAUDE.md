@@ -48,9 +48,9 @@
   - Fait ([#12](https://github.com/PatrickChoumi/Ankh/pull/12) fusionnée) :
     - l'assistant de premier démarrage : fond d'Ankh, thème sombre d'Ankh, page « Bienvenue dans Ankh » (D-037) ;
     - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil d'Ankh, image de compte d'Ankh (D-042).
-  - En cours ([#13](https://github.com/PatrickChoumi/Ankh/pull/13), à fusionner seulement si les captures me plaisent) : écran de démarrage (Plymouth) et écran de connexion (SDDM) entièrement d'Ankh, logo officiel de VS Code, vouvoiement (D-043). Touche au démarrage et à LUKS : à relire.
+  - Fait ([#13](https://github.com/PatrickChoumi/Ankh/pull/13) fusionnée le 2026-10-12) : écran de démarrage (Plymouth) et écran de connexion (SDDM) entièrement d'Ankh, logo officiel de VS Code, vouvoiement (D-043) ; plus de fenêtres Claude ni GitHub (D-047).
   - Vision affinée le 2026-10-11 : une seule version, avec des options cochées à l'installation, depuis une ISO qui contient tout (D-046, qui remplace les éditions de D-044) ; plus de fenêtres Claude ni GitHub dans Chrome (D-047) ; portrait final dans [VISION.md](VISION.md) (D-045).
-  - Ensuite, pour finir la phase 3 : le choix des options au premier démarrage et dans les réglages, pour Simple et Dev (D-046). Puis la phase 5 (gaming, D-041), qui remplit l'option Gaming.
+  - En cours, pour finir la phase 3 : le choix des options au premier démarrage (page « Choisissez vos outils ») et dans les réglages (« Options d'Ankh »), pour Simple et Dev (D-046). Touche à polkit : à relire. Ensuite, la phase 5 (gaming, D-041), qui remplit l'option Gaming.
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
