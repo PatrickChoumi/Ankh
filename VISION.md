@@ -22,7 +22,7 @@ Comme l'installation d'Ubuntu, adaptée à Ankh : des cases à cocher, combinabl
 |---|---|
 | **Simple**, toujours incluse | Chrome, VLC et OnlyOffice |
 | **Dev** | VS Code et les outils du dev, dans un conteneur |
-| **Gaming** | Steam et les autres lanceurs, les outils du jeu, les manettes |
+| **Gaming** | Steam et les autres lanceurs, les outils du jeu, les manettes, le mode console, Discord et OBS |
 | **Hacking** | Kali dans un conteneur isolé, les labs dans des VMs isolées ; plus tard, l'analyse de malware et le Wi-Fi offensif |
 | **Complète** | Coche Dev, Gaming et Hacking |
 
@@ -116,10 +116,11 @@ C'est mon exigence générale (ANKH-SPEC.md).
 - **Lanceurs** : Steam, Heroic (Epic, GOG, Amazon), Lutris, Bottles, ProtonPlus et Protontricks (D-041).
 - **Outils du jeu** dans le système : GameMode, MangoHud, Gamescope, vkBasalt, et les règles des manettes et casques de Steam (D-041).
 - **Manettes** : toutes (Xbox, PlayStation, autres), filaires et sans fil (ANKH-SPEC 4.3).
-- **OBS Studio, Discord et le mode console** sont disponibles, sans être imposés (D-041).
+- **Discord et OBS Studio** font partie de l'option Gaming, prêts au premier clic comme les lanceurs (D-041).
+- **Mode console** : une session à choisir sur l'écran de connexion, avec Steam en plein écran (D-041).
 - **Réglages** : seulement des réglages sûrs pour le jeu. Le noyau est celui de Fedora, et Secure Boot reste actif sans clé à gérer (D-041).
 - **Limite assumée** : les jeux en ligne dont l'anticheat refuse Linux ne marcheront pas (ANKH-SPEC Q6, D-003).
-- **Mes jeux** seront testés sur ma machine en phase 9. Leurs noms sont TODO (Q6).
+- **Mes jeux** seront testés sur ma machine en phase 9. Leurs noms sont TODO (Q6) : je les donnerai plus tard.
 
 ### Hacking (phases 6 et 7)
 

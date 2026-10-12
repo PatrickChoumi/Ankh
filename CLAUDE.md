@@ -44,7 +44,7 @@
   - Fait ([#11](https://github.com/PatrickChoumi/Ankh/pull/11) fusionnée) :
     - « Update Issue » dans Discover (D-028) : cause du test corrigée ; défaut de Discover suivi chez KDE (bug 523258, option A) ;
     - l'identité visuelle (D-037) et une interface douce, au niveau de Windows 11 et de macOS (D-039), dans l'image ; écran de chargement d'Ankh.
-  - Questions 6 à 9 de ANKH-SPEC.md remplies le 2026-10-10 ; gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (D-041).
+  - Questions 6 à 9 de ANKH-SPEC.md remplies le 2026-10-10 ; gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (D-041). Précisé le 2026-10-12 : Discord et OBS dans l'option Gaming, mode console en session à la connexion ; noms des jeux plus tard.
   - Fait ([#12](https://github.com/PatrickChoumi/Ankh/pull/12) fusionnée) :
     - l'assistant de premier démarrage : fond d'Ankh, thème sombre d'Ankh, page « Bienvenue dans Ankh » (D-037) ;
     - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil d'Ankh, image de compte d'Ankh (D-042).

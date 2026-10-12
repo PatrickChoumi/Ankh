@@ -58,7 +58,7 @@
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
-| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; mise en œuvre en phase 5) |
+| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; précisé le 2026-10-12 : Discord et OBS dans Gaming, session console ; mise en œuvre en phase 5) |
 | D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043) |
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
@@ -1240,6 +1240,10 @@
   - Un noyau tiers : il demande ma propre clé Secure Boot et plus d'entretien. Réexaminable après des mesures, par une nouvelle décision.
 - **IA locale** (question 7 : oui, important) : CUDA ou ROCm dans un conteneur, selon mon GPU (question 3, inconnue). À concevoir avec le dev ou le gaming, quand le GPU sera connu.
 - **Vérification** : en phase 5, chaque outil présent et lancé en VM ; captures ; jeux testés sur ma machine en phase 9 (D-011).
+- **Précisé le 2026-10-12** (mes réponses, avec D-046 : Gaming est une option cochée à l'installation) :
+  - **Discord et OBS Studio** font partie de l'option Gaming. Comme les lanceurs, ils sont dans le menu et se préparent au premier clic (Flatpak, D-031, D-036) ;
+  - **mode console** : une session à choisir sur l'écran de connexion d'Ankh, à côté de la session Plasma : Steam en plein écran (mode Big Picture), dans Gamescope. Son nom et sa mise en œuvre exacte se décident en phase 5 ;
+  - **noms de mes jeux** : plus tard. La question 6 reste TODO ; le critère de la phase 5 (« chaque jeu de ANKH-SPEC Q6 testé ») attend ces noms.
 
 ## D-042 — Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039)
 
