@@ -601,6 +601,8 @@ check_options_assistant() {
 # Système). L'ouvrir lance sa fenêtre à cases ; elle est fermée par Échap,
 # ce qui ne change rien.
 check_options_reglages() {
+    # VS Code, ouvert par check_vscode, cacherait la fenêtre
+    close_app ankhvm code
     launch_in_session ankhvm systemsettings ankh-options
     sleep 20
     screenshot 1-options-reglages

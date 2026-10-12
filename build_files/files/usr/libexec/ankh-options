@@ -60,7 +60,10 @@ synchroniser() {
     for option in ${choisies}; do
         connue "${option}" || echec "option inconnue dans ${FICHIER} : ${option}"
     done
-    install -d -m 0755 "${MENU}"
+    # Sur Fedora Atomic, /usr/local est un lien vers /var/usrlocal : le dossier
+    # est créé à son vrai chemin (dans un conteneur de test, ce lien ne mène
+    # encore nulle part).
+    install -d -m 0755 "$(readlink -m "${MENU}")"
     for option in "${OPTIONS_CONNUES[@]}"; do
         for lanceur in "${SOURCE}/${option}/applications"/*.desktop; do
             lien="${MENU}/$(basename "${lanceur}")"
