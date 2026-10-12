@@ -1,0 +1,13 @@
+[SddmGreeterTheme]
+Name=Ankh
+Description=Écran de connexion d'Ankh (D-043)
+Author=Ankh
+License=GPL-2.0-or-later
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/PatrickChoumi/Ankh
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=ankh
+Theme-API=2.0
+QtVersion=6

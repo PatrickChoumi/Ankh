@@ -20,7 +20,7 @@ Welcome.Page {
     id: root
 
     heading: "Raccourcis utiles"
-    description: "Quelques raccourcis pour aller plus vite, partout dans Ankh. « Windows » est la touche au logo de Windows de ton clavier. Chacun se change dans la Configuration du système, à la page Raccourcis."
+    description: "Quelques raccourcis pour aller plus vite, partout dans Ankh. « Windows » est la touche au logo de Windows de votre clavier. Chacun se change dans la Configuration du système, à la page Raccourcis."
 
     // Pour chaque raccourci : ses variantes, chacune étant une suite de touches.
     readonly property var raccourcis: [
@@ -28,9 +28,9 @@ Welcome.Page {
         { variantes: [["Alt", "Espace"]], action: "Chercher une application, un fichier ou faire un calcul" },
         { variantes: [["Windows", "W"]], action: "Voir toutes les fenêtres ouvertes" },
         { variantes: [["Windows", "←"], ["Windows", "→"]], action: "Ranger la fenêtre sur une moitié de l'écran" },
-        { variantes: [["Windows", "E"]], action: "Ouvrir tes fichiers" },
+        { variantes: [["Windows", "E"]], action: "Ouvrir vos fichiers" },
         { variantes: [["Ctrl", "Alt", "T"]], action: "Ouvrir le terminal" },
-        { variantes: [["Windows", "V"]], action: "Retrouver ce que tu as copié" },
+        { variantes: [["Windows", "V"]], action: "Retrouver ce que vous avez copié" },
         { variantes: [["Impr. écran"], ["Windows", "Maj", "S"]], action: "Faire une capture d'écran" },
         { variantes: [["Windows", "."]], action: "Choisir un émoji" },
         { variantes: [["Windows", "L"]], action: "Verrouiller l'écran" }

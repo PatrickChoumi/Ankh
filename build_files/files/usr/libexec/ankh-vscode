@@ -9,7 +9,7 @@ if ! podman container exists ankh-dev; then
     # En cas d'échec, la fenêtre reste ouverte pour montrer pourquoi.
     konsole --nofork -e bash -c '/usr/libexec/ankh-dev creer || {
         echo
-        echo "La préparation a échoué. Appuie sur Entrée pour fermer cette fenêtre."
+        echo "La préparation a échoué. Appuyez sur Entrée pour fermer cette fenêtre."
         read -r
         exit 1
     }'

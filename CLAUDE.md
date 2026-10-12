@@ -9,6 +9,7 @@
 > | Chaque choix, ses raisons, ses sources et ses tests (`D-xxx`) | [DECISIONS.md](DECISIONS.md) |
 > | La présentation, l'architecture et la récupération après panne | [README.md](README.md) |
 > | Tout ce qui a été fait depuis le début, et ce qui reste à faire | [AVANCEMENT.md](AVANCEMENT.md) (D-029) |
+> | Le portrait d'Ankh une fois terminé, pour vérifier qu'on ne dévie pas | [VISION.md](VISION.md) (D-045) |
 > | Les règles, la méthode, la feuille de route et l'état du projet | ce fichier |
 >
 > En cas de contradiction : **DECISIONS.md fait foi pour les choix**, **ANKH-SPEC.md pour les besoins**. Ce fichier est alors à corriger.
@@ -17,7 +18,7 @@
 
 ## 1. Ankh en cinq lignes
 
-- Mon OS **personnel** (pas une distribution publique) pour le dev, le gaming et la cybersécurité. Image **générique**, conçue pour fonctionner sur le maximum de PC x86_64 (D-001, D-021).
+- Mon OS **personnel** (pas une distribution publique) pour le dev, le gaming et la cybersécurité, en une seule version : à l'installation, je coche Simple (toujours incluse), Dev, Gaming, Hacking ou Complète (D-046). Image **générique**, conçue pour fonctionner sur le maximum de PC x86_64 (D-001, D-021).
 - Système **image-based** : Fedora Atomic (Kinoite) + bootc, mises à jour d'un bloc, retour arrière (D-004).
 - Hôte minimal et protégé : Secure Boot, LUKS, rien d'installé en dehors de l'image (D-006 à D-009).
 - Applications en Flatpak, dev en conteneur, Kali en Podman rootless, malware et labs en VMs isolées (D-011 à D-014).
@@ -35,7 +36,7 @@
   - Fait ([#6](https://github.com/PatrickChoumi/Ankh/pull/6) fusionnée) : le conteneur de dev `ankh-dev`, avec VS Code et les langages fullstack (D-032).
   - Fait ([#7](https://github.com/PatrickChoumi/Ankh/pull/7) fusionnée) : l'habillage Ankh sur le bureau : nom, logo, fonds d'écran (D-033).
   - Fait ([#8](https://github.com/PatrickChoumi/Ankh/pull/8) fusionnée) : plus rien de Fedora à l'écran, démarrage compris, et une collection de fonds d'écran (D-034).
-  - Fait ([#9](https://github.com/PatrickChoumi/Ankh/pull/9) fusionnée) : VLC et OnlyOffice dans l'image, LibreOffice absent, Claude et GitHub dans Chrome (D-035) ; les mises à jour s'appliquent de nouveau au redémarrage (D-004).
+  - Fait ([#9](https://github.com/PatrickChoumi/Ankh/pull/9) fusionnée) : VLC et OnlyOffice dans l'image, LibreOffice absent, Claude et GitHub dans Chrome (D-035, retirés depuis par D-047) ; les mises à jour s'appliquent de nouveau au redémarrage (D-004).
   - Fait ([#10](https://github.com/PatrickChoumi/Ankh/pull/10) fusionnée) :
     - les dernières versions LTS de Node.js et de Java dans le conteneur de dev (D-038) ;
     - un seul Ankh : VS Code dans le menu dès l'installation, prêt au premier clic, sans « ankh-dev » à gérer (D-036) ;
@@ -44,10 +45,12 @@
     - « Update Issue » dans Discover (D-028) : cause du test corrigée ; défaut de Discover suivi chez KDE (bug 523258, option A) ;
     - l'identité visuelle (D-037) et une interface douce, au niveau de Windows 11 et de macOS (D-039), dans l'image ; écran de chargement d'Ankh.
   - Questions 6 à 9 de ANKH-SPEC.md remplies le 2026-10-10 ; gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (D-041).
-  - En cours ([#12](https://github.com/PatrickChoumi/Ankh/pull/12), à fusionner seulement si les captures me plaisent) :
+  - Fait ([#12](https://github.com/PatrickChoumi/Ankh/pull/12) fusionnée) :
     - l'assistant de premier démarrage : fond d'Ankh, thème sombre d'Ankh, page « Bienvenue dans Ankh » (D-037) ;
-    - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil et VS Code d'Ankh, écran de connexion avec l'image de compte d'Ankh (D-042).
-  - Ensuite : la phase 5 (gaming, D-041). Proposé, à décider : écran de démarrage entièrement d'Ankh ; SDDM pour un écran de connexion entièrement dessiné (D-042).
+    - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil d'Ankh, image de compte d'Ankh (D-042).
+  - En cours ([#13](https://github.com/PatrickChoumi/Ankh/pull/13), à fusionner seulement si les captures me plaisent) : écran de démarrage (Plymouth) et écran de connexion (SDDM) entièrement d'Ankh, logo officiel de VS Code, vouvoiement (D-043). Touche au démarrage et à LUKS : à relire.
+  - Vision affinée le 2026-10-11 : une seule version, avec des options cochées à l'installation, depuis une ISO qui contient tout (D-046, qui remplace les éditions de D-044) ; plus de fenêtres Claude ni GitHub dans Chrome (D-047) ; portrait final dans [VISION.md](VISION.md) (D-045).
+  - Ensuite, pour finir la phase 3 : le choix des options au premier démarrage et dans les réglages, pour Simple et Dev (D-046). Puis la phase 5 (gaming, D-041), qui remplit l'option Gaming.
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
@@ -70,7 +73,7 @@
 Elles valent pour moi comme pour tout assistant. Elles ne se contournent pas : si une règle bloque, on ouvre une nouvelle décision dans DECISIONS.md.
 
 ### Périmètre
-1. Pas de distribution publique, pas d'ISO custom en V1 (D-001). À l'écran, plus rien de Fedora : nom, logos, fonds et écran de démarrage sont ceux d'Ankh. Sous le capot, Fedora reste (D-033, D-034).
+1. Pas de distribution publique (D-001). L'ISO d'installation d'Ankh sert seulement mes machines ; elle se fait avant la phase 9 (D-046). À l'écran, plus rien de Fedora : nom, logos, fonds et écran de démarrage sont ceux d'Ankh. Sous le capot, Fedora reste (D-033, D-034).
 2. Image générique : rien de propre à une machine particulière dans l'image. Couverture matérielle et variantes : D-021.
 3. Linux uniquement, pas de dual boot, pas de Windows natif. Une VM Windows reste possible (D-003).
 
@@ -141,16 +144,18 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | **0. Spécification** *(terminée le 2026-10-07)* | Décrire ma machine et mes usages | ANKH-SPEC.md §6 « Avant la phase 1 » entièrement coché |
 | **1. Base et chaîne de build** *(terminée le 2026-10-07)* | Images génériques construites automatiquement | D-005, D-017 et D-018 tranchées. Chaque variante de D-021 est construite par la CI, testée, signée et publiée, sans toucher ma machine |
 | **2. Premier démarrage en VM, dans le cloud** *(terminée le 2026-10-07)* | Prouver le modèle image-based sans rien télécharger chez moi (D-027) | Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, puis basculement vers une autre version, retour arrière (`bootc rollback`) et retour à l'image de base, tous réussis automatiquement. Résultats notés dans D-004. La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI |
-| **3. Applications et dev** *(prochaine)* | Le quotidien et le dev fonctionnent sans terminal pour le quotidien (D-025) | Chrome par défaut et Firefox retiré (D-023). VLC, OnlyOffice, Claude et GitHub présents (D-024). Mises à jour par l'interface. VS Code et le conteneur dev se recréent depuis le dépôt (D-012). Tests en CI et en VM cloud |
+| **3. Applications et dev** *(prochaine)* | Le quotidien et le dev fonctionnent sans terminal pour le quotidien (D-025) | Chrome par défaut et Firefox retiré (D-023). VLC et OnlyOffice présents (D-024, D-035). Choix des options au premier démarrage et dans les réglages, pour Simple et Dev (D-046). Mises à jour par l'interface. VS Code et le conteneur dev se recréent depuis le dépôt (D-012). Tests en CI et en VM cloud |
 | **5. Gaming** | Mes jeux fonctionnent | Chaque jeu de ANKH-SPEC Q6 testé. Manettes, VRR et multi-écran vérifiés si concernés (D-011). Test final sur la vraie machine en phase 9 |
 | **6. Cyber** | Kali isolé | Test d'isolation réussi : le `~/.ssh` de l'hôte est inaccessible depuis le conteneur. Solution « réseau bas niveau » tranchée (D-013) |
 | **7. Labs** | VMs de lab et de malware isolées | Depuis une VM de lab, l'hôte et le réseau local sont injoignables. La restauration de snapshot fonctionne (D-014) |
 | **8. Sauvegarde et récupération** | Pouvoir perdre le disque sans rien perdre | D-019 tranchée. Exercice complet de récupération réussi en VM, en suivant README.md |
-| **9. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Installation en ligne avec LUKS, même lente (D-027). Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux (le filtrage vient avec la phase 4, D-040). Une semaine d'usage sans retour arrière définitif |
+| **9. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Avant d'installer : l'ISO d'Ankh est construite par la CI, et une installation sans réseau réussit en VM (D-046). Installation depuis l'ISO, avec LUKS. Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux (le filtrage vient avec la phase 4, D-040). Une semaine d'usage sans retour arrière définitif |
 | **10. Vivre avec Ankh** | Corriger selon mes vraies irritations | Plusieurs semaines d'usage. Irritations notées, puis traitées une par une. Taille des mises à jour mesurée et réduite (D-027) |
 | **4. Protection** *(déplacée à la fin, D-040)* | safezone adapté et intégré (D-026, D-030) | Conception tranchée dans DECISIONS.md. Les tests de safezone passent sur l'image Ankh. Les contournements propres au modèle image-based (`bootc switch`, retour arrière, `/etc`) sont traités ou documentés. Filtrage vérifié sur ma machine. → **Ankh V1** |
 
-**Repoussé hors V1** : le matériel exclu par D-021 (NVIDIA ancien), distribution publique, ISO custom (l'ISO hors ligne envisagée par D-027 est abandonnée), CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
+**Options d'installation (D-046)** : la phase 3 fait Simple, Dev et le choix des options ; la phase 5 remplit Gaming ; les phases 6 et 7 remplissent Hacking ; Complète les réunit. L'ISO se fait au début de la phase 9.
+
+**Repoussé hors V1** : le matériel exclu par D-021 (NVIDIA ancien), distribution publique (l'ISO d'Ankh sert seulement mes machines, D-046), CLI riche, rollback automatique, optimisations non motivées par l'usage réel.
 
 **Règle de bascule** : Ankh ne remplace pas ma distro actuelle tant que la récupération (phase 8) n'a pas été testée.
 

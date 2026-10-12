@@ -1,4 +1,4 @@
-"""Dessine le logo, les fonds d'écran, le logo de démarrage et l'image de compte d'Ankh (D-033, D-034, D-037, D-042).
+"""Dessine le logo, les fonds d'écran, l'écran de démarrage, l'écran de connexion et l'image de compte d'Ankh (D-033, D-034, D-037, D-042, D-043).
 
 Le logo : un A sans barre, dont la barre devient un curseur de terminal, sur
 une touche de clavier graphite. Un seul accent de couleur, violet.
@@ -16,7 +16,7 @@ import pathlib
 import random
 
 import cairosvg
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageFilter
 
 import fonds
 
@@ -47,23 +47,6 @@ def logo() -> str:
 <rect x="6" y="6" width="244" height="244" rx="56" fill="url(#touche)"/>
 <rect x="7.5" y="7.5" width="241" height="241" rx="54.5" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="3"/>
 {marque(BLANC)}
-</svg>
-"""
-
-
-def icone_code() -> str:
-    """Icône de VS Code dans le menu et la barre (D-042) : la touche graphite
-    du logo, avec « </> » en blanc et la barre oblique en violet."""
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-<defs>
-<linearGradient id="touche" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
-<stop offset="0" stop-color="#232a35"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
-</defs>
-<rect x="6" y="6" width="244" height="244" rx="56" fill="url(#touche)"/>
-<rect x="7.5" y="7.5" width="241" height="241" rx="54.5" fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="3"/>
-<path d="M 96 86 L 54 128 L 96 170 M 160 86 L 202 128 L 160 170" fill="none" stroke="{BLANC}"
- stroke-width="20" stroke-linejoin="miter" stroke-miterlimit="10"/>
-<path d="M 142 76 L 114 180" fill="none" stroke="{VIOLET}" stroke-width="20"/>
 </svg>
 """
 
@@ -132,21 +115,37 @@ def decrire(paquet: pathlib.Path, nom: str) -> None:
     (paquet / "metadata.json").write_text(json.dumps(fiche, indent=4, ensure_ascii=False) + "\n")
 
 
-def filigrane() -> Image.Image:
-    """Logo de l'écran de démarrage : le A et « ankh », en blanc sur fond transparent."""
-    image = Image.new("RGBA", (330, 112), (0, 0, 0, 0))
-    svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">{marque(BLANC)}</svg>'
-    a = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode(), output_width=112, output_height=112)))
-    image.alpha_composite(a.convert("RGBA"), (0, 0))
-    ImageDraw.Draw(image).text((122, 56), "ankh", fill=BLANC, font=fonds.police_mono(58), anchor="lm")
-    return image
+def plymouth(dossier: pathlib.Path) -> None:
+    """Images de l'écran de démarrage d'Ankh (D-043), thème Plymouth « ankh » :
+    le logo (même taille que sur l'écran de chargement de la session), et le
+    champ du mot de passe du disque, sa puce et son cadenas."""
+    dossier.mkdir(parents=True, exist_ok=True)
+    rendre_rgba = lambda svg, l, h: Image.open(io.BytesIO(cairosvg.svg2png(
+        bytestring=svg.encode(), output_width=l, output_height=h))).convert("RGBA")
+    rendre_rgba(logo(), 144, 144).save(dossier / "watermark.png", optimize=True)
+    # Champ en pilule, comme celui de l'écran de connexion
+    champ = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 40">'
+             '<rect x="1" y="1" width="298" height="38" rx="19" fill="#161b22" '
+             f'stroke="{VIOLET}" stroke-width="2"/></svg>')
+    rendre_rgba(champ, 300, 40).save(dossier / "entry.png", optimize=True)
+    # Puce : Plymouth dessine la puce n à x + n × L + L / 2 du bord du champ,
+    # L étant la largeur de l'image (src/libply-splash-graphics/ply-entry.c de
+    # https://gitlab.freedesktop.org/plymouth/plymouth). Une image de 15 px,
+    # avec le point à droite, met le premier point à 18,5 px du bord : hors de
+    # l'arrondi de la pilule, comme le texte du champ de l'écran de connexion.
+    puce = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15">'
+            f'<circle cx="11" cy="7.5" r="3.5" fill="{BLANC}"/></svg>')
+    rendre_rgba(puce, 15, 15).save(dossier / "bullet.png", optimize=True)
+    cadenas = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 24">'
+               f'<path d="M5 10 V7 a5 5 0 0 1 10 0 V10" fill="none" stroke="{BLANC}" stroke-width="2.2"/>'
+               f'<rect x="2" y="10" width="16" height="12" rx="3" fill="{BLANC}"/></svg>')
+    rendre_rgba(cadenas, 20, 24).save(dossier / "lock.png", optimize=True)
 
 
 def main() -> None:
     icone = RACINE / "icons" / "hicolor" / "scalable" / "apps" / "ankh-logo.svg"
     icone.parent.mkdir(parents=True, exist_ok=True)
     icone.write_text(logo())
-    (icone.parent / "ankh-code.svg").write_text(icone_code())
 
     # Le fond épuré (D-033), en version claire et sombre.
     paquet = RACINE / "wallpapers" / "Ankh"
@@ -192,12 +191,19 @@ def main() -> None:
     portrait = signal.convert("RGB").resize((largeur, hauteur), Image.LANCZOS)
     portrait.crop((gauche, 0, gauche + 1080, hauteur)).save(assistant / "1080x1920.png", optimize=True)
 
+    # Fond de l'écran de connexion (D-043) : « Ankh Signal » flouté et un peu
+    # assombri, comme le fond de l'écran de connexion de Windows 11. Préparé
+    # ici pour que l'écran de connexion n'ait aucun effet à calculer.
+    connexion = signal.convert("RGB").resize((2560, 1440), Image.LANCZOS).filter(ImageFilter.GaussianBlur(36))
+    connexion = connexion.point(lambda v: int(v * 0.85))
+    cible = RACINE / "sddm" / "themes" / "ankh" / "fond.jpg"
+    cible.parent.mkdir(parents=True, exist_ok=True)
+    tramer(connexion).save(cible, quality=90, subsampling=0, optimize=True)
+
     # Image de compte par défaut (D-042), donnée à chaque nouveau compte.
     rendre(avatar(), 512, 512).save(RACINE / "ankh" / "avatar.png", optimize=True)
 
-    cible = RACINE / "ankh" / "plymouth" / "watermark.png"
-    cible.parent.mkdir(parents=True, exist_ok=True)
-    filigrane().save(cible, optimize=True)
+    plymouth(RACINE / "plymouth" / "themes" / "ankh")
 
 
 if __name__ == "__main__":

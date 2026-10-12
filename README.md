@@ -2,7 +2,7 @@
 
 **Mon OS personnel immuable pour coder, jouer et faire de la cybersécurité.** Il est générique (le maximum de PC) et s'appuie sur l'isolation forte, la virtualisation et le retour arrière.
 
-> **État actuel : phases 1 et 2 terminées, phase 3 (applications et dev) à venir.** Les images sont construites, signées et publiées par la CI. Elles démarrent en VM, et le retour arrière y fonctionne (D-004).
+> **État actuel** : voir [AVANCEMENT.md](AVANCEMENT.md). Les images sont construites, signées et publiées par la CI. Elles démarrent en VM, et le retour arrière y fonctionne (D-004).
 > Les procédures de récupération décrites ici sont des **cibles** : aucune n'a encore été testée sur une vraie machine.
 
 ## Ce qu'est Ankh
@@ -10,11 +10,12 @@
 - Mon système **personnel**, en image **générique** : il doit fonctionner sur le maximum de PC x86_64 sans réglage propre à une machine (D-001, D-021).
 - Un système **image-based** : l'OS est une image immuable, mise à jour d'un bloc, avec retour à la version précédente (D-004).
 - Un hôte minimal et protégé : Secure Boot (D-006), chiffrement LUKS (D-007), aucune sécurité désactivée pour faire marcher un outil (D-008).
+- Une seule version : à l'installation, je coche ce que je veux (Simple, toujours incluse ; Dev ; Gaming ; Hacking ; Complète), depuis une ISO qui contient tout (D-046). Le portrait d'Ankh une fois terminé est dans [VISION.md](VISION.md).
 
 ## Ce qu'Ankh n'est pas
 
 - Pas une distribution publique ni un produit : pas d'utilisateurs à servir, pas de support.
-- Pas d'ISO custom en V1. À l'écran, rien de Fedora : Ankh a son nom, ses logos, ses fonds et son écran de démarrage. Sous le capot, Fedora reste (D-033, D-034).
+- Pas d'ISO publique : l'ISO d'Ankh sert à installer mes machines (D-046). À l'écran, rien de Fedora : Ankh a son nom, ses logos, ses fonds et son écran de démarrage. Sous le capot, Fedora reste (D-033, D-034).
 - Pas un hôte où l'on installe des outils offensifs ou où l'on manipule du malware.
 
 La liste complète est dans [ANKH-SPEC.md, section 5](ANKH-SPEC.md#5-ce-que-je-ne-veux-pas).
@@ -55,6 +56,8 @@ Rien ne s'installe sur l'hôte en dehors de l'image (D-009).
 
 ### Réinstallation complète (ordre cible, D-019)
 
+Avec l'ISO d'Ankh (D-046, faite avant la phase 9), les étapes 1 et 2 deviendront : installer depuis l'ISO, en cochant mes options.
+
 1. Réinstaller Fedora Atomic (Kinoite) avec le chiffrement LUKS activé.
 2. Basculer sur l'image Ankh avec `bootc switch` (D-018) : `ghcr.io/patrickchoumi/ankh:latest` (AMD, Intel) ou `ghcr.io/patrickchoumi/ankh-nvidia:latest` (NVIDIA récent). Les tags datés `AAAAMMJJ` permettent de revenir à une version précise.
 3. Restaurer les **secrets** depuis la sauvegarde chiffrée. C'est nécessaire avant de cloner des dépôts privés.
@@ -69,5 +72,7 @@ Cette procédure ne sera considérée comme valide qu'après un exercice complet
 - [ANKH-SPEC.md](ANKH-SPEC.md) : ce que je fais avec ma machine, les questions ouvertes, la liste de ce que je ne veux pas.
 - [DECISIONS.md](DECISIONS.md) : chaque choix, avec ses raisons, ses alternatives rejetées et sa source ou son test.
 - [CLAUDE.md](CLAUDE.md) : guide de travail du projet (règles, méthode, feuille de route, état actuel) (D-020).
+- [AVANCEMENT.md](AVANCEMENT.md) : tout ce qui a été fait depuis le début, et ce qui reste à faire (D-029).
+- [VISION.md](VISION.md) : le portrait d'Ankh une fois terminé, pour vérifier qu'on ne dévie pas (D-045).
 
 **Règle** : ce dépôt est la source de vérité. Toute affirmation technique importante doit être appuyée par une documentation officielle, un test reproductible ou une expérience réelle sur la machine. Sinon, elle est marquée `À VALIDER` (D-016).

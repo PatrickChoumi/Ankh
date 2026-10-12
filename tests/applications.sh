@@ -69,17 +69,9 @@ if grep -E "^(application/pdf|text/plain)=" /etc/xdg/mimeapps.list; then
 fi
 par_defaut text/html google-chrome.desktop
 
-echo "Applications web Claude et GitHub, installées par Chrome (D-024)"
-python3 - /etc/opt/chrome/policies/managed/ankh-applications.json << 'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as f:
-    applications = json.load(f)["WebAppInstallForceList"]
-noms = {a["custom_name"]: a["url"] for a in applications}
-attendu = {"Claude": "https://claude.ai/", "GitHub": "https://github.com/"}
-if noms != attendu:
-    sys.exit(f"ÉCHEC : applications web {noms} au lieu de {attendu}")
-PY
+echo "Aucune application web imposée par Chrome (D-047)"
+if grep -rls WebAppInstallForceList /etc/opt/chrome /etc/opt/google; then
+    echec "une politique de Chrome installe encore des applications web"
+fi
 
 echo "Applications du quotidien présentes."

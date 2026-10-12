@@ -161,12 +161,9 @@ for t in "${onlyoffice_formats[@]}"; do
     echo "${t}=$(basename "${onlyoffice_lanceur}")"
 done >> /etc/xdg/mimeapps.list
 
-# Claude et GitHub (D-024) : applications web que Chrome installe lui-même,
-# dans leur propre fenêtre, par sa politique WebAppInstallForceList
-# (fichier /etc/opt/chrome/policies/managed/ankh-applications.json, copié
-# avec les autres fichiers d'Ankh plus bas). Définition de la politique :
-# components/policy/resources/templates/policy_definitions/Miscellaneous/WebAppInstallForceList.yaml
-# dans https://github.com/chromium/chromium.
+# D-047 : Chrome n'installe plus d'applications web de lui-même (Claude et
+# GitHub, D-024) : je les installe moi-même si je les veux. Aucune politique
+# WebAppInstallForceList n'est fournie (vérifié par le Test 12).
 
 # D-031 : aucune mise à jour automatique sur la machine. Je décide quand mettre
 # à jour ; Discover me prévient qu'une mise à jour existe (D-028).
@@ -246,6 +243,20 @@ if [[ -e /etc/hostname ]]; then
     exit 1
 fi
 echo ankh > /etc/hostname
+
+# VS Code dans le menu (D-036) : son icône officielle, tirée du pack que
+# Microsoft publie pour représenter VS Code (https://code.visualstudio.com/brand,
+# « Download the icons » ; version 2021-06-21 selon son README). L'archive
+# est refusée si son empreinte change : une nouvelle version se regarde avant
+# d'entrer dans l'image (D-043). Nom propre à Ankh, pour qu'aucun thème
+# d'icônes ne la remplace.
+vscode_icones=/tmp/visual-studio-code-icons.zip
+curl -fsSL https://code.visualstudio.com/assets/branding/visual-studio-code-icons.zip -o "${vscode_icones}"
+echo "04c5292a117bbc619f1ce574cc59b6c5e2e26374d6e64b92619e848612f2d9cb  ${vscode_icones}" | sha256sum -c -
+python3 -c 'import sys, zipfile; sys.stdout.buffer.write(zipfile.ZipFile(sys.argv[1]).read("visual-studio-code-icons/vscode.svg"))' "${vscode_icones}" \
+    > /usr/share/icons/hicolor/scalable/apps/ankh-vscode.svg
+chmod 0644 /usr/share/icons/hicolor/scalable/apps/ankh-vscode.svg
+rm "${vscode_icones}"
 
 # Logo dans le thème d'icônes : le cache est refait, car ostree met la même
 # date à tous les fichiers et un cache périmé paraîtrait encore valide.
@@ -598,6 +609,66 @@ if [[ -e /etc/skel/.face.icon ]]; then
 fi
 install -m 0644 /usr/share/ankh/avatar.png /etc/skel/.face.icon
 
+# D-043 : écran de connexion entièrement dessiné pour Ankh (mon choix du
+# 2026-10-10), avec SDDM au lieu de Plasma Login, dont l'écran ne se change
+# pas. SDDM 0.21 de Fedora 44 charge un thème en QML, Qt 6
+# (build_files/files/usr/share/sddm/themes/ankh) ; son écran d'accueil
+# tourne sous Wayland, dans KWin (paquet sddm-wayland-plasma, fichier
+# /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf). L'assistant de premier
+# démarrage sait travailler avec SDDM : il y écrit sa connexion automatique
+# dès que Plasma Login n'est pas activé (src/bootutil/bootutil.cpp de
+# https://invent.kde.org/plasma/plasma-setup).
+# Ce changement touche au démarrage de la session graphique : à relire.
+dnf5 -y install sddm sddm-wayland-plasma
+# Plasma Login et sa page des réglages (qui ne réglerait plus rien) sont
+# retirés, s'ils sont dans la base. La liste de ce qui part est affichée.
+mapfile -t plasma_login < <(rpm -q --qf '%{NAME}\n' plasma-login-manager kcm-plasmalogin | grep -v 'not installed')
+if [[ ${#plasma_login[@]} -gt 0 ]]; then
+    dnf5 -y remove "${plasma_login[@]}"
+fi
+for p in sddm sddm-wayland-plasma plasma-workspace plasma-setup; do
+    rpm -q "${p}"
+done
+# L'écran d'accueil de SDDM est lancé dans KWin par le réglage de
+# sddm-wayland-plasma : ce réglage et le programme de KWin doivent exister.
+# Le nom du paquet de KWin n'est pas vérifié ici, seulement le programme.
+grep -H '^CompositorCommand=kwin_wayland' /usr/lib/sddm/sddm.conf.d/plasma-wayland.conf
+rpm -qf /usr/bin/kwin_wayland
+# Le service d'affichage passe de Plasma Login à SDDM. Le lien de la base,
+# s'il existe, doit être celui de Plasma Login.
+lien=/etc/systemd/system/display-manager.service
+if [[ -L "${lien}" ]]; then
+    if [[ "$(basename "$(readlink "${lien}")")" != plasmalogin.service ]]; then
+        echo "${lien} désigne $(readlink "${lien}") : gestionnaire de connexion à revoir" >&2
+        exit 1
+    fi
+    rm "${lien}"
+fi
+systemctl enable sddm.service
+if [[ "$(basename "$(readlink "${lien}")")" != sddm.service ]]; then
+    echo "${lien} ne désigne pas sddm.service : $(readlink "${lien}")" >&2
+    exit 1
+fi
+# Réglages de SDDM pour Ankh, dans le dossier des réglages fournis par le
+# système : /etc/sddm.conf.d (connexion automatique de l'assistant, ou mes
+# propres réglages) passe après. Image de compte par défaut : celle d'Ankh,
+# que SDDM cherche dans le dossier faces du thème (UserModel.cpp de
+# https://github.com/sddm/sddm, version 0.21.0).
+if grep -rqs '^Current=' /usr/lib/sddm/sddm.conf.d /etc/sddm.conf.d /etc/sddm.conf; then
+    echo "Un thème SDDM est déjà choisi par la base : $(grep -rs '^Current=' /usr/lib/sddm/sddm.conf.d /etc/sddm.conf.d /etc/sddm.conf)" >&2
+    exit 1
+fi
+install -d -m 0755 /usr/lib/sddm/sddm.conf.d /usr/share/sddm/themes/ankh/faces
+cat > /usr/lib/sddm/sddm.conf.d/ankh.conf << 'CONF'
+# Écran de connexion d'Ankh (D-043)
+[Theme]
+Current=ankh
+CursorTheme=breeze_cursors
+Font=Inter,10,-1,5,50,0,0,0,0,0
+CONF
+chmod 0644 /usr/lib/sddm/sddm.conf.d/ankh.conf
+install -m 0644 /usr/share/ankh/avatar.png /usr/share/sddm/themes/ankh/faces/.face.icon
+
 # Écran de démarrage graphique : Plymouth ne l'affiche (logo d'Ankh, et saisie
 # du mot de passe LUKS) que si le noyau reçoit « rhgb » ; « quiet » masque les
 # messages du noyau. L'installateur de Fedora (Anaconda) les ajoute ; avec
@@ -617,19 +688,32 @@ kargs = ["rhgb", "quiet"]
 TOML
 fi
 
-# Écran de démarrage, où se tape aussi le mot de passe LUKS : le logo d'Ankh
-# remplace celui de Fedora en bas de l'écran. Le thème de Plymouth reste celui
-# de Fedora ; seule son image de filigrane change.
-theme="$(plymouth-set-default-theme)"
-images="$(sed -n 's/^ImageDir=//p' "/usr/share/plymouth/themes/${theme}/${theme}.plymouth")"
-# Fedora écrit ce chemin avec « // » : il est normalisé.
-images="$(realpath -m "${images}")"
-if [[ -z "${images}" || ! -d "${images}" ]]; then
-    echo "Thème Plymouth « ${theme} » : dossier d'images introuvable (« ${images} »)" >&2
+# D-043 : écran de démarrage entièrement d'Ankh (mon choix du 2026-10-10),
+# où se tape aussi le mot de passe LUKS. Thème Plymouth « ankh »
+# (build_files/files/usr/share/plymouth/themes/ankh) : le même dessin que
+# l'écran de chargement de la session, sans le logo du fabricant du PC. Le
+# champ du mot de passe, sa puce et le cadenas sont ceux d'Ankh ; les
+# indicateurs de clavier (Verr. Maj, disposition) sont repris du thème
+# « spinner » de Plymouth, celui que Fedora utilise. Remplace le seul
+# changement de filigrane de D-034.
+# Ce changement touche au démarrage et à la saisie du mot de passe LUKS : à relire.
+theme_ankh=/usr/share/plymouth/themes/ankh
+for image in capslock.png keyboard.png keymap-render.png; do
+    if [[ ! -f "/usr/share/plymouth/themes/spinner/${image}" ]]; then
+        echo "Thème Plymouth « spinner » : ${image} absent : écran de démarrage à revoir" >&2
+        exit 1
+    fi
+    install -m 0644 "/usr/share/plymouth/themes/spinner/${image}" "${theme_ankh}/${image}"
+done
+for image in watermark.png entry.png bullet.png lock.png; do
+    [[ -s "${theme_ankh}/${image}" ]] || { echo "Thème Plymouth d'Ankh : ${image} absent" >&2; exit 1; }
+done
+echo "Thème Plymouth de la base : $(plymouth-set-default-theme)"
+plymouth-set-default-theme ankh
+if [[ "$(plymouth-set-default-theme)" != ankh ]]; then
+    echo "Le thème Plymouth d'Ankh n'est pas choisi : $(plymouth-set-default-theme)" >&2
     exit 1
 fi
-echo "Thème Plymouth « ${theme} », images dans ${images}"
-install -m 0644 /usr/share/ankh/plymouth/watermark.png "${images}/watermark.png"
 
 # L'écran de démarrage vit dans l'initramfs : il est reconstruit avec la
 # commande qu'Universal Blue utilise pour cette même base (build_files/initramfs.sh

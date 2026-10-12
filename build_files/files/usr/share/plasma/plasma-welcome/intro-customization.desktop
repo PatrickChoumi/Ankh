@@ -6,6 +6,6 @@
 [Desktop Entry]
 # Obligatoire dans un fichier .desktop ; ignoré par l'accueil
 Type=Application
-Name=Bienvenue dans Ankh, ton système pour coder, jouer et explorer la cybersécurité. Tes applications sont dans le menu, et rien ne s'installe ni ne se met à jour sans toi.
+Name=Bienvenue dans Ankh, votre système pour coder, jouer et explorer la cybersécurité. Vos applications sont dans le menu, et rien ne s'installe ni ne se met à jour sans vous.
 Icon=ankh-logo
 Comment=Le logo d'Ankh : un A dont la barre est un curseur de terminal.
