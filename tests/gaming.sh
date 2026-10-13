@@ -1,6 +1,7 @@
 #!/usr/bin/bash
-# D-041, D-050 : option Gaming. Outils du jeu dans le système, entrées du menu
-# des huit applications (préparées au premier clic), session « Ankh Console ».
+# D-041, D-050, D-051 : option Gaming. Outils du jeu dans le système, ntsync,
+# entrées du menu des huit applications (préparées au premier clic), session
+# « Ankh Console ».
 # Lancé dans l'image par « just test » (Test 16), en root, dans un conteneur
 # jetable et sans réseau : rien n'est téléchargé, et ce qu'il écrit dans /etc
 # et /usr/local disparaît avec lui.
@@ -25,6 +26,13 @@ command -v mangoapp gamescope gamemoded kwin_wayland flatpak konsole > /dev/null
 for couche in /usr/share/vulkan/implicit_layer.d/MangoHud*.json /usr/share/vulkan/implicit_layer.d/vkBasalt*.json; do
     grep -q '"enable_environment"' "${couche}" || echec "${couche} s'active sans variable"
 done
+
+# D-051 : ntsync, chargé par ankh-options avec l'option Gaming (au démarrage
+# et à chaque choix ; pas ici, dans un conteneur sans noyau à lui). Il doit
+# être dans le noyau de l'image (kernel-modules-core de Fedora).
+noyaux=(/usr/lib/modules/*/)
+[[ ${#noyaux[@]} -eq 1 ]] || echec "un seul noyau attendu dans l'image : ${noyaux[*]}"
+modinfo -k "$(basename "${noyaux[0]}")" ntsync > /dev/null || echec "module ntsync absent du noyau de l'image (D-051)"
 
 echo "Entrées du menu de l'option Gaming"
 test -x /usr/libexec/ankh-flatpak || echec "/usr/libexec/ankh-flatpak absent"

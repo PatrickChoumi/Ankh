@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050 ; premier clic sur Steam corrigé).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050 ; premier clic sur Steam corrigé ; ntsync avec Gaming, D-051).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -284,9 +284,11 @@
   - les jeux lancés par Steam, Heroic, Lutris ou Bottles (en Flatpak) ne voient pas MangoHud, vkBasalt ni Gamescope du système : leurs versions Flatpak sont préparées avec chaque lanceur ;
   - le « mode jeu » de SteamOS (Gamescope) n'est pas prouvé avec Steam en Flatpak : la session console sera « Ankh Console », avec KWin et Steam Big Picture ;
   - Steam est épinglé dans la barre avec l'option Gaming.
+- **Mon choix du 2026-10-13 sur les réglages du système** (D-051) : ntsync, qui accélère les jeux Windows sous Proton 11 et Wine, est chargé avec l'option Gaming seulement. `vm.max_map_count` est déjà réglé par Fedora ; la protection contre les « split locks » reste active (la retirer exposerait la machine à un déni de service).
 - **En cours (PR de la phase 5)** :
   - outils du jeu dans l'image : GameMode, MangoHud, Gamescope, vkBasalt, règles des manettes de Steam ;
   - huit applications dans le menu avec leur logo, préparées au premier clic : Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS Studio ;
+  - ntsync chargé avec l'option Gaming, retiré sans elle (D-051) ;
   - session « Ankh Console » sur l'écran de connexion ;
   - case Gaming dans l'assistant et dans « Options d'Ankh » ; Complète coche Dev et Gaming ;
   - tests : Test 16 dans l'image ; en VM, premier clic sur Steam et session « Ankh Console ».
@@ -304,7 +306,7 @@
 
 1. **Option Gaming** (D-050) : construite, à vérifier en CI et en VM (PR de la phase 5).
 2. **Mes jeux** : les noms sont à donner (question 6) ; chacun sera vérifié sous Linux (ProtonDB, anticheat), puis testé sur ma machine en phase 9.
-3. **Réglages du système pour le jeu** (D-041) : seulement des réglages sûrs, chacun avec sa source et mesuré en VM. À proposer.
+3. **Réglages du système pour le jeu** (D-041, D-051) : ntsync avec Gaming, construit, à vérifier en VM. Les autres réglages attendront d'avoir vécu avec le système (phase 10).
 4. **Critère de fin** : chaque jeu de la question 6 testé ; manettes, VRR et multi-écran vérifiés si concernés ; test final sur ma machine en phase 9.
 
 ### Reste de la phase 3, sans la bloquer
@@ -351,6 +353,7 @@
 - **Menu du BIOS** : l'entrée de démarrage s'appelle encore « Fedora » ; visible seulement dans le menu de démarrage de la carte mère. À étudier (D-034).
 - **D-035** : les codecs de VLC sur ma machine. Taille d'une mise à jour mesurée : 1,2 Go ; la réduire est une piste (D-027).
 - **Mise à jour non appliquée** (D-004) : corrigée et vérifiée en VM. Reste à comprendre pourquoi le même test passait sur `main` juste avant.
+- **ntsync** (D-051) : le gain dans mes jeux, à mesurer sur ma machine (phase 9) ; il ne se mesure pas en VM.
 - **« Options d'Ankh »** (D-046) : non testés en VM, le mot de passe refusé ou non donné, et les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée). Limite connue : seule la barre du compte qui ouvre la fenêtre suit ; un autre compte de la machine garderait VS Code épinglé.
 
 ---

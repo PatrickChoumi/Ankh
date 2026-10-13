@@ -6,7 +6,8 @@
 #                                   séparées par « _ » : dev_gaming…
 #   ankh-options synchroniser       applique le choix enregistré (au démarrage)
 #   ankh-options choix              affiche les options choisies
-# Lancé en root par les services ankh-options.service et ankh-options@.service.
+# Lancé en root par les services ankh-options.service et ankh-options@.service,
+# et par pkexec depuis la fenêtre « Options d'Ankh ».
 #
 # Le choix est écrit dans /etc/ankh/options. Sans ce fichier, toutes les
 # options sont choisies, comme avec Complète : rien ne disparaît sans qu'on
@@ -20,6 +21,8 @@
 # /usr/share (src/common/Configuration.h de https://github.com/sddm/sddm).
 # Ces liens désignent des fichiers de l'image : rien n'est installé en dehors
 # d'elle (D-009).
+# Une option peut aussi avoir des modules du noyau, chargés seulement si
+# elle est choisie (D-051) : ntsync pour Gaming.
 set -euo pipefail
 shopt -s nullglob
 
@@ -28,6 +31,11 @@ readonly FICHIER=/etc/ankh/options
 readonly SOURCE=/usr/share/ankh/options
 readonly CIBLE=/usr/local/share
 readonly DOSSIERS=(applications wayland-sessions)
+# ntsync reproduit les objets de synchronisation de Windows pour Wine et
+# Proton (drivers/misc/ntsync.c de Linux). Fedora le construit en module
+# sans le charger : son périphérique n'a pas de numéro fixe
+# (MISC_DYNAMIC_MINOR), donc rien ne le charge à sa première ouverture.
+declare -rA MODULES=([gaming]=ntsync)
 
 echec() {
     echo "ankh-options : $*" >&2
@@ -59,6 +67,24 @@ choix_enregistre() {
     echo "${options}"
 }
 
+# Charge les modules des options choisies et retire les autres. Seulement
+# sur un système démarré par systemd (/run/systemd/system, sd_booted(3)) :
+# pas dans le conteneur de test, dont le noyau n'est pas celui de l'image.
+modules() { # $1 : options choisies, entourées d'espaces
+    local option module
+    [[ -d /run/systemd/system ]] || return 0
+    for option in "${!MODULES[@]}"; do
+        module="${MODULES[${option}]}"
+        if [[ "$1" == *" ${option} "* ]]; then
+            modprobe "${module}"
+        elif [[ -d "/sys/module/${module}" ]] && ! modprobe -r "${module}"; then
+            # Encore utilisé, par un jeu ouvert : il n'est plus chargé au
+            # démarrage suivant.
+            echo "ankh-options : ${module} sert encore ; il partira au prochain démarrage." >&2
+        fi
+    done
+}
+
 synchroniser() {
     local choisies option dossier fichier lien
     choisies=" $(choix_enregistre) "
@@ -87,6 +113,7 @@ synchroniser() {
             fi
         done
     done
+    modules "${choisies}"
     echo "Options d'Ankh appliquées : Simple${choisies% }"
 }
 

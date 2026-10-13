@@ -58,7 +58,7 @@
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
-| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; précisé le 2026-10-12 : Discord et OBS dans Gaming, session console ; précisé par D-050 ; mise en œuvre en phase 5) |
+| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; précisé le 2026-10-12 : Discord et OBS dans Gaming, session console ; précisé par D-050 et D-051 ; mise en œuvre en phase 5) |
 | D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043) |
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
@@ -67,7 +67,8 @@
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 | D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
 | D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
-| D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; à vérifier en VM) |
+| D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; précisé par D-051 ; à vérifier en VM) |
+| D-051 | Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050) | DÉCIDÉ (2026-10-13, mon choix ; à vérifier en VM) |
 
 ---
 
@@ -1246,6 +1247,7 @@
   - **mode console** : une session à choisir sur l'écran de connexion d'Ankh, à côté de la session Plasma : Steam en plein écran (mode Big Picture), dans Gamescope. Son nom et sa mise en œuvre exacte se décident en phase 5 ;
   - **noms de mes jeux** : plus tard. La question 6 reste TODO ; le critère de la phase 5 (« chaque jeu de ANKH-SPEC Q6 testé ») attend ces noms.
 - **Précisée par D-050 (2026-10-13)** : MangoHud, vkBasalt et Gamescope existent aussi en Flatpak, préparés avec chaque application ; la session console passe par KWin et Steam Big Picture, sans Gamescope.
+- **Précisée par D-051 (2026-10-13)** : réglages sûrs du système pour le jeu : ntsync, chargé avec l'option Gaming ; `vm.max_map_count` déjà réglé par Fedora ; la protection contre les « split locks » reste active.
 
 ## D-042 — Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039)
 
@@ -1641,3 +1643,28 @@
   - test des textes : vouvoiement, aussi dans les entrées, la session et la préparation ;
   - en VM : l'assistant enregistre « dev gaming » ; « Options d'Ankh » retire puis remet Dev et Gaming (VS Code et Steam dans le menu et la barre) ; premier clic sur Steam (captures de la préparation, puis de Steam) avec MangoHud et Gamescope en Flatpak ; avant ce clic, `pkcheck` vérifie que polkit laisse l'administrateur installer sans question ; session « Ankh Console » ouverte par la connexion automatique (KWin seul démarré ; capture de ce que Steam affiche dans une VM sans carte graphique).
 - **Vérification sur ma machine (phase 9)** : mes jeux (noms à donner, Q6), les manettes, MangoHud et Gamescope dans un jeu, la session « Ankh Console » à la manette.
+- **Précisée par D-051 (2026-10-13)** : ntsync est chargé avec l'option Gaming, et retiré sans elle.
+
+## D-051 — Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050)
+
+- **Statut** : DÉCIDÉ (2026-10-13), mon choix. Mise en œuvre dans la PR de la phase 5, à vérifier en VM.
+- **Contexte** : D-041 ne veut que des réglages sûrs, avec le noyau de Fedora et sans désactiver de protection. Claude a vérifié trois réglages courants dans les sources, le 2026-10-13 :
+  - **`vm.max_map_count`**, que certains jeux veulent grand : **déjà réglé par Fedora**, à 1 048 576 (fichier `10-map-count.conf` du paquet systemd de Fedora, <https://src.fedoraproject.org/rpms/systemd> ; changement « IncreaseVmMaxMapCount » de Fedora). Rien à faire ;
+  - **`kernel.split_lock_mitigate=0`** : **écarté**. Il retire une protection : la documentation du noyau dit qu'il expose la machine à un déni de service par les programmes qui font des « split locks » (`Documentation/admin-guide/sysctl/kernel.rst` de Linux). Règle 7 de CLAUDE.md ;
+  - **ntsync** : pilote du noyau qui reproduit les objets de synchronisation de Windows (`drivers/misc/ntsync.c` de Linux) :
+    - Wine s'en sert dès qu'il trouve `/dev/ntsync` (`server/inproc_sync.c` de <https://gitlab.winehq.org/wine/wine>, version 11.19). Proton 11 aussi, sauf avec `PROTON_NO_NTSYNC` (README de <https://github.com/ValveSoftware/Proton>, branche `proton_11.0`) ;
+    - Steam en Flatpak voit les périphériques de la machine (`--device=all`, manifeste de <https://github.com/flathub/com.valvesoftware.Steam>) ;
+    - Fedora le construit en module (`CONFIG_NTSYNC=m`, `redhat/configs/fedora/generic` de <https://gitlab.com/cki-project/kernel-ark>), livré dans `kernel-modules-core` (liste des fichiers du paquet pour Fedora 44, <https://mdapi.fedoraproject.org>), donc toujours présent avec le noyau ;
+    - mais Fedora ne le charge pas : son périphérique n'a pas de numéro fixe (`MISC_DYNAMIC_MINOR`), donc rien ne le charge à sa première ouverture. Une fois chargé, `/dev/ntsync` est ouvert à tous les comptes (`mode = 0666`).
+  - Les réglages de Bazzite n'ont pas pu être relus : son dépôt est hors de la portée de la session de Claude.
+- **Question et ma réponse (2026-10-13)** : charger ntsync ? « Avec Gaming seulement (Recommandé) », plutôt que toujours, ou jamais.
+- **Décision** :
+  - ntsync est chargé quand l'option Gaming est choisie : tout de suite, puis à chaque démarrage. Sans Gaming, il n'est pas chargé, comme les autres outils du jeu restent à l'arrêt (D-050) ;
+  - aucun autre réglage pour l'instant : on optimise après avoir vécu avec le système (règle 13 de CLAUDE.md, phase 10).
+- **Mise en œuvre** : `/usr/libexec/ankh-options synchroniser`, lancé à chaque démarrage et à chaque choix (D-046), charge `ntsync` avec Gaming (`modprobe`) et le retire sans elle. S'il sert encore, à un jeu ouvert, il reste chargé jusqu'au démarrage suivant, avec un message. Seulement sur un système démarré par systemd (`/run/systemd/system`, sd_booted(3)) : pas dans le conteneur de test, dont le noyau n'est pas celui de l'image.
+- **Limites** :
+  - le gain dépend des jeux et ne se mesure pas en VM (pas de carte graphique). À mesurer sur ma machine en phase 9 (À VALIDER) ;
+  - avec Gaming, le noyau a une interface de plus, ouverte à tous les comptes de la machine.
+- **Tests** :
+  - `just test`, Test 16 : le module ntsync est dans le noyau de l'image (`modinfo`) ;
+  - en VM : `/dev/ntsync` présent au démarrage avec Gaming ; ntsync retiré quand « Options d'Ankh » retire Gaming, et rechargé à son retour ; `/dev/ntsync` visible depuis Steam en Flatpak.

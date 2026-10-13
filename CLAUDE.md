@@ -27,8 +27,8 @@
 ## 2. État actuel
 
 - **Phase en cours : 5 — Gaming** (depuis le 2026-10-13). Elle remplit l'option Gaming (D-041, D-046).
-  - Mes choix du 2026-10-13 (D-050) : les outils du jeu aussi en Flatpak, préparés avec chaque lanceur ; la session « Ankh Console » (KWin et Steam Big Picture, sans Gamescope) ; Steam dans la barre.
-  - En cours : huit applications au premier clic (Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS), outils du jeu dans l'image, session « Ankh Console », case Gaming dans l'assistant et dans « Options d'Ankh ». À vérifier en VM.
+  - Mes choix du 2026-10-13 (D-050, D-051) : les outils du jeu aussi en Flatpak, préparés avec chaque lanceur ; la session « Ankh Console » (KWin et Steam Big Picture, sans Gamescope) ; Steam dans la barre ; ntsync chargé avec l'option Gaming, seul réglage du système ajouté (D-051).
+  - En cours : huit applications au premier clic (Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS), outils du jeu dans l'image, ntsync, session « Ankh Console », case Gaming dans l'assistant et dans « Options d'Ankh ». À vérifier en VM.
   - Les noms de mes jeux (ANKH-SPEC Q6) viendront plus tard : le critère de la phase les attend.
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Phase 3 terminée le 2026-10-13** : son critère est rempli (Chrome par défaut, VLC et OnlyOffice, choix des options pour Simple et Dev, mises à jour dans Discover, VS Code et le conteneur de dev recréés depuis le dépôt au premier clic, tout testé en CI et en VM cloud). Détail :

@@ -454,6 +454,8 @@ check_installed() {
     vm test -x /usr/libexec/ankh-flatpak -a -f /usr/local/share/applications/com.valvesoftware.Steam.desktop \
         -a -f /usr/local/share/wayland-sessions/ankh-console.desktop ||
         die "Steam ou la session « Ankh Console » absents (D-050)"
+    # D-051 : ntsync chargé au démarrage avec l'option Gaming (choisie ici)
+    vm test -c /dev/ntsync || die "ntsync n'est pas chargé alors que l'option Gaming est choisie (D-051)"
     # D-033 : le système s'appelle Ankh, jusque dans le menu de démarrage
     # (titre écrit par ostree à partir de PRETTY_NAME).
     # shellcheck disable=SC2016 # variables lues dans la VM
@@ -777,6 +779,7 @@ check_options_reglages() {
     echo "Barre après le retrait : $epinglees"
     [[ $epinglees != *ankh-vscode.desktop* && $epinglees != *com.valvesoftware.Steam.desktop* ]] ||
         die "VS Code ou Steam restent épinglés dans la barre après le retrait (D-046, D-050)"
+    vm test ! -e /sys/module/ntsync || die "ntsync reste chargé après le retrait de Gaming (D-051)"
     close_app "$user" plasmawindowed
     close_app "$user" systemsettings
     screenshot 1-options-barre-sans-dev
@@ -803,6 +806,7 @@ check_options_reglages() {
     echo "Barre après le retour : $epinglees"
     [[ $epinglees == *ankh-vscode.desktop* && $epinglees == *com.valvesoftware.Steam.desktop* ]] ||
         die "VS Code ou Steam ne sont pas épinglés dans la barre à leur retour (D-046, D-050)"
+    vm test -c /dev/ntsync || die "ntsync n'est pas chargé au retour de Gaming (D-051)"
     # Échap ferme la fenêtre
     activate_window org.kde.plasmawindowed
     monitor 'sendkey esc'
@@ -811,7 +815,7 @@ check_options_reglages() {
         die "Échap ne ferme pas la fenêtre « Options d'Ankh » (D-046)"
     fi
     vm gpasswd -d ankhvm wheel
-    echo "Options d'Ankh : Dev et Gaming retirées puis remises avec le mot de passe, menu et barre à jour"
+    echo "Options d'Ankh : Dev et Gaming retirées puis remises avec le mot de passe, menu, barre et ntsync à jour"
 }
 
 # Quand Steam ou la session « Ankh Console » ne font pas ce qui est attendu :
@@ -879,6 +883,10 @@ check_steam() {
         fi
     done
     echo "Steam préparé, avec MangoHud et Gamescope en Flatpak"
+    # D-051 : Proton trouve ntsync depuis Steam en Flatpak (--device=all)
+    in_session "$user" flatpak run --command=test com.valvesoftware.Steam -c /dev/ntsync ||
+        die "ntsync n'est pas visible depuis Steam en Flatpak (D-051)"
+    echo "ntsync : visible depuis Steam en Flatpak"
     sleep 180
     screenshot 1-steam
     show_windows
