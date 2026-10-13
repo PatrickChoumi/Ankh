@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050 ; premier clic sur Steam corrigé).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -290,6 +290,11 @@
   - session « Ankh Console » sur l'écran de connexion ;
   - case Gaming dans l'assistant et dans « Options d'Ankh » ; Complète coche Dev et Gaming ;
   - tests : Test 16 dans l'image ; en VM, premier clic sur Steam et session « Ankh Console ».
+- **Premiers essais en VM (2026-10-13)** :
+  - vérifié : l'assistant enregistre Dev et Gaming ; « Options d'Ankh » les retire puis les remet, avec le mot de passe, et le menu et la barre suivent (VS Code et Steam) ;
+  - le premier clic sur Steam échouait : Flatpak n'avait pas le droit d'installer pour toute la machine. Deux causes, corrigées :
+    - Ankh demandait à Flatpak de ne jamais rien demander (`--noninteractive`), ce qui empêchait aussi la fenêtre du mot de passe. Maintenant, si la règle des administrateurs ne s'applique pas, KDE demande le mot de passe d'un administrateur ;
+    - le test cliquait sur Steam dans une session de test qui n'était plus au premier plan (écran figé après l'essai de l'écran de démarrage). Le test vérifie maintenant que la session est active avant chaque capture, et que polkit laisse l'administrateur installer sans question avant le clic.
 
 ---
 
