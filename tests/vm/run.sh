@@ -598,7 +598,9 @@ check_options_assistant() {
     click 835 646
     sleep 10
     screenshot 1-assistant-options
-    if ! vm grep -qx "OPTIONS=dev gaming" /etc/ankh/options; then
+    # ssh recolle les arguments : le motif, qui contient une espace, est
+    # protégé pour le shell de la VM.
+    if ! vm "grep -qx 'OPTIONS=dev gaming' /etc/ankh/options"; then
         # shellcheck disable=SC2016 # variables lues dans la VM
         if ! vm 'cat /etc/ankh/options; journalctl -b --no-pager -o cat -u "ankh-options@*";
             journalctl -b --no-pager -o cat _UID="$(id -u plasma-setup)" | tail -n 30'; then
@@ -817,7 +819,7 @@ check_console() {
     log "Session « Ankh Console » (D-050)"
     configure_autologin "$user" ankh-console.desktop
     deadline=$((SECONDS + 180))
-    until vm pgrep -u "$user" -f "kwin_wayland.*--exit-with-session" > /dev/null; do
+    until vm "pgrep -u $user -f 'kwin_wayland.*--exit-with-session'" > /dev/null; do
         if ((SECONDS >= deadline)); then
             screenshot 1-console-echec
             explain_gaming
