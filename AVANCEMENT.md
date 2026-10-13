@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050 ; premier clic sur Steam corrigé ; ntsync avec Gaming, D-051).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050 ; option Gaming et ntsync vérifiés en VM, D-050 et D-051).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -285,15 +285,17 @@
   - le « mode jeu » de SteamOS (Gamescope) n'est pas prouvé avec Steam en Flatpak : la session console sera « Ankh Console », avec KWin et Steam Big Picture ;
   - Steam est épinglé dans la barre avec l'option Gaming.
 - **Mon choix du 2026-10-13 sur les réglages du système** (D-051) : ntsync, qui accélère les jeux Windows sous Proton 11 et Wine, est chargé avec l'option Gaming seulement. `vm.max_map_count` est déjà réglé par Fedora ; la protection contre les « split locks » reste active (la retirer exposerait la machine à un déni de service).
-- **En cours (PR de la phase 5)** :
+- **Fait sur la branche, vérifié en VM le 2026-10-13** ([run 38407899063](https://github.com/PatrickChoumi/Ankh/actions/runs/38407899063)) :
   - outils du jeu dans l'image : GameMode, MangoHud, Gamescope, vkBasalt, règles des manettes de Steam ;
   - huit applications dans le menu avec leur logo, préparées au premier clic : Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS Studio ;
   - ntsync chargé avec l'option Gaming, retiré sans elle (D-051) ;
   - session « Ankh Console » sur l'écran de connexion ;
   - case Gaming dans l'assistant et dans « Options d'Ankh » ; Complète coche Dev et Gaming ;
   - tests : Test 16 dans l'image ; en VM, premier clic sur Steam et session « Ankh Console ».
-- **Premiers essais en VM (2026-10-13)** :
-  - vérifié : l'assistant enregistre Dev et Gaming ; « Options d'Ankh » les retire puis les remet, avec le mot de passe, et le menu et la barre suivent (VS Code et Steam) ;
+- **Essais en VM (2026-10-13)** :
+  - vérifié : l'assistant enregistre Dev et Gaming ; « Options d'Ankh » les retire puis les remet, avec le mot de passe, et le menu, la barre et ntsync suivent ;
+  - vérifié : au premier clic sur Steam, la fenêtre de préparation montre le téléchargement, sans mot de passe, puis Steam s'ouvre sur sa page de connexion, avec MangoHud et Gamescope en Flatpak ; ntsync est visible depuis Steam ;
+  - vérifié : la session « Ankh Console » ouvre Steam en Big Picture sur tout l'écran, puis le bureau revient ;
   - le premier clic sur Steam échouait : Flatpak n'avait pas le droit d'installer pour toute la machine. Trois causes, corrigées :
     - Ankh demandait à Flatpak de ne jamais rien demander (`--noninteractive`), ce qui empêchait aussi la fenêtre du mot de passe. Maintenant, si la règle des administrateurs ne s'applique pas, KDE demande le mot de passe d'un administrateur ;
     - le test cliquait sur Steam dans une session de test qui n'était plus au premier plan (écran figé après l'essai de l'écran de démarrage). Le test vérifie maintenant que la session est active avant chaque capture ;
@@ -305,9 +307,9 @@
 
 ### Phase 5 — Gaming (en cours)
 
-1. **Option Gaming** (D-050) : construite, à vérifier en CI et en VM (PR de la phase 5).
+1. **Option Gaming** (D-050, D-051) : construite, vérifiée en CI et en VM le 2026-10-13. À publier par une PR, avec mon accord.
 2. **Mes jeux** : les noms sont à donner (question 6) ; chacun sera vérifié sous Linux (ProtonDB, anticheat), puis testé sur ma machine en phase 9.
-3. **Réglages du système pour le jeu** (D-041, D-051) : ntsync avec Gaming, construit, à vérifier en VM. Les autres réglages attendront d'avoir vécu avec le système (phase 10).
+3. **Réglages du système pour le jeu** (D-041, D-051) : ntsync avec Gaming, vérifié en VM. Les autres réglages attendront d'avoir vécu avec le système (phase 10).
 4. **Critère de fin** : chaque jeu de la question 6 testé ; manettes, VRR et multi-écran vérifiés si concernés ; test final sur ma machine en phase 9.
 
 ### Reste de la phase 3, sans la bloquer
@@ -355,6 +357,7 @@
 - **D-035** : les codecs de VLC sur ma machine. Taille d'une mise à jour mesurée : 1,2 Go ; la réduire est une piste (D-027).
 - **Mise à jour non appliquée** (D-004) : corrigée et vérifiée en VM. Reste à comprendre pourquoi le même test passait sur `main` juste avant.
 - **ntsync** (D-051) : le gain dans mes jeux, à mesurer sur ma machine (phase 9) ; il ne se mesure pas en VM.
+- **Compte qui n'est pas administrateur** (D-050) : Flatpak devrait lui demander le mot de passe d'un administrateur au premier clic ; en VM, il a été refusé sans fenêtre. Seulement utile si un deuxième compte doit installer des jeux.
 - **« Options d'Ankh »** (D-046) : non testés en VM, le mot de passe refusé ou non donné, et les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée). Limite connue : seule la barre du compte qui ouvre la fenêtre suit ; un autre compte de la machine garderait VS Code épinglé.
 
 ---
@@ -362,7 +365,7 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Regarder les captures de la PR de la phase 5** quand Claude les envoie (premier clic sur Steam, session « Ankh Console », cases Dev et Gaming), puis fusionner si tout me plaît (D-050).
+2. **Regarder les captures de la phase 5** envoyées le 2026-10-13 (premier clic sur Steam, session « Ankh Console », cases Dev et Gaming), puis dire à Claude d'ouvrir la PR si tout me plaît, et la fusionner (D-050, D-051).
 3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.

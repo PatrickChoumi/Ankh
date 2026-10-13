@@ -67,8 +67,8 @@
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 | D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
 | D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
-| D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; précisé par D-051 ; à vérifier en VM) |
-| D-051 | Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050) | DÉCIDÉ (2026-10-13, mon choix ; à vérifier en VM) |
+| D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; précisé par D-051 ; vérifié en VM le 2026-10-13) |
+| D-051 | Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050) | DÉCIDÉ (2026-10-13, mon choix ; vérifié en VM le 2026-10-13) |
 
 ---
 
@@ -1608,7 +1608,7 @@
 
 ## D-050 — Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046)
 
-- **Statut** : DÉCIDÉ (2026-10-13), mes choix. Mise en œuvre dans la PR de la phase 5, à vérifier en VM.
+- **Statut** : DÉCIDÉ (2026-10-13), mes choix. Mise en œuvre dans la PR de la phase 5 ; vérifiée en VM le 2026-10-13.
 - **Contexte** : D-041 fixe le contenu de l'option Gaming, D-046 la façon de la choisir. En préparant la mise en œuvre, Claude a vérifié dans les sources comment ces outils marchent avec des lanceurs en Flatpak (D-011) :
   - **les jeux lancés par Steam, Heroic, Lutris ou Bottles ne voient ni MangoHud, ni vkBasalt, ni Gamescope installés dans le système** : ce sont des applications Flatpak. Leurs versions Flatpak sont des extensions de Flathub, `org.freedesktop.Platform.VulkanLayer.*`, montées dans `/usr/lib/extensions/vulkan` de chaque application (point d'extension « version: %{branch} », `elements/flatpak-images/platform.bst` de freedesktop-sdk ; le manifeste de Steam sur Flathub lit `/usr/lib/extensions/vulkan/share` et partage `~/.config/MangoHud`). Branches le 2026-10-13 : MangoHud et Gamescope jusqu'à 26.08, vkBasalt jusqu'à 25.08 seulement ;
   - l'ancienne extension `com.valvesoftware.Steam.Utility.gamescope` est en fin de vie, remplacée par `org.freedesktop.Platform.VulkanLayer.gamescope`. Pour Steam, `gamescope -- %command%` ne marche qu'avec une version de Proton empaquetée pour Flatpak (README de l'extension) ;
@@ -1643,12 +1643,18 @@
   - Test 15 : avec Complète, Steam et la session apparaissent ; avec Simple, ils partent ;
   - test des textes : vouvoiement, aussi dans les entrées, la session et la préparation ;
   - en VM : l'assistant enregistre « dev gaming » ; « Options d'Ankh » retire puis remet Dev et Gaming (VS Code et Steam dans le menu et la barre) ; premier clic sur Steam (captures de la préparation, puis de Steam) avec MangoHud et Gamescope en Flatpak ; avant ce clic, polkit, interrogé comme Flatpak le fait (le programme qui demande, par son nom sur le bus système), laisse l'administrateur installer sans question. Le compte de test est administrateur dès sa création, comme celui de l'assistant ; session « Ankh Console » ouverte par la connexion automatique (KWin seul démarré ; capture de ce que Steam affiche dans une VM sans carte graphique).
+- **Vérifié en VM le 2026-10-13** ([run 38407899063](https://github.com/PatrickChoumi/Ankh/actions/runs/38407899063), captures jointes au compte rendu) :
+  - l'assistant propose la case Gaming et enregistre « dev gaming » ;
+  - « Options d'Ankh » retire puis remet Dev et Gaming, avec le mot de passe : le menu et la barre suivent (VS Code et Steam) ;
+  - premier clic sur Steam : la fenêtre de préparation montre le téléchargement, sans mot de passe pour l'administrateur, puis Steam s'ouvre sur sa page de connexion. MangoHud et Gamescope en Flatpak, version 26.08, sont installés avec lui ;
+  - session « Ankh Console » : KWin seul, au premier plan, et Steam en Big Picture sur tout l'écran ; le bureau revient ensuite ;
+  - trois essais avaient échoué avant, tous à cause du test : session de test hors du premier plan après l'essai de l'écran de démarrage, `$$` remplacé par systemd-run, compte de test ajouté au groupe wheel pendant sa session.
 - **Vérification sur ma machine (phase 9)** : mes jeux (noms à donner, Q6), les manettes, MangoHud et Gamescope dans un jeu, la session « Ankh Console » à la manette.
 - **Précisée par D-051 (2026-10-13)** : ntsync est chargé avec l'option Gaming, et retiré sans elle.
 
 ## D-051 — Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050)
 
-- **Statut** : DÉCIDÉ (2026-10-13), mon choix. Mise en œuvre dans la PR de la phase 5, à vérifier en VM.
+- **Statut** : DÉCIDÉ (2026-10-13), mon choix. Mise en œuvre dans la PR de la phase 5 ; vérifiée en VM le 2026-10-13.
 - **Contexte** : D-041 ne veut que des réglages sûrs, avec le noyau de Fedora et sans désactiver de protection. Claude a vérifié trois réglages courants dans les sources, le 2026-10-13 :
   - **`vm.max_map_count`**, que certains jeux veulent grand : **déjà réglé par Fedora**, à 1 048 576 (fichier `10-map-count.conf` du paquet systemd de Fedora, <https://src.fedoraproject.org/rpms/systemd> ; changement « IncreaseVmMaxMapCount » de Fedora). Rien à faire ;
   - **`kernel.split_lock_mitigate=0`** : **écarté**. Il retire une protection : la documentation du noyau dit qu'il expose la machine à un déni de service par les programmes qui font des « split locks » (`Documentation/admin-guide/sysctl/kernel.rst` de Linux). Règle 7 de CLAUDE.md ;
@@ -1669,3 +1675,4 @@
 - **Tests** :
   - `just test`, Test 16 : le module ntsync est dans le noyau de l'image (`modinfo`) ;
   - en VM : `/dev/ntsync` présent au démarrage avec Gaming ; ntsync retiré quand « Options d'Ankh » retire Gaming, et rechargé à son retour ; `/dev/ntsync` visible depuis Steam en Flatpak.
+- **Vérifié en VM le 2026-10-13** ([run 38407899063](https://github.com/PatrickChoumi/Ankh/actions/runs/38407899063)) : tout ce qui précède, au premier démarrage, après le retour arrière, et dans « Options d'Ankh ». Le gain dans les jeux reste à mesurer sur ma machine.
