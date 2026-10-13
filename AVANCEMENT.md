@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-12** (PR #14 : choix des options au premier démarrage et fenêtre « Options d'Ankh » redessinée, vérifiés en VM, D-046 ; ISO légère, D-048 et D-049 ; précisions sur le gaming, D-041).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -11,8 +11,8 @@
 | 0. Spécification | ✅ Terminée le 2026-10-07 |
 | 1. Base et chaîne de build | ✅ Terminée le 2026-10-07 |
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
-| 3. Applications et dev | ⏳ En cours depuis le 2026-10-08 |
-| 5. Gaming | À faire (questions 6 à 9 remplies le 2026-10-10 ; D-041) |
+| 3. Applications et dev | ✅ Terminée le 2026-10-13 |
+| 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -73,7 +73,7 @@
   - Le basculement entre deux images Ankh de même base n'a téléchargé que **641 octets**.
 - **Résultats notés** dans D-004, avec des renvois dans D-006, D-008, D-018 et D-027.
 
-### Phase 3 — Applications et dev (depuis le 2026-10-08)
+### Phase 3 — Applications et dev (2026-10-08 → 2026-10-13)
 
 - **Mises à jour du système dans Discover** : j'ai choisi l'option A (D-028).
   - L'image réinstalle le module de Discover qui gère les mises à jour du système.
@@ -224,7 +224,7 @@
   - ces trois corrections sont vérifiées sur les captures ([run 38159636158](https://github.com/PatrickChoumi/Ankh/actions/runs/38159636158), CI verte) ;
   - toujours à comprendre : le fond de l'assistant de premier démarrage reste uni (gris graphite d'Ankh). Son image est bien trouvable, mais elle n'est pas dessinée, sans erreur signalée. Impact faible : la page reste propre.
 - **PR #13 fusionnée** le 2026-10-12.
-- **Choix des options** (D-046), fait dans la PR #14, vérifié en VM, à fusionner :
+- **Choix des options** (D-046), fait dans la PR #14, vérifié en VM, fusionnée le 2026-10-13 :
   - **au premier démarrage**, l'assistant montre la page « Choisissez vos outils » :
     - Complète ;
     - Simple, toujours incluse ;
@@ -271,12 +271,38 @@
     - taille estimée avec les options : 15 à 20 Go.
   - **Taille des images mesurée** (registre, 2026-10-11) : `ankh` 5,46 Go compressés, `ankh-nvidia` 6,47 Go, dont 3,34 Go de Fedora en commun.
 - **Le portrait d'Ankh une fois terminé** est écrit dans [VISION.md](VISION.md) (D-045), pour vérifier qu'on ne dévie pas.
+- **Phase 3 terminée le 2026-10-13** : son critère est rempli.
+  - Chrome par défaut et Firefox retiré ; VLC et OnlyOffice présents.
+  - Choix des options au premier démarrage et dans « Options d'Ankh », pour Simple et Dev.
+  - Mises à jour dans Discover, sans terminal (le défaut de Discover reste suivi chez KDE, D-028).
+  - VS Code et le conteneur de dev recréés depuis le dépôt, au premier clic.
+  - Tout testé en CI et en VM cloud.
+
+### Phase 5 — Gaming (depuis le 2026-10-13)
+
+- **Mes choix du 2026-10-13** (D-050), après vérification dans les sources :
+  - les jeux lancés par Steam, Heroic, Lutris ou Bottles (en Flatpak) ne voient pas MangoHud, vkBasalt ni Gamescope du système : leurs versions Flatpak sont préparées avec chaque lanceur ;
+  - le « mode jeu » de SteamOS (Gamescope) n'est pas prouvé avec Steam en Flatpak : la session console sera « Ankh Console », avec KWin et Steam Big Picture ;
+  - Steam est épinglé dans la barre avec l'option Gaming.
+- **En cours (PR de la phase 5)** :
+  - outils du jeu dans l'image : GameMode, MangoHud, Gamescope, vkBasalt, règles des manettes de Steam ;
+  - huit applications dans le menu avec leur logo, préparées au premier clic : Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS Studio ;
+  - session « Ankh Console » sur l'écran de connexion ;
+  - case Gaming dans l'assistant et dans « Options d'Ankh » ; Complète coche Dev et Gaming ;
+  - tests : Test 16 dans l'image ; en VM, premier clic sur Steam et session « Ankh Console ».
 
 ---
 
 ## Ce qui reste à faire
 
-### Phase 3 — Applications et dev (en cours)
+### Phase 5 — Gaming (en cours)
+
+1. **Option Gaming** (D-050) : construite, à vérifier en CI et en VM (PR de la phase 5).
+2. **Mes jeux** : les noms sont à donner (question 6) ; chacun sera vérifié sous Linux (ProtonDB, anticheat), puis testé sur ma machine en phase 9.
+3. **Réglages du système pour le jeu** (D-041) : seulement des réglages sûrs, chacun avec sa source et mesuré en VM. À proposer.
+4. **Critère de fin** : chaque jeu de la question 6 testé ; manettes, VRR et multi-écran vérifiés si concernés ; test final sur ma machine en phase 9.
+
+### Reste de la phase 3, sans la bloquer
 
 1. **Discover** (D-028) : fusionné. L'affichage à l'écran sera visible sur les captures de la VM.
 2. **Chrome** (D-023) : fusionné. Reste à vérifier à l'écran le navigateur par défaut dans KDE (captures).
@@ -289,12 +315,11 @@
 7. **Un seul Ankh** (D-036) : VS Code dans le menu dès l'installation, prêt au premier clic : fusionné, vérifié en VM. Steam en phase 5, outils Kali en phase 6, sur le même principe.
 8. **Discover** (D-028) : causes de « Update Issue » trouvées. Celle du test est corrigée (PR #11). Défaut de Discover : option A choisie, suivi chez KDE (bug 523258).
 9. **Identité visuelle d'Ankh** (D-037, D-039, D-042) : intégrée (PR #11 et PR #12). Écran de démarrage et écran de connexion entièrement d'Ankh dans la PR #13 (D-043), à valider sur les captures. Reste : le fond de l'assistant de premier démarrage, toujours uni (D-037).
-10. **Options d'installation** (D-046) : la page qui fait cocher Simple, Dev, Gaming, Hacking ou Complète au premier démarrage, et « Options d'Ankh » pour changer ensuite. Pour l'instant, Simple et Dev ; Gaming et Hacking se remplissent aux phases suivantes. Vérifiées en VM, CI verte : à fusionner (PR #14).
-11. **Critère de fin** : tout cela testé en CI et en VM cloud, et le quotidien faisable sans terminal.
+10. **Options d'installation** (D-046) : fusionnées (PR #14). Gaming se remplit en phase 5, Hacking aux phases 6 et 7.
+11. **Critère de fin** : rempli le 2026-10-13.
 
 ### Phases suivantes
 
-- **Phase 5 — Gaming** : remplit l'option Gaming (D-041, D-046) : lanceurs, Discord et OBS au premier clic, outils du jeu, session console à la connexion. Questions 6 à 9 répondues ; noms des jeux plus tard.
 - **Phases 6 et 7 — Cyber, Labs** : remplissent l'option Hacking (D-013, D-014, D-046). Les questions de ANKH-SPEC.md §4.4 sont à répondre avant.
 - **Phase 8 — Sauvegarde et récupération** : trancher D-019, puis réussir un exercice complet en VM.
 - **Phase 9 — Ma vraie machine** :
@@ -328,7 +353,7 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Regarder les captures de la PR #14** (page « Choisissez vos outils », fenêtre « Options d'Ankh », fenêtre du mot de passe), relire les deux pièces polkit (la règle de l'assistant et l'action de la fenêtre, D-046), puis fusionner si tout me plaît.
+2. **Regarder les captures de la PR de la phase 5** quand Claude les envoie (premier clic sur Steam, session « Ankh Console », cases Dev et Gaming), puis fusionner si tout me plaît (D-050).
 3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
