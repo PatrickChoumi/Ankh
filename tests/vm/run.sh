@@ -1150,6 +1150,9 @@ capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
+# VLC et OnlyOffice, capturés plus haut, resteraient derrière les fenêtres suivantes
+close_app ankhvm vlc
+close_app ankhvm DesktopEditors
 check_vscode
 check_options_reglages
 check_identity
