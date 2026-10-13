@@ -79,18 +79,19 @@ vm() {
 
 # Commande dans la session graphique d'un compte (par son gestionnaire
 # systemd), attendue jusqu'au bout. Les arguments sont protégés du shell de
-# la VM, car ssh les recolle.
+# la VM, car ssh les recolle, et de systemd, qui remplace sinon « $$ » par
+# « $ » et « ${VARIABLE} » par sa valeur (--expand-environment, systemd-run(1)).
 in_session() {
     local user=$1
     shift
-    vm "systemd-run --machine=$user@ --user --wait --pipe --quiet $(printf '%q ' "$@")"
+    vm "systemd-run --machine=$user@ --user --wait --pipe --quiet --expand-environment=no $(printf '%q ' "$@")"
 }
 
 # Application lancée dans la session graphique d'un compte, sans l'attendre.
 launch_in_session() {
     local user=$1
     shift
-    vm "systemd-run --machine=$user@ --user --collect --quiet $(printf '%q ' "$@")"
+    vm "systemd-run --machine=$user@ --user --collect --quiet --expand-environment=no $(printf '%q ' "$@")"
 }
 
 # Attend que la VM réponde en SSH après un nouveau démarrage.
