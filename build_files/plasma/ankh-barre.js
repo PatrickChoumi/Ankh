@@ -34,15 +34,18 @@ if (panel.formFactor === "horizontal") {
 // (optimalSize de applets/panelspacer/main.qml, plasma-workspace).
 panel.addWidget("org.kde.plasma.panelspacer")
 panel.addWidget("org.kde.plasma.kickoff")
-// Applications épinglées (D-042) : fichiers, navigateur, VS Code, terminal,
-// Discover et réglages. Les deux premières sont les applications par défaut
-// du système (preferred://, applets/taskmanager/main.xml de plasma-desktop).
-// VS Code n'est épinglé que si l'option Dev est choisie (D-046) : son entrée
-// n'existe pas sinon (applicationExists, shell/scripting/scriptengine_v1.cpp
-// de plasma-workspace).
+// Applications épinglées (D-042) : fichiers, navigateur, VS Code, Steam,
+// terminal, Discover et réglages. Les deux premières sont les applications
+// par défaut du système (preferred://, applets/taskmanager/main.xml de
+// plasma-desktop). VS Code et Steam ne sont épinglés que si les options Dev
+// et Gaming sont choisies (D-046, D-050) : leur entrée n'existe pas sinon
+// (applicationExists, shell/scripting/scriptengine_v1.cpp de plasma-workspace).
 var epinglees = ["preferred://filemanager", "preferred://browser"]
 if (applicationExists("ankh-vscode.desktop")) {
     epinglees.push("applications:ankh-vscode.desktop")
+}
+if (applicationExists("com.valvesoftware.Steam.desktop")) {
+    epinglees.push("applications:com.valvesoftware.Steam.desktop")
 }
 epinglees.push("applications:org.kde.konsole.desktop", "applications:org.kde.discover.desktop",
                "applications:systemsettings.desktop")

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=OBS Studio
+GenericName=Enregistrement et diffusion vidéo
+Comment=Option Gaming d'Ankh : se prépare au premier lancement (téléchargement depuis Flathub, une seule fois).
+Exec=/usr/libexec/ankh-flatpak com.obsproject.Studio
+Icon=com.obsproject.Studio
+Terminal=false
+Categories=AudioVideo;Recorder;
+Keywords=obs;enregistrement;streaming;diffusion;

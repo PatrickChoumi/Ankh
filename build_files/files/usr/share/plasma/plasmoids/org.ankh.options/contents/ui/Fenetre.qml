@@ -5,10 +5,11 @@
 // La fenêtre lit le choix enregistré (ankh-options choix). « Appliquer », ou
 // Entrée sur une case, lance « ankh-options-reglages appliquer <choix> » :
 // le choix vaut pour toute la machine et demande le mot de passe d'un
-// administrateur ; le menu et la barre de la session suivent. Quand Dev est
-// retirée, la fenêtre propose de supprimer l'environnement de dev du compte
-// (ankh-dev supprimer). Les commandes passent par le moteur « executable » de
-// Plasma5Support, comme dans l'assistant.
+// administrateur ; le menu et la barre de la session suivent. Quand une option
+// est retirée, la fenêtre propose de supprimer ce qu'elle a téléchargé
+// (« ankh-options-reglages supprimer <options> » : environnement de dev du
+// compte, applications Gaming de la machine). Les commandes passent par le
+// moteur « executable » de Plasma5Support, comme dans l'assistant.
 
 import QtQuick
 import QtQuick.Controls
@@ -28,18 +29,26 @@ Item {
 
     readonly property string commandeChoix: "/usr/libexec/ankh-options choix"
     readonly property string commandeAppliquer: "/usr/libexec/ankh-options-reglages appliquer "
-    readonly property string commandeSupprimerDev: "/usr/libexec/ankh-dev supprimer"
+    readonly property string commandeSupprimer: "/usr/libexec/ankh-options-reglages supprimer "
 
     property bool charge: false // choix enregistré lu
-    property bool devEnregistre: false
+    property string choixEnregistre: ""
     property bool enCours: false
     property string activite: ""
-    property bool questionDev: false
+    // Options retirées dont on propose de supprimer les téléchargements
+    property var aSupprimer: []
     property string message: ""
     property int typeMessage: Kirigami.MessageType.Information
     property string texteFait: ""
 
-    readonly property bool modifie: charge && liste.dev !== devEnregistre
+    readonly property bool modifie: charge && liste.choix !== choixEnregistre
+    readonly property bool question: aSupprimer.length > 0
+
+    // Ce que chaque option a téléchargé, pour la question de suppression
+    readonly property var telechargements: ({
+        dev: "l'environnement de dev de votre compte",
+        gaming: "les applications Gaming de la machine"
+    })
 
     function lancer(commande: string, texte: string): void {
         enCours = true;
@@ -56,7 +65,7 @@ Item {
         if (!modifie || enCours) {
             return;
         }
-        questionDev = false;
+        aSupprimer = [];
         informer("", Kirigami.MessageType.Information);
         lancer(commandeAppliquer + liste.choix, "Application de votre choix…");
     }
@@ -71,8 +80,8 @@ Item {
                 informer("Le choix enregistré n'a pas pu être lu.\n" + erreurs, Kirigami.MessageType.Error);
                 return;
             }
-            devEnregistre = (" " + sortie.trim() + " ").includes(" dev ");
-            liste.dev = devEnregistre;
+            liste.lire(sortie);
+            choixEnregistre = liste.choix;
             charge = true;
             liste.prendreFocus();
         } else if (commande.startsWith(commandeAppliquer)) {
@@ -89,10 +98,21 @@ Item {
                 liste.prendreFocus();
                 return;
             }
-            devEnregistre = commande.slice(commandeAppliquer.length).split("_").includes("dev");
-            texteFait = devEnregistre
-                ? "C'est fait. VS Code est dans le menu et dans la barre : il se prépare à son premier lancement."
-                : "C'est fait. VS Code et les outils de dev ne sont plus dans le menu ni dans la barre.";
+            const avant = choixEnregistre.split("_");
+            choixEnregistre = commande.slice(commandeAppliquer.length);
+            const apres = choixEnregistre.split("_");
+            const phrases = [];
+            if (!avant.includes("dev") && apres.includes("dev")) {
+                phrases.push("VS Code est dans le menu et dans la barre : il se prépare à son premier lancement.");
+            } else if (avant.includes("dev") && !apres.includes("dev")) {
+                phrases.push("VS Code et les outils de dev ne sont plus dans le menu ni dans la barre.");
+            }
+            if (!avant.includes("gaming") && apres.includes("gaming")) {
+                phrases.push("Steam et les autres outils Gaming sont dans le menu, et Steam dans la barre : chacun se prépare à son premier lancement.");
+            } else if (avant.includes("gaming") && !apres.includes("gaming")) {
+                phrases.push("Les outils Gaming ne sont plus dans le menu ni dans la barre.");
+            }
+            texteFait = "C'est fait. " + phrases.join(" ");
             // Lignes écrites par ankh-options-reglages
             const lignes = sortie.split("\n");
             let avertissements = 0;
@@ -102,18 +122,20 @@ Item {
                     avertissements += 1;
                 }
             }
-            questionDev = lignes.includes("question : supprimer-dev");
-            if (questionDev) {
-                informer(texteFait + "\nSupprimer aussi l'environnement de dev de votre compte, pour libérer sa place ? Vos fichiers et vos projets restent dans votre dossier personnel.", Kirigami.MessageType.Information);
+            const ligneQuestion = lignes.find(ligne => ligne.startsWith("question : supprimer "));
+            aSupprimer = ligneQuestion ? ligneQuestion.slice("question : supprimer ".length).trim().split(" ") : [];
+            if (question) {
+                const quoi = aSupprimer.map(option => telechargements[option]).join(" et ");
+                informer(texteFait + "\nSupprimer aussi " + quoi + ", pour libérer leur place ? Vos fichiers, vos projets et vos jeux restent dans votre dossier personnel.", Kirigami.MessageType.Information);
             } else {
                 informer(texteFait, avertissements > 0 ? Kirigami.MessageType.Warning : Kirigami.MessageType.Positive);
             }
             liste.prendreFocus();
-        } else if (commande === commandeSupprimerDev) {
+        } else if (commande.startsWith(commandeSupprimer)) {
             if (code !== 0) {
-                informer("L'environnement de dev n'a pas pu être supprimé.\n" + erreurs, Kirigami.MessageType.Error);
+                informer("La suppression n'a pas abouti.\n" + erreurs, Kirigami.MessageType.Error);
             } else {
-                informer("L'environnement de dev est supprimé. Vos fichiers et vos projets sont toujours dans votre dossier personnel.", Kirigami.MessageType.Positive);
+                informer("C'est supprimé. Vos fichiers, vos projets et vos jeux sont toujours dans votre dossier personnel.", Kirigami.MessageType.Positive);
             }
             liste.prendreFocus();
         }
@@ -206,22 +228,23 @@ Item {
                 Kirigami.Action {
                     text: "Supprimer"
                     icon.name: "edit-delete"
-                    visible: fenetre.questionDev
+                    visible: fenetre.question
                     enabled: !fenetre.enCours
                     onTriggered: {
-                        fenetre.questionDev = false;
+                        const options = fenetre.aSupprimer.join(" ");
+                        fenetre.aSupprimer = [];
                         fenetre.informer("", Kirigami.MessageType.Information);
-                        fenetre.lancer(fenetre.commandeSupprimerDev, "Suppression de l'environnement de dev…");
+                        fenetre.lancer(fenetre.commandeSupprimer + options, "Suppression en cours…");
                     }
                 },
                 Kirigami.Action {
                     text: "Garder"
                     icon.name: "dialog-cancel"
-                    visible: fenetre.questionDev
+                    visible: fenetre.question
                     enabled: !fenetre.enCours
                     onTriggered: {
-                        fenetre.questionDev = false;
-                        fenetre.informer(fenetre.texteFait + "\nL'environnement de dev reste sur votre compte : VS Code le retrouvera si vous recochez Dev.", Kirigami.MessageType.Positive);
+                        fenetre.aSupprimer = [];
+                        fenetre.informer(fenetre.texteFait + "\nTout reste en place : si vous recochez ces options, rien ne sera à télécharger de nouveau.", Kirigami.MessageType.Positive);
                     }
                 }
             ]

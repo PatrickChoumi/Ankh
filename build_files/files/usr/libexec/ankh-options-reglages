@@ -9,11 +9,17 @@
 #       fenêtre, une information par ligne :
 #         « avertissement : <texte> » : le choix est appliqué, mais le menu
 #           ou la barre de cette session n'ont pas suivi ;
-#         « question : supprimer-dev » : Dev est retirée et l'environnement
-#           de dev de ce compte existe encore (ankh-dev supprimer).
+#         « question : supprimer <options> » : ces options sont retirées et
+#           ce qu'elles ont téléchargé est encore là (environnement de dev de
+#           ce compte, applications Gaming de la machine).
 #       Quand le choix n'est pas appliqué, le code de sortie est celui de
 #       pkexec : 126 si la fenêtre du mot de passe est fermée, 127 si
 #       l'autorisation est refusée (pkexec(1)).
+#   ankh-options-reglages supprimer <options>
+#       Supprime ce que ces options ont téléchargé : l'environnement de dev de
+#       ce compte (ankh-dev supprimer), les applications Gaming de la machine
+#       (ankh-flatpak supprimer). Les fichiers, les projets et les jeux
+#       restent dans le dossier personnel.
 #
 # pkexec plutôt que « systemctl start ankh-options@<choix> », le chemin de
 # l'assistant (sans mot de passe) : systemd n'attend la réponse de polkit que
@@ -24,7 +30,7 @@ set -euo pipefail
 
 # Entrée du menu épinglée dans la barre par chaque option, comme à la
 # première session (build_files/plasma/ankh-barre.js du dépôt d'Ankh)
-declare -A EPINGLEE=([dev]=ankh-vscode.desktop)
+declare -A EPINGLEE=([dev]=ankh-vscode.desktop [gaming]=com.valvesoftware.Steam.desktop)
 
 # Épingle une entrée du menu dans la barre de cette session, ou l'en retire,
 # par le script de Plasma (méthode evaluateScript de org.kde.PlasmaShell,
@@ -45,8 +51,13 @@ for (const panneau of panels()) {
         taches.currentConfigGroup = ["General"];
         const epinglees = taches.readConfig("launchers", []).filter(l => l !== lanceur);
         if (action === "epingler") {
-            // Après le navigateur, comme à la première session
-            epinglees.splice(epinglees.indexOf("preferred://browser") + 1, 0, lanceur);
+            // À sa place de la première session : avant le terminal, sinon
+            // après le navigateur
+            let place = epinglees.indexOf("applications:org.kde.konsole.desktop");
+            if (place < 0) {
+                place = epinglees.indexOf("preferred://browser") + 1;
+            }
+            epinglees.splice(place, 0, lanceur);
         }
         taches.writeConfig("launchers", epinglees);
     }
@@ -59,7 +70,7 @@ JS
 }
 
 appliquer() { # $1 : choix
-    local avant apres option action
+    local avant apres option action a_supprimer
     avant=" $(/usr/libexec/ankh-options choix) "
     # Le mot de passe est demandé par l'agent polkit de la session. Sans
     # autorisation, le script s'arrête ici avec le code de pkexec.
@@ -83,9 +94,31 @@ appliquer() { # $1 : choix
             echo "avertissement : la barre n'a pas suivi : un clic droit sur ses icônes permet d'en épingler ou d'en retirer."
         fi
     done
+    # Ce que les options retirées ont téléchargé
+    a_supprimer=()
     if [[ "${avant}" == *" dev "* && "${apres}" != *" dev "* ]] && podman container exists ankh-dev; then
-        echo "question : supprimer-dev"
+        a_supprimer+=(dev)
     fi
+    if [[ "${avant}" == *" gaming "* && "${apres}" != *" gaming "* && -n "$(/usr/libexec/ankh-flatpak installees)" ]]; then
+        a_supprimer+=(gaming)
+    fi
+    if ((${#a_supprimer[@]})); then
+        echo "question : supprimer ${a_supprimer[*]}"
+    fi
+}
+
+supprimer() { # $@ : options
+    local option
+    for option in "$@"; do
+        case "${option}" in
+            dev) /usr/libexec/ankh-dev supprimer ;;
+            gaming) /usr/libexec/ankh-flatpak supprimer ;;
+            *)
+                echo "ankh-options-reglages : rien à supprimer pour « ${option} »" >&2
+                exit 2
+                ;;
+        esac
+    done
 }
 
 case "${1:-}" in
@@ -96,8 +129,16 @@ case "${1:-}" in
         fi
         appliquer "$2"
         ;;
+    supprimer)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage : ankh-options-reglages supprimer <options>" >&2
+            exit 2
+        fi
+        shift
+        supprimer "$@"
+        ;;
     *)
-        echo "Usage : ankh-options-reglages appliquer <choix>" >&2
+        echo "Usage : ankh-options-reglages appliquer <choix> | supprimer <options>" >&2
         exit 2
         ;;
 esac

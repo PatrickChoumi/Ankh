@@ -14,15 +14,20 @@
 # Les entrées du menu de chaque option sont dans l'image, hors du menu
 # (/usr/share/ankh/options/<option>/applications). Une option choisie y gagne
 # un lien dans /usr/local/share/applications, dossier lu avant /usr/share
-# (XDG_DATA_DIRS, spécification XDG des dossiers de base). Ce lien désigne un
-# fichier de l'image : rien n'est installé en dehors d'elle (D-009).
+# (XDG_DATA_DIRS, spécification XDG des dossiers de base). De même pour ses
+# sessions de l'écran de connexion (wayland-sessions, comme « Ankh Console »
+# de l'option Gaming) : SDDM lit /usr/local/share/wayland-sessions avant
+# /usr/share (src/common/Configuration.h de https://github.com/sddm/sddm).
+# Ces liens désignent des fichiers de l'image : rien n'est installé en dehors
+# d'elle (D-009).
 set -euo pipefail
 shopt -s nullglob
 
 readonly OPTIONS_CONNUES=(dev gaming hacking)
 readonly FICHIER=/etc/ankh/options
 readonly SOURCE=/usr/share/ankh/options
-readonly MENU=/usr/local/share/applications
+readonly CIBLE=/usr/local/share
+readonly DOSSIERS=(applications wayland-sessions)
 
 echec() {
     echo "ankh-options : $*" >&2
@@ -55,30 +60,32 @@ choix_enregistre() {
 }
 
 synchroniser() {
-    local choisies option lanceur lien
+    local choisies option dossier fichier lien
     choisies=" $(choix_enregistre) "
     for option in ${choisies}; do
         connue "${option}" || echec "option inconnue dans ${FICHIER} : ${option}"
     done
-    # Sur Fedora Atomic, /usr/local est un lien vers /var/usrlocal : le dossier
-    # est créé à son vrai chemin (dans un conteneur de test, ce lien ne mène
-    # encore nulle part).
-    install -d -m 0755 "$(readlink -m "${MENU}")"
-    for option in "${OPTIONS_CONNUES[@]}"; do
-        for lanceur in "${SOURCE}/${option}/applications"/*.desktop; do
-            lien="${MENU}/$(basename "${lanceur}")"
-            if [[ "${choisies}" == *" ${option} "* ]]; then
-                ln -sfn "${lanceur}" "${lien}"
-            elif [[ -L "${lien}" && "$(readlink "${lien}")" == "${lanceur}" ]]; then
+    for dossier in "${DOSSIERS[@]}"; do
+        # Sur Fedora Atomic, /usr/local est un lien vers /var/usrlocal : le
+        # dossier est créé à son vrai chemin (dans un conteneur de test, ce
+        # lien ne mène encore nulle part).
+        install -d -m 0755 "$(readlink -m "${CIBLE}/${dossier}")"
+        for option in "${OPTIONS_CONNUES[@]}"; do
+            for fichier in "${SOURCE}/${option}/${dossier}"/*.desktop; do
+                lien="${CIBLE}/${dossier}/$(basename "${fichier}")"
+                if [[ "${choisies}" == *" ${option} "* ]]; then
+                    ln -sfn "${fichier}" "${lien}"
+                elif [[ -L "${lien}" && "$(readlink "${lien}")" == "${fichier}" ]]; then
+                    rm "${lien}"
+                fi
+            done
+        done
+        # Liens vers un fichier qui n'est plus dans l'image (après une mise à jour)
+        for lien in "${CIBLE}/${dossier}"/*.desktop; do
+            if [[ -L "${lien}" && "$(readlink "${lien}")" == "${SOURCE}/"* && ! -e "${lien}" ]]; then
                 rm "${lien}"
             fi
         done
-    done
-    # Liens vers une entrée qui n'est plus dans l'image (après une mise à jour)
-    for lien in "${MENU}"/*.desktop; do
-        if [[ -L "${lien}" && "$(readlink "${lien}")" == "${SOURCE}/"* && ! -e "${lien}" ]]; then
-            rm "${lien}"
-        fi
     done
     echo "Options d'Ankh appliquées : Simple${choisies% }"
 }

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Ankh Console
+Comment=Steam en plein écran, pour jouer à la manette. Quitter Steam ramène à l'écran de connexion.
+Exec=/usr/libexec/ankh-console
+DesktopNames=KDE

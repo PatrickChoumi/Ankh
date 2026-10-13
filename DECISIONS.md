@@ -58,7 +58,7 @@
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
-| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; précisé le 2026-10-12 : Discord et OBS dans Gaming, session console ; mise en œuvre en phase 5) |
+| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; précisé le 2026-10-12 : Discord et OBS dans Gaming, session console ; précisé par D-050 ; mise en œuvre en phase 5) |
 | D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043) |
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
@@ -67,6 +67,7 @@
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 | D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
 | D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
+| D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; à vérifier en VM) |
 
 ---
 
@@ -1244,6 +1245,7 @@
   - **Discord et OBS Studio** font partie de l'option Gaming. Comme les lanceurs, ils sont dans le menu et se préparent au premier clic (Flatpak, D-031, D-036) ;
   - **mode console** : une session à choisir sur l'écran de connexion d'Ankh, à côté de la session Plasma : Steam en plein écran (mode Big Picture), dans Gamescope. Son nom et sa mise en œuvre exacte se décident en phase 5 ;
   - **noms de mes jeux** : plus tard. La question 6 reste TODO ; le critère de la phase 5 (« chaque jeu de ANKH-SPEC Q6 testé ») attend ces noms.
+- **Précisée par D-050 (2026-10-13)** : MangoHud, vkBasalt et Gamescope existent aussi en Flatpak, préparés avec chaque application ; la session console passe par KWin et Steam Big Picture, sans Gamescope.
 
 ## D-042 — Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039)
 
@@ -1498,6 +1500,7 @@
   - Dev remise : VS Code revient dans le menu et dans la barre, après le navigateur ;
   - Échap ferme la fenêtre.
   - Non testés en VM : les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée), le mot de passe refusé ou non donné, et les autres comptes de la machine.
+- **Précisée par D-050 (2026-10-13)** : l'option Gaming est remplie (huit applications préparées au premier clic, outils du jeu, session « Ankh Console ») ; Complète coche Dev et Gaming.
 - **Vérification** :
   - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
   - ajout puis retrait d'une option dans les réglages ;
@@ -1600,3 +1603,41 @@
   - taille de l'ISO mesurée ;
   - installation en VM sans réseau ;
   - proposition NVIDIA testée en forçant la détection, puisque la VM n'a pas de carte NVIDIA.
+
+## D-050 — Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046)
+
+- **Statut** : DÉCIDÉ (2026-10-13), mes choix. Mise en œuvre dans la PR de la phase 5, à vérifier en VM.
+- **Contexte** : D-041 fixe le contenu de l'option Gaming, D-046 la façon de la choisir. En préparant la mise en œuvre, Claude a vérifié dans les sources comment ces outils marchent avec des lanceurs en Flatpak (D-011) :
+  - **les jeux lancés par Steam, Heroic, Lutris ou Bottles ne voient ni MangoHud, ni vkBasalt, ni Gamescope installés dans le système** : ce sont des applications Flatpak. Leurs versions Flatpak sont des extensions de Flathub, `org.freedesktop.Platform.VulkanLayer.*`, montées dans `/usr/lib/extensions/vulkan` de chaque application (point d'extension « version: %{branch} », `elements/flatpak-images/platform.bst` de freedesktop-sdk ; le manifeste de Steam sur Flathub lit `/usr/lib/extensions/vulkan/share` et partage `~/.config/MangoHud`). Branches le 2026-10-13 : MangoHud et Gamescope jusqu'à 26.08, vkBasalt jusqu'à 25.08 seulement ;
+  - l'ancienne extension `com.valvesoftware.Steam.Utility.gamescope` est en fin de vie, remplacée par `org.freedesktop.Platform.VulkanLayer.gamescope`. Pour Steam, `gamescope -- %command%` ne marche qu'avec une version de Proton empaquetée pour Flatpak (README de l'extension) ;
+  - **GameMode, lui, sert aussi les jeux en Flatpak**, par le portail GameMode (`data/org.freedesktop.portal.GameMode.xml` de xdg-desktop-portal) ;
+  - **les manettes** demandent les règles de `steam-devices` dans le système (wiki de <https://github.com/flathub/com.valvesoftware.Steam>) ;
+  - **le mode console de SteamOS et Bazzite (Gamescope)** n'est pas prouvé avec Steam en Flatpak : Bazzite le fait avec Steam installé dans le système, et des essais avec Steam en Flatpak ont échoué (recherche du 2026-10-13, sources dans le compte rendu). Une ancienne page de Bazzite le réserve aux cartes AMD et Intel Arc ;
+  - **KWin peut lancer une seule application comme session**, et s'arrêter avec elle (option `--exit-with-session`, `src/main_wayland.cpp` de <https://invent.kde.org/plasma/kwin>).
+- **Questions et mes réponses (2026-10-13)** :
+  1. **Session console** : « KWin + Big Picture (Recommandé) », plutôt que Gamescope comme SteamOS, ou plus tard ;
+  2. **outils du jeu en Flatpak** : « Oui, au premier clic (Recommandé) », plutôt que seulement ceux du système ;
+  3. **barre** : « Steam seul (Recommandé) », plutôt que Steam et Discord, ou aucune.
+- **Décision** :
+  - **dans le système**, comme D-041 : GameMode, MangoHud, Gamescope, vkBasalt et `steam-devices`. Sans l'option Gaming, ils restent à l'arrêt : `gamemoded` ne démarre qu'à la demande, et les couches Vulkan ne s'activent qu'avec leur variable (`MANGOHUD=1`, `ENABLE_VKBASALT=1` ; `src/mangohud.json.in` de MangoHud et `config/vkBasalt.json.in` de vkBasalt) ;
+  - **huit applications dans le menu**, de Flathub, prêtes au premier clic (D-031, D-036) : Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord et OBS Studio ;
+  - **au premier clic**, une fenêtre montre le téléchargement de l'application, pour toute la machine, puis celui de MangoHud, Gamescope et vkBasalt en Flatpak pour sa version, quand ils existent ; puis l'application s'ouvre ;
+  - **session « Ankh Console »** sur l'écran de connexion, avec l'option Gaming : KWin seul, sans le bureau, et Steam en plein écran (Big Picture). Quitter Steam ramène à l'écran de connexion. Gamescope n'est pas utilisé ;
+  - **barre** : Steam y est épinglé avec l'option Gaming, comme VS Code avec Dev ; il en part si Gaming est décochée.
+- **Mise en œuvre** :
+  - **entrées du menu** : `/usr/share/ankh/options/gaming/applications/<application>.desktop`, posées par `ankh-options` comme celles de Dev (D-046). Chacune porte le nom de fichier de l'entrée que Flatpak installera : après l'installation, l'entrée de Flatpak passe devant, car les dossiers de Flatpak précèdent `/usr/local/share` dans `XDG_DATA_DIRS` (`profile/flatpak.sh` de <https://github.com/flatpak/flatpak> ; vu dans la session de la VM le 2026-10-12) ;
+  - **icônes** : les icônes officielles, prises sur Flathub le 2026-10-13 (`https://flathub.org/api/v2/appstream/<application>`, champ `icons`), dans `/usr/share/icons/hicolor` sous le nom de chaque application. Flatpak installe ensuite les siennes, du même nom, qui passent devant. Licences : GPL pour Heroic, Lutris, Bottles, ProtonPlus, Protontricks et OBS ; Steam et Discord sont propriétaires, leur logo sert seulement à les reconnaître dans le menu, comme celui de VS Code (D-043) ;
+  - **`/usr/libexec/ankh-flatpak`** : au premier clic, Konsole montre la préparation (`flatpak install --system` depuis Flathub), puis l'application s'ouvre. La préparation garde son journal dans `~/.cache/ankh/preparation-<application>.log`. Pour toute la machine, Flatpak n'a pas besoin de mot de passe pour un administrateur dans sa session (règle polkit de Flatpak pour le groupe wheel, `system-helper/org.freedesktop.Flatpak.rules.in`) ; les autres comptes le demandent ;
+  - **version des outils du jeu en Flatpak** : celle du point d'extension `org.freedesktop.Platform.VulkanLayer` du runtime de l'application (`flatpak info --show-metadata`), sinon la branche du runtime. Un outil qui n'existe pas encore pour cette version est annoncé dans la fenêtre, sans échec ;
+  - **session** : `/usr/share/ankh/options/gaming/wayland-sessions/ankh-console.desktop`, posée par `ankh-options` dans `/usr/local/share/wayland-sessions`, que SDDM lit avant `/usr/share` (`src/common/Configuration.h` de <https://github.com/sddm/sddm>). Elle lance `/usr/libexec/ankh-console` : `kwin_wayland --xwayland --exit-with-session`, puis Steam par `ankh-flatpak … -gamepadui` ;
+  - **pages des options** : Gaming devient une case comme Dev, dans l'assistant et dans « Options d'Ankh ». Complète coche Dev et Gaming. Retirer Gaming propose de supprimer ses applications (`ankh-flatpak supprimer`) : les jeux et les données restent dans le dossier personnel.
+- **Limites connues** :
+  - **vkBasalt** n'existe pas encore sur Flathub pour la version 26.08 : pas de vkBasalt pour Steam et Discord tant qu'il n'est pas publié. Il sert les applications en 25.08 (Heroic, OBS) ; pour Lutris, Bottles et ProtonPlus, la version suit leur runtime GNOME (À VALIDER au premier clic, la fenêtre l'affiche) ;
+  - **dans « Ankh Console »**, sans Gamescope : pas de limite d'images ni de mise à l'échelle FSR dans le menu rapide de Steam ; elles restent possibles jeu par jeu. Le menu d'alimentation de Steam en Flatpak ne peut sans doute pas éteindre la machine (pas d'accès à `org.freedesktop.login1` dans son manifeste) : À VALIDER sur ma machine ;
+  - « Quitter Big Picture » laisse Steam en fenêtre dans la session : il faut alors quitter Steam pour revenir à l'écran de connexion.
+- **Tests** :
+  - `just test`, Test 16 (`tests/gaming.sh`) : outils du jeu présents, règles des manettes, couches Vulkan à l'arrêt sans leur variable ; les huit entrées valides, chacune avec son icône et passant par `ankh-flatpak` ; rien d'installé dans l'image ; application inconnue refusée ; session présente seulement avec Gaming ;
+  - Test 15 : avec Complète, Steam et la session apparaissent ; avec Simple, ils partent ;
+  - test des textes : vouvoiement, aussi dans les entrées, la session et la préparation ;
+  - en VM : l'assistant enregistre « dev gaming » ; « Options d'Ankh » retire puis remet Dev et Gaming (VS Code et Steam dans le menu et la barre) ; premier clic sur Steam (captures de la préparation, puis de Steam) avec MangoHud et Gamescope en Flatpak ; session « Ankh Console » ouverte par la connexion automatique (KWin seul démarré ; capture de ce que Steam affiche dans une VM sans carte graphique).
+- **Vérification sur ma machine (phase 9)** : mes jeux (noms à donner, Q6), les manettes, MangoHud et Gamescope dans un jeu, la session « Ankh Console » à la manette.

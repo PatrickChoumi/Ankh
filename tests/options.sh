@@ -1,6 +1,7 @@
 #!/usr/bin/bash
-# D-046 : options d'Ankh (Simple toujours incluse ; Dev ; Gaming et Hacking
+# D-046 : options d'Ankh (Simple toujours incluse ; Dev ; Gaming ; Hacking
 # bientôt ; Complète), page de l'assistant et fenêtre « Options d'Ankh ».
+# Le contenu de l'option Gaming a son propre test (tests/gaming.sh).
 # Lancé dans l'image par « just test » (Test 15), en root,
 # dans un conteneur jetable : ce qu'il écrit dans /etc et /usr/local disparaît
 # avec lui.
@@ -76,11 +77,15 @@ test ! -e /etc/ankh/options || echec "/etc/ankh/options existe déjà dans l'ima
 /usr/libexec/ankh-options synchroniser
 lien ankh-vscode.desktop || echec "VS Code absent du menu avec Complète"
 lien ankh-dev-mettre-a-jour.desktop || echec "« Mettre à jour les outils de dev » absent avec Complète"
+test -L "${menu}/com.valvesoftware.Steam.desktop" || echec "Steam absent du menu avec Complète"
+test -L /usr/local/share/wayland-sessions/ankh-console.desktop || echec "session « Ankh Console » absente avec Complète"
 
 echo "Simple seule : plus de VS Code"
 /usr/libexec/ankh-options appliquer simple
 [[ -z "$(/usr/libexec/ankh-options choix)" ]] || echec "Simple : options encore enregistrées"
 test ! -e "${menu}/ankh-vscode.desktop" || echec "VS Code encore dans le menu avec Simple seule"
+test ! -e "${menu}/com.valvesoftware.Steam.desktop" || echec "Steam encore dans le menu avec Simple seule"
+test ! -e /usr/local/share/wayland-sessions/ankh-console.desktop || echec "session « Ankh Console » encore là avec Simple seule"
 
 echo "Dev : VS Code revient ; l'ordre et les doublons ne comptent pas"
 /usr/libexec/ankh-options appliquer hacking_dev_dev

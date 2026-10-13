@@ -11,28 +11,51 @@ import org.kde.kirigami as Kirigami
 ColumnLayout {
     id: liste
 
-    // Options proposées aujourd'hui. Gaming et Hacking arrivent avec les
-    // phases 5 à 7 (CLAUDE.md, §5) : elles sont montrées, grisées.
+    // Options proposées aujourd'hui : Dev et Gaming. Hacking arrive avec les
+    // phases 6 et 7 (CLAUDE.md, §5) : elle est montrée, grisée.
     property bool dev: true
+    property bool gaming: true
+
+    // Complète : toutes les options proposées
+    readonly property bool complete: dev && gaming
 
     // Choix au format de /usr/libexec/ankh-options : « simple », ou les
     // options séparées par « _ »
-    readonly property string choix: dev ? "dev" : "simple"
+    readonly property string choix: {
+        const options = [];
+        if (dev) {
+            options.push("dev");
+        }
+        if (gaming) {
+            options.push("gaming");
+        }
+        return options.length > 0 ? options.join("_") : "simple";
+    }
+
+    // Coche les options d'après une liste enregistrée (« dev gaming… »)
+    function lire(enregistrees: string): void {
+        const options = enregistrees.trim().split(/\s+/);
+        dev = options.includes("dev");
+        gaming = options.includes("gaming");
+    }
 
     // Le clavier commence à la première case, Complète
     function prendreFocus(): void {
-        complete.prendreFocus();
+        carteComplete.prendreFocus();
     }
 
     spacing: Kirigami.Units.largeSpacing
 
     CarteOption {
-        id: complete
+        id: carteComplete
         icone: "checkbox"
         titre: "Complète"
         detail: "Tout ce qui est proposé ci-dessous."
-        coche: liste.dev
-        onBasculee: coche => liste.dev = coche
+        coche: liste.complete
+        onBasculee: coche => {
+            liste.dev = coche;
+            liste.gaming = coche;
+        }
     }
 
     Kirigami.Separator {
@@ -59,9 +82,9 @@ ColumnLayout {
     CarteOption {
         icone: "applications-games"
         titre: "Gaming"
-        mention: "Bientôt"
-        detail: "Steam et les autres lanceurs, les manettes, le mode console, Discord et OBS."
-        modifiable: false
+        detail: "Steam, Heroic, Lutris, Bottles, les outils du jeu, les manettes, la session console, Discord et OBS. Chacun se prépare à son premier lancement."
+        coche: liste.gaming
+        onBasculee: coche => liste.gaming = coche
     }
 
     CarteOption {

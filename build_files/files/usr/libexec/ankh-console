@@ -1,0 +1,32 @@
+#!/usr/bin/bash
+# Session « Ankh Console » (D-050), choisie sur l'écran de connexion quand
+# l'option Gaming est cochée : Steam en plein écran (Big Picture), à la
+# manette, comme sur une console.
+#   ankh-console          lance la session : KWin, le compositeur du bureau
+#                         d'Ankh, seul, sans le bureau. Il s'arrête quand
+#                         Steam s'arrête (option --exit-with-session de
+#                         kwin_wayland, src/main_wayland.cpp de
+#                         https://invent.kde.org/plasma/kwin), et l'écran de
+#                         connexion revient.
+#   ankh-console steam    lance Steam dans cette session (appelé par KWin)
+# Steam est celui de l'option Gaming, en Flatpak (D-011), préparé au premier
+# lancement comme depuis le menu (/usr/libexec/ankh-flatpak). Gamescope n'est
+# pas utilisé : rien ne prouve qu'il marche avec Steam en Flatpak (D-050).
+set -euo pipefail
+
+case "${1:-}" in
+    "")
+        exec kwin_wayland --xwayland --exit-with-session "/usr/libexec/ankh-console steam"
+        ;;
+    steam)
+        # Les services démarrés à la demande (portails, notifications) voient
+        # l'affichage de cette session : sous Fedora, D-Bus les démarre par le
+        # gestionnaire systemd du compte (dbus-broker).
+        systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP
+        exec /usr/libexec/ankh-flatpak com.valvesoftware.Steam -gamepadui
+        ;;
+    *)
+        echo "Usage : ankh-console [steam]" >&2
+        exit 2
+        ;;
+esac

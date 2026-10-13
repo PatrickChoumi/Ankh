@@ -137,7 +137,7 @@ Points ouverts dans cette architecture :
 - **Manettes** (modèles, filaire ou sans fil) : toutes (Xbox, PlayStation, autres), filaires et sans fil (2026-10-10)
 - **VRR / HDR / multi-écran** : écran simple, caractéristiques inconnues (2026-10-10)
 - **Streaming / enregistrement** (OBS, …) et **mode console** (Steam plein écran) : pas de besoin précis ; « l'OS ne doit pas me limiter et doit me permettre de faire tout ce que je veux quand je l'envisage » (2026-10-10). Disponibles, rien d'imposé.
-  - Précisé le 2026-10-12 (D-041) : Discord et OBS dans l'option Gaming, prêts au premier clic ; le mode console est une session à choisir sur l'écran de connexion.
+  - Précisé le 2026-10-12 (D-041) : Discord et OBS dans l'option Gaming, prêts au premier clic ; le mode console est une session à choisir sur l'écran de connexion (« Ankh Console » : KWin et Steam Big Picture, choisie le 2026-10-13, D-050).
 
 ### 4.4 Cyber
 

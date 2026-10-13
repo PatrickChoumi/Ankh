@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Bottles
+GenericName=Logiciels Windows
+Comment=Option Gaming d'Ankh : se prépare au premier lancement (téléchargement depuis Flathub, une seule fois).
+Exec=/usr/libexec/ankh-flatpak com.usebottles.bottles
+Icon=com.usebottles.bottles
+Terminal=false
+Categories=Utility;Game;
+Keywords=windows;wine;jeux;
