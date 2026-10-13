@@ -1,0 +1,127 @@
+#!/usr/bin/bash
+# Options d'Ankh (D-046) : applique, pour toute la machine, le choix fait au
+# premier démarrage ou dans « Options d'Ankh » de la Configuration du système.
+#   ankh-options appliquer <choix>  enregistre le choix, puis l'applique. Le
+#                                   choix est « simple », ou des options
+#                                   séparées par « _ » : dev_gaming…
+#   ankh-options synchroniser       applique le choix enregistré (au démarrage)
+#   ankh-options choix              affiche les options choisies
+# Lancé en root par les services ankh-options.service et ankh-options@.service.
+#
+# Le choix est écrit dans /etc/ankh/options. Sans ce fichier, toutes les
+# options sont choisies, comme avec Complète : rien ne disparaît sans qu'on
+# l'ait demandé. Simple (Chrome, VLC, OnlyOffice) est toujours là.
+# Les entrées du menu de chaque option sont dans l'image, hors du menu
+# (/usr/share/ankh/options/<option>/applications). Une option choisie y gagne
+# un lien dans /usr/local/share/applications, dossier lu avant /usr/share
+# (XDG_DATA_DIRS, spécification XDG des dossiers de base). Ce lien désigne un
+# fichier de l'image : rien n'est installé en dehors d'elle (D-009).
+set -euo pipefail
+shopt -s nullglob
+
+readonly OPTIONS_CONNUES=(dev gaming hacking)
+readonly FICHIER=/etc/ankh/options
+readonly SOURCE=/usr/share/ankh/options
+readonly MENU=/usr/local/share/applications
+
+echec() {
+    echo "ankh-options : $*" >&2
+    exit 1
+}
+
+connue() { # $1 : option
+    local option
+    for option in "${OPTIONS_CONNUES[@]}"; do
+        [[ "$1" == "${option}" ]] && return 0
+    done
+    return 1
+}
+
+# Options enregistrées, séparées par des espaces (vide : Simple seule)
+choix_enregistre() {
+    local ligne options="" trouvee=0
+    if [[ ! -e "${FICHIER}" ]]; then
+        echo "${OPTIONS_CONNUES[*]}"
+        return
+    fi
+    while IFS= read -r ligne || [[ -n "${ligne}" ]]; do
+        if [[ "${ligne}" == OPTIONS=* ]]; then
+            options="${ligne#OPTIONS=}"
+            trouvee=1
+        fi
+    done < "${FICHIER}"
+    ((trouvee)) || echec "${FICHIER} n'a pas de ligne OPTIONS="
+    echo "${options}"
+}
+
+synchroniser() {
+    local choisies option lanceur lien
+    choisies=" $(choix_enregistre) "
+    for option in ${choisies}; do
+        connue "${option}" || echec "option inconnue dans ${FICHIER} : ${option}"
+    done
+    # Sur Fedora Atomic, /usr/local est un lien vers /var/usrlocal : le dossier
+    # est créé à son vrai chemin (dans un conteneur de test, ce lien ne mène
+    # encore nulle part).
+    install -d -m 0755 "$(readlink -m "${MENU}")"
+    for option in "${OPTIONS_CONNUES[@]}"; do
+        for lanceur in "${SOURCE}/${option}/applications"/*.desktop; do
+            lien="${MENU}/$(basename "${lanceur}")"
+            if [[ "${choisies}" == *" ${option} "* ]]; then
+                ln -sfn "${lanceur}" "${lien}"
+            elif [[ -L "${lien}" && "$(readlink "${lien}")" == "${lanceur}" ]]; then
+                rm "${lien}"
+            fi
+        done
+    done
+    # Liens vers une entrée qui n'est plus dans l'image (après une mise à jour)
+    for lien in "${MENU}"/*.desktop; do
+        if [[ -L "${lien}" && "$(readlink "${lien}")" == "${SOURCE}/"* && ! -e "${lien}" ]]; then
+            rm "${lien}"
+        fi
+    done
+    echo "Options d'Ankh appliquées : Simple${choisies% }"
+}
+
+appliquer() { # $1 : choix
+    local demandees=() retenues=() option
+    [[ "$1" =~ ^(simple|[a-z]+(_[a-z]+)*)$ ]] || echec "choix invalide : $1"
+    if [[ "$1" != simple ]]; then
+        IFS=_ read -r -a demandees <<< "$1"
+    fi
+    for option in "${demandees[@]}"; do
+        connue "${option}" || echec "option inconnue : ${option}"
+    done
+    # Dans l'ordre des options connues, sans doublon
+    for option in "${OPTIONS_CONNUES[@]}"; do
+        if [[ " ${demandees[*]} " == *" ${option} "* ]]; then
+            retenues+=("${option}")
+        fi
+    done
+    install -d -m 0755 "$(dirname "${FICHIER}")"
+    {
+        echo "# Options d'Ankh choisies (D-046) : dev, gaming, hacking. Vide : Simple seule."
+        echo "# Écrit par /usr/libexec/ankh-options : à changer dans « Options d'Ankh »."
+        echo "OPTIONS=${retenues[*]}"
+    } > "${FICHIER}.nouveau"
+    chmod 0644 "${FICHIER}.nouveau"
+    mv "${FICHIER}.nouveau" "${FICHIER}"
+    synchroniser
+}
+
+case "${1:-}" in
+    appliquer)
+        [[ $# -eq 2 ]] || echec "usage : ankh-options appliquer <choix>"
+        appliquer "$2"
+        ;;
+    synchroniser)
+        synchroniser
+        ;;
+    choix)
+        choix_enregistre
+        ;;
+    *)
+        echo "Usage : ankh-options appliquer <choix> | synchroniser | choix" >&2
+        exit 2
+        ;;
+esac

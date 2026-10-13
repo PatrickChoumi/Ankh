@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Description": "Ajouter ou retirer des outils après l'installation : Dev, Gaming, Hacking (D-046).",
+        "Icon": "ankh-logo",
+        "Id": "org.ankh.options",
+        "License": "GPL-2.0-or-later",
+        "Name": "Options d'Ankh",
+        "Version": "1.0"
+    },
+    "NoDisplay": true,
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

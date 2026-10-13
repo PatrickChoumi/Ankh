@@ -145,10 +145,18 @@ grep -q '^Icon=ankh-logo$' /usr/share/plasma/plasma-welcome/intro-customization.
     || echec "première page de l'accueil de KDE : logo d'Ankh absent"
 grep -q 'Raccourcis utiles' /usr/share/plasma/plasma-welcome/extra-pages/01-Raccourcis.qml \
     || echec "page « Raccourcis utiles » de l'accueil de KDE absente"
-# Textes affichés par Ankh : vouvoiement (ma demande du 2026-10-10)
-if grep -nE "(\"|=)[^\"]*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/plasma/plasma-welcome/intro-customization.desktop \
-    /usr/share/plasma/plasma-welcome/extra-pages/*.qml "${module}/contents/ui/main.qml"; then
+# Textes affichés par Ankh : vouvoiement (ma demande du 2026-10-10). En
+# C.UTF-8, « è » est une lettre : « Complète » ne passe pas pour « te ».
+if LC_ALL=C.UTF-8 grep -nE "(\"|=)[^\"]*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/plasma/plasma-welcome/intro-customization.desktop \
+    /usr/share/plasma/plasma-welcome/extra-pages/*.qml "${module}/contents/ui/main.qml" \
+    /usr/share/plasma/packages/org.ankh.plasmasetup.options/contents/ui/main.qml \
+    /usr/lib64/qt6/qml/org/ankh/composants/*.qml /usr/share/plasma/plasmoids/org.ankh.options/contents/ui/*.qml \
+    /usr/share/applications/ankh-options.desktop /usr/libexec/ankh-options-reglages; then
     echec "tutoiement dans un texte affiché par Ankh (lignes ci-dessus)"
+fi
+# Le message de la fenêtre du mot de passe, dans l'action polkit des options
+if LC_ALL=C.UTF-8 grep -nE "<(message|description)>.*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/polkit-1/actions/org.ankh.options.policy; then
+    echec "tutoiement dans le message de l'action polkit des options (lignes ci-dessus)"
 fi
 # Image de compte d'Ankh pour chaque nouveau compte, enregistrée pour l'écran
 # de connexion à la première session

@@ -1,0 +1,5 @@
+# Composants QML d'Ankh, partagés par l'assistant de premier démarrage et la
+# fenêtre « Options d'Ankh » (D-046).
+module org.ankh.composants
+CarteOption 1.0 CarteOption.qml
+ListeOptions 1.0 ListeOptions.qml

@@ -1,0 +1,103 @@
+#!/usr/bin/bash
+# « Options d'Ankh » (D-046) : ce que fait la fenêtre des réglages
+# (/usr/share/plasma/plasmoids/org.ankh.options), au nom du compte qui l'ouvre.
+#   ankh-options-reglages appliquer <choix>
+#       Applique le choix pour toute la machine : /usr/libexec/ankh-options,
+#       lancé en root par pkexec avec le mot de passe d'un administrateur
+#       (action polkit org.ankh.options.appliquer). Puis le menu et la barre
+#       de cette session suivent. La sortie standard est réservée à la
+#       fenêtre, une information par ligne :
+#         « avertissement : <texte> » : le choix est appliqué, mais le menu
+#           ou la barre de cette session n'ont pas suivi ;
+#         « question : supprimer-dev » : Dev est retirée et l'environnement
+#           de dev de ce compte existe encore (ankh-dev supprimer).
+#       Quand le choix n'est pas appliqué, le code de sortie est celui de
+#       pkexec : 126 si la fenêtre du mot de passe est fermée, 127 si
+#       l'autorisation est refusée (pkexec(1)).
+#
+# pkexec plutôt que « systemctl start ankh-options@<choix> », le chemin de
+# l'assistant (sans mot de passe) : systemd n'attend la réponse de polkit que
+# 25 secondes (src/shared/bus-polkit.c, délai par défaut BUS_DEFAULT_TIMEOUT
+# de src/libsystemd/sd-bus/bus-internal.h, systemd 258), alors que pkexec
+# attend le mot de passe sans limite (src/polkit/polkitauthority.c de polkit).
+set -euo pipefail
+
+# Entrée du menu épinglée dans la barre par chaque option, comme à la
+# première session (build_files/plasma/ankh-barre.js du dépôt d'Ankh)
+declare -A EPINGLEE=([dev]=ankh-vscode.desktop)
+
+# Épingle une entrée du menu dans la barre de cette session, ou l'en retire,
+# par le script de Plasma (méthode evaluateScript de org.kde.PlasmaShell,
+# shell/shellcorona.cpp de https://invent.kde.org/plasma/plasma-workspace).
+# Les applications épinglées sont le réglage « launchers » des gestionnaires
+# de tâches (applets/taskmanager/package/contents/config/main.xml de
+# https://invent.kde.org/plasma/plasma-desktop).
+barre() { # $1 : epingler | retirer ; $2 : entrée du menu
+    local script
+    script="$(
+        cat << 'JS'
+const action = "@ACTION@", lanceur = "applications:@ENTREE@";
+for (const panneau of panels()) {
+    for (const taches of panneau.widgets()) {
+        if (taches.type !== "org.kde.plasma.icontasks" && taches.type !== "org.kde.plasma.taskmanager") {
+            continue;
+        }
+        taches.currentConfigGroup = ["General"];
+        const epinglees = taches.readConfig("launchers", []).filter(l => l !== lanceur);
+        if (action === "epingler") {
+            // Après le navigateur, comme à la première session
+            epinglees.splice(epinglees.indexOf("preferred://browser") + 1, 0, lanceur);
+        }
+        taches.writeConfig("launchers", epinglees);
+    }
+}
+JS
+    )"
+    script="${script//@ACTION@/$1}"
+    script="${script//@ENTREE@/$2}"
+    busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell evaluateScript s "${script}" >&2
+}
+
+appliquer() { # $1 : choix
+    local avant apres option action
+    avant=" $(/usr/libexec/ankh-options choix) "
+    # Le mot de passe est demandé par l'agent polkit de la session. Sans
+    # autorisation, le script s'arrête ici avec le code de pkexec.
+    pkexec /usr/libexec/ankh-options appliquer "$1" >&2
+    if ! apres=" $(/usr/libexec/ankh-options choix) "; then
+        echo "avertissement : le menu et la barre seront à jour à votre prochaine connexion."
+        return
+    fi
+    # Le menu de cette session voit tout de suite les entrées ajoutées ou retirées.
+    if ! kbuildsycoca6 >&2; then
+        echo "avertissement : le menu sera à jour à votre prochaine connexion."
+    fi
+    for option in "${!EPINGLEE[@]}"; do
+        action=""
+        if [[ "${avant}" == *" ${option} "* && "${apres}" != *" ${option} "* ]]; then
+            action=retirer
+        elif [[ "${avant}" != *" ${option} "* && "${apres}" == *" ${option} "* ]]; then
+            action=epingler
+        fi
+        if [[ -n "${action}" ]] && ! barre "${action}" "${EPINGLEE[${option}]}"; then
+            echo "avertissement : la barre n'a pas suivi : un clic droit sur ses icônes permet d'en épingler ou d'en retirer."
+        fi
+    done
+    if [[ "${avant}" == *" dev "* && "${apres}" != *" dev "* ]] && podman container exists ankh-dev; then
+        echo "question : supprimer-dev"
+    fi
+}
+
+case "${1:-}" in
+    appliquer)
+        if [[ $# -ne 2 || ! "$2" =~ ^(simple|[a-z]+(_[a-z]+)*)$ ]]; then
+            echo "Usage : ankh-options-reglages appliquer <choix>" >&2
+            exit 2
+        fi
+        appliquer "$2"
+        ;;
+    *)
+        echo "Usage : ankh-options-reglages appliquer <choix>" >&2
+        exit 2
+        ;;
+esac

@@ -197,6 +197,58 @@ systemctl mask boot.automount
 cp -a --no-preserve=ownership /ctx/files/. /
 systemctl --global enable podman.socket
 
+# D-046 : options d'Ankh (Simple toujours incluse ; Dev, Gaming, Hacking ;
+# Complète). Les entrées du menu de chaque option sont rangées hors du menu,
+# dans /usr/share/ankh/options/<option>/applications, et
+# /usr/libexec/ankh-options les rend visibles pour les options choisies.
+# - ankh-options.service les remet en place à chaque démarrage ;
+# - la page « Choisissez vos outils » de l'assistant de premier démarrage
+#   démarre ankh-options@<choix>.service, autorisé au seul compte de
+#   l'assistant (/usr/share/polkit-1/rules.d/50-ankh-options.rules) ;
+# - « Options d'Ankh », dans la Configuration du système (catégorie
+#   Système, dossier plasma/systemsettings/externalmodules lu par
+#   app/kcmmetadatahelpers.h de https://invent.kde.org/plasma/systemsettings)
+#   et dans le menu, permet de changer d'avis : une fenêtre aux mêmes cartes
+#   que la page de l'assistant (widget org.ankh.options, ouvert par
+#   plasmawindowed ; cartes du module QML org.ankh.composants), qui applique
+#   le choix par pkexec avec le mot de passe d'un administrateur (action
+#   polkit org.ankh.options.appliquer).
+# Ce changement touche à polkit : à relire.
+systemctl enable ankh-options.service
+for f in /usr/share/applications/*.desktop; do
+    case "$(basename "${f}")" in
+        ankh-vscode.desktop | ankh-dev-*.desktop)
+            echo "${f} : une entrée de l'option Dev est restée dans le menu" >&2
+            exit 1
+            ;;
+    esac
+done
+desktop-file-validate /usr/share/ankh/options/*/applications/*.desktop /usr/share/applications/ankh-options.desktop
+install -d -m 0755 /usr/share/plasma/systemsettings/externalmodules
+ln -s /usr/share/applications/ankh-options.desktop /usr/share/plasma/systemsettings/externalmodules/ankh-options.desktop
+# La page de l'assistant et la fenêtre des réglages lancent leurs commandes
+# par le moteur « executable » de Plasma5Support (src/dataengines/executable
+# de https://invent.kde.org/plasma/plasma5support). La fenêtre s'ouvre par
+# plasmawindowed, applique le choix par pkexec, puis met à jour le menu
+# (kbuildsycoca6) et la barre (busctl) de la session : tout doit être là.
+moteur="$(find /usr/lib64/qt6/plugins -name 'plasma_engine_executable.so' -print -quit)"
+if [[ -z "${moteur}" ]]; then
+    echo "Moteur « executable » de Plasma5Support introuvable : options d'Ankh à revoir" >&2
+    exit 1
+fi
+echo "Moteur « executable » : ${moteur} ($(rpm -qf "${moteur}"))"
+test -d /usr/lib64/qt6/qml/org/kde/plasma/plasma5support
+for outil in plasmawindowed pkexec kbuildsycoca6 busctl; do
+    if ! chemin="$(command -v "${outil}")"; then
+        echo "${outil} introuvable : options d'Ankh à revoir" >&2
+        exit 1
+    fi
+    paquet="$(rpm -qf "${chemin}")"
+    echo "${outil} : ${chemin} (${paquet})"
+done
+# La fenêtre du mot de passe de pkexec : l'agent polkit de KDE
+rpm -q polkit-kde
+
 # D-033 : habillage Ankh, sur le bureau seulement (modifie D-001). Le logo et
 # les fonds d'écran viennent de build_files/artwork et sont copiés juste au-dessus.
 # Rien ne change au démarrage : l'écran de démarrage, le chargeur EFI signé
@@ -570,9 +622,12 @@ if [[ -e /etc/xdg/kicker-extra-favoritesrc ]]; then
 fi
 favoris=(preferred://browser ankh-vscode.desktop org.kde.dolphin.desktop org.kde.konsole.desktop
     org.kde.discover.desktop "$(basename "${vlc_lanceur}")" "$(basename "${onlyoffice_lanceur}")" systemsettings.desktop)
+# Un favori peut venir d'une option (D-046) : il n'apparaît alors que si
+# l'option est choisie.
 for favori in "${favoris[@]}"; do
-    if [[ "${favori}" == *.desktop && ! -e "/usr/share/applications/${favori}" ]]; then
-        echo "Favori du menu introuvable : /usr/share/applications/${favori}" >&2
+    if [[ "${favori}" == *.desktop && ! -e "/usr/share/applications/${favori}" ]] &&
+        ! compgen -G "/usr/share/ankh/options/*/applications/${favori}" > /dev/null; then
+        echo "Favori du menu introuvable : ${favori}" >&2
         exit 1
     fi
 done

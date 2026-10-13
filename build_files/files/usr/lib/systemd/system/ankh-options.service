@@ -1,0 +1,14 @@
+# Options d'Ankh (D-046) : à chaque démarrage, les entrées du menu des options
+# choisies (/etc/ankh/options) sont remises en place, y compris après une mise
+# à jour qui en ajoute ou en retire. Voir /usr/libexec/ankh-options.
+[Unit]
+Description=Options d'Ankh : entrées du menu des options choisies
+After=local-fs.target
+Before=display-manager.service plasma-setup.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/ankh-options synchroniser
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+# Options d'Ankh (D-046) : enregistre et applique un choix d'options, par
+# exemple « systemctl start ankh-options@dev_gaming.service » (« simple » :
+# Simple seule). Démarré par la page de l'assistant de premier démarrage, ou
+# par « Options d'Ankh » dans la Configuration du système (mot de passe
+# administrateur). Voir /usr/libexec/ankh-options.
+[Unit]
+Description=Options d'Ankh : appliquer le choix « %i »
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/ankh-options appliquer %i

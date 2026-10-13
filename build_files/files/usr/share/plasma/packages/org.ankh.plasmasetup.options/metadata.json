@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "KDE/PlasmaSetup",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Description": "Choix des outils installés au premier démarrage : Simple, Dev, Gaming, Hacking, Complète (D-046).",
+        "Id": "org.ankh.plasmasetup.options",
+        "License": "GPL-2.0-or-later",
+        "Name": "Choisissez vos outils",
+        "Version": "1.0"
+    },
+    "NoDisplay": true,
+    "X-KDE-ParentApp": "org.kde.plasmasetup",
+    "X-KDE-Weight": 1
+}

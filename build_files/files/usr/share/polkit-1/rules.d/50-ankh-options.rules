@@ -1,0 +1,19 @@
+// Options d'Ankh (D-046) : le compte de l'assistant de premier démarrage
+// (plasma-setup, sans mot de passe) peut démarrer le service qui applique le
+// choix des options, et rien d'autre. Les pages de KDE dans l'assistant
+// passent par des règles du même genre (files/plasma-setup-polkit.rules de
+// https://invent.kde.org/plasma/plasma-setup).
+// systemd transmet à polkit le nom du service (« unit ») et l'opération
+// (« verb ») depuis sa version 226 (NEWS ; src/core/dbus-util.c de
+// https://github.com/systemd/systemd).
+// Les autres comptes suivent la règle par défaut de systemd : mot de passe
+// administrateur.
+polkit.addRule(function (action, subject) {
+    if (subject.user !== "plasma-setup" || action.id !== "org.freedesktop.systemd1.manage-units") {
+        return;
+    }
+    var unite = /^ankh-options@(simple|(dev|gaming|hacking)(_(dev|gaming|hacking))*)\.service$/;
+    if (action.lookup("verb") === "start" && unite.test(action.lookup("unit"))) {
+        return polkit.Result.YES;
+    }
+});

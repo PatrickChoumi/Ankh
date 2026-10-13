@@ -26,7 +26,7 @@
   - Les applications restent à jour.
 - **Usage du terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ, sens « confort » (D-025), voir 4.7.
 - **Accès au contenu pour adultes extrêmement difficile** — EXIGÉ, voir 4.8.
-- **Installation à la carte, comme Ubuntu** — EXIGÉ (2026-10-11) : une version Simple (Chrome, VLC, OnlyOffice), toujours incluse, et des cases Dev, Gaming, Hacking et Complète, combinables. Tout est dans une ISO, et seul ce que je coche est installé. Les options se changent ensuite dans les réglages. Réalisation : D-046.
+- **Installation à la carte, comme Ubuntu** — EXIGÉ (2026-10-11) : une version Simple (Chrome, VLC, OnlyOffice), toujours incluse, et des cases Dev, Gaming, Hacking et Complète, combinables. Une seule ISO pour tous les PC, publiée dans une Release GitHub ; elle contient le système, et les options cochées se téléchargent ensuite, seulement elles (2026-10-12). Les options se changent ensuite dans les réglages. Réalisation : D-046, D-048, D-049.
 
 ---
 
@@ -41,7 +41,7 @@ Ces réponses peuvent modifier l'architecture. Depuis D-021 (image générique),
 | 3 | GPU (modèle exact) ? | UNKNOWN | Variante d'Ankh que j'installerai (D-021), Secure Boot avec un pilote tiers (D-006), CUDA/ROCm |
 | 4 | RAM ? | UNKNOWN | Nombre de VMs et de conteneurs en parallèle d'un jeu |
 | 5 | Stockage disponible (disques, tailles, espace libre) ? | UNKNOWN | Place pour les VMs, images de conteneurs, jeux, sauvegardes locales |
-| 6 | Jeux principaux + anticheat de chacun ? | Jeux Steam en solo ou en coop, et jeux hors Steam ; pas de jeux compétitifs en ligne à anticheat. Je veux le plus d'outils de gaming possible, comme Garuda ou CachyOS (2026-10-10). Noms des jeux : TODO | Un jeu dont l'anticheat refuse Linux est injouable : ni Windows ni dual boot (D-003) |
+| 6 | Jeux principaux + anticheat de chacun ? | Jeux Steam en solo ou en coop, et jeux hors Steam ; pas de jeux compétitifs en ligne à anticheat. Je veux le plus d'outils de gaming possible, comme Garuda ou CachyOS (2026-10-10). Noms des jeux : TODO, je les donnerai plus tard (2026-10-12) | Un jeu dont l'anticheat refuse Linux est injouable : ni Windows ni dual boot (D-003) |
 | 7 | Besoin d'IA locale / CUDA / ROCm ? | **Oui, important** (2026-10-10). CUDA ou ROCm selon mon GPU (Q3, UNKNOWN) | Calcul GPU dans les conteneurs, choix de l'image de base (D-005) |
 | 8 | Analyse de malware : sous Windows, sous Linux, ou aucune ? | Aucune pour l'instant ; Ankh doit le permettre plus tard, en VM isolée (2026-10-10) | VM Windows (licence), isolation réseau du lab, outils de reverse (D-014) |
 | 9 | Wi-Fi offensif : oui/non ? Adaptateur USB déjà possédé (modèle) ? | Pas pour l'instant ; Ankh doit le permettre plus tard (2026-10-10) | Achat d'un adaptateur, passthrough USB vers une VM (D-014) |
@@ -137,6 +137,7 @@ Points ouverts dans cette architecture :
 - **Manettes** (modèles, filaire ou sans fil) : toutes (Xbox, PlayStation, autres), filaires et sans fil (2026-10-10)
 - **VRR / HDR / multi-écran** : écran simple, caractéristiques inconnues (2026-10-10)
 - **Streaming / enregistrement** (OBS, …) et **mode console** (Steam plein écran) : pas de besoin précis ; « l'OS ne doit pas me limiter et doit me permettre de faire tout ce que je veux quand je l'envisage » (2026-10-10). Disponibles, rien d'imposé.
+  - Précisé le 2026-10-12 (D-041) : Discord et OBS dans l'option Gaming, prêts au premier clic ; le mode console est une session à choisir sur l'écran de connexion.
 
 ### 4.4 Cyber
 

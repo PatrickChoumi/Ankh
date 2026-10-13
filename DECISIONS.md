@@ -58,14 +58,15 @@
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
 | D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
-| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; mise en œuvre en phase 5) |
+| D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; précisé le 2026-10-12 : Discord et OBS dans Gaming, session console ; mise en œuvre en phase 5) |
 | D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043) |
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
-| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; fabrication de l'ISO : D-048 |
+| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre et vérifié en VM le 2026-10-12 (Simple et Dev) ; « Options d'Ankh » redessinée et vérifiée en VM le 2026-10-12 ; fabrication de l'ISO : D-048 |
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
-| D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | PROPOSÉE — À DÉCIDER (mise en œuvre au début de la phase 9) |
+| D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
+| D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
 
 ---
 
@@ -1239,6 +1240,10 @@
   - Un noyau tiers : il demande ma propre clé Secure Boot et plus d'entretien. Réexaminable après des mesures, par une nouvelle décision.
 - **IA locale** (question 7 : oui, important) : CUDA ou ROCm dans un conteneur, selon mon GPU (question 3, inconnue). À concevoir avec le dev ou le gaming, quand le GPU sera connu.
 - **Vérification** : en phase 5, chaque outil présent et lancé en VM ; captures ; jeux testés sur ma machine en phase 9 (D-011).
+- **Précisé le 2026-10-12** (mes réponses, avec D-046 : Gaming est une option cochée à l'installation) :
+  - **Discord et OBS Studio** font partie de l'option Gaming. Comme les lanceurs, ils sont dans le menu et se préparent au premier clic (Flatpak, D-031, D-036) ;
+  - **mode console** : une session à choisir sur l'écran de connexion d'Ankh, à côté de la session Plasma : Steam en plein écran (mode Big Picture), dans Gamescope. Son nom et sa mise en œuvre exacte se décident en phase 5 ;
+  - **noms de mes jeux** : plus tard. La question 6 reste TODO ; le critère de la phase 5 (« chaque jeu de ANKH-SPEC Q6 testé ») attend ces noms.
 
 ## D-042 — Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039)
 
@@ -1450,6 +1455,49 @@
   8. **Tests** :
      - dans l'image : la page se charge hors écran sans erreur QML ; le service et la règle polkit sont présents ; chaque choix produit les bons liens ;
      - en VM : capture de la page de l'assistant ; le compte `plasma-setup` démarre bien le service, et rien d'autre ; menu sans VS Code avec Simple, puis avec VS Code après l'ajout de Dev dans les réglages (captures).
+- **Mise en œuvre (2026-10-12, après la fusion de la PR #13)** : le plan ci-dessus, avec ces précisions :
+  - **entrées de Dev** : `ankh-vscode.desktop` et « Mettre à jour les outils de dev » passent dans `/usr/share/ankh/options/dev/applications`. La construction échoue si une entrée de Dev reste dans `/usr/share/applications` ;
+  - **`/usr/libexec/ankh-options`** : `appliquer <choix>`, `synchroniser` et `choix`. Le choix est vérifié : `simple`, ou des options connues séparées par « _ ». Tout autre texte est refusé ;
+  - **`ankh-options.service`** remet les liens en place à chaque démarrage, y compris après une mise à jour qui ajoute ou retire une entrée ;
+  - **page de l'assistant** (`org.ankh.plasmasetup.options`, poids 1, après la langue) : elle s'applique quand elle s'affiche (`onPageActivated`, comme les pages de KDE), puis à chaque changement. Elle lance `systemctl --no-ask-password` : si la règle polkit refusait, aucune fenêtre de mot de passe n'apparaîtrait dans l'assistant. En cas d'erreur, un message propose de réessayer, et le bouton « Next » reste utilisable ;
+  - **page des réglages « Options d'Ankh »** (remplacée le 2026-10-12 par la fenêtre décrite plus bas) : une fenêtre de KDE à cases (`kdialog`), ouverte depuis la Configuration du système (catégorie Système) ou le menu. Elle applique le choix avec le mot de passe administrateur, puis rafraîchit le menu de la session (`kbuildsycoca6`). Retirer Dev propose de supprimer l'environnement de dev du compte (`ankh-dev supprimer` : le conteneur et son image) ; les fichiers et projets restent dans le dossier personnel ;
+  - **barre** : VS Code n'est épinglé que si son entrée existe (`applicationExists`, `shell/scripting/scriptengine_v1.cpp` de plasma-workspace) ;
+  - **page « Bienvenue dans Ankh »** : elle annonce le choix des outils, au lieu de renvoyer directement à VS Code.
+- **Tests de la mise en œuvre** :
+  - `just test`, Test 15 (`tests/options.sh`) : fichiers, service activé, règle polkit, page de l'assistant, page des réglages ; sans choix enregistré, comme Complète ; Simple seule retire VS Code du menu ; Dev le remet ; choix invalides refusés ;
+  - test en VM :
+    - capture de la page de l'assistant ; la page a bien enregistré « dev » en s'affichant ;
+    - le compte de l'assistant démarre `ankh-options@simple`, mais pas un autre service ;
+    - VS Code quitte puis retrouve le menu ;
+    - capture de « Options d'Ankh » dans la Configuration du système.
+- **Vérifié en VM le 2026-10-12** ([run 38219240112](https://github.com/PatrickChoumi/Ankh/actions/runs/38219240112)) : la page de l'assistant enregistre « dev » en s'affichant ; le compte de l'assistant ne démarre que `ankh-options@` ; VS Code quitte le menu avec Simple seule, puis y revient avec Dev ; « Options d'Ankh » est dans la Configuration du système, catégorie Système, avec le logo d'Ankh.
+- **« Options d'Ankh » redessinée (2026-10-12, ma réponse : « Oui, maintenant », avant la phase 5)** : la fenêtre à cases de KDE (`kdialog`) avait l'air d'un outil d'administration. Elle devient une vraie fenêtre d'Ankh :
+  - **les mêmes cartes que la page de l'assistant**. Elles sont dans un module QML partagé, `org.ankh.composants` (`/usr/lib64/qt6/qml/org/ankh/composants`), utilisé par les deux : elles restent identiques ;
+  - **la fenêtre est un widget de Plasma**, `org.ankh.options`, caché de la liste des widgets (`NoDisplay`, `components/shellprivate/plasmaappletitemmodel.cpp` de plasma-workspace) et ouvert dans une fenêtre ordinaire par `plasmawindowed` (`plasma-windowed/` de plasma-workspace, déjà dans l'image). Aucun module compilé ;
+  - **dans la barre**, la fenêtre s'annonce `org.kde.plasmawindowed` : `StartupWMClass` relie ce nom à l'entrée « Options d'Ankh », dont la barre montre le nom et le logo (`windowUrlFromMetadata`, `libtaskmanager/tasktools.cpp`). Limite : une autre fenêtre de `plasmawindowed`, rare, serait rangée sous « Options d'Ankh » ;
+  - **appliquer** : bouton « Appliquer », ou Entrée sur une case. La fenêtre lance `/usr/libexec/ankh-options-reglages appliquer <choix>`, qui applique le choix par `pkexec /usr/libexec/ankh-options appliquer <choix>`. Une action polkit d'Ankh, `org.ankh.options.appliquer` (`/usr/share/polkit-1/actions/org.ankh.options.policy`), vise ce seul programme et demande toujours le mot de passe d'un administrateur (`auth_admin`, `auth_admin_keep` pour la session active). **Touche à polkit : à relire** ;
+  - **pourquoi `pkexec` plutôt que le service** : systemd n'attend la réponse de polkit que 25 secondes (`src/shared/bus-polkit.c`, délai par défaut `BUS_DEFAULT_TIMEOUT` de `src/libsystemd/sd-bus/bus-internal.h`, systemd 258). Au-delà, le choix échouerait pendant que je tape le mot de passe. `pkexec` l'attend sans limite (`src/polkit/polkitauthority.c` de polkit). Vérifié dans le code, pas par un test. L'assistant garde le service : sa règle polkit l'autorise sans mot de passe, il n'attend rien ;
+  - **la session suit tout de suite** : `ankh-options-reglages`, lancé en mon nom, rafraîchit le menu (`kbuildsycoca6`) et retire VS Code de la barre, ou l'y remet après le navigateur, par le script de Plasma (méthode `evaluateScript` de `org.kde.PlasmaShell`). Sans cela, VS Code restait épinglé avec une icône vide : la barre ne retire pas une application disparue (`libtaskmanager/launchertasksmodel.cpp`). Limite : seule la barre du compte qui ouvre la fenêtre suit. Les autres comptes de la machine gardent l'épingle ; je suis seul sur ma machine ;
+  - **Dev retirée** : la fenêtre propose « Supprimer » ou « Garder » l'environnement de dev du compte (`ankh-dev supprimer`). Garder permet à VS Code de le retrouver si je recoche Dev ;
+  - **messages** : réussite ; mot de passe non donné (rien n'a changé) ; refus ; erreur, avec son détail ;
+  - **clavier** : la première case a le clavier à l'ouverture ; Espace coche, Entrée applique, Échap ferme ;
+  - `kdialog` ne sert plus : la construction ne l'installe plus. Elle vérifie que `plasmawindowed`, `pkexec`, `kbuildsycoca6` et `busctl` sont là.
+- **Tests de la fenêtre redessinée** :
+  - `just test`, Test 15 : fichiers du widget, du module de cartes et de l'action polkit ; widget caché ; l'action ne vise que `/usr/libexec/ankh-options`, avec le mot de passe d'un administrateur ; les deux pages utilisent les cartes partagées ; entrée « Options d'Ankh » qui ouvre la fenêtre ; outils présents ; choix invalides refusés avant toute demande de mot de passe ;
+  - test des textes : vouvoiement, y compris dans les cartes, la fenêtre et le message de polkit ;
+  - en VM (compte de test administrateur, groupe `wheel`, le temps de l'essai, comme le compte créé par l'assistant) :
+    - ouverture depuis la Configuration du système (capture) ;
+    - Dev retirée au clavier, avec le mot de passe (captures de la fenêtre et de celle de polkit) : VS Code quitte le menu et la barre ; la fenêtre propose de supprimer l'environnement de dev (capture) ; `ankh-dev supprimer` retire le conteneur et son image ;
+    - Dev remise de la même façon : VS Code revient dans le menu et dans la barre ;
+    - Échap ferme la fenêtre.
+- **Vérifié en VM le 2026-10-12** ([run 38284941203](https://github.com/PatrickChoumi/Ankh/actions/runs/38284941203), CI verte) :
+  - la fenêtre s'ouvre depuis la Configuration du système, avec le logo d'Ankh dans sa barre de titre et dans la barre des tâches ;
+  - la fenêtre de polkit montre le message d'Ankh (« Changer les outils installés sur cette machine demande le mot de passe d'un administrateur. ») ;
+  - Dev retirée : VS Code quitte le menu et la barre ; la fenêtre dit « C'est fait » et propose « Supprimer » ou « Garder » l'environnement de dev ;
+  - `ankh-dev supprimer` retire le conteneur et son image ;
+  - Dev remise : VS Code revient dans le menu et dans la barre, après le navigateur ;
+  - Échap ferme la fenêtre.
+  - Non testés en VM : les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée), le mot de passe refusé ou non donné, et les autres comptes de la machine.
 - **Vérification** :
   - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
   - ajout puis retrait d'une option dans les réglages ;
@@ -1469,7 +1517,7 @@
 
 ## D-048 — ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046)
 
-- **Statut** : PROPOSÉE — À DÉCIDER par moi. Mise en œuvre au début de la phase 9 (D-046).
+- **Statut** : DÉCIDÉ (2026-10-12), mon choix : une seule ISO, publiée dans une Release GitHub. Son contenu est allégé par D-049 : elle ne contient plus que le système en version AMD et Intel. Mise en œuvre au début de la phase 9 (D-046).
 - **Contexte** : mes questions du 2026-10-11 :
   - peut-on faire une ISO qui détecte toute seule si le PC a une carte AMD ou Intel, ou une carte NVIDIA, au lieu de deux ISO ?
   - peut-on construire l'ISO et l'héberger avec GitHub ?
@@ -1514,3 +1562,41 @@
   - l'ISO est construite par la CI ;
   - en VM sans réseau : installation avec chaque choix d'options ; branche Mesa détectée, et branche NVIDIA forcée ;
   - recollage des morceaux et sommes de contrôle vérifiés.
+
+## D-049 — ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048)
+
+- **Statut** : DÉCIDÉ (2026-10-12), mes choix. Mise en œuvre au début de la phase 9.
+- **Contexte** : « Après réflexion, l'ISO sera trop lourde. Comment la rendre moins lourde ? » Tailles mesurées le 2026-10-12, dans les registres :
+  - système Ankh (`ghcr.io/patrickchoumi/ankh`) : 5,46 Go compressés ; la version NVIDIA en ajoute 3,1 (D-048) ;
+  - option Dev, conteneur `ankh-dev` : 1,57 Go ;
+  - option Gaming, sur Flathub (API `https://flathub.org/api/v2/summary/<application>`) :
+    - Steam : 36 Mo, plus sa partie 32 bits (140 Mo) ;
+    - Heroic : 326 Mo ; Lutris : 334 Mo ; Bottles : 176 Mo ;
+    - plus leurs bases d'exécution : Freedesktop 25.08 et 26.08, GNOME 49 et 50. Leur taille n'a pas pu être lue (À VALIDER). Environ 2 Go en tout (estimé) ;
+  - option Hacking : la base de Kali fait 53 Mo, plus les outils choisis en phase 6.
+- **Options présentées** :
+  - **Pour le contenu** :
+    - système seul (recommandé, choisi) ;
+    - système et Dev : 1,6 Go de plus ;
+    - tout, mais allégé : environ 10 à 12 Go.
+  - **Pour NVIDIA** :
+    - version téléchargée si besoin (recommandé, choisi) ;
+    - version NVIDIA construite au-dessus d'Ankh : environ 1 Go de plus, mais c'est nous qui assemblerions les pilotes ;
+    - les deux versions entières : 3,1 Go de plus.
+- **Décision** :
+  - **L'ISO contient le système seul**, en version AMD et Intel : environ 5,5 Go, plus l'installateur (à mesurer quand l'ISO existera).
+  - **Les options cochées se téléchargent ensuite**, seulement elles, au premier clic de chaque outil (D-031, D-036), comme aujourd'hui sans ISO.
+  - **Sur un PC NVIDIA** :
+    - l'ISO voit la carte (fabricant `0x10de`) ;
+    - au premier démarrage, Ankh propose de passer à la version NVIDIA (`bootc switch`, environ 3 Go à télécharger) ;
+    - le passage s'applique au redémarrage que je choisis (D-010) ;
+    - rien ne change dans la fabrication des images.
+  - **Toujours une seule ISO** pour tous les PC, publiée dans une Release GitHub en morceaux de moins de 2 Gio (D-048).
+- **Ce qui change par rapport à D-046** : l'ISO n'installe plus tout sans internet. Le système s'installe sans réseau ; les options et la version NVIDIA en demandent. Au total, je télécharge moins : seulement ce que je choisis (D-027).
+- **Alternatives rejetées** : celles des options présentées ci-dessus ; la version NVIDIA construite au-dessus d'Ankh toucherait aux pilotes et à Secure Boot.
+- **À DÉCIDER en phase 9** : comment Ankh propose la version NVIDIA (une ligne de la page « Choisissez vos outils », ou un message au premier démarrage).
+- **À VALIDER en phase 9** : sur un PC NVIDIA, Secure Boot et l'inscription de la clé d'Universal Blue après le passage (D-006, D-021).
+- **Vérification** (phase 9) :
+  - taille de l'ISO mesurée ;
+  - installation en VM sans réseau ;
+  - proposition NVIDIA testée en forçant la détection, puisque la VM n'a pas de carte NVIDIA.

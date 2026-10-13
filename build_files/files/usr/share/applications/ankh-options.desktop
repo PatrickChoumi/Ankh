@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Options d'Ankh
+GenericName=Choix des outils installés
+Comment=Ajouter ou retirer des outils : Dev, Gaming, Hacking. Simple (Chrome, VLC, OnlyOffice) est toujours là.
+Exec=plasmawindowed org.ankh.options
+Icon=ankh-logo
+Terminal=false
+Categories=Settings;
+Keywords=options;outils;dev;gaming;hacking;installer;
+X-KDE-System-Settings-Parent-Category=system-administration
+X-KDE-Weight=20
+# La fenêtre est celle de plasmawindowed, qui s'annonce org.kde.plasmawindowed :
+# StartupWMClass la relie à cette entrée, pour que la barre montre « Options
+# d'Ankh » et son logo (windowUrlFromMetadata, libtaskmanager/tasktools.cpp de
+# https://invent.kde.org/plasma/plasma-workspace).
+StartupWMClass=org.kde.plasmawindowed
