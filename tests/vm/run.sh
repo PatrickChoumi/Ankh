@@ -232,9 +232,14 @@ explain_session() {
 # (sinon les captures montrent l'écran de verrouillage, puis un écran noir).
 # Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
 # valables après chaque basculement.
+# Le compte est administrateur (groupe wheel) dès sa création, comme celui
+# que crée l'assistant (D-046) : polkit prend les groupes du programme qui
+# demande, tels que D-Bus les voit, donc ceux de l'ouverture de sa session
+# (src/polkitbackend/polkitbackendduktapeauthority.c de polkit 127). Un
+# compte ajouté au groupe pendant sa session n'y est pas pour Flatpak.
 add_test_account() {
     local user=$1 comment=$2
-    vm "useradd -m -c '$comment' $user &&
+    vm "useradd -m -G wheel -c '$comment' $user &&
         install -d -o $user -g $user /home/$user/.config &&
         printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/$user/.config/kscreenlockerrc &&
         printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/$user/.config/powerdevilrc &&
@@ -747,11 +752,11 @@ choose_options() {
 # est capturée, puis utilisée au clavier : Complète décochée (Dev et Gaming
 # retirées), puis recochée. Chaque fois, le mot de passe d'un administrateur
 # est demandé par polkit (pkexec), et le menu et la barre suivent (VS Code et
-# Steam). Le compte de test est administrateur (groupe wheel) le temps de cet
-# essai, comme le compte créé par l'assistant.
+# Steam). Le compte de test est administrateur (voir add_test_account) : son
+# mot de passe est donné ici, pour la fenêtre de polkit.
 check_options_reglages() {
     local user=ankhvm epinglees
-    vm "echo 'ankhvm:ankhtest42' | chpasswd && usermod -aG wheel ankhvm"
+    vm "echo 'ankhvm:ankhtest42' | chpasswd"
     # VS Code, ouvert par check_vscode, cacherait la fenêtre
     close_app "$user" code
     launch_in_session "$user" systemsettings ankh-options
@@ -814,7 +819,6 @@ check_options_reglages() {
     if vm pgrep -u "$user" -x plasmawindowed > /dev/null; then
         die "Échap ne ferme pas la fenêtre « Options d'Ankh » (D-046)"
     fi
-    vm gpasswd -d ankhvm wheel
     echo "Options d'Ankh : Dev et Gaming retirées puis remises avec le mot de passe, menu, barre et ntsync à jour"
 }
 
@@ -828,7 +832,8 @@ explain_gaming() {
         'flatpak list --system --columns=ref' \
         "journalctl --no-pager -b -o cat _UID=$(vm id -u ankhvm) | grep -iE 'steam|flatpak|kwin|ankh-console|ankh-flatpak' | tail -n 60" \
         'journalctl --no-pager -b -o cat -u sddm.service | tail -n 30' \
-        'pgrep -a -u ankhvm -f "kwin|steam|flatpak|konsole"'; do
+        'pgrep -a -u ankhvm -f "kwin|steam|flatpak|konsole"' \
+        'journalctl --no-pager -b -o cat -u polkit.service | tail -n 20'; do
         echo "--- $cmd"
         if ! vm "$cmd"; then
             echo "(commande en échec)"
@@ -841,29 +846,34 @@ explain_gaming() {
 # check_vscode) : une fenêtre montre son téléchargement depuis Flathub, puis
 # celui des outils du jeu en Flatpak, et Steam s'ouvre ; il se met alors à
 # jour lui-même, puis demande de se connecter. Le compte de test est
-# administrateur le temps de l'essai, comme le compte créé par l'assistant :
-# Flatpak installe alors pour toute la machine sans mot de passe (règle
-# polkit de Flatpak pour le groupe wheel, si la session est active et
-# locale).
+# administrateur, comme le compte créé par l'assistant : Flatpak installe
+# alors pour toute la machine sans mot de passe (règle polkit de Flatpak pour
+# le groupe wheel, si la session est active et locale).
 check_steam() {
-    local user=ankhvm deadline=$((SECONDS + 1800)) couche app
+    local user=ankhvm deadline=$((SECONDS + 1800)) couche app nom reponse
     log "Premier clic sur Steam (D-050)"
     # Fenêtres laissées ouvertes par check_identity
     for app in dolphin konsole systemsettings ksplashqml; do
         close_app "$user" "$app"
     done
-    vm usermod -aG wheel "$user"
-    # Une application lancée par le menu tourne hors de la session, dans une
-    # unité du gestionnaire systemd du compte : polkit la rattache à la
-    # session graphique du compte (src/polkitbackend/polkitbackendsessionmonitor-systemd.c
-    # de https://github.com/polkit-org/polkit). pkcheck, lancé de la même
-    # façon, doit obtenir l'autorisation de Flatpak sans question (code 0) :
-    # sinon, la préparation attendrait un mot de passe.
-    if ! in_session "$user" sh -c 'exec pkcheck --action-id org.freedesktop.Flatpak.app-install --process $$'; then
+    # polkit est interrogé comme Flatpak le fait (system-helper/flatpak-system-helper.c) :
+    # pour le programme qui appelle, désigné par son nom sur le bus système.
+    # polkit prend alors les groupes de ce programme (voir add_test_account)
+    # et le rattache à la session graphique du compte, même lancé hors de la
+    # session par le menu (src/polkitbackend/polkitbackendsessionmonitor-systemd.c
+    # de https://github.com/polkit-org/polkit). Le programme interrogé est le
+    # bureau (plasmashell) : comme une application du menu, il tourne dans le
+    # gestionnaire systemd du compte. Réponse attendue : autorisé, sans question.
+    nom=$(vm "busctl --system list --unique --no-legend | awk '\$3 == \"plasmashell\" && \$4 == \"$user\" { print \$1; exit }'")
+    [[ $nom == :* ]] || die "plasmashell du compte de test absent du bus système"
+    if ! reponse=$(vm "busctl --system call org.freedesktop.PolicyKit1 /org/freedesktop/PolicyKit1/Authority org.freedesktop.PolicyKit1.Authority CheckAuthorization '(sa{sv})sa{ss}us' system-bus-name 1 name s $nom org.freedesktop.Flatpak.app-install 0 0 ''"); then
+        die "polkit n'a pas répondu pour plasmashell ($nom)"
+    fi
+    echo "polkit, org.freedesktop.Flatpak.app-install pour plasmashell ($nom) : $reponse"
+    if [[ $reponse != "(bba{ss}) true false"* ]]; then
         explain_session "$user"
         die "polkit demanderait un mot de passe à l'administrateur dans sa session pour installer Steam (D-050)"
     fi
-    echo "polkit : l'administrateur installe pour toute la machine sans mot de passe"
     vm systemd-run --machine=$user@ --user --unit=ankh-steam-premier-clic --quiet \
         --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-flatpak com.valvesoftware.Steam
     sleep 45
@@ -928,7 +938,6 @@ check_console() {
     fi
     configure_autologin "$user"
     wait_desktop 1-bureau-apres-console
-    vm gpasswd -d "$user" wheel
 }
 
 # D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de

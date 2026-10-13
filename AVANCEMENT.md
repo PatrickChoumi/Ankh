@@ -294,9 +294,10 @@
   - tests : Test 16 dans l'image ; en VM, premier clic sur Steam et session « Ankh Console ».
 - **Premiers essais en VM (2026-10-13)** :
   - vérifié : l'assistant enregistre Dev et Gaming ; « Options d'Ankh » les retire puis les remet, avec le mot de passe, et le menu et la barre suivent (VS Code et Steam) ;
-  - le premier clic sur Steam échouait : Flatpak n'avait pas le droit d'installer pour toute la machine. Deux causes, corrigées :
+  - le premier clic sur Steam échouait : Flatpak n'avait pas le droit d'installer pour toute la machine. Trois causes, corrigées :
     - Ankh demandait à Flatpak de ne jamais rien demander (`--noninteractive`), ce qui empêchait aussi la fenêtre du mot de passe. Maintenant, si la règle des administrateurs ne s'applique pas, KDE demande le mot de passe d'un administrateur ;
-    - le test cliquait sur Steam dans une session de test qui n'était plus au premier plan (écran figé après l'essai de l'écran de démarrage). Le test vérifie maintenant que la session est active avant chaque capture, et que polkit laisse l'administrateur installer sans question avant le clic.
+    - le test cliquait sur Steam dans une session de test qui n'était plus au premier plan (écran figé après l'essai de l'écran de démarrage). Le test vérifie maintenant que la session est active avant chaque capture ;
+    - le compte de test devenait administrateur pendant sa session. Or polkit prend les groupes de l'ouverture de la session : pour Flatpak, il n'était pas administrateur. Le compte de test l'est maintenant dès sa création, comme le mien, créé par l'assistant ; et avant le clic, polkit est interrogé comme Flatpak le fait.
 
 ---
 
