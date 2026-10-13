@@ -16,8 +16,12 @@
 #                                         restent dans le dossier personnel
 # Installer ou désinstaller pour toute la machine ne demande pas de mot de
 # passe à un administrateur dans sa session (règle polkit de Flatpak pour le
-# groupe wheel, system-helper/org.freedesktop.Flatpak.rules.in) ; les autres
-# comptes le demandent.
+# groupe wheel, system-helper/org.freedesktop.Flatpak.rules.in). Sinon,
+# l'agent polkit de KDE demande le mot de passe d'un administrateur. D'où
+# « -y » (oui à toutes les questions de Flatpak) et pas « --noninteractive »,
+# qui interdit aussi cette demande : sans la règle, la préparation échouerait
+# (« Flatpak system operation Deploy not allowed for user » ;
+# app/flatpak-quiet-transaction.c de https://github.com/flatpak/flatpak).
 set -euo pipefail
 
 # Applications de l'option Gaming, sur Flathub (D-041, D-050)
@@ -72,7 +76,7 @@ preparer() { # $1 : application
     echo "Journal : ${journal}"
     echo "Préparation de $(nom "${application}") : téléchargement depuis Flathub, seulement cette fois-ci."
     echo
-    flatpak install --system --noninteractive "${DEPOT}" "${application}"
+    flatpak install --system -y "${DEPOT}" "${application}"
     runtime="$(flatpak info --system --show-runtime "${application}")"
     version="$(version_couches "${runtime}")"
     echo
@@ -82,7 +86,7 @@ preparer() { # $1 : application
         if installee "${ref}"; then
             echo "${couche} : déjà là."
         elif flatpak remote-info --system "${DEPOT}" "${ref}" > /dev/null 2>&1; then
-            flatpak install --system --noninteractive "${DEPOT}" "${ref}"
+            flatpak install --system -y "${DEPOT}" "${ref}"
         else
             echo "${couche} n'existe pas encore sur Flathub pour la version ${version} : il viendra avec une mise à jour."
         fi
@@ -108,10 +112,10 @@ supprimer() {
         done
     done <<< "${runtimes}"
     if ((${#installees[@]})); then
-        flatpak uninstall --system --noninteractive "${installees[@]}"
+        flatpak uninstall --system -y "${installees[@]}"
     fi
     # Runtimes que plus aucune application n'utilise
-    flatpak uninstall --system --noninteractive --unused
+    flatpak uninstall --system -y --unused
 }
 
 case "${1:-}" in

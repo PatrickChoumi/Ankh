@@ -178,19 +178,53 @@ screenshot() {
     echo "Capture : $file"
 }
 
+# Le compte a une session au premier plan (« active » pour logind). Une
+# ancienne session restée ouverte hors du premier plan ne compte pas :
+# l'écran n'en montre qu'une image figée, et polkit ne la traite pas comme
+# active (vu le 2026-10-13, run 38365568996).
+session_active() {
+    local state
+    state=$(vm loginctl show-user "$1" -p State --value 2> /dev/null) || return 1
+    [[ $state == active ]]
+}
+
+# Le compte a son bureau Plasma, dans une session au premier plan.
+desktop_ready() {
+    vm pgrep -u "$1" -x plasmashell > /dev/null && session_active "$1"
+}
+
 # Attend le bureau Plasma d'un compte (par défaut, le compte de test), puis
 # le capture.
 wait_desktop() {
     local name=$1 user=${2:-ankhvm} deadline=$((SECONDS + 180))
-    until vm pgrep -u "$user" -x plasmashell > /dev/null; do
+    until desktop_ready "$user"; do
         if ((SECONDS >= deadline)); then
             screenshot "$name-echec"
+            explain_session "$user"
             die "le bureau Plasma ne démarre pas pour le compte $user"
         fi
         sleep 5
     done
     sleep 20 # le temps que le bureau finisse de s'afficher
     screenshot "$name"
+}
+
+# Sessions du compte pour logind : la session graphique doit être active
+# (au premier plan) et locale, sinon polkit refuse ce qu'il accorde à un
+# administrateur dans sa session (diagnostic).
+explain_session() {
+    local user=$1 cmd
+    for cmd in \
+        'loginctl list-sessions --no-legend' \
+        "loginctl show-user $user -p State -p Display -p Sessions" \
+        "loginctl show-session \$(loginctl show-user $user -p Display --value) -p Active -p State -p Seat -p VTNr -p Type -p Class -p Service" \
+        'cat /sys/class/tty/tty0/active' \
+        "id $user"; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
 }
 
 # Crée un compte de test. Ni verrouillage ni écran éteint pendant le test
@@ -231,7 +265,14 @@ configure_autologin() {
         vm cp /etc/plasmalogin.conf.d/ankh-vmtest.conf /etc/plasmalogin.conf
         autologin_main=yes
     fi
-    vm systemctl restart display-manager.service
+    # Une session ouverte du compte survit à l'arrêt du gestionnaire de
+    # connexion, hors du premier plan : elle est fermée, pour que la
+    # connexion automatique en ouvre une nouvelle (voir desktop_ready).
+    vm systemctl stop display-manager.service
+    if vm loginctl show-user "$user" > /dev/null 2>&1; then
+        vm loginctl terminate-user "$user"
+    fi
+    vm systemctl start display-manager.service
 }
 
 # Fin de l'assistant de premier démarrage, comme il la marque lui-même
@@ -250,8 +291,13 @@ finish_setup() {
 # ask-for-password, https://gitlab.freedesktop.org/plymouth/plymouth).
 # Diagnostic visuel : un échec est affiché sans arrêter le test.
 check_boot_screen() {
+    local deadline
     log "Écran de démarrage d'Ankh et saisie du mot de passe du disque (D-043)"
     vm systemctl stop display-manager.service
+    # Comme au vrai démarrage, aucune session ouverte (voir configure_autologin)
+    if vm loginctl show-user ankhvm > /dev/null 2>&1; then
+        vm loginctl terminate-user ankhvm
+    fi
     sleep 5
     if vm 'plymouthd --mode=boot --tty=tty1 && plymouth show-splash'; then
         sleep 5
@@ -268,6 +314,20 @@ check_boot_screen() {
         echo "(Plymouth : lancement à la main impossible, pas de capture du mot de passe)"
     fi
     vm systemctl start display-manager.service
+    # La connexion automatique rouvre le bureau. Diagnostic seulement, comme
+    # le reste de cet essai : le démarrage de l'étape 2 repart de zéro.
+    deadline=$((SECONDS + 180))
+    until desktop_ready ankhvm; do
+        if ((SECONDS >= deadline)); then
+            screenshot 1-bureau-apres-demarrage-test-echec
+            echo "(pas de bureau actif 3 minutes après l'essai de l'écran de démarrage)"
+            explain_session ankhvm
+            return
+        fi
+        sleep 5
+    done
+    sleep 20
+    screenshot 1-bureau-apres-demarrage-test
 }
 
 # Tape un texte au clavier de la VM, touche par touche (lettres minuscules
@@ -769,6 +829,7 @@ explain_gaming() {
             echo "(commande en échec)"
         fi
     done
+    explain_session ankhvm
 }
 
 # D-050 : premier lancement de Steam depuis le menu, comme un clic (voir
@@ -777,10 +838,27 @@ explain_gaming() {
 # jour lui-même, puis demande de se connecter. Le compte de test est
 # administrateur le temps de l'essai, comme le compte créé par l'assistant :
 # Flatpak installe alors pour toute la machine sans mot de passe (règle
-# polkit de Flatpak pour le groupe wheel).
+# polkit de Flatpak pour le groupe wheel, si la session est active et
+# locale).
 check_steam() {
-    local user=ankhvm deadline=$((SECONDS + 1800)) couche
+    local user=ankhvm deadline=$((SECONDS + 1800)) couche app
+    log "Premier clic sur Steam (D-050)"
+    # Fenêtres laissées ouvertes par check_identity
+    for app in dolphin konsole systemsettings ksplashqml; do
+        close_app "$user" "$app"
+    done
     vm usermod -aG wheel "$user"
+    # Une application lancée par le menu tourne hors de la session, dans une
+    # unité du gestionnaire systemd du compte : polkit la rattache à la
+    # session graphique du compte (src/polkitbackend/polkitbackendsessionmonitor-systemd.c
+    # de https://github.com/polkit-org/polkit). pkcheck, lancé de la même
+    # façon, doit obtenir l'autorisation de Flatpak sans question (code 0) :
+    # sinon, la préparation attendrait un mot de passe.
+    if ! in_session "$user" sh -c 'exec pkcheck --action-id org.freedesktop.Flatpak.app-install --process $$'; then
+        explain_session "$user"
+        die "polkit demanderait un mot de passe à l'administrateur dans sa session pour installer Steam (D-050)"
+    fi
+    echo "polkit : l'administrateur installe pour toute la machine sans mot de passe"
     vm systemd-run --machine=$user@ --user --unit=ankh-steam-premier-clic --quiet \
         --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-flatpak com.valvesoftware.Steam
     sleep 45
@@ -819,7 +897,7 @@ check_console() {
     log "Session « Ankh Console » (D-050)"
     configure_autologin "$user" ankh-console.desktop
     deadline=$((SECONDS + 180))
-    until vm "pgrep -u $user -f 'kwin_wayland.*--exit-with-session'" > /dev/null; do
+    until vm "pgrep -u $user -f 'kwin_wayland.*--exit-with-session'" > /dev/null && session_active "$user"; do
         if ((SECONDS >= deadline)); then
             screenshot 1-console-echec
             explain_gaming
@@ -827,7 +905,7 @@ check_console() {
         fi
         sleep 5
     done
-    echo "Session « Ankh Console » : KWin seul est démarré"
+    echo "Session « Ankh Console » : KWin seul est démarré, au premier plan"
     sleep 150
     screenshot 1-console
     if vm pgrep -u "$user" -f com.valvesoftware.Steam > /dev/null; then
@@ -1057,6 +1135,8 @@ screenshot 1-a-propos
 check_vscode
 check_options_reglages
 check_identity
+check_steam
+check_console
 # D-043 : connexion par l'écran de connexion d'Ankh, avec un mot de passe,
 # d'abord faux (message d'erreur), puis juste. La session du compte de test
 # est fermée ; la connexion automatique ne se refait qu'au démarrage suivant.
@@ -1072,9 +1152,6 @@ type_text ankhtest42
 monitor 'sendkey ret'
 wait_desktop 1-bureau-apres-connexion
 check_boot_screen
-wait_desktop 1-bureau-apres-demarrage-test
-check_steam
-check_console
 
 log "2/4 Mise à jour vers la version publiée : $other"
 # Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,
