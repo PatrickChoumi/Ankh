@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-13** (PR #14 fusionnée, phase 3 terminée ; phase 5 commencée : option Gaming, D-050 ; option Gaming et ntsync vérifiés en VM, D-050 et D-051).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-14** (PR #15 fusionnée : option Gaming et ntsync, D-050 et D-051 ; les huit applications Gaming vérifiées en VM).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -285,7 +285,7 @@
   - le « mode jeu » de SteamOS (Gamescope) n'est pas prouvé avec Steam en Flatpak : la session console sera « Ankh Console », avec KWin et Steam Big Picture ;
   - Steam est épinglé dans la barre avec l'option Gaming.
 - **Mon choix du 2026-10-13 sur les réglages du système** (D-051) : ntsync, qui accélère les jeux Windows sous Proton 11 et Wine, est chargé avec l'option Gaming seulement. `vm.max_map_count` est déjà réglé par Fedora ; la protection contre les « split locks » reste active (la retirer exposerait la machine à un déni de service).
-- **Fait sur la branche, vérifié en VM le 2026-10-13** ([run 38407899063](https://github.com/PatrickChoumi/Ankh/actions/runs/38407899063)) :
+- **Fait ([#15](https://github.com/PatrickChoumi/Ankh/pull/15) fusionnée le 2026-10-14), vérifié en VM le 2026-10-13** ([run 38407899063](https://github.com/PatrickChoumi/Ankh/actions/runs/38407899063)) :
   - outils du jeu dans l'image : GameMode, MangoHud, Gamescope, vkBasalt, règles des manettes de Steam ;
   - huit applications dans le menu avec leur logo, préparées au premier clic : Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS Studio ;
   - ntsync chargé avec l'option Gaming, retiré sans elle (D-051) ;
@@ -300,6 +300,11 @@
     - Ankh demandait à Flatpak de ne jamais rien demander (`--noninteractive`), ce qui empêchait aussi la fenêtre du mot de passe. Maintenant, si la règle des administrateurs ne s'applique pas, KDE demande le mot de passe d'un administrateur ;
     - le test cliquait sur Steam dans une session de test qui n'était plus au premier plan (écran figé après l'essai de l'écran de démarrage). Le test vérifie maintenant que la session est active avant chaque capture ;
     - le compte de test devenait administrateur pendant sa session. Or polkit prend les groupes de l'ouverture de la session : pour Flatpak, il n'était pas administrateur. Le compte de test l'est maintenant dès sa création, comme le mien, créé par l'assistant ; et avant le clic, polkit est interrogé comme Flatpak le fait.
+- **Les sept autres applications, vérifiées en VM le 2026-10-14** ([run 38565792193](https://github.com/PatrickChoumi/Ankh/actions/runs/38565792193), test complet) :
+  - Heroic, Lutris, Bottles, ProtonPlus, Discord et OBS se préparent au premier clic et s'ouvrent ;
+  - Protontricks n'aurait rien ouvert au premier clic : il n'ouvre sa fenêtre qu'avec les options de sa propre entrée du menu. Corrigé : chaque application démarre maintenant par son entrée du menu. Dans la VM, il dit ne pas trouver Steam, qui n'y a jamais été connecté à un compte ;
+  - outils du jeu en Flatpak : les trois pour Heroic et OBS ; MangoHud et Gamescope pour Steam, Protontricks et Discord (vkBasalt pas encore publié pour leur version) ; aucun pour Lutris, Bottles et ProtonPlus (leur runtime GNOME n'a pas de version publiée) ;
+  - ce test télécharge plusieurs Go : il tourne chaque lundi et à la demande, pas pour chaque PR.
 
 ---
 
@@ -307,7 +312,7 @@
 
 ### Phase 5 — Gaming (en cours)
 
-1. **Option Gaming** (D-050, D-051) : construite, vérifiée en CI et en VM le 2026-10-13, publiée dans la PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) le 2026-10-14. Reste à vérifier en VM le premier clic sur les sept autres applications (test ajouté ; il a déjà trouvé un défaut de Protontricks, corrigé).
+1. **Option Gaming** (D-050, D-051) : fusionnée le 2026-10-14 (PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15)) ; les huit applications vérifiées en VM. Reste : savoir si les jeux de Lutris et de Bottles peuvent se servir de MangoHud, Gamescope et vkBasalt en Flatpak (runtime GNOME, À VALIDER).
 2. **Mes jeux** : les noms sont à donner (question 6) ; chacun sera vérifié sous Linux (ProtonDB, anticheat), puis testé sur ma machine en phase 9.
 3. **Réglages du système pour le jeu** (D-041, D-051) : ntsync avec Gaming, vérifié en VM. Les autres réglages attendront d'avoir vécu avec le système (phase 10).
 4. **Critère de fin** : chaque jeu de la question 6 testé ; manettes, VRR et multi-écran vérifiés si concernés ; test final sur ma machine en phase 9.
@@ -357,6 +362,8 @@
 - **D-035** : les codecs de VLC sur ma machine. Taille d'une mise à jour mesurée : 1,2 Go ; la réduire est une piste (D-027).
 - **Mise à jour non appliquée** (D-004) : corrigée et vérifiée en VM. Reste à comprendre pourquoi le même test passait sur `main` juste avant.
 - **ntsync** (D-051) : le gain dans mes jeux, à mesurer sur ma machine (phase 9) ; il ne se mesure pas en VM.
+- **Protontricks** (D-050) : qu'il trouve Steam une fois Steam connecté à mon compte, sur ma machine.
+- **Lutris et Bottles** (D-050) : MangoHud, Gamescope et vkBasalt en Flatpak pour leurs jeux (runtime GNOME 49 et 50, pas de version publiée).
 - **Compte qui n'est pas administrateur** (D-050) : Flatpak devrait lui demander le mot de passe d'un administrateur au premier clic ; en VM, il a été refusé sans fenêtre. Seulement utile si un deuxième compte doit installer des jeux.
 - **« Options d'Ankh »** (D-046) : non testés en VM, le mot de passe refusé ou non donné, et les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée). Limite connue : seule la barre du compte qui ouvre la fenêtre suit ; un autre compte de la machine garderait VS Code épinglé.
 
@@ -365,7 +372,7 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Regarder les captures de la phase 5** (Steam, session « Ankh Console », cases Dev et Gaming, puis les sept autres applications), et fusionner la PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) si tout me plaît (D-050, D-051).
+2. **Regarder les captures des sept autres applications Gaming**, envoyées le 2026-10-14, et dire à Claude ce qui ne va pas (D-050). La PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) est fusionnée.
 3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
