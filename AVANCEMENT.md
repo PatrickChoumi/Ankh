@@ -307,7 +307,7 @@
 
 ### Phase 5 — Gaming (en cours)
 
-1. **Option Gaming** (D-050, D-051) : construite, vérifiée en CI et en VM le 2026-10-13. À publier par une PR, avec mon accord.
+1. **Option Gaming** (D-050, D-051) : construite, vérifiée en CI et en VM le 2026-10-13, publiée dans la PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) le 2026-10-14. Reste à vérifier en VM le premier clic sur les sept autres applications (test ajouté ; il a déjà trouvé un défaut de Protontricks, corrigé).
 2. **Mes jeux** : les noms sont à donner (question 6) ; chacun sera vérifié sous Linux (ProtonDB, anticheat), puis testé sur ma machine en phase 9.
 3. **Réglages du système pour le jeu** (D-041, D-051) : ntsync avec Gaming, vérifié en VM. Les autres réglages attendront d'avoir vécu avec le système (phase 10).
 4. **Critère de fin** : chaque jeu de la question 6 testé ; manettes, VRR et multi-écran vérifiés si concernés ; test final sur ma machine en phase 9.
@@ -365,7 +365,7 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Regarder les captures de la phase 5** envoyées le 2026-10-13 (premier clic sur Steam, session « Ankh Console », cases Dev et Gaming), puis dire à Claude d'ouvrir la PR si tout me plaît, et la fusionner (D-050, D-051).
+2. **Regarder les captures de la phase 5** (Steam, session « Ankh Console », cases Dev et Gaming, puis les sept autres applications), et fusionner la PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) si tout me plaît (D-050, D-051).
 3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.

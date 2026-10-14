@@ -25,7 +25,9 @@
 # et de verrouillage.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
-# ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
+# ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local),
+# ANKH_VM_GAMING_COMPLET=1 (premier clic sur toutes les applications de
+# l'option Gaming, pas seulement Steam : plusieurs Go depuis Flathub).
 set -euo pipefail
 
 image=${1:-localhost/ankh:latest}
@@ -33,6 +35,7 @@ other=${ANKH_VM_OTHER:-ghcr.io/patrickchoumi/ankh:latest}
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 work=${ANKH_VM_WORKDIR:-$(mktemp -d)}
 port=${ANKH_VM_SSH_PORT:-2222}
+gaming_complet=${ANKH_VM_GAMING_COMPLET:-0}
 ovmf=/usr/share/OVMF
 qemu_pid=
 boot_id=
@@ -822,13 +825,14 @@ check_options_reglages() {
     echo "Options d'Ankh : Dev et Gaming retirées puis remises avec le mot de passe, menu, barre et ntsync à jour"
 }
 
-# Quand Steam ou la session « Ankh Console » ne font pas ce qui est attendu :
-# journal de la préparation, applications Flatpak, messages de la session.
+# Quand une application Gaming (Steam par défaut) ou la session « Ankh
+# Console » ne font pas ce qui est attendu : journal de la préparation,
+# applications Flatpak, messages de la session.
 explain_gaming() {
-    local cmd
+    local application=${1:-com.valvesoftware.Steam} cmd
     log "Diagnostic : option Gaming"
     for cmd in \
-        'tail -n 60 /home/ankhvm/.cache/ankh/preparation-com.valvesoftware.Steam.log' \
+        "tail -n 60 /home/ankhvm/.cache/ankh/preparation-$application.log" \
         'flatpak list --system --columns=ref' \
         "journalctl --no-pager -b -o cat _UID=$(vm id -u ankhvm) | grep -iE 'steam|flatpak|kwin|ankh-console|ankh-flatpak' | tail -n 60" \
         'journalctl --no-pager -b -o cat -u sddm.service | tail -n 30' \
@@ -904,6 +908,63 @@ check_steam() {
         echo "(Steam ne tournait plus)"
     fi
     sleep 5
+}
+
+# D-041, D-050 : premier clic sur les sept autres applications de l'option
+# Gaming, comme pour Steam (check_steam) : préparation, puis l'application
+# s'ouvre par sa propre entrée du menu. Pour chacune : elle doit tourner
+# (flatpak ps), sa capture, puis les outils du jeu en Flatpak préparés pour
+# sa version (lignes de son journal de préparation). Plusieurs Go depuis
+# Flathub : seulement avec ANKH_VM_GAMING_COMPLET=1 (entrée « gaming_complet »
+# du workflow, et chaque lundi).
+check_gaming_apps() {
+    local user=ankhvm application court deadline instances
+    local applications=(com.heroicgameslauncher.hgl net.lutris.Lutris com.usebottles.bottles
+        com.vysp3r.ProtonPlus com.github.Matoking.protontricks com.discordapp.Discord com.obsproject.Studio)
+    local -A noms=([com.heroicgameslauncher.hgl]=heroic [net.lutris.Lutris]=lutris
+        [com.usebottles.bottles]=bottles [com.vysp3r.ProtonPlus]=protonplus
+        [com.github.Matoking.protontricks]=protontricks [com.discordapp.Discord]=discord
+        [com.obsproject.Studio]=obs)
+    log "Premier clic sur les sept autres applications Gaming (D-041, D-050)"
+    for application in "${applications[@]}"; do
+        court=${noms[$application]}
+        echo "--- $application"
+        vm systemd-run --machine=$user@ --user --unit="ankh-premier-clic-$court" --quiet \
+            --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-flatpak "$application"
+        deadline=$((SECONDS + 1200))
+        until vm flatpak info --system "$application" > /dev/null 2>&1; do
+            if ((SECONDS >= deadline)); then
+                screenshot "1-gaming-$court-echec"
+                explain_gaming "$application"
+                die "$application ne s'est pas préparé 20 minutes après le premier clic (D-050)"
+            fi
+            sleep 15
+        done
+        # L'application tourne, ouverte par sa propre entrée du menu
+        deadline=$((SECONDS + 180))
+        while :; do
+            if instances=$(in_session "$user" flatpak ps --columns=application) &&
+                [[ $'\n'$instances$'\n' == *$'\n'$application$'\n'* ]]; then
+                break
+            fi
+            if ((SECONDS >= deadline)); then
+                screenshot "1-gaming-$court-echec"
+                explain_gaming "$application"
+                die "$application ne tourne pas après sa préparation (D-050)"
+            fi
+            sleep 5
+        done
+        sleep 60
+        screenshot "1-gaming-$court"
+        if ! vm "grep -E 'Outils du jeu|déjà là|existe pas encore' /home/$user/.cache/ankh/preparation-$application.log"; then
+            echo "(aucune ligne sur les outils du jeu dans le journal de préparation)"
+        fi
+        if ! in_session "$user" flatpak kill "$application"; then
+            echo "($application ne tournait plus)"
+        fi
+        sleep 5
+    done
+    echo "Les sept autres applications Gaming se préparent au premier clic et s'ouvrent"
 }
 
 # D-050 : session « Ankh Console », ouverte comme si on la choisissait sur
@@ -1157,6 +1218,11 @@ check_vscode
 check_options_reglages
 check_identity
 check_steam
+if [[ $gaming_complet == 1 ]]; then
+    check_gaming_apps
+else
+    echo "(premier clic sur les sept autres applications Gaming : seulement avec ANKH_VM_GAMING_COMPLET=1)"
+fi
 check_console
 # D-043 : connexion par l'écran de connexion d'Ankh, avec un mot de passe,
 # d'abord faux (message d'erreur), puis juste. La session du compte de test
