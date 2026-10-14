@@ -255,9 +255,10 @@ fi
 echo "Moteur « executable » : ${moteur} ($(rpm -qf "${moteur}"))"
 test -d /usr/lib64/qt6/qml/org/kde/plasma/plasma5support
 # L'option Gaming prépare ses applications par Flatpak dans une fenêtre
-# Konsole (/usr/libexec/ankh-flatpak), et sa session lance KWin seul
+# Konsole, puis les ouvre par leur propre entrée du menu avec gio
+# (/usr/libexec/ankh-flatpak), et sa session lance KWin seul
 # (/usr/libexec/ankh-console).
-for outil in plasmawindowed pkexec kbuildsycoca6 busctl flatpak konsole kwin_wayland; do
+for outil in plasmawindowed pkexec kbuildsycoca6 busctl flatpak konsole kwin_wayland gio; do
     if ! chemin="$(command -v "${outil}")"; then
         echo "${outil} introuvable : options d'Ankh à revoir" >&2
         exit 1

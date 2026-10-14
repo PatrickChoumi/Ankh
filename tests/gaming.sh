@@ -21,7 +21,7 @@ applications=(com.valvesoftware.Steam com.heroicgameslauncher.hgl net.lutris.Lut
 echo "Outils du jeu dans le système"
 rpm -q gamemode mangohud gamescope vkBasalt steam-devices
 [[ -n "$(rpm -ql steam-devices | grep '/udev/rules.d/')" ]] || echec "règles des manettes de Steam absentes"
-command -v mangoapp gamescope gamemoded kwin_wayland flatpak konsole > /dev/null || echec "outil du jeu ou de la session absent"
+command -v mangoapp gamescope gamemoded kwin_wayland flatpak konsole gio > /dev/null || echec "outil du jeu ou de la session absent"
 # Les couches Vulkan restent à l'arrêt sans leur variable
 for couche in /usr/share/vulkan/implicit_layer.d/MangoHud*.json /usr/share/vulkan/implicit_layer.d/vkBasalt*.json; do
     grep -q '"enable_environment"' "${couche}" || echec "${couche} s'active sans variable"

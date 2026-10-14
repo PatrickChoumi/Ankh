@@ -7,7 +7,7 @@
 # même nom de fichier que celle d'Ankh et passe devant, car les dossiers de
 # Flatpak précèdent /usr/local/share dans XDG_DATA_DIRS (profile/flatpak.sh
 # de https://github.com/flatpak/flatpak ; vu dans la session de la VM).
-#   ankh-flatpak <application>            ouvre l'application, préparée au besoin
+#   ankh-flatpak <application> [args]     ouvre l'application, préparée au besoin
 #   ankh-flatpak preparer <application>   la télécharge (fenêtre de préparation)
 #   ankh-flatpak installees               affiche celles qui sont installées
 #   ankh-flatpak supprimer                désinstalle les applications de
@@ -32,6 +32,8 @@ readonly APPLICATIONS=(com.valvesoftware.Steam com.heroicgameslauncher.hgl net.l
 # dans /usr/lib/extensions/vulkan des applications (D-050)
 readonly COUCHES=(MangoHud gamescope vkBasalt)
 readonly ENTREES=/usr/share/ankh/options/gaming/applications
+# Entrées du menu installées par Flatpak pour toute la machine
+readonly EXPORTS=/var/lib/flatpak/exports/share/applications
 readonly DEPOT=flathub
 
 echec() {
@@ -155,6 +157,15 @@ case "${1:-}" in
             # l'application doit être là, sinon on s'arrête là.
             installee "${application}" || echec "$(nom "${application}") n'a pas pu être préparé"
         fi
-        exec flatpak run "${application}" "$@"
+        if (($#)); then
+            exec flatpak run "${application}" "$@"
+        fi
+        # Sans argument, l'application démarre comme depuis sa propre entrée
+        # du menu, installée par Flatpak : certaines y ajoutent des options.
+        # Protontricks, par exemple, n'ouvre sa fenêtre qu'avec « --no-term
+        # --gui » (src/protontricks/data/share/applications/protontricks.desktop
+        # de https://github.com/Matoking/protontricks) ; sans elles, il ne
+        # fait qu'afficher son aide.
+        exec gio launch "${EXPORTS}/${application}.desktop"
         ;;
 esac
