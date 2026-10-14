@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Protontricks
+GenericName=Réglages des jeux Proton
+Comment=Option Gaming d'Ankh : se prépare au premier lancement (téléchargement depuis Flathub, une seule fois).
+Exec=/usr/libexec/ankh-flatpak com.github.Matoking.protontricks
+Icon=com.github.Matoking.protontricks
+Terminal=false
+Categories=Utility;
+Keywords=proton;winetricks;jeux;

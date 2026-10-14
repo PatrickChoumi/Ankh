@@ -113,12 +113,12 @@ C'est mon exigence générale (ANKH-SPEC.md).
 
 ### Gaming (phase 5)
 
-- **Lanceurs** : Steam, Heroic (Epic, GOG, Amazon), Lutris, Bottles, ProtonPlus et Protontricks (D-041).
-- **Outils du jeu** dans le système : GameMode, MangoHud, Gamescope, vkBasalt, et les règles des manettes et casques de Steam (D-041).
+- **Lanceurs** : Steam, Heroic (Epic, GOG, Amazon), Lutris, Bottles, ProtonPlus et Protontricks, dans le menu avec leur logo, prêts au premier clic ; Steam est aussi dans la barre (D-041, D-050).
+- **Outils du jeu** dans le système : GameMode, MangoHud, Gamescope, vkBasalt, et les règles des manettes et casques de Steam (D-041). MangoHud, vkBasalt et Gamescope existent aussi en Flatpak, préparés avec chaque lanceur, pour qu'ils marchent dans tous mes jeux (D-050).
 - **Manettes** : toutes (Xbox, PlayStation, autres), filaires et sans fil (ANKH-SPEC 4.3).
 - **Discord et OBS Studio** font partie de l'option Gaming, prêts au premier clic comme les lanceurs (D-041).
-- **Mode console** : une session à choisir sur l'écran de connexion, avec Steam en plein écran (D-041).
-- **Réglages** : seulement des réglages sûrs pour le jeu. Le noyau est celui de Fedora, et Secure Boot reste actif sans clé à gérer (D-041).
+- **Mode console** : la session « Ankh Console », à choisir sur l'écran de connexion : Steam en plein écran (Big Picture), à la manette ; quitter Steam ramène à l'écran de connexion (D-041, D-050).
+- **Réglages** : seulement des réglages sûrs pour le jeu. Le noyau est celui de Fedora, et Secure Boot reste actif sans clé à gérer (D-041). Avec l'option Gaming, ntsync accélère les jeux Windows sous Proton et Wine ; aucune protection n'est retirée (D-051).
 - **Limite assumée** : les jeux en ligne dont l'anticheat refuse Linux ne marcheront pas (ANKH-SPEC Q6, D-003).
 - **Mes jeux** seront testés sur ma machine en phase 9. Leurs noms sont TODO (Q6) : je les donnerai plus tard.
 

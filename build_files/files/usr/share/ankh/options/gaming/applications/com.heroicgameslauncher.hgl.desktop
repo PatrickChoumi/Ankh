@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Heroic
+GenericName=Jeux Epic, GOG et Amazon
+Comment=Option Gaming d'Ankh : se prépare au premier lancement (téléchargement depuis Flathub, une seule fois).
+Exec=/usr/libexec/ankh-flatpak com.heroicgameslauncher.hgl
+Icon=com.heroicgameslauncher.hgl
+Terminal=false
+Categories=Game;
+Keywords=jeux;epic;gog;amazon;

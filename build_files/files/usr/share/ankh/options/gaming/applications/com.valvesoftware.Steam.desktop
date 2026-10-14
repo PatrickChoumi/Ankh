@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Steam
+GenericName=Magasin et lanceur de jeux
+Comment=Option Gaming d'Ankh : se prépare au premier lancement (téléchargement depuis Flathub, une seule fois).
+Exec=/usr/libexec/ankh-flatpak com.valvesoftware.Steam
+Icon=com.valvesoftware.Steam
+Terminal=false
+Categories=Game;
+Keywords=jeux;steam;proton;big picture;

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ProtonPlus
+GenericName=Versions de Proton et de Wine
+Comment=Option Gaming d'Ankh : se prépare au premier lancement (téléchargement depuis Flathub, une seule fois).
+Exec=/usr/libexec/ankh-flatpak com.vysp3r.ProtonPlus
+Icon=com.vysp3r.ProtonPlus
+Terminal=false
+Categories=Game;
+Keywords=proton;wine;dxvk;jeux;

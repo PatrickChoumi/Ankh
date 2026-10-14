@@ -21,6 +21,11 @@ on:
   schedule:
     - cron: '47 4 * * 1'
   workflow_dispatch:
+    inputs:
+      gaming_complet:
+        description: "Premier clic sur toutes les applications de l'option Gaming (D-050) : plusieurs Go depuis Flathub"
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -58,10 +63,15 @@ jobs:
       - name: Construire l'image ankh
         run: sudo env "PATH=${PATH}" just build ankh
 
+      # Toutes les applications de l'option Gaming chaque lundi, et à la
+      # demande ; Steam seul pour les PR (D-050).
       - name: Démarrer, mettre à jour, revenir en arrière, revenir à la base
         env:
           ANKH_VM_WORKDIR: ${{ runner.temp }}/vm
-        run: sudo env "ANKH_VM_WORKDIR=${ANKH_VM_WORKDIR}" tests/vm/run.sh localhost/ankh:latest
+          ANKH_VM_GAMING_COMPLET: ${{ (github.event_name == 'schedule' || inputs.gaming_complet) && '1' || '0' }}
+        run: |
+          sudo env "ANKH_VM_WORKDIR=${ANKH_VM_WORKDIR}" "ANKH_VM_GAMING_COMPLET=${ANKH_VM_GAMING_COMPLET}" \
+            tests/vm/run.sh localhost/ankh:latest
 
       # Captures d'écran de la VM, téléchargeables depuis la page du run
       # (section « Artifacts »), même si le test échoue.

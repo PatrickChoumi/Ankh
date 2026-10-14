@@ -25,7 +25,9 @@
 # et de verrouillage.
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
-# ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local).
+# ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local),
+# ANKH_VM_GAMING_COMPLET=1 (premier clic sur toutes les applications de
+# l'option Gaming, pas seulement Steam : plusieurs Go depuis Flathub).
 set -euo pipefail
 
 image=${1:-localhost/ankh:latest}
@@ -33,6 +35,7 @@ other=${ANKH_VM_OTHER:-ghcr.io/patrickchoumi/ankh:latest}
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 work=${ANKH_VM_WORKDIR:-$(mktemp -d)}
 port=${ANKH_VM_SSH_PORT:-2222}
+gaming_complet=${ANKH_VM_GAMING_COMPLET:-0}
 ovmf=/usr/share/OVMF
 qemu_pid=
 boot_id=
@@ -79,18 +82,19 @@ vm() {
 
 # Commande dans la session graphique d'un compte (par son gestionnaire
 # systemd), attendue jusqu'au bout. Les arguments sont protégés du shell de
-# la VM, car ssh les recolle.
+# la VM, car ssh les recolle, et de systemd, qui remplace sinon « $$ » par
+# « $ » et « ${VARIABLE} » par sa valeur (--expand-environment, systemd-run(1)).
 in_session() {
     local user=$1
     shift
-    vm "systemd-run --machine=$user@ --user --wait --pipe --quiet $(printf '%q ' "$@")"
+    vm "systemd-run --machine=$user@ --user --wait --pipe --quiet --expand-environment=no $(printf '%q ' "$@")"
 }
 
 # Application lancée dans la session graphique d'un compte, sans l'attendre.
 launch_in_session() {
     local user=$1
     shift
-    vm "systemd-run --machine=$user@ --user --collect --quiet $(printf '%q ' "$@")"
+    vm "systemd-run --machine=$user@ --user --collect --quiet --expand-environment=no $(printf '%q ' "$@")"
 }
 
 # Attend que la VM réponde en SSH après un nouveau démarrage.
@@ -178,13 +182,29 @@ screenshot() {
     echo "Capture : $file"
 }
 
+# Le compte a une session au premier plan (« active » pour logind). Une
+# ancienne session restée ouverte hors du premier plan ne compte pas :
+# l'écran n'en montre qu'une image figée, et polkit ne la traite pas comme
+# active (vu le 2026-10-13, run 38365568996).
+session_active() {
+    local state
+    state=$(vm loginctl show-user "$1" -p State --value 2> /dev/null) || return 1
+    [[ $state == active ]]
+}
+
+# Le compte a son bureau Plasma, dans une session au premier plan.
+desktop_ready() {
+    vm pgrep -u "$1" -x plasmashell > /dev/null && session_active "$1"
+}
+
 # Attend le bureau Plasma d'un compte (par défaut, le compte de test), puis
 # le capture.
 wait_desktop() {
     local name=$1 user=${2:-ankhvm} deadline=$((SECONDS + 180))
-    until vm pgrep -u "$user" -x plasmashell > /dev/null; do
+    until desktop_ready "$user"; do
         if ((SECONDS >= deadline)); then
             screenshot "$name-echec"
+            explain_session "$user"
             die "le bureau Plasma ne démarre pas pour le compte $user"
         fi
         sleep 5
@@ -193,13 +213,36 @@ wait_desktop() {
     screenshot "$name"
 }
 
+# Sessions du compte pour logind : la session graphique doit être active
+# (au premier plan) et locale, sinon polkit refuse ce qu'il accorde à un
+# administrateur dans sa session (diagnostic).
+explain_session() {
+    local user=$1 cmd
+    for cmd in \
+        'loginctl list-sessions --no-legend' \
+        "loginctl show-user $user -p State -p Display -p Sessions" \
+        "loginctl show-session \$(loginctl show-user $user -p Display --value) -p Active -p State -p Seat -p VTNr -p Type -p Class -p Service" \
+        'cat /sys/class/tty/tty0/active' \
+        "id $user"; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+}
+
 # Crée un compte de test. Ni verrouillage ni écran éteint pendant le test
 # (sinon les captures montrent l'écran de verrouillage, puis un écran noir).
 # Réglages locaux de la VM de test seulement (comme la clé SSH) : ils restent
 # valables après chaque basculement.
+# Le compte est administrateur (groupe wheel) dès sa création, comme celui
+# que crée l'assistant (D-046) : polkit prend les groupes du programme qui
+# demande, tels que D-Bus les voit, donc ceux de l'ouverture de sa session
+# (src/polkitbackend/polkitbackendduktapeauthority.c de polkit 127). Un
+# compte ajouté au groupe pendant sa session n'y est pas pour Flatpak.
 add_test_account() {
     local user=$1 comment=$2
-    vm "useradd -m -c '$comment' $user &&
+    vm "useradd -m -G wheel -c '$comment' $user &&
         install -d -o $user -g $user /home/$user/.config &&
         printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /home/$user/.config/kscreenlockerrc &&
         printf '[AC][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' > /home/$user/.config/powerdevilrc &&
@@ -214,7 +257,7 @@ add_test_account() {
 # /etc/plasmalogin.conf ou /etc/plasmalogin.conf.d/
 # (https://wiki.archlinux.org/title/Plasma_Login_Manager).
 configure_autologin() {
-    local user=${1:-ankhvm} dm dir
+    local user=${1:-ankhvm} session=${2:-plasma.desktop} dm dir
     dm=$(vm systemctl show -p Id --value display-manager.service)
     echo "Gestionnaire de connexion : $dm"
     case $dm in
@@ -222,7 +265,7 @@ configure_autologin() {
         *) die "gestionnaire de connexion inattendu : $dm" ;;
     esac
     for dir in /etc/sddm.conf.d /etc/plasmalogin.conf.d; do
-        vm "mkdir -p $dir && printf '[Autologin]\nUser=$user\nSession=plasma.desktop\n' > $dir/ankh-vmtest.conf"
+        vm "mkdir -p $dir && printf '[Autologin]\nUser=$user\nSession=$session\n' > $dir/ankh-vmtest.conf"
     done
     # Plasma Login ignore parfois le dossier .conf.d (https://bugs.kde.org/show_bug.cgi?id=522006) :
     # le fichier principal est écrit aussi s'il n'existe pas, ou s'il vient
@@ -231,7 +274,14 @@ configure_autologin() {
         vm cp /etc/plasmalogin.conf.d/ankh-vmtest.conf /etc/plasmalogin.conf
         autologin_main=yes
     fi
-    vm systemctl restart display-manager.service
+    # Une session ouverte du compte survit à l'arrêt du gestionnaire de
+    # connexion, hors du premier plan : elle est fermée, pour que la
+    # connexion automatique en ouvre une nouvelle (voir desktop_ready).
+    vm systemctl stop display-manager.service
+    if vm loginctl show-user "$user" > /dev/null 2>&1; then
+        vm loginctl terminate-user "$user"
+    fi
+    vm systemctl start display-manager.service
 }
 
 # Fin de l'assistant de premier démarrage, comme il la marque lui-même
@@ -250,8 +300,13 @@ finish_setup() {
 # ask-for-password, https://gitlab.freedesktop.org/plymouth/plymouth).
 # Diagnostic visuel : un échec est affiché sans arrêter le test.
 check_boot_screen() {
+    local deadline
     log "Écran de démarrage d'Ankh et saisie du mot de passe du disque (D-043)"
     vm systemctl stop display-manager.service
+    # Comme au vrai démarrage, aucune session ouverte (voir configure_autologin)
+    if vm loginctl show-user ankhvm > /dev/null 2>&1; then
+        vm loginctl terminate-user ankhvm
+    fi
     sleep 5
     if vm 'plymouthd --mode=boot --tty=tty1 && plymouth show-splash'; then
         sleep 5
@@ -268,6 +323,20 @@ check_boot_screen() {
         echo "(Plymouth : lancement à la main impossible, pas de capture du mot de passe)"
     fi
     vm systemctl start display-manager.service
+    # La connexion automatique rouvre le bureau. Diagnostic seulement, comme
+    # le reste de cet essai : le démarrage de l'étape 2 repart de zéro.
+    deadline=$((SECONDS + 180))
+    until desktop_ready ankhvm; do
+        if ((SECONDS >= deadline)); then
+            screenshot 1-bureau-apres-demarrage-test-echec
+            echo "(pas de bureau actif 3 minutes après l'essai de l'écran de démarrage)"
+            explain_session ankhvm
+            return
+        fi
+        sleep 5
+    done
+    sleep 20
+    screenshot 1-bureau-apres-demarrage-test
 }
 
 # Tape un texte au clavier de la VM, touche par touche (lettres minuscules
@@ -389,6 +458,12 @@ check_installed() {
     vm test -x /usr/libexec/ankh-vscode -a -L /usr/local/share/applications/ankh-vscode.desktop \
         -a -f /usr/local/share/applications/ankh-vscode.desktop ||
         die "VS Code absent du menu (D-036, D-046)"
+    # D-050 : de même, Steam et la session « Ankh Console » par l'option Gaming.
+    vm test -x /usr/libexec/ankh-flatpak -a -f /usr/local/share/applications/com.valvesoftware.Steam.desktop \
+        -a -f /usr/local/share/wayland-sessions/ankh-console.desktop ||
+        die "Steam ou la session « Ankh Console » absents (D-050)"
+    # D-051 : ntsync chargé au démarrage avec l'option Gaming (choisie ici)
+    vm test -c /dev/ntsync || die "ntsync n'est pas chargé alors que l'option Gaming est choisie (D-051)"
     # D-033 : le système s'appelle Ankh, jusque dans le menu de démarrage
     # (titre écrit par ostree à partir de PRETTY_NAME).
     # shellcheck disable=SC2016 # variables lues dans la VM
@@ -594,7 +669,9 @@ check_options_assistant() {
     click 835 646
     sleep 10
     screenshot 1-assistant-options
-    if ! vm grep -qx "OPTIONS=dev" /etc/ankh/options; then
+    # ssh recolle les arguments : le motif, qui contient une espace, est
+    # protégé pour le shell de la VM.
+    if ! vm "grep -qx 'OPTIONS=dev gaming' /etc/ankh/options"; then
         # shellcheck disable=SC2016 # variables lues dans la VM
         if ! vm 'cat /etc/ankh/options; journalctl -b --no-pager -o cat -u "ankh-options@*";
             journalctl -b --no-pager -o cat _UID="$(id -u plasma-setup)" | tail -n 30'; then
@@ -611,10 +688,10 @@ check_options_assistant() {
     if vm test -e /usr/local/share/applications/ankh-vscode.desktop; then
         die "VS Code reste dans le menu avec Simple seule (D-046)"
     fi
-    vm systemctl start ankh-options@dev.service
-    vm test -e /usr/local/share/applications/ankh-vscode.desktop ||
-        die "VS Code ne revient pas dans le menu avec Dev (D-046)"
-    echo "Options : Simple seule retire VS Code du menu, Dev le remet ; le compte de l'assistant ne démarre que ankh-options@"
+    vm systemctl start ankh-options@dev_gaming.service
+    vm test -e /usr/local/share/applications/ankh-vscode.desktop -a -e /usr/local/share/applications/com.valvesoftware.Steam.desktop ||
+        die "VS Code ou Steam ne reviennent pas dans le menu avec Dev et Gaming (D-046, D-050)"
+    echo "Options : Simple seule retire VS Code du menu, Dev et Gaming les remettent ; le compte de l'assistant ne démarre que ankh-options@"
 }
 
 # Quand « Options d'Ankh » ne fait pas ce qui est attendu : choix enregistré,
@@ -675,13 +752,14 @@ choose_options() {
 
 # D-046 : « Options d'Ankh », dans la Configuration du système (catégorie
 # Système). Sa fenêtre (widget org.ankh.options, ouvert par plasmawindowed)
-# est capturée, puis utilisée au clavier : Dev retirée, puis remise. Chaque
-# fois, le mot de passe d'un administrateur est demandé par polkit (pkexec),
-# et le menu et la barre suivent. Le compte de test est administrateur
-# (groupe wheel) le temps de cet essai, comme le compte créé par l'assistant.
+# est capturée, puis utilisée au clavier : Complète décochée (Dev et Gaming
+# retirées), puis recochée. Chaque fois, le mot de passe d'un administrateur
+# est demandé par polkit (pkexec), et le menu et la barre suivent (VS Code et
+# Steam). Le compte de test est administrateur (voir add_test_account) : son
+# mot de passe est donné ici, pour la fenêtre de polkit.
 check_options_reglages() {
     local user=ankhvm epinglees
-    vm "echo 'ankhvm:ankhtest42' | chpasswd && usermod -aG wheel ankhvm"
+    vm "echo 'ankhvm:ankhtest42' | chpasswd"
     # VS Code, ouvert par check_vscode, cacherait la fenêtre
     close_app "$user" code
     launch_in_session "$user" systemsettings ankh-options
@@ -697,17 +775,19 @@ check_options_reglages() {
     fi
     echo "Barre avant : $epinglees"
 
-    log "Options d'Ankh : Dev retirée"
+    log "Options d'Ankh : Dev et Gaming retirées"
     choose_options 1-options-reglages-simple 1-options-mot-de-passe ""
     screenshot 1-options-reglages-fait
-    if vm test -e /usr/local/share/applications/ankh-vscode.desktop; then
-        die "VS Code reste dans le menu après le retrait de Dev (D-046)"
+    if vm test -e /usr/local/share/applications/ankh-vscode.desktop -o -e /usr/local/share/applications/com.valvesoftware.Steam.desktop; then
+        die "VS Code ou Steam restent dans le menu après le retrait de Dev et Gaming (D-046, D-050)"
     fi
     if ! epinglees=$(pinned_apps); then
         die "barre du compte de test illisible"
     fi
-    echo "Barre après le retrait de Dev : $epinglees"
-    [[ $epinglees != *ankh-vscode.desktop* ]] || die "VS Code reste épinglé dans la barre après le retrait de Dev (D-046)"
+    echo "Barre après le retrait : $epinglees"
+    [[ $epinglees != *ankh-vscode.desktop* && $epinglees != *com.valvesoftware.Steam.desktop* ]] ||
+        die "VS Code ou Steam restent épinglés dans la barre après le retrait (D-046, D-050)"
+    vm test ! -e /sys/module/ntsync || die "ntsync reste chargé après le retrait de Gaming (D-051)"
     close_app "$user" plasmawindowed
     close_app "$user" systemsettings
     screenshot 1-options-barre-sans-dev
@@ -721,18 +801,20 @@ check_options_reglages() {
     fi
     echo "Environnement de dev supprimé : conteneur et image"
 
-    log "Options d'Ankh : Dev remise"
+    log "Options d'Ankh : Dev et Gaming remises"
     launch_in_session "$user" plasmawindowed org.ankh.options
     sleep 15
-    choose_options 1-options-reglages-dev 1-options-mot-de-passe-dev dev
+    choose_options 1-options-reglages-dev 1-options-mot-de-passe-dev "dev gaming"
     screenshot 1-options-reglages-dev-fait
-    vm test -e /usr/local/share/applications/ankh-vscode.desktop ||
-        die "VS Code ne revient pas dans le menu avec Dev (D-046)"
+    vm test -e /usr/local/share/applications/ankh-vscode.desktop -a -e /usr/local/share/applications/com.valvesoftware.Steam.desktop ||
+        die "VS Code ou Steam ne reviennent pas dans le menu (D-046, D-050)"
     if ! epinglees=$(pinned_apps); then
         die "barre du compte de test illisible"
     fi
-    echo "Barre après le retour de Dev : $epinglees"
-    [[ $epinglees == *ankh-vscode.desktop* ]] || die "VS Code n'est pas épinglé dans la barre au retour de Dev (D-046)"
+    echo "Barre après le retour : $epinglees"
+    [[ $epinglees == *ankh-vscode.desktop* && $epinglees == *com.valvesoftware.Steam.desktop* ]] ||
+        die "VS Code ou Steam ne sont pas épinglés dans la barre à leur retour (D-046, D-050)"
+    vm test -c /dev/ntsync || die "ntsync n'est pas chargé au retour de Gaming (D-051)"
     # Échap ferme la fenêtre
     activate_window org.kde.plasmawindowed
     monitor 'sendkey esc'
@@ -740,8 +822,192 @@ check_options_reglages() {
     if vm pgrep -u "$user" -x plasmawindowed > /dev/null; then
         die "Échap ne ferme pas la fenêtre « Options d'Ankh » (D-046)"
     fi
-    vm gpasswd -d ankhvm wheel
-    echo "Options d'Ankh : Dev retirée puis remise avec le mot de passe, menu et barre à jour"
+    echo "Options d'Ankh : Dev et Gaming retirées puis remises avec le mot de passe, menu, barre et ntsync à jour"
+}
+
+# Quand une application Gaming (Steam par défaut) ou la session « Ankh
+# Console » ne font pas ce qui est attendu : journal de la préparation,
+# applications Flatpak, messages de la session.
+explain_gaming() {
+    local application=${1:-com.valvesoftware.Steam} cmd
+    log "Diagnostic : option Gaming"
+    for cmd in \
+        "tail -n 60 /home/ankhvm/.cache/ankh/preparation-$application.log" \
+        'flatpak list --system --columns=ref' \
+        "journalctl --no-pager -b -o cat _UID=$(vm id -u ankhvm) | grep -iE 'steam|flatpak|kwin|ankh-console|ankh-flatpak' | tail -n 60" \
+        'journalctl --no-pager -b -o cat -u sddm.service | tail -n 30' \
+        'pgrep -a -u ankhvm -f "kwin|steam|flatpak|konsole"' \
+        'journalctl --no-pager -b -o cat -u polkit.service | tail -n 20'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+    explain_session ankhvm
+}
+
+# Attend qu'une application Gaming tourne (flatpak ps). Sa préparation est
+# alors finie : ankh-flatpak installe les outils du jeu en Flatpak après
+# l'application, et ne l'ouvre qu'ensuite (vu le 2026-10-14 : Gamescope
+# encore en téléchargement quand le test, trop tôt, l'a cherché).
+wait_running() { # $1 : compte, $2 : application, $3 : nom des captures
+    local user=$1 application=$2 nom=$3 deadline=$((SECONDS + 300)) instances
+    while :; do
+        if instances=$(in_session "$user" flatpak ps --columns=application) &&
+            [[ $'\n'$instances$'\n' == *$'\n'$application$'\n'* ]]; then
+            return
+        fi
+        if ((SECONDS >= deadline)); then
+            screenshot "1-$nom-echec"
+            explain_gaming "$application"
+            die "$application ne tourne pas 5 minutes après sa préparation (D-050)"
+        fi
+        sleep 5
+    done
+}
+
+# D-050 : premier lancement de Steam depuis le menu, comme un clic (voir
+# check_vscode) : une fenêtre montre son téléchargement depuis Flathub, puis
+# celui des outils du jeu en Flatpak, et Steam s'ouvre ; il se met alors à
+# jour lui-même, puis demande de se connecter. Le compte de test est
+# administrateur, comme le compte créé par l'assistant : Flatpak installe
+# alors pour toute la machine sans mot de passe (règle polkit de Flatpak pour
+# le groupe wheel, si la session est active et locale).
+check_steam() {
+    local user=ankhvm deadline=$((SECONDS + 1800)) couche app nom reponse
+    log "Premier clic sur Steam (D-050)"
+    # Fenêtres laissées ouvertes par check_identity
+    for app in dolphin konsole systemsettings ksplashqml; do
+        close_app "$user" "$app"
+    done
+    # polkit est interrogé comme Flatpak le fait (system-helper/flatpak-system-helper.c) :
+    # pour le programme qui appelle, désigné par son nom sur le bus système.
+    # polkit prend alors les groupes de ce programme (voir add_test_account)
+    # et le rattache à la session graphique du compte, même lancé hors de la
+    # session par le menu (src/polkitbackend/polkitbackendsessionmonitor-systemd.c
+    # de https://github.com/polkit-org/polkit). Le programme interrogé est le
+    # bureau (plasmashell) : comme une application du menu, il tourne dans le
+    # gestionnaire systemd du compte. Réponse attendue : autorisé, sans question.
+    nom=$(vm "busctl --system list --unique --no-legend | awk '\$3 == \"plasmashell\" && \$4 == \"$user\" { print \$1; exit }'")
+    [[ $nom == :* ]] || die "plasmashell du compte de test absent du bus système"
+    if ! reponse=$(vm "busctl --system call org.freedesktop.PolicyKit1 /org/freedesktop/PolicyKit1/Authority org.freedesktop.PolicyKit1.Authority CheckAuthorization '(sa{sv})sa{ss}us' system-bus-name 1 name s $nom org.freedesktop.Flatpak.app-install 0 0 ''"); then
+        die "polkit n'a pas répondu pour plasmashell ($nom)"
+    fi
+    echo "polkit, org.freedesktop.Flatpak.app-install pour plasmashell ($nom) : $reponse"
+    if [[ $reponse != "(bba{ss}) true false"* ]]; then
+        explain_session "$user"
+        die "polkit demanderait un mot de passe à l'administrateur dans sa session pour installer Steam (D-050)"
+    fi
+    vm systemd-run --machine=$user@ --user --unit=ankh-steam-premier-clic --quiet \
+        --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-flatpak com.valvesoftware.Steam
+    sleep 45
+    screenshot 1-steam-preparation
+    until vm flatpak info --system com.valvesoftware.Steam > /dev/null 2>&1; do
+        if ((SECONDS >= deadline)); then
+            screenshot 1-steam-echec
+            explain_gaming
+            die "Steam ne s'est pas préparé 30 minutes après le premier clic (D-050)"
+        fi
+        sleep 15
+    done
+    wait_running "$user" com.valvesoftware.Steam steam
+    for couche in MangoHud gamescope; do
+        if ! vm flatpak info --system "org.freedesktop.Platform.VulkanLayer.$couche//26.08" > /dev/null; then
+            explain_gaming
+            die "$couche en Flatpak absent après la préparation de Steam (D-050)"
+        fi
+    done
+    echo "Steam préparé, avec MangoHud et Gamescope en Flatpak"
+    # D-051 : Proton trouve ntsync depuis Steam en Flatpak (--device=all)
+    in_session "$user" flatpak run --command=test com.valvesoftware.Steam -c /dev/ntsync ||
+        die "ntsync n'est pas visible depuis Steam en Flatpak (D-051)"
+    echo "ntsync : visible depuis Steam en Flatpak"
+    sleep 180
+    screenshot 1-steam
+    show_windows
+    if ! in_session "$user" flatpak kill com.valvesoftware.Steam; then
+        echo "(Steam ne tournait plus)"
+    fi
+    sleep 5
+}
+
+# D-041, D-050 : premier clic sur les sept autres applications de l'option
+# Gaming, comme pour Steam (check_steam) : préparation, puis l'application
+# s'ouvre par sa propre entrée du menu. Pour chacune : elle doit tourner
+# (flatpak ps), sa capture, puis les outils du jeu en Flatpak préparés pour
+# sa version (lignes de son journal de préparation). Plusieurs Go depuis
+# Flathub : seulement avec ANKH_VM_GAMING_COMPLET=1 (entrée « gaming_complet »
+# du workflow, et chaque lundi).
+check_gaming_apps() {
+    local user=ankhvm application court deadline
+    local applications=(com.heroicgameslauncher.hgl net.lutris.Lutris com.usebottles.bottles
+        com.vysp3r.ProtonPlus com.github.Matoking.protontricks com.discordapp.Discord com.obsproject.Studio)
+    local -A noms=([com.heroicgameslauncher.hgl]=heroic [net.lutris.Lutris]=lutris
+        [com.usebottles.bottles]=bottles [com.vysp3r.ProtonPlus]=protonplus
+        [com.github.Matoking.protontricks]=protontricks [com.discordapp.Discord]=discord
+        [com.obsproject.Studio]=obs)
+    log "Premier clic sur les sept autres applications Gaming (D-041, D-050)"
+    for application in "${applications[@]}"; do
+        court=${noms[$application]}
+        echo "--- $application"
+        vm systemd-run --machine=$user@ --user --unit="ankh-premier-clic-$court" --quiet \
+            --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-flatpak "$application"
+        deadline=$((SECONDS + 1200))
+        until vm flatpak info --system "$application" > /dev/null 2>&1; do
+            if ((SECONDS >= deadline)); then
+                screenshot "1-gaming-$court-echec"
+                explain_gaming "$application"
+                die "$application ne s'est pas préparé 20 minutes après le premier clic (D-050)"
+            fi
+            sleep 15
+        done
+        # L'application tourne, ouverte par sa propre entrée du menu
+        wait_running "$user" "$application" "gaming-$court"
+        sleep 60
+        screenshot "1-gaming-$court"
+        if ! vm "grep -E 'Outils du jeu|déjà là|existe pas encore' /home/$user/.cache/ankh/preparation-$application.log"; then
+            echo "(aucune ligne sur les outils du jeu dans le journal de préparation)"
+        fi
+        if ! in_session "$user" flatpak kill "$application"; then
+            echo "($application ne tournait plus)"
+        fi
+        sleep 5
+    done
+    echo "Les sept autres applications Gaming se préparent au premier clic et s'ouvrent"
+}
+
+# D-050 : session « Ankh Console », ouverte comme si on la choisissait sur
+# l'écran de connexion (connexion automatique dans cette session) : KWin
+# seul, puis Steam en plein écran. La session doit démarrer ; ce que Steam
+# affiche dans une VM sans carte graphique est un diagnostic. Le compte de
+# test retrouve ensuite sa session Plasma.
+check_console() {
+    local user=ankhvm deadline
+    log "Session « Ankh Console » (D-050)"
+    configure_autologin "$user" ankh-console.desktop
+    deadline=$((SECONDS + 180))
+    until vm "pgrep -u $user -f 'kwin_wayland.*--exit-with-session'" > /dev/null && session_active "$user"; do
+        if ((SECONDS >= deadline)); then
+            screenshot 1-console-echec
+            explain_gaming
+            die "la session « Ankh Console » ne démarre pas (D-050)"
+        fi
+        sleep 5
+    done
+    echo "Session « Ankh Console » : KWin seul est démarré, au premier plan"
+    sleep 150
+    screenshot 1-console
+    if vm pgrep -u "$user" -f com.valvesoftware.Steam > /dev/null; then
+        echo "Steam tourne dans la session « Ankh Console »"
+    else
+        echo "(Steam ne tourne pas dans la session « Ankh Console »)"
+        explain_gaming
+    fi
+    if ! in_session "$user" flatpak kill com.valvesoftware.Steam; then
+        echo "(Steam ne tournait plus)"
+    fi
+    configure_autologin "$user"
+    wait_desktop 1-bureau-apres-console
 }
 
 # D-037 et D-039 : l'interface d'Ankh, appliquée par défaut au compte de
@@ -954,9 +1220,19 @@ capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
+# VLC et OnlyOffice, capturés plus haut, resteraient derrière les fenêtres suivantes
+close_app ankhvm vlc
+close_app ankhvm DesktopEditors
 check_vscode
 check_options_reglages
 check_identity
+check_steam
+if [[ $gaming_complet == 1 ]]; then
+    check_gaming_apps
+else
+    echo "(premier clic sur les sept autres applications Gaming : seulement avec ANKH_VM_GAMING_COMPLET=1)"
+fi
+check_console
 # D-043 : connexion par l'écran de connexion d'Ankh, avec un mot de passe,
 # d'abord faux (message d'erreur), puis juste. La session du compte de test
 # est fermée ; la connexion automatique ne se refait qu'au démarrage suivant.
@@ -972,7 +1248,6 @@ type_text ankhtest42
 monitor 'sendkey ret'
 wait_desktop 1-bureau-apres-connexion
 check_boot_screen
-wait_desktop 1-bureau-apres-demarrage-test
 
 log "2/4 Mise à jour vers la version publiée : $other"
 # Le système suit déjà ce registre (--target-imgref) : c'est une mise à jour,

@@ -139,6 +139,7 @@ fi
 attendu "Favoris de Fedora ignorés" true --file kicker-extra-favoritesrc --group General --key IgnoreDefaults
 for barre in /usr/share/plasma/look-and-feel/*/contents/layouts/org.kde.plasma.desktop-layout.js; do
     grep -q '"applications:ankh-vscode.desktop"' "${barre}" || echec "applications épinglées absentes : ${barre}"
+    grep -q '"applications:com.valvesoftware.Steam.desktop"' "${barre}" || echec "Steam non épinglé avec Gaming : ${barre}"
 done
 # Accueil de KDE (Welcome Center) : première page et page « Raccourcis utiles » d'Ankh
 grep -q '^Icon=ankh-logo$' /usr/share/plasma/plasma-welcome/intro-customization.desktop \
@@ -151,7 +152,9 @@ if LC_ALL=C.UTF-8 grep -nE "(\"|=)[^\"]*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/p
     /usr/share/plasma/plasma-welcome/extra-pages/*.qml "${module}/contents/ui/main.qml" \
     /usr/share/plasma/packages/org.ankh.plasmasetup.options/contents/ui/main.qml \
     /usr/lib64/qt6/qml/org/ankh/composants/*.qml /usr/share/plasma/plasmoids/org.ankh.options/contents/ui/*.qml \
-    /usr/share/applications/ankh-options.desktop /usr/libexec/ankh-options-reglages; then
+    /usr/share/applications/ankh-options.desktop /usr/libexec/ankh-options-reglages \
+    /usr/share/ankh/options/gaming/applications/*.desktop /usr/share/ankh/options/gaming/wayland-sessions/*.desktop \
+    /usr/libexec/ankh-flatpak; then
     echec "tutoiement dans un texte affiché par Ankh (lignes ci-dessus)"
 fi
 # Le message de la fenêtre du mot de passe, dans l'action polkit des options

@@ -26,7 +26,12 @@
 
 ## 2. État actuel
 
-- **Phase en cours : 3 — Applications et dev** (depuis le 2026-10-08).
+- **Phase en cours : 5 — Gaming** (depuis le 2026-10-13). Elle remplit l'option Gaming (D-041, D-046).
+  - Mes choix du 2026-10-13 (D-050, D-051) : les outils du jeu aussi en Flatpak, préparés avec chaque lanceur ; la session « Ankh Console » (KWin et Steam Big Picture, sans Gamescope) ; Steam dans la barre ; ntsync chargé avec l'option Gaming, seul réglage du système ajouté (D-051).
+  - Fait sur la branche, vérifié en VM le 2026-10-13 : huit applications au premier clic (Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS), outils du jeu dans l'image, ntsync, session « Ankh Console », case Gaming dans l'assistant et dans « Options d'Ankh ». PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) ouverte le 2026-10-14 ; le premier clic sur les sept autres applications s'y vérifie en VM.
+  - Les noms de mes jeux (ANKH-SPEC Q6) viendront plus tard : le critère de la phase les attend.
+  - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
+- **Phase 3 terminée le 2026-10-13** : son critère est rempli (Chrome par défaut, VLC et OnlyOffice, choix des options pour Simple et Dev, mises à jour dans Discover, VS Code et le conteneur de dev recréés depuis le dépôt au premier clic, tout testé en CI et en VM cloud). Détail :
   - Fait : les mises à jour du système dans Discover (D-028, [#4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée).
   - Fait ([#5](https://github.com/PatrickChoumi/Ankh/pull/5) fusionnée) :
     - Chrome dans l'image, navigateur par défaut, et Firefox retiré (D-023) ;
@@ -50,8 +55,7 @@
     - toute l'interface poussée au niveau de macOS et de Windows 11, d'après leurs guides officiels : thème clair d'Ankh, barre en verre, recherche centrée, accueil d'Ankh, image de compte d'Ankh (D-042).
   - Fait ([#13](https://github.com/PatrickChoumi/Ankh/pull/13) fusionnée le 2026-10-12) : écran de démarrage (Plymouth) et écran de connexion (SDDM) entièrement d'Ankh, logo officiel de VS Code, vouvoiement (D-043) ; plus de fenêtres Claude ni GitHub (D-047).
   - Vision affinée le 2026-10-11 : une seule version, avec des options cochées à l'installation, depuis une seule ISO légère, publiée dans une Release GitHub (D-046, qui remplace les éditions de D-044 ; D-048 et D-049 : le système seul, options et version NVIDIA téléchargées si besoin) ; plus de fenêtres Claude ni GitHub dans Chrome (D-047) ; portrait final dans [VISION.md](VISION.md) (D-045).
-  - En cours, pour finir la phase 3 ([#14](https://github.com/PatrickChoumi/Ankh/pull/14)) : le choix des options au premier démarrage (page « Choisissez vos outils », vérifiée en VM) et dans les réglages (« Options d'Ankh », redessinée avec les mêmes cartes, mot de passe par pkexec, vérifiée en VM), pour Simple et Dev (D-046). Touche à polkit : à relire. Ensuite, la phase 5 (gaming, D-041), qui remplit l'option Gaming.
-  - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
+  - Fait ([#14](https://github.com/PatrickChoumi/Ankh/pull/14) fusionnée le 2026-10-13) : le choix des options au premier démarrage (page « Choisissez vos outils ») et dans les réglages (« Options d'Ankh », mêmes cartes, mot de passe par pkexec), pour Simple et Dev, vérifié en VM (D-046).
 - **Phase 2 terminée le 2026-10-07** : son critère est rempli.
   - Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, basculement, `bootc rollback` et retour à la base sont tous réussis, avec Secure Boot, SELinux et le pare-feu actifs.
   - Résultats dans D-004, test `tests/vm/run.sh`, lancé par `.github/workflows/boot-test.yml` (test « Démarrer ankh en VM », non obligatoire pour l'instant).
@@ -144,8 +148,8 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | **0. Spécification** *(terminée le 2026-10-07)* | Décrire ma machine et mes usages | ANKH-SPEC.md §6 « Avant la phase 1 » entièrement coché |
 | **1. Base et chaîne de build** *(terminée le 2026-10-07)* | Images génériques construites automatiquement | D-005, D-017 et D-018 tranchées. Chaque variante de D-021 est construite par la CI, testée, signée et publiée, sans toucher ma machine |
 | **2. Premier démarrage en VM, dans le cloud** *(terminée le 2026-10-07)* | Prouver le modèle image-based sans rien télécharger chez moi (D-027) | Dans une VM sur les machines de GitHub, avec la variante Mesa : démarrage complet, puis basculement vers une autre version, retour arrière (`bootc rollback`) et retour à l'image de base, tous réussis automatiquement. Résultats notés dans D-004. La variante NVIDIA ne se teste pas en VM : seulement des contrôles statiques en CI |
-| **3. Applications et dev** *(prochaine)* | Le quotidien et le dev fonctionnent sans terminal pour le quotidien (D-025) | Chrome par défaut et Firefox retiré (D-023). VLC et OnlyOffice présents (D-024, D-035). Choix des options au premier démarrage et dans les réglages, pour Simple et Dev (D-046). Mises à jour par l'interface. VS Code et le conteneur dev se recréent depuis le dépôt (D-012). Tests en CI et en VM cloud |
-| **5. Gaming** | Mes jeux fonctionnent | Chaque jeu de ANKH-SPEC Q6 testé. Manettes, VRR et multi-écran vérifiés si concernés (D-011). Test final sur la vraie machine en phase 9 |
+| **3. Applications et dev** *(terminée le 2026-10-13)* | Le quotidien et le dev fonctionnent sans terminal pour le quotidien (D-025) | Chrome par défaut et Firefox retiré (D-023). VLC et OnlyOffice présents (D-024, D-035). Choix des options au premier démarrage et dans les réglages, pour Simple et Dev (D-046). Mises à jour par l'interface. VS Code et le conteneur dev se recréent depuis le dépôt (D-012). Tests en CI et en VM cloud |
+| **5. Gaming** *(en cours)* | Mes jeux fonctionnent | Chaque jeu de ANKH-SPEC Q6 testé. Manettes, VRR et multi-écran vérifiés si concernés (D-011). Test final sur la vraie machine en phase 9 |
 | **6. Cyber** | Kali isolé | Test d'isolation réussi : le `~/.ssh` de l'hôte est inaccessible depuis le conteneur. Solution « réseau bas niveau » tranchée (D-013) |
 | **7. Labs** | VMs de lab et de malware isolées | Depuis une VM de lab, l'hôte et le réseau local sont injoignables. La restauration de snapshot fonctionne (D-014) |
 | **8. Sauvegarde et récupération** | Pouvoir perdre le disque sans rien perdre | D-019 tranchée. Exercice complet de récupération réussi en VM, en suivant README.md |

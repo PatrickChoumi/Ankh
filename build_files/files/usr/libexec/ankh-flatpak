@@ -1,0 +1,171 @@
+#!/usr/bin/bash
+# D-036, D-041, D-050 : une application de l'option Gaming, depuis le menu.
+# Au premier clic, une fenêtre montre son téléchargement depuis Flathub, pour
+# toute la machine, avec les outils du jeu en Flatpak de sa version (MangoHud,
+# Gamescope, vkBasalt), puis elle s'ouvre. Rien ne se télécharge avant ce
+# clic (D-031). Ensuite, l'entrée du menu est celle de Flatpak : elle porte le
+# même nom de fichier que celle d'Ankh et passe devant, car les dossiers de
+# Flatpak précèdent /usr/local/share dans XDG_DATA_DIRS (profile/flatpak.sh
+# de https://github.com/flatpak/flatpak ; vu dans la session de la VM).
+#   ankh-flatpak <application> [args]     ouvre l'application, préparée au besoin
+#   ankh-flatpak preparer <application>   la télécharge (fenêtre de préparation)
+#   ankh-flatpak installees               affiche celles qui sont installées
+#   ankh-flatpak supprimer                désinstalle les applications de
+#                                         l'option Gaming et ce qu'elles seules
+#                                         utilisaient ; les jeux et les données
+#                                         restent dans le dossier personnel
+# Installer ou désinstaller pour toute la machine ne demande pas de mot de
+# passe à un administrateur dans sa session (règle polkit de Flatpak pour le
+# groupe wheel, system-helper/org.freedesktop.Flatpak.rules.in). Sinon,
+# l'agent polkit de KDE demande le mot de passe d'un administrateur. D'où
+# « -y » (oui à toutes les questions de Flatpak) et pas « --noninteractive »,
+# qui interdit aussi cette demande : sans la règle, la préparation échouerait
+# (« Flatpak system operation Deploy not allowed for user » ;
+# app/flatpak-quiet-transaction.c de https://github.com/flatpak/flatpak).
+set -euo pipefail
+
+# Applications de l'option Gaming, sur Flathub (D-041, D-050)
+readonly APPLICATIONS=(com.valvesoftware.Steam com.heroicgameslauncher.hgl net.lutris.Lutris
+    com.usebottles.bottles com.vysp3r.ProtonPlus com.github.Matoking.protontricks
+    com.discordapp.Discord com.obsproject.Studio)
+# Outils du jeu en Flatpak : couches Vulkan des runtimes de Flathub, montées
+# dans /usr/lib/extensions/vulkan des applications (D-050)
+readonly COUCHES=(MangoHud gamescope vkBasalt)
+readonly ENTREES=/usr/share/ankh/options/gaming/applications
+# Entrées du menu installées par Flatpak pour toute la machine
+readonly EXPORTS=/var/lib/flatpak/exports/share/applications
+readonly DEPOT=flathub
+
+echec() {
+    echo "ankh-flatpak : $*" >&2
+    exit 1
+}
+
+connue() { # $1 : application
+    local application
+    for application in "${APPLICATIONS[@]}"; do
+        [[ "$1" == "${application}" ]] && return 0
+    done
+    return 1
+}
+
+installee() { # $1 : application ou runtime
+    flatpak info --system "$1" > /dev/null 2>&1
+}
+
+nom() { # $1 : application ; son nom dans le menu d'Ankh
+    sed -n 's/^Name=//p' "${ENTREES}/$1.desktop" | head -n 1
+}
+
+# Version des couches Vulkan pour un runtime : celle de son point d'extension
+# org.freedesktop.Platform.VulkanLayer (« version: %{branch} » dans
+# elements/flatpak-images/platform.bst de freedesktop-sdk), sinon sa branche.
+version_couches() { # $1 : runtime (nom/arch/branche)
+    local version
+    version="$(flatpak info --system --show-metadata "$1" | awk -F= '
+        /^\[/ { dans = ($0 == "[Extension org.freedesktop.Platform.VulkanLayer]"); next }
+        dans && !vu && ($1 == "version" || $1 == "versions") { split($2, v, ";"); print v[1]; vu = 1 }')"
+    echo "${version:-${1##*/}}"
+}
+
+preparer() { # $1 : application
+    local application=$1 runtime version couche ref journal
+    # Tout ce qui s'affiche est aussi gardé dans un journal, pour comprendre
+    # un échec après coup (comme la préparation de l'environnement de dev).
+    journal="${XDG_CACHE_HOME:-${HOME}/.cache}/ankh/preparation-${application}.log"
+    mkdir -p "$(dirname "${journal}")"
+    exec > >(tee "${journal}") 2>&1
+    echo "Journal : ${journal}"
+    echo "Préparation de $(nom "${application}") : téléchargement depuis Flathub, seulement cette fois-ci."
+    echo
+    flatpak install --system -y "${DEPOT}" "${application}"
+    runtime="$(flatpak info --system --show-runtime "${application}")"
+    version="$(version_couches "${runtime}")"
+    echo
+    echo "Outils du jeu en Flatpak pour ${runtime} : ${COUCHES[*]} (version ${version})."
+    for couche in "${COUCHES[@]}"; do
+        ref="org.freedesktop.Platform.VulkanLayer.${couche}//${version}"
+        if installee "${ref}"; then
+            echo "${couche} : déjà là."
+        elif flatpak remote-info --system "${DEPOT}" "${ref}" > /dev/null 2>&1; then
+            flatpak install --system -y "${DEPOT}" "${ref}"
+        else
+            echo "${couche} n'existe pas encore sur Flathub pour la version ${version} : il viendra avec une mise à jour."
+        fi
+    done
+    echo
+    echo "Terminé. $(nom "${application}") va s'ouvrir."
+}
+
+supprimer() {
+    local application runtimes ref couche installees=()
+    for application in "${APPLICATIONS[@]}"; do
+        if installee "${application}"; then
+            installees+=("${application}")
+        fi
+    done
+    # Outils du jeu en Flatpak, de toutes les versions
+    runtimes="$(flatpak list --system --runtime --columns=ref)"
+    while IFS= read -r ref; do
+        for couche in "${COUCHES[@]}"; do
+            if [[ "${ref}" == "org.freedesktop.Platform.VulkanLayer.${couche}/"* ]]; then
+                installees+=("${ref}")
+            fi
+        done
+    done <<< "${runtimes}"
+    if ((${#installees[@]})); then
+        flatpak uninstall --system -y "${installees[@]}"
+    fi
+    # Runtimes que plus aucune application n'utilise
+    flatpak uninstall --system -y --unused
+}
+
+case "${1:-}" in
+    preparer)
+        if [[ $# -ne 2 ]] || ! connue "$2"; then
+            echec "usage : ankh-flatpak preparer <application de l'option Gaming>"
+        fi
+        preparer "$2"
+        ;;
+    installees)
+        for application in "${APPLICATIONS[@]}"; do
+            if installee "${application}"; then
+                echo "${application}"
+            fi
+        done
+        ;;
+    supprimer)
+        [[ $# -eq 1 ]] || echec "usage : ankh-flatpak supprimer"
+        supprimer
+        ;;
+    *)
+        if [[ $# -lt 1 ]] || ! connue "$1"; then
+            echec "usage : ankh-flatpak <application de l'option Gaming> | preparer <application> | installees | supprimer"
+        fi
+        application=$1
+        shift
+        if ! installee "${application}"; then
+            # En cas d'échec, la fenêtre reste ouverte pour montrer pourquoi.
+            # shellcheck disable=SC2016 # « $1 » est celui du bash de la fenêtre
+            konsole --nofork -e bash -c '/usr/libexec/ankh-flatpak preparer "$1" || {
+                echo
+                echo "La préparation a échoué. Appuyez sur Entrée pour fermer cette fenêtre."
+                read -r
+                exit 1
+            }' ankh-flatpak "${application}"
+            # konsole ne rend pas toujours le code de sortie de la commande :
+            # l'application doit être là, sinon on s'arrête là.
+            installee "${application}" || echec "$(nom "${application}") n'a pas pu être préparé"
+        fi
+        if (($#)); then
+            exec flatpak run "${application}" "$@"
+        fi
+        # Sans argument, l'application démarre comme depuis sa propre entrée
+        # du menu, installée par Flatpak : certaines y ajoutent des options.
+        # Protontricks, par exemple, n'ouvre sa fenêtre qu'avec « --no-term
+        # --gui » (src/protontricks/data/share/applications/protontricks.desktop
+        # de https://github.com/Matoking/protontricks) ; sans elles, il ne
+        # fait qu'afficher son aide.
+        exec gio launch "${EXPORTS}/${application}.desktop"
+        ;;
+esac

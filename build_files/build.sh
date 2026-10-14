@@ -197,10 +197,26 @@ systemctl mask boot.automount
 cp -a --no-preserve=ownership /ctx/files/. /
 systemctl --global enable podman.socket
 
+# D-041, D-050 : outils du jeu dans le système, pour l'option Gaming :
+# - GameMode, qui sert aussi les jeux en Flatpak par le portail GameMode
+#   (data/org.freedesktop.portal.GameMode.xml de xdg-desktop-portal) ;
+# - MangoHud, Gamescope et vkBasalt, pour la session « Ankh Console » et les
+#   applications hors Flatpak (les jeux en Flatpak ont leurs propres versions,
+#   préparées avec l'option : /usr/libexec/ankh-flatpak) ;
+# - les règles des manettes et casques de Steam (steam-devices), nécessaires à
+#   Steam en Flatpak (wiki de https://github.com/flathub/com.valvesoftware.Steam).
+# Sans l'option Gaming, ils restent à l'arrêt : gamemoded ne démarre qu'à la
+# demande, et les couches Vulkan ne s'activent qu'avec leur variable
+# (MANGOHUD=1, ENABLE_VKBASALT=1).
+dnf5 -y install gamemode mangohud gamescope vkBasalt steam-devices
+rpm -q gamemode mangohud gamescope vkBasalt steam-devices
+
 # D-046 : options d'Ankh (Simple toujours incluse ; Dev, Gaming, Hacking ;
 # Complète). Les entrées du menu de chaque option sont rangées hors du menu,
 # dans /usr/share/ankh/options/<option>/applications, et
-# /usr/libexec/ankh-options les rend visibles pour les options choisies.
+# /usr/libexec/ankh-options les rend visibles pour les options choisies ; de
+# même pour la session « Ankh Console » de l'option Gaming (D-050), dans
+# /usr/share/ankh/options/gaming/wayland-sessions.
 # - ankh-options.service les remet en place à chaque démarrage ;
 # - la page « Choisissez vos outils » de l'assistant de premier démarrage
 #   démarre ankh-options@<choix>.service, autorisé au seul compte de
@@ -238,7 +254,11 @@ if [[ -z "${moteur}" ]]; then
 fi
 echo "Moteur « executable » : ${moteur} ($(rpm -qf "${moteur}"))"
 test -d /usr/lib64/qt6/qml/org/kde/plasma/plasma5support
-for outil in plasmawindowed pkexec kbuildsycoca6 busctl; do
+# L'option Gaming prépare ses applications par Flatpak dans une fenêtre
+# Konsole, puis les ouvre par leur propre entrée du menu avec gio
+# (/usr/libexec/ankh-flatpak), et sa session lance KWin seul
+# (/usr/libexec/ankh-console).
+for outil in plasmawindowed pkexec kbuildsycoca6 busctl flatpak konsole kwin_wayland gio; do
     if ! chemin="$(command -v "${outil}")"; then
         echo "${outil} introuvable : options d'Ankh à revoir" >&2
         exit 1

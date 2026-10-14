@@ -135,6 +135,9 @@ test variant:
     echo "Test 15 : options d'Ankh, Simple toujours incluse, Dev choisie ou non, fenêtre « Options d'Ankh » (D-046)"
     podman run --rm -i --network=none "${image}" bash -s < tests/options.sh
 
+    echo "Test 16 : option Gaming, outils du jeu, ntsync, applications préparées au premier clic, session « Ankh Console » (D-041, D-050, D-051)"
+    podman run --rm -i --network=none "${image}" bash -s < tests/gaming.sh
+
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
         echo "Test 13 : module NVIDIA présent pour le noyau de l'image, et signé"
         run 'k="$(ls /usr/lib/modules)"; modinfo -k "${k}" nvidia > /dev/null && [[ -n "$(modinfo -k "${k}" -F signer nvidia)" ]]'

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Discord
+GenericName=Discussion, voix et vidéo
+Comment=Option Gaming d'Ankh : se prépare au premier lancement (téléchargement depuis Flathub, une seule fois).
+Exec=/usr/libexec/ankh-flatpak com.discordapp.Discord
+Icon=com.discordapp.Discord
+Terminal=false
+Categories=Network;InstantMessaging;
+Keywords=discord;discussion;voix;
