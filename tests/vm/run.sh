@@ -939,7 +939,7 @@ check_steam() {
 # Flathub : seulement avec ANKH_VM_GAMING_COMPLET=1 (entrée « gaming_complet »
 # du workflow, et chaque lundi).
 check_gaming_apps() {
-    local user=ankhvm application court deadline
+    local user=ankhvm application court deadline runtime
     local applications=(com.heroicgameslauncher.hgl net.lutris.Lutris com.usebottles.bottles
         com.vysp3r.ProtonPlus com.github.Matoking.protontricks com.discordapp.Discord com.obsproject.Studio)
     local -A noms=([com.heroicgameslauncher.hgl]=heroic [net.lutris.Lutris]=lutris
@@ -967,6 +967,14 @@ check_gaming_apps() {
         screenshot "1-gaming-$court"
         if ! vm "grep -E 'Outils du jeu|déjà là|existe pas encore' /home/$user/.cache/ankh/preparation-$application.log"; then
             echo "(aucune ligne sur les outils du jeu dans le journal de préparation)"
+        fi
+        # Point d'extension des couches Vulkan dans le runtime de l'application,
+        # dont ankh-flatpak lit la version (diagnostic : pour les runtimes GNOME,
+        # aucune version n'a été trouvée le 2026-10-14)
+        runtime=$(vm flatpak info --system --show-runtime "$application")
+        echo "Runtime : $runtime"
+        if ! vm "flatpak info --system --show-metadata $runtime | grep -A6 -F '[Extension org.freedesktop.Platform.VulkanLayer]'"; then
+            echo "(pas de point d'extension org.freedesktop.Platform.VulkanLayer dans $runtime)"
         fi
         if ! in_session "$user" flatpak kill "$application"; then
             echo "($application ne tournait plus)"
@@ -1220,7 +1228,8 @@ capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
-# VLC et OnlyOffice, capturés plus haut, resteraient derrière les fenêtres suivantes
+# Chrome, VLC et OnlyOffice, capturés plus haut, resteraient derrière les fenêtres suivantes
+close_app ankhvm chrome
 close_app ankhvm vlc
 close_app ankhvm DesktopEditors
 check_vscode
