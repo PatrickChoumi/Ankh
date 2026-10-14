@@ -846,6 +846,26 @@ explain_gaming() {
     explain_session ankhvm
 }
 
+# Attend qu'une application Gaming tourne (flatpak ps). Sa préparation est
+# alors finie : ankh-flatpak installe les outils du jeu en Flatpak après
+# l'application, et ne l'ouvre qu'ensuite (vu le 2026-10-14 : Gamescope
+# encore en téléchargement quand le test, trop tôt, l'a cherché).
+wait_running() { # $1 : compte, $2 : application, $3 : nom des captures
+    local user=$1 application=$2 nom=$3 deadline=$((SECONDS + 300)) instances
+    while :; do
+        if instances=$(in_session "$user" flatpak ps --columns=application) &&
+            [[ $'\n'$instances$'\n' == *$'\n'$application$'\n'* ]]; then
+            return
+        fi
+        if ((SECONDS >= deadline)); then
+            screenshot "1-$nom-echec"
+            explain_gaming "$application"
+            die "$application ne tourne pas 5 minutes après sa préparation (D-050)"
+        fi
+        sleep 5
+    done
+}
+
 # D-050 : premier lancement de Steam depuis le menu, comme un clic (voir
 # check_vscode) : une fenêtre montre son téléchargement depuis Flathub, puis
 # celui des outils du jeu en Flatpak, et Steam s'ouvre ; il se met alors à
@@ -890,6 +910,7 @@ check_steam() {
         fi
         sleep 15
     done
+    wait_running "$user" com.valvesoftware.Steam steam
     for couche in MangoHud gamescope; do
         if ! vm flatpak info --system "org.freedesktop.Platform.VulkanLayer.$couche//26.08" > /dev/null; then
             explain_gaming
@@ -918,7 +939,7 @@ check_steam() {
 # Flathub : seulement avec ANKH_VM_GAMING_COMPLET=1 (entrée « gaming_complet »
 # du workflow, et chaque lundi).
 check_gaming_apps() {
-    local user=ankhvm application court deadline instances
+    local user=ankhvm application court deadline
     local applications=(com.heroicgameslauncher.hgl net.lutris.Lutris com.usebottles.bottles
         com.vysp3r.ProtonPlus com.github.Matoking.protontricks com.discordapp.Discord com.obsproject.Studio)
     local -A noms=([com.heroicgameslauncher.hgl]=heroic [net.lutris.Lutris]=lutris
@@ -941,19 +962,7 @@ check_gaming_apps() {
             sleep 15
         done
         # L'application tourne, ouverte par sa propre entrée du menu
-        deadline=$((SECONDS + 180))
-        while :; do
-            if instances=$(in_session "$user" flatpak ps --columns=application) &&
-                [[ $'\n'$instances$'\n' == *$'\n'$application$'\n'* ]]; then
-                break
-            fi
-            if ((SECONDS >= deadline)); then
-                screenshot "1-gaming-$court-echec"
-                explain_gaming "$application"
-                die "$application ne tourne pas après sa préparation (D-050)"
-            fi
-            sleep 5
-        done
+        wait_running "$user" "$application" "gaming-$court"
         sleep 60
         screenshot "1-gaming-$court"
         if ! vm "grep -E 'Outils du jeu|déjà là|existe pas encore' /home/$user/.cache/ankh/preparation-$application.log"; then
