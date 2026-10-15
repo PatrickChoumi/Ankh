@@ -1206,7 +1206,8 @@ check_identity() {
     identity_setting "$user" "Jeu de couleurs" Ankh --group General --key ColorScheme
     identity_setting "$user" "Thème global" org.fedoraproject.fedoradark.desktop --group KDE --key LookAndFeelPackage
     identity_setting "$user" "Icônes" breeze-dark --group Icons --key Theme
-    identity_setting "$user" "Police de l'interface" 'Inter,10,-1,5,50,0,0,0,0,0' --group General --key font
+    identity_setting "$user" "Police de l'interface" 'Selawik,10.5,-1,5,50,0,0,0,0,0' --group General --key font
+    identity_setting "$user" "Curseurs (D-052)" Ankh-curseurs --file kcminputrc --group Mouse --key cursorTheme
     identity_setting "$user" "Opacité des menus" 85 --file breezerc --group Style --key MenuOpacity
     identity_setting "$user" "Profil Konsole" Ankh.profile --file konsolerc --group 'Desktop Entry' --key DefaultProfile
     identity_setting "$user" "Écran de chargement" org.fedoraproject.fedoradark.desktop --file ksplashrc --group KSplash --key Theme

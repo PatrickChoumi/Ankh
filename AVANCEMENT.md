@@ -13,7 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
-| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lot 0 sur 10 en cours |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lot 0 fusionné, lot 1 écrit |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -352,7 +352,7 @@
 Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
 
 0. **Banc de mesure** (fusionné le 2026-10-15, PR [#17](https://github.com/PatrickChoumi/Ankh/pull/17) ; rayon du menu corrigé ensuite, à vérifier en VM) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
-1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc.
+1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc. Écrit le 2026-10-15 sur une branche locale (Selawik et curseurs compilés depuis leurs sources ; rendu par fontconfig ; couleurs par couches ; animations à 5/6), à pousser après la fusion de D-053, puis à vérifier par la CI et en VM.
 2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
 3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.
 4. Shell : style Plasma « Ankh », barre collée de 48 px, horloge, notifications.

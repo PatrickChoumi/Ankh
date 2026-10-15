@@ -2,8 +2,17 @@
 # logo et les fonds d'écran. Validé sur les aperçus en VM le 2026-10-09. Dérivé de Breeze sombre
 # (colors/BreezeDark.colors de https://invent.kde.org/plasma/breeze,
 # LGPL-2.0-or-later) : mêmes rôles, couleurs d'Ankh.
-#   Fonds : graphite bleuté du logo (#0d1117, #232a35).
-#   Texte : #e6edf3, celui du logo ; texte secondaire #8b949e.
+# D-052, lot 1 : fonds rangés par couches comme ceux de Windows 11, en
+# sombre (Common_themeresources_any.xaml de WinUI). Chaque gris de Windows,
+# de niveau L, devient le graphite bleuté d'Ankh (L-4, L, L+7) :
+#   fenêtre (Mica, #202020) : 28,32,39 ; barre de titre et en-têtes de même,
+#     comme la barre de titre de Windows 11, continue avec la fenêtre ;
+#   contenu (listes, champs : #1C1C1C) : 24,28,35 ;
+#   carte (#0DFFFFFF sur la fenêtre, #2B2B2B) : 39,43,50 ;
+#   contrôle (#0FFFFFFF sur la fenêtre, #2D2D2D) : 41,45,52 ;
+#   volet passager, infobulle (#2C2C2C) : 40,44,51.
+#   Texte : #e6edf3, celui du logo ; texte secondaire au niveau de Windows
+#   (#C5FFFFFF, 77 % du texte sur la fenêtre) : 184,190,196.
 #   Accent : violet #8455f0 pour les sélections (texte blanc lisible
 #   dessus, contraste 4,6), violet du logo #a78bfa pour les liens, le survol
 #   et le focus.
@@ -31,11 +40,11 @@ IntensityEffect=0
 
 [Colors:Button]
 BackgroundAlternate=91,33,182
-BackgroundNormal=35,42,53
+BackgroundNormal=41,45,52
 DecorationFocus=167,139,250
 DecorationHover=167,139,250
 ForegroundActive=167,139,250
-ForegroundInactive=139,148,158
+ForegroundInactive=184,190,196
 ForegroundLink=167,139,250
 ForegroundNegative=248,81,73
 ForegroundNeutral=210,153,34
@@ -59,11 +68,11 @@ ForegroundVisited=196,181,253
 
 [Colors:Header]
 BackgroundAlternate=24,28,35
-BackgroundNormal=21,25,32
+BackgroundNormal=28,32,39
 DecorationFocus=167,139,250
 DecorationHover=167,139,250
 ForegroundActive=167,139,250
-ForegroundInactive=139,148,158
+ForegroundInactive=184,190,196
 ForegroundLink=167,139,250
 ForegroundNegative=248,81,73
 ForegroundNeutral=210,153,34
@@ -72,12 +81,12 @@ ForegroundPositive=63,185,80
 ForegroundVisited=196,181,253
 
 [Colors:Header][Inactive]
-BackgroundAlternate=21,25,32
-BackgroundNormal=24,28,35
+BackgroundAlternate=24,28,35
+BackgroundNormal=28,32,39
 DecorationFocus=167,139,250
 DecorationHover=167,139,250
 ForegroundActive=167,139,250
-ForegroundInactive=139,148,158
+ForegroundInactive=184,190,196
 ForegroundLink=167,139,250
 ForegroundNegative=248,81,73
 ForegroundNeutral=210,153,34
@@ -100,12 +109,12 @@ ForegroundPositive=23,104,57
 ForegroundVisited=237,233,254
 
 [Colors:Tooltip]
-BackgroundAlternate=24,28,35
-BackgroundNormal=32,37,46
+BackgroundAlternate=28,32,39
+BackgroundNormal=40,44,51
 DecorationFocus=167,139,250
 DecorationHover=167,139,250
 ForegroundActive=167,139,250
-ForegroundInactive=139,148,158
+ForegroundInactive=184,190,196
 ForegroundLink=167,139,250
 ForegroundNegative=248,81,73
 ForegroundNeutral=210,153,34
@@ -114,12 +123,12 @@ ForegroundPositive=63,185,80
 ForegroundVisited=196,181,253
 
 [Colors:View]
-BackgroundAlternate=22,26,33
-BackgroundNormal=16,19,25
+BackgroundAlternate=27,31,38
+BackgroundNormal=24,28,35
 DecorationFocus=167,139,250
 DecorationHover=167,139,250
 ForegroundActive=167,139,250
-ForegroundInactive=139,148,158
+ForegroundInactive=184,190,196
 ForegroundLink=167,139,250
 ForegroundNegative=248,81,73
 ForegroundNeutral=210,153,34
@@ -128,12 +137,12 @@ ForegroundPositive=63,185,80
 ForegroundVisited=196,181,253
 
 [Colors:Window]
-BackgroundAlternate=32,37,46
-BackgroundNormal=24,28,35
+BackgroundAlternate=39,43,50
+BackgroundNormal=28,32,39
 DecorationFocus=167,139,250
 DecorationHover=167,139,250
 ForegroundActive=167,139,250
-ForegroundInactive=139,148,158
+ForegroundInactive=184,190,196
 ForegroundLink=167,139,250
 ForegroundNegative=248,81,73
 ForegroundNeutral=210,153,34
@@ -150,9 +159,9 @@ shadeSortColumn=true
 contrast=4
 
 [WM]
-activeBackground=21,25,32
+activeBackground=28,32,39
 activeBlend=230,237,243
 activeForeground=230,237,243
-inactiveBackground=24,28,35
-inactiveBlend=139,148,158
-inactiveForeground=139,148,158
+inactiveBackground=28,32,39
+inactiveBlend=184,190,196
+inactiveForeground=184,190,196
