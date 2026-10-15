@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-14** (PR #15 fusionnée : option Gaming et ntsync, D-050 et D-051 ; les huit applications Gaming vérifiées en VM).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-15** (PR #16 fusionnée ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, commencé ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée, D-053).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -13,6 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lot 0 sur 10 en cours |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -305,6 +306,26 @@
   - Protontricks n'aurait rien ouvert au premier clic : il n'ouvre sa fenêtre qu'avec les options de sa propre entrée du menu. Corrigé : chaque application démarre maintenant par son entrée du menu. Dans la VM, il dit ne pas trouver Steam, qui n'y a jamais été connecté à un compte ;
   - outils du jeu en Flatpak : les trois pour Heroic et OBS ; MangoHud et Gamescope pour Steam, Protontricks et Discord (vkBasalt pas encore publié pour leur version) ; aucun pour Lutris, Bottles et ProtonPlus (leur runtime GNOME n'a pas de version publiée) ;
   - ce test télécharge plusieurs Go : il tourne chaque lundi et à la demande, pas pour chaque PR.
+- **Résultats notés dans D-050** ([#16](https://github.com/PatrickChoumi/Ankh/pull/16) fusionnée le 2026-10-15).
+
+### Suite Craft d'ArtCraft (décidée le 2026-10-15, D-053)
+
+- **Ma demande** : remplacer OnlyOffice par la suite ArtCraft, découverte le jour même.
+- **Vérifié par Claude** dans les dépôts officiels : dix « Crafting Apps » open source (MIT ou Apache-2.0), en Rust, isolées en Flatpak, toutes en alpha (DesignCraft en pré-alpha), pas encore sur Flathub, paquets Linux non signés (sommes SHA256 seulement). Le studio ArtCraft, lui, génère par des services d'IA payants en ligne.
+- **Mes choix** : OnlyOffice remplacé, malgré l'alpha ; WordCraft, GridCraft et DeckCraft toujours là (Simple) ; les sept clones d'Adobe dans une nouvelle option « Création » ; sans le studio ArtCraft ; après le lot 0.
+
+### Chantier Interface — au pixel près de Windows 11 (depuis le 2026-10-14)
+
+- **Ma demande du 2026-10-14** : une interface « pixel perfect », au niveau de Windows 11. D'abord un plan exhaustif, des questions et des recherches.
+- **Recherches de Claude** (D-052) :
+  - la référence Windows 11, chiffrée et sourcée, lue dans le code de WinUI (licence MIT) et la documentation de Microsoft : coins, textes, couleurs, matières, ombres, animations, contrôles, barre de titre, icônes ;
+  - ce que Plasma 6.7 permet, lu dans le code de KDE : ce qui se règle, ce qui demande nos propres fichiers, ce qui demande de reprendre le code de Breeze, ce qui est impossible ;
+  - les licences : rien de Windows ne peut entrer dans l'image (police, icônes, sons, curseurs, fonds) ; ses mesures, si.
+- **Mes choix** (D-052) : la rigueur de Windows 11 avec l'identité d'Ankh ; nos propres thèmes, dérivés du code de KDE et compilés dans l'image ; la barre des tâches collée en bas, 48 px ; le curseur blanc ; le chantier tout de suite, en parallèle de la phase 5. Le 2026-10-15, sur les planches : police Selawik, icônes Fluent au violet d'Ankh.
+- **Planches de comparaison** envoyées le 2026-10-14, aux mesures de Windows 11 et aux couleurs d'Ankh :
+  - polices : Inter, Selawik, Noto Sans, Open Sans, Source Sans 3 ;
+  - icônes : Breeze, Fluent, Papirus, dans un explorateur, Démarrer et la barre des tâches.
+- **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés et vérifiés au second passage ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701)) ; le rayon du menu reste à vérifier.
 
 ---
 
@@ -316,6 +337,30 @@
 2. **Mes jeux** : les noms sont à donner (question 6) ; chacun sera vérifié sous Linux (ProtonDB, anticheat), puis testé sur ma machine en phase 9.
 3. **Réglages du système pour le jeu** (D-041, D-051) : ntsync avec Gaming, vérifié en VM. Les autres réglages attendront d'avoir vécu avec le système (phase 10).
 4. **Critère de fin** : chaque jeu de la question 6 testé ; manettes, VRR et multi-écran vérifiés si concernés ; test final sur ma machine en phase 9.
+
+### Chantier Interface (D-052, en parallèle)
+
+Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
+
+0. **Banc de mesure** (deux passages verts en VM ; PR ouverte le 2026-10-15) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
+1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc.
+2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
+3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.
+4. Shell : style Plasma « Ankh », barre collée de 48 px, horloge, notifications.
+5. Démarrer d'Ankh.
+6. Paramètres rapides, calendrier, notifications.
+7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons.
+8. Applications : Dolphin, réglages, Discover, Konsole, Chrome, VS Code, GTK, libadwaita, Electron ; plus de fenêtre de KDE Wallet.
+9. Icônes et curseurs.
+10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
+
+### Suite Craft d'ArtCraft (D-053, après le lot 0)
+
+- Retirer OnlyOffice : image, dépôt et clé, applications par défaut, favoris du menu, tests.
+- Simple : WordCraft, GridCraft et DeckCraft dans le menu, préparés au premier clic en Flatpak.
+- Nouvelle option « Création » (assistant, « Options d'Ankh », Complète) : PhotoCraft, VectorCraft, FilmCraft, LightCraft, PdfCraft, EffectCraft, DesignCraft.
+- Versions et empreintes SHA256 figées à chaque construction de l'image, vérifiées au premier clic ; nouvelle version proposée, jamais imposée.
+- Tests : Test 12 adapté ; en VM, premier clic sur WordCraft à chaque PR, sur les dix dans le test complet.
 
 ### Reste de la phase 3, sans la bloquer
 
@@ -372,7 +417,7 @@
 ## Ce que je dois faire
 
 1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-2. **Regarder les captures des sept autres applications Gaming**, envoyées le 2026-10-14, et dire à Claude ce qui ne va pas (D-050). La PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) est fusionnée.
+2. **Regarder les captures des sept autres applications Gaming**, envoyées le 2026-10-14, et dire à Claude ce qui ne va pas (D-050). Les PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) et [#16](https://github.com/PatrickChoumi/Ankh/pull/16) sont fusionnées.
 3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
 4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
 5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.

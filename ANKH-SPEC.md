@@ -26,7 +26,7 @@
   - Les applications restent à jour.
 - **Usage du terminal limité au strict nécessaire** (dev et hacking) — EXIGÉ, sens « confort » (D-025), voir 4.7.
 - **Accès au contenu pour adultes extrêmement difficile** — EXIGÉ, voir 4.8.
-- **Installation à la carte, comme Ubuntu** — EXIGÉ (2026-10-11) : une version Simple (Chrome, VLC, OnlyOffice), toujours incluse, et des cases Dev, Gaming, Hacking et Complète, combinables. Une seule ISO pour tous les PC, publiée dans une Release GitHub ; elle contient le système, et les options cochées se téléchargent ensuite, seulement elles (2026-10-12). Les options se changent ensuite dans les réglages. Réalisation : D-046, D-048, D-049.
+- **Installation à la carte, comme Ubuntu** — EXIGÉ (2026-10-11) : une version Simple (Chrome, VLC, OnlyOffice), toujours incluse, et des cases Dev, Gaming, Hacking et Complète, combinables. Précisé le 2026-10-15 : la bureautique de Simple devient WordCraft, GridCraft et DeckCraft, et une case Création réunit les clones d'Adobe de la même suite (D-053). Une seule ISO pour tous les PC, publiée dans une Release GitHub ; elle contient le système, et les options cochées se téléchargent ensuite, seulement elles (2026-10-12). Les options se changent ensuite dans les réglages. Réalisation : D-046, D-048, D-049.
 
 ---
 
@@ -159,7 +159,8 @@ Points ouverts dans cette architecture :
 - **Musique** : TODO
 - **Cloud / synchronisation** : TODO
 - **Multimédia** (vidéo, photo) : VLC, dans l'image, version Simple — DÉCIDÉ (D-035, D-046). Photo : TODO
-- **Bureautique** : OnlyOffice, dans l'image, version Simple — DÉCIDÉ (D-035, D-046)
+- **Bureautique** : WordCraft, GridCraft et DeckCraft (suite Craft d'ArtCraft), version Simple, à la place d'OnlyOffice — DÉCIDÉ (D-053, qui modifie D-035)
+- **Création** (image, illustration, vidéo, photo, PDF, effets, mise en page) : les clones d'Adobe de la suite Craft, option « Création » — DÉCIDÉ (D-053)
 
 ### 4.6 Sécurité, sauvegarde et secrets
 

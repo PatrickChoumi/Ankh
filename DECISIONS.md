@@ -41,7 +41,7 @@
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
 | D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
-| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035 ; Claude et GitHub retirés : D-047) |
+| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035 ; Claude et GitHub retirés : D-047 ; OnlyOffice remplacé par D-053) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté ; réduction de la taille des mises à jour en phase 10 ; ISO hors ligne reprise par D-046) |
@@ -52,23 +52,25 @@
 | D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage ; écran de démarrage entièrement d'Ankh : D-043) |
-| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
+| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER ; OnlyOffice remplacé par D-053) |
 | D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; une seule version avec des options choisies à l'installation : D-046) |
-| D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (aperçus validés le 2026-10-09 ; intégré dans l'image avec D-039) |
+| D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (aperçus validés le 2026-10-09 ; intégré dans l'image avec D-039 ; barre collée et curseur blanc : D-052) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
-| D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion) |
+| D-039 | Interface douce, au niveau de Windows 11 et de macOS (complète D-037) | DÉCIDÉ (ma demande ; réglages choisis par Claude, à valider sur les captures en VM avant fusion ; barre flottante et règle « réglages de KDE seulement » modifiées par D-052) |
 | D-040 | La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route) | DÉCIDÉ (2026-10-09, mon choix) |
 | D-041 | Gaming : le plus d'outils possible, réglages sûrs, noyau de Fedora (précise D-011 et D-036) | DÉCIDÉ (2026-10-10, mon choix ; précisé le 2026-10-12 : Discord et OBS dans Gaming, session console ; précisé par D-050 et D-051 ; mise en œuvre en phase 5) |
-| D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043) |
+| D-042 | Interface, deuxième passe : finitions au niveau de macOS et de Windows 11, écran de connexion d'Ankh (complète D-039) | DÉCIDÉ (2026-10-10, ma demande ; vérifié en VM et fusionné, PR #12 ; écran de connexion et icône de VS Code modifiés par D-043 ; nos propres thèmes : D-052) |
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
-| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre et vérifié en VM le 2026-10-12 (Simple et Dev) ; « Options d'Ankh » redessinée et vérifiée en VM le 2026-10-12 ; fabrication de l'ISO : D-048 |
+| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre et vérifié en VM le 2026-10-12 (Simple et Dev) ; « Options d'Ankh » redessinée et vérifiée en VM le 2026-10-12 ; fabrication de l'ISO : D-048 ; Simple avec la bureautique Craft, option « Création » : D-053 |
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 | D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
 | D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
 | D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; précisé par D-051 ; vérifié en VM le 2026-10-13) |
 | D-051 | Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050) | DÉCIDÉ (2026-10-13, mon choix ; vérifié en VM le 2026-10-13) |
+| D-052 | Interface au pixel près, au niveau de Windows 11 : nos propres thèmes, dérivés du code de KDE (modifie D-037, D-039 et D-042) | DÉCIDÉ (2026-10-14, mes choix ; police Selawik et icônes Fluent au violet d'Ankh choisies le 2026-10-15 ; mise en œuvre en onze lots, en parallèle de la phase 5 ; lot 0 vérifié en VM) |
+| D-053 | La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046) | DÉCIDÉ (2026-10-15, mes choix : bureautique Craft dans Simple, clones d'Adobe dans « Création » ; mise en œuvre après le lot 0 de D-052) |
 
 ---
 
@@ -596,6 +598,7 @@
 - **Vérification** : tests CI pour les fichiers de préinstallation et la politique ; test réel au premier démarrage.
 - **Modifiée par D-035 (2026-10-09)** : VLC et OnlyOffice deviennent des paquets de l'image, et non des Flatpaks préinstallés. Claude et GitHub restent des applications web de Chrome, installées par la politique `WebAppInstallForceList`.
 - **Modifiée par D-047 (2026-10-11)** : Chrome n'installe plus Claude ni GitHub. Je les installe moi-même si je les veux ; GitHub reste accessible dans VS Code par Git.
+- **Modifiée par D-053 (2026-10-15)** : OnlyOffice est retiré ; les documents de bureau passent à WordCraft, GridCraft et DeckCraft, toujours dans le menu (Simple).
 
 ## D-025 — Terminal : le quotidien se fait sans terminal
 
@@ -1053,6 +1056,7 @@
     - la couche d'Ankh publiée sur `main` (sans OnlyOffice) se télécharge en 501,1 Mo. Avec OnlyOffice, une mise à jour devrait approcher 870 Mo (501 + 366, estimation). À MESURER après la fusion (D-027).
     - **Mesuré le 2026-10-09** ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515)) : passer à l'image publiée sur `main`, avec OnlyOffice et VLC, a téléchargé **1,2 Go** (2 couches), contre 501,1 Mo avant D-035. Comme toute reconstruction renouvelle la couche d'Ankh en entier, c'est la taille de chaque mise à jour que je lance. Réduire cette taille (découper l'image en couches qui ne changent pas à chaque fois) est une piste pour la phase 10 (D-027), ou plus tôt si je le décide.
 - **Modifiée par D-047 (2026-10-11)** : plus d'applications web Claude et GitHub installées par Chrome.
+- **Modifiée par D-053 (2026-10-15)** : OnlyOffice est retiré de l'image, remplacé par WordCraft, GridCraft et DeckCraft, préparés au premier clic (Simple). VLC reste dans l'image ; LibreOffice reste absent.
 
 ## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
 
@@ -1141,6 +1145,7 @@
       - **vérification** : Test 14 (thèmes globaux, « Breeze sombre », fond de l'assistant, page installée) ; en VM, un clic sur « Begin Setup » (tablette USB virtuelle et commande QMP `input-send-event` de QEMU), puis capture de la page.
       - **Correction du 2026-10-10** ([PR #12](https://github.com/PatrickChoumi/Ankh/pull/12)) : la première construction s'est arrêtée sur la vérification prévue, car le fond « Next » de KDE est maintenant dans la base (paquet `plasma-breeze-common` de Fedora 44, vérifié dans <https://mdapi.fedoraproject.org>). Le dossier est retiré quand il vient de ce paquet, comme les fonds de Fedora (D-034) : aucun thème global ne le désigne (fond « Ankh Signal »), et les fonds proposés restent ceux d'Ankh. S'il vient d'un autre paquet, la construction s'arrête toujours.
 - **Pas encore traité** : polices (Inter, JetBrains Mono : présence dans Fedora À VALIDER), icône de VS Code dans le style d'Ankh, images de `generic-logos` (voir D-034), curseurs, effets.
+- **Modifiée par D-052 (2026-10-14)** : la barre n'est plus flottante mais collée en bas, pleine largeur, comme celle de Windows 11 ; le curseur devient blanc. Les couleurs graphite et violet restent. Icônes et police : À DÉCIDER dans D-052.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
 
@@ -1205,6 +1210,7 @@
     - l'assistant de premier démarrage est maintenant sombre, aux couleurs d'Ankh. Il affiche toujours « Welcome to Plasma Desktop » (D-037) ;
   - la barre se colle au bord quand une fenêtre la touche, puis flotte de nouveau : c'est le comportement de Plasma pour une barre flottante ;
   - taille : l'installation reste à 11,3 Go ; les polices ajoutent 17 Mio. Une mise à jour télécharge toujours 1,2 Go (réduction en phase 10, D-027).
+- **Modifiée par D-052 (2026-10-14)** : la barre flottante (point 3) devient collée en bas, pleine largeur, 48 px. La règle « uniquement des paquets de Fedora et des réglages de KDE » devient : des paquets de Fedora, des réglages de KDE, et notre propre code dérivé de KDE, gardé dans ce dépôt. Les autres réglages restent.
 
 ## D-040 — La protection (phase 4, safezone) passe à la fin du plan (modifie la feuille de route)
 
@@ -1307,6 +1313,7 @@
   - **à comprendre** :
     - VS Code ouvert apparaît à côté de son icône épinglée, au lieu de s'y regrouper. Le test affiche maintenant la classe et le fichier `.desktop` de chaque fenêtre vus par KWin, pour corriger le lien ;
     - le flou ne se voit pas dans la VM (rendu logiciel `llvmpipe`, affiché dans « À propos ») ; le test affiche maintenant si l'effet peut s'y charger. Sur une vraie carte graphique, il est allumé par défaut (À VALIDER sur ma machine).
+- **Complétée par D-052 (2026-10-14)** : l'interface passe au pixel près de Windows 11, avec nos propres thèmes dérivés du code de KDE. Les thèmes tiers restent écartés. La barre reste en verre (point 7), mais collée en bas.
 
 ## D-043 — Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042)
 
@@ -1507,6 +1514,7 @@
   - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
   - ajout puis retrait d'une option dans les réglages ;
   - avec l'ISO : installation en VM sans réseau.
+- **Modifiée par D-053 (2026-10-15)** : Simple contient Chrome, VLC, WordCraft, GridCraft et DeckCraft ; une option « Création » s'ajoute (les sept clones d'Adobe de la suite Craft), et Complète la coche aussi.
 
 ## D-047 — Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035)
 
@@ -1682,3 +1690,155 @@
   - `just test`, Test 16 : le module ntsync est dans le noyau de l'image (`modinfo`) ;
   - en VM : `/dev/ntsync` présent au démarrage avec Gaming ; ntsync retiré quand « Options d'Ankh » retire Gaming, et rechargé à son retour ; `/dev/ntsync` visible depuis Steam en Flatpak.
 - **Vérifié en VM le 2026-10-13** ([run 38407899063](https://github.com/PatrickChoumi/Ankh/actions/runs/38407899063)) : tout ce qui précède, au premier démarrage, après le retour arrière, et dans « Options d'Ankh ». Le gain dans les jeux reste à mesurer sur ma machine.
+
+## D-052 — Interface au pixel près, au niveau de Windows 11 : nos propres thèmes, dérivés du code de KDE (modifie D-037, D-039 et D-042)
+
+- **Statut** : DÉCIDÉ (2026-10-14), mes choix. Police et icônes choisies le 2026-10-15, sur les planches de comparaison du 2026-10-14. Mise en œuvre lot par lot, en parallèle de la phase 5.
+- **Contexte** : ma demande du 2026-10-14 : « Je mets un point d'honneur sur l'aspect pixel perfect, du même niveau que Windows 11 en termes d'interface. Fais d'abord un plan super exhaustif, pose-moi des questions, fais des recherches, puis allons-y. »
+  - D-039 et D-042 s'en tenaient aux paquets de Fedora et aux réglages de KDE, sans thème tiers.
+  - Sur les captures du dernier test complet en VM, les écarts avec Windows 11 se voient encore :
+
+    | Où | Ankh aujourd'hui | Windows 11 |
+    |---|---|---|
+    | Barre de titre | Titre centré, petits boutons ronds | Titre à gauche avec son icône de 16 px, boutons rectangulaires de 46×32, fermeture rouge (#C42B1C) au survol, barre de 32 px |
+    | Coins | 5 px partout | 8 px pour les fenêtres, menus et dialogues ; 4 px pour les boutons et les champs |
+    | Barre des tâches | Flottante, surbrillance carrée sous l'application active | Collée en bas, pleine largeur, 48 px, petit trait d'accent (16×3) sous l'application active |
+    | Menu | Kickoff : catégories à gauche, boutons texte en bas | Démarrer centré : recherche en haut, 6×3 épingles, « Toutes les applications », « Recommandé », compte et alimentation en bas |
+    | Contrôles | Breeze : barres de défilement larges, sélection violette pleine | Barre de défilement fine qui s'élargit au survol ; pastille d'accent de 3×16 devant l'élément choisi ; focus en double trait |
+    | Paramètres rapides | Applets séparées (réseau, son, batterie) | Un seul volet : Wi-Fi, Bluetooth, volume, luminosité |
+    | Icônes, curseur | Breeze aux dossiers violets, curseur sombre | Icônes Fluent, curseur blanc |
+- **Recherches (2026-10-14)**, en deux volets, faites par Claude dans les sources :
+  - **la référence Windows 11**, lue dans le code de WinUI 3, sous licence MIT (dictionnaires `*_themeresources.xaml` de <https://github.com/microsoft/microsoft-ui-xaml>, `controls/dev/CommonStyles`, commit `566a040`), et dans la documentation officielle de Microsoft (<https://learn.microsoft.com/windows/apps/design/>). Le kit Figma de Microsoft n'est pas lisible par une machine : rien n'en vient ;
+  - **ce que permet Plasma 6.7**, lu dans le code de KDE, branches `Plasma/6.7` (breeze `ca217f1`, kwin `3ce3452`, plasma-workspace `60a25d0`, plasma-desktop `66c0d62`, libplasma `032c5df`, aurorae `0202957`), et dans les paquets de Fedora 44 (<https://mdapi.fedoraproject.org>).
+- **La référence Windows 11** (pixels à l'échelle 100 %, couleurs en `#AARRGGBB`) :
+  - **géométrie** : rayon 4 pour les contrôles (`ControlCornerRadius`), 8 pour les fenêtres, menus, volets et dialogues (`OverlayCornerRadius`), 4 pour les infobulles ; coins carrés quand la fenêtre est agrandie ou ancrée ; contour de 1 px ; tailles et marges en multiples de 4 (`CornerRadius_themeresources.xaml` ; pages `signature-experiences/geometry` et `layering`) ;
+  - **texte** : légende 12/16, corps 14/20, sous-titre 20/28, titre 28/36, grand titre 40/52, affichage 68/92 ; semi-gras (600) pour les titres ; casse de phrase partout (`TextBlock_themeresources.xaml` ; page `signature-experiences/typography`) ;
+  - **couleurs, thème sombre** : texte #FFFFFFFF, secondaire #C5FFFFFF, tertiaire #87FFFFFF, désactivé #5DFFFFFF ; fond des contrôles #0FFFFFFF (survol #15FFFFFF) ; cartes #0DFFFFFF ; contours #12FFFFFF ; fonds pleins #202020, #1C1C1C, #282828, #2C2C2C ; voile des dialogues #4D000000 (`Common_themeresources_any.xaml`). Le thème clair a ses propres valeurs, dans le même fichier ;
+  - **matières** : Acrylic (volets passagers : flou 30, grain 0,02, teinte #2C2C2C à 15 %, luminosité 0,96 en sombre) ; Mica (fond des fenêtres : teinte #202020 à 80 % en sombre) (`AcrylicBrush.h`, `AcrylicBrush_themeresources.xaml`, `MicaController.h` de WinUI 2) ;
+  - **ombres** : élévation E = Z/2 ; menus : flou 16, décalage 8, 26 % en sombre ; fenêtres et dialogues : ombre ambiante (flou 21,3, décalage 2) et ombre directionnelle (flou 64, décalage 32), 37 % chacune en sombre (`DropShadowRecipe.h` ; page `develop/ui/shadows`) ;
+  - **mouvement** : 83, 167, 250 et 333 ms ; courbe d'entrée cubic-bezier(0, 0, 0, 1) (page `signature-experiences/motion`) ;
+  - **contrôles** : bouton de 32 de haut ; case à cocher de 20 ; interrupteur de 40×20 ; élément de navigation de 36, pastille d'accent de 3×16 ; pouce de défilement de 8, puis 12 au survol ; menus : éléments à 4 px des bords, colonne d'icône de 28 ; infobulle : 12 px, largeur au plus 320 ; dialogue : de 320 à 548 de large, marge de 24 ; focus : trait de 2 et trait intérieur de 1 (fichiers des contrôles dans `CommonStyles` ; page `develop/input/guidelines-for-visualfeedback`) ;
+  - **fenêtres** : barre de titre de 32, icône de 16 à 16 du bord, titre en légende (pages `basics/titlebar-design` et `develop/title-bar`) ; boutons de 46 de large, fermeture #C42B1C au survol (copie de Windows Terminal : `src/cascadia/TerminalApp/MinMaxCloseControl.xaml` de <https://github.com/microsoft/terminal>) ;
+  - **icônes** : 16 dans les menus, les barres de titre et la zone de notification, 24 dans la barre des tâches, 32 pour les épingles de Démarrer (page `iconography/app-icon-construction`) ;
+  - **barre des tâches et Démarrer** : Microsoft ne publie presque aucune mesure du shell. Hauteur de 48, boutons d'environ 44×40, notifications de 364 de large : observés seulement, À VALIDER.
+- **Ce que permet Plasma 6.7** (vérifié dans le code, pas encore en VM) :
+  - **avec les réglages de KDE** : titre à gauche (`TitleAlignment`, `breezesettingsdata.kcfg`) ; icône à gauche et boutons à droite (`ButtonsOnLeft`, `ButtonsOnRight`, `kwindecorationsettings.kcfg`) ; barre de 48 px (`panel.height`) ; heure et date sur deux lignes (`dateDisplayFormat`, `applets/digital-clock/main.xml`) ; « Afficher le bureau » ; notifications en bas à droite (`PopupPosition`, `notificationsettings.kcfg`) ; durée des animations (`[Effect-scale] Duration`, `AnimationDurationFactor`) ; curseur blanc (`Breeze_Light`, paquet `breeze-cursor-theme`) ; coins carrés quand la fenêtre est agrandie (déjà le cas) ;
+  - **avec nos propres fichiers de thème** : rayon de 8 px des volets, de la barre et des infobulles, et trait d'accent sous l'application active (SVG du style Plasma : `dialogs/background`, `widgets/panel-background`, `widgets/tooltip`, `widgets/tasks`, dans `src/desktoptheme/breeze` de libplasma) ; Alt+Tab (`[TabBox] LayoutName`) ; écran de déconnexion (`logout/Logout.qml` du thème global) ;
+  - **impossible sans reprendre le code de KDE** : le rayon de Breeze est une constante de 5 px (`Frame_FrameRadius`, `kdecoration/breeze.h` et `kstyle/breezemetrics.h`) ; ses boutons de fenêtre sont ronds (`breezebutton.cpp`) ; ses barres de défilement sont larges (`ScrollBar_Extend` 21) ;
+  - **impossible tout court en 6.7** : le contenu de l'OSD du volume (module QML compilé, `shell/osd.cpp`) ; la largeur des notifications (`gridUnit * 18`, `applets/notifications/global/Globals.qml`) ; le menu de disposition au survol du bouton « Agrandir » (rien dans KWin) ; le thème des applications libadwaita, qui ne reçoivent que la couleur d'accent, ramenée au violet d'Adwaita #9141ac (`src/adw-style-manager.c` et `adw-accent-color.c` de libadwaita) ;
+  - **Démarrer et paramètres rapides propres à Ankh** : faisables en QML, mais avec des modules privés de Plasma (`org.kde.plasma.private.kicker`, `…private.volume`, `…private.bluetooth`, `…private.brightnesscontrolplugin`), sans garantie d'une version à l'autre.
+- **Questions et mes réponses (2026-10-14)** :
+  1. **Cible** : « Ankh + rigueur Win11 (Recommandé) » : la géométrie, la typographie, les matières, les animations et la disposition du shell de Windows 11, avec les couleurs graphite et violet et le logo d'Ankh. Plutôt qu'un clone visuel de Windows 11 (accent bleu), ou une simple inspiration.
+  2. **Moyens** : « Nos thèmes, code KDE (Recommandé) » : un style, une décoration, un style Plasma et un Démarrer propres à Ankh, dérivés du code de Breeze et de Plasma, gardés dans ce dépôt et compilés dans l'image. Plutôt que Kvantum avec nos dessins, des projets tiers (Klassy, Menu11), ou les seuls réglages de KDE (1 à 3 px d'écart, l'allure de KDE reste).
+  3. **Barre des tâches** : « Collée, comme Win11 (Recommandé) » : pleine largeur, 48 px, trait d'accent sous l'application active, horloge sur deux lignes, bande « Afficher le bureau ». Plutôt que la barre flottante de D-037.
+  4. **Police** : « Comparer d'abord (Recommandé) ». Segoe UI Variable, celle de Windows 11, ne peut pas être livrée.
+  5. **Icônes** : « Comparer d'abord (Recommandé) ».
+  6. **Curseur** : « Blanc, comme Windows (Recommandé) » : `Breeze_Light`, déjà dans Fedora.
+  7. **Calendrier** : « Maintenant, en parallèle (Recommandé) » : ce chantier commence tout de suite ; la phase 5 reste ouverte jusqu'aux noms de mes jeux.
+- **Décision** :
+  - **Cible** : Ankh avec la rigueur de Windows 11. Chaque mesure de la référence ci-dessus devient une valeur d'Ankh, sauf les couleurs : celles d'Ankh (graphite et violet, D-037, D-042), rangées par couches comme celles de Windows 11 (fond de fenêtre, couche, carte, contrôle, contour), en sombre et en clair.
+  - **Moyens** : nos propres thèmes, dérivés du code de KDE, dans ce dépôt :
+    - un **style Qt « Ankh »**, dérivé du style Breeze (`kstyle` de <https://invent.kde.org/plasma/breeze>) : rayons de 4 et 8, tailles des contrôles de Windows 11, barres de défilement fines, focus en double trait, menus et infobulles de Windows 11. Il dessine aussi les applications de KDE en QML, qui passent par lui (`org.kde.desktop` de qqc2-desktop-style) ;
+    - une **décoration de fenêtres « Ankh »**, dérivée de celle de Breeze (`kdecoration`) : barre de 32, titre à gauche, boutons de 46×32, rayon de 8, ombres de Windows 11 ;
+    - un **style Plasma « Ankh »** : nos SVG pour les volets, la barre, les infobulles et les tâches ; le reste vient de Breeze (`FallbackTheme`) ;
+    - un **Démarrer d'Ankh** et des **paramètres rapides d'Ankh**, en QML, dérivés de Kickoff et des applets de Plasma ;
+    - le **thème global d'Ankh** pour Alt+Tab, la déconnexion et l'écran de chargement (D-037).
+  - **Comment ce code vit dans le dépôt** :
+    - le code repris de KDE garde sa licence (GPL ou LGPL) et ses en-têtes ;
+    - il part de la version exacte de Plasma de l'image de base. À chaque nouvelle version de Plasma, nos changements sont reportés ; la construction échoue tant que ce n'est pas fait, et la construction de chaque lundi prévient (D-023, D-031) ;
+    - il est compilé dans une étape à part du `Containerfile`, sur la même base, avec les outils de compilation de Fedora. Seul le résultat entre dans l'image : rien ne s'installe sur l'hôte en dehors de l'image (D-009).
+  - **Barre des tâches collée en bas**, pleine largeur, 48 px, toujours en verre (D-042, point 7). Elle remplace la barre flottante de D-037 et de D-039 (point 3).
+  - **Curseur blanc** `Breeze_Light`, à la taille de Plasma (24).
+  - **Rien de Windows dans l'image** : ni Segoe UI, ni ses icônes, ni ses sons, ni ses curseurs, ni ses fonds d'écran. Leur licence l'interdit (<https://learn.microsoft.com/typography/fonts/font-faq> ; conditions des produits Microsoft). Seules les mesures sont reprises : les valeurs de WinUI sont publiées sous licence MIT.
+  - **Ce que D-039 et D-042 deviennent** : leurs réglages restent. La règle « uniquement des paquets de Fedora et des réglages de KDE » est remplacée par celle-ci : des paquets de Fedora, des réglages de KDE, et notre propre code dérivé de KDE. Les projets tiers (Klassy, Lightly, Menu11, thèmes macOS) restent écartés (D-042), sauf les icônes et la police si je les choisis ci-dessous.
+- **Police (choisie le 2026-10-15 : Selawik)** : planche du 2026-10-14, la même fenêtre de réglages aux mesures de Windows 11, dans chaque police :
+  - **Inter** (actuelle, `rsms-inter-fonts` 4.1 de Fedora) : très lisible, mais plus large et plus géométrique que Segoe UI ;
+  - **Selawik** : le remplaçant libre de Segoe UI publié par Microsoft (OFL 1.1, <https://github.com/microsoft/Selawik>), aux mêmes mesures. La plus proche de Windows 11 sur la planche. Mais elle n'est plus suivie depuis 2023 ; son README dit qu'il lui manque le crénage de Segoe UI ; elle est absente de Fedora : il faudrait la compiler depuis sa source, à une version figée, dans l'image ;
+  - **Open Sans** : humaniste, comme Segoe UI ; dans Fedora (`open-sans-fonts`), mais en version 1.10, plus ancienne que la version 3 montrée sur la planche ;
+  - **Noto Sans** (la police de Fedora) et **Source Sans 3** : humanistes, dans Fedora.
+- **Icônes (choisies le 2026-10-15 : Fluent, recolorées au violet d'Ankh)** : planche du 2026-10-14, dossiers et fichiers à 48 px, épingles de Démarrer à 32, barre des tâches à 24, barre d'outils à 16 :
+  - **Breeze**, dossiers violets (actuelles, KDE, LGPL) ;
+  - **Fluent** (<https://github.com/vinceliuice/Fluent-icon-theme>, GPL-3.0) : le style de Windows 11. Absent de Fedora : il serait inclus dans l'image depuis une version figée, avec Breeze pour les icônes qui lui manquent. Sa variante « violette » est en fait rose-magenta (#dc63ee) : elle serait recolorée au violet d'Ankh. Ce sont des images, pas du code : une nouvelle version de Plasma ne les casse pas ;
+  - **Papirus**, violet (dans Fedora, GPL-3.0).
+- **Mes choix du 2026-10-15** (recommandés par Claude) :
+  - **police : Selawik**, la plus proche de Segoe UI. Elle sera compilée depuis sa source officielle, à une version figée, dans l'image (lot 1). Son crénage incomplet est accepté ; il se verra peut-être sur certaines paires de lettres (À VALIDER sur les captures du lot 1) ;
+  - **icônes : Fluent**, recolorées au violet d'Ankh, incluses dans l'image depuis une version figée, avec Breeze pour celles qui manquent (lot 9).
+- **Mise en œuvre : onze lots, chacun dans sa PR**, avec des captures « avant » et « après », les mesures du banc (lot 0) et mon accord avant de fusionner :
+  0. **Banc de mesure** : la référence dans un seul fichier de valeurs (`build_files/interface/jetons.toml`) ; des mesures automatiques en VM (barre de titre et bords des fenêtres par KWin, barre des tâches par Plasma, tailles des contrôles, rayons et couleurs lus sur l'image) ; des captures de chaque surface, en sombre et en clair, à 100, 125 et 150 %. Le test compare chaque mesure à sa valeur cible : un écart est signalé, et il fait échouer le test dès que le lot qui règle cette mesure est fusionné.
+  1. **Fondations** : police et tailles (corps de 14 px), couleurs d'Ankh rangées par couches en sombre et en clair, rendu des polices, durées des animations, curseur blanc.
+  2. **Fenêtres** : la décoration « Ankh ».
+  3. **Contrôles** : le style Qt « Ankh », appliqué aussi aux applications de KDE en QML ; un thème GTK aux mêmes mesures, dérivé de breeze-gtk.
+  4. **Shell** : le style Plasma « Ankh », la barre collée de 48 px, la zone de notification, l'horloge, les notifications.
+  5. **Démarrer d'Ankh**, avec la disposition de Windows 11.
+  6. **Paramètres rapides** en un seul volet ; calendrier et notifications harmonisés.
+  7. **Alt+Tab, vue d'ensemble, déconnexion, écran de verrouillage, sons.**
+  8. **Applications** : Dolphin disposé comme l'Explorateur, Configuration du système, Discover, Konsole, Chrome, VS Code, applications GTK, Flatpak, libadwaita et Electron ; plus de fenêtre de KDE Wallet au premier lancement de Chrome (D-037).
+  9. **Icônes et curseurs**, selon mon choix.
+  10. **Finitions** : hautes résolutions, thème clair aussi soigné que le sombre, accessibilité (contrastes, focus au clavier, animations réduites), mesures du banc toutes obligatoires.
+- **Limites acceptées** :
+  - les applications libadwaita (Bottles, ProtonPlus) gardent leur allure, avec le violet d'Adwaita ;
+  - pas de menu de disposition au survol du bouton « Agrandir » : les dispositions passent par Windows+flèches et l'éditeur de tuiles de KWin (Windows+T) ;
+  - le contenu de l'OSD du volume, et la largeur des notifications, restent ceux de Plasma ;
+  - Chrome, VS Code et les applications Electron dessinent leur propre barre de titre ;
+  - le Démarrer et les paramètres rapides peuvent casser à une nouvelle version de Plasma : la construction et le test en VM le montrent avant que je reçoive la mise à jour (D-031) ;
+  - Claude ne peut pas tester sur ma machine : l'aspect final se vérifie en phase 9.
+- **Alternatives rejetées** : un clone visuel de Windows 11 (pas l'identité d'Ankh) ; Kvantum (intégration imparfaite avec les applications de KDE en QML) ; Klassy, Menu11 et KDE-Rounded-Corners (hors de Fedora, un seul mainteneur chacun, à recompiler à chaque version de Plasma) ; une décoration Aurorae en SVG (elle n'arrondit pas le contenu des fenêtres : `setBorderRadius` n'est jamais appelé dans `v2/` d'aurorae).
+- **Vérification** : le banc du lot 0, à chaque PR ; puis, à chaque lot, ses mesures rendues obligatoires, et les captures « avant » et « après » vues par moi.
+- **Lot 0, le banc de mesure (commencé le 2026-10-15)** :
+  - **valeurs de référence** : `build_files/interface/jetons.toml`, 47 mesures, chacune avec sa cible de Windows 11, sa tolérance, sa source et son lot. `lots_termines` liste les lots fusionnés : leurs mesures deviennent obligatoires. Il est vide au lot 0 : le banc relève les écarts sans faire échouer le test ;
+  - **test en VM** (`tests/vm/banc/banc.sh`, lancé par `tests/vm/run.sh` après `check_identity`) :
+    - réglages lus dans la session : curseur, animations, barre de titre, barre des tâches et horloge (par le scripting de Plasma), notifications ;
+    - **galerie des contrôles** (`tests/vm/banc/org.ankh.banc`) : un widget de Plasma, installé seulement dans le compte de test, ouvert par `plasmawindowed` comme « Options d'Ankh ». Il montre chaque contrôle dans le style des applications de KDE en QML, et écrit dans le journal la police et les tailles que donne le style (`implicitHeight`, indicateurs) ;
+    - **géométrie des fenêtres par KWin** : cadre et contenu de Dolphin placé à un endroit fixe, d'où la hauteur de la barre de titre et les bords ;
+    - **mesures sur l'image**, sur un fond d'écran noir (l'ombre, noire, ne compte plus) : rayon des coins de Dolphin, du menu et des contrôles de la galerie (aire manquante à l'angle, r² (1 − π/4) pour un quart de cercle), bouton Fermer survolé (taille et couleur de la zone rouge), barre des tâches (espace en dessous, hauteur, couleur) — `tests/vm/banc/mesurer.py`, sans module tiers ;
+    - **captures de chaque surface**, nommées `ui-<thème>-<échelle>-<surface>` : bureau, Démarrer, menu du bureau, Dolphin, dialogue, Configuration du système, Konsole, galerie, notification, volume, calendrier, infobulle, Alt+Tab, vue d'ensemble, recherche, déconnexion, en sombre à 100 % ; les principales en clair à 100 %, puis en sombre à 125 et 150 % ;
+    - **rapport** `ui-rapport.md`, joint aux captures : chaque mesure, la cible de Windows 11, l'écart, son lot et son état (conforme, écart, relevé, non mesuré) ;
+  - **vérifié en local le 2026-10-15** : la galerie se charge et écrit toutes ses mesures (Qt 6.12, sans Plasma, avec un Kirigami simulé) ; sur des images de synthèse, le rayon d'un coin est retrouvé à 0,2 px près sans contour, à 0,5 px près avec un contour clair, mais sous-estimé d'environ 1 px avec un contour plus sombre que le fond de la fenêtre ; un bouton Fermer de 46×32 et une barre de 44 px avec 8 px d'espace sont retrouvés exactement.
+  - **premier passage en VM, le 2026-10-15** ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550), vert) : 46 mesures sur 47, et 34 captures. Bilan : 7 conformes, 27 écarts, 12 relevés. Ankh aujourd'hui, face à Windows 11 :
+    - fenêtres : barre de titre de 28 px (32), coins de 5 px (8), titre centré (à gauche), bouton Fermer rond de 16 px au survol (rectangle de 46×32, rouge #c42b1c) ;
+    - contrôles : boutons, listes déroulantes, cases et boutons radio déjà aux mesures de Windows 11 ; coins de 5 px (4), champs de 30 px (32), interrupteurs de 36×18 (40×20), barres de défilement de 21 px (12), barres de progression de 22 px (3), éléments de liste de 36 px (40) ;
+    - texte : 13 px (14), légendes de 10 px (12), police Inter ;
+    - barre des tâches : 44 px (48), réglée flottante mais affichée collée sur les captures, horloge sur une ligne ;
+    - défauts du banc vus sur les captures et corrigés ensuite : bureau jamais dégagé, sélecteur Alt+Tab absent, dialogue remplacé par le menu de Dolphin, recherche restée ouverte, volet du menu non mesuré (son nom pour KWin est `org.kde.plasmashell`).
+  - **second passage, le 2026-10-15** ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701), vert) : les corrections sont vérifiées sur les captures (bureau dégagé, sélecteur Alt+Tab, dialogue Propriétés, menu du bureau). Le bouton Fermer a été vérifié à l'œil sur l'image de mesure : au survol, Breeze dessine un cercle rose pâle (#ffc3c0) de 16 px avec une croix sombre. Le rayon du menu manquait encore : KWin était interrogé avant l'ouverture du menu ; il l'est maintenant jusqu'à trois fois (À VALIDER au prochain passage).
+
+## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)
+
+- **Statut** : DÉCIDÉ (2026-10-15), mes choix. Mise en œuvre après le lot 0 de D-052, dans sa propre PR.
+- **Contexte** : ma demande du 2026-10-15 : « Laisse tomber OnlyOffice, retire tout ce qui y a trait, et mets toute la suite ArtCraft à la place. Je viens de tomber dessus et c'est trop une masterclass. Penses-tu que c'est une bonne idée ? »
+- **Ce que Claude a vérifié** dans les dépôts officiels (<https://github.com/storytold>, lus le 2026-10-15 ; presse : <https://gizmodo.com/someone-vibe-coded-a-free-knockoff-of-adobe-creative-suite-2000823322>, <https://futurism.com/future-society/adobe-creative-suite-software-open-source-artcraft>) :
+  - **les « Crafting Apps »**, de l'équipe ArtCraft : des réécritures « en salle blanche », en Rust, écrites en grande partie par des agents d'IA. Dix applications :
+    - PhotoCraft (comme Photoshop), VectorCraft (Illustrator), FilmCraft (Premiere Pro), LightCraft (Lightroom) ;
+    - PdfCraft (Acrobat), EffectCraft (After Effects), DesignCraft (InDesign) ;
+    - WordCraft (Word), GridCraft (Excel), DeckCraft (PowerPoint) ;
+  - **licence** : MIT ou Apache-2.0, au choix. Les noms et logos d'ArtCraft sont des marques, utilisables seulement sans modification (`docs/brand/LICENSE-brand.txt`) ;
+  - **maturité**, selon leurs propres feuilles de route (`ROADMAP.md` de chaque dépôt, 2026-10-11 à 2026-10-15) :
+    - toutes en alpha, DesignCraft en pré-alpha ;
+    - « prêtes pour du vrai travail » à 45-61 % selon leurs propres estimations ;
+    - PhotoCraft : 953 tickets ouverts, et les PSD qu'il écrit ne sont pas encore acceptés de façon fiable par Photoshop ;
+    - WordCraft : ses fichiers .docx « n'ont jamais été testés sur de vrais fichiers » ;
+  - **Linux** : chaque version publie un Flatpak en un seul fichier, mais aussi une AppImage, un .deb, un .rpm et une archive (« Releases » GitHub). Les applications ne sont pas sur Flathub ; leurs manifestes se disent prêts à y être proposés. Les paquets Linux ne sont pas signés : chaque version publie seulement les sommes SHA256 de ses fichiers (les versions Windows et macOS sont signées) ;
+  - **isolation Flatpak** (`packaging/linux/flatpak/*.yml`) : runtime `org.freedesktop.Platform` 26.08, carte graphique, Wayland. Ni réseau ni dossier personnel en entier, sauf :
+    - EffectCraft : réseau, pour des modèles téléchargés seulement à la demande, « pas de télémétrie » selon son manifeste ;
+    - FilmCraft : dossier personnel en entier, car un projet vidéo désigne ses médias par leur chemin ;
+    - les autres : Images ou Documents seulement.
+  - **le studio ArtCraft** (`storytold/artcraft`) est autre chose : de la génération d'images et de vidéos par des services en ligne (ArtCraft, Grok, Midjourney, Sora), et pas de version Linux prête (à compiler).
+- **Avis de Claude, donné avant mes choix** :
+  - le projet est réel et prometteur, et il s'accorde avec Ankh : applications natives et rapides, open source, sans compte, isolées en Flatpak ;
+  - mais il est très jeune. Remplacer OnlyOffice confie mes documents de bureau à des logiciels en alpha, qui peuvent abîmer un .docx ou un .xlsx. Claude recommandait de garder OnlyOffice à côté jusqu'à la bêta de WordCraft et GridCraft.
+- **Questions et mes réponses (2026-10-15)** :
+  1. OnlyOffice : « Remplacer par les Craft », plutôt que de le garder à côté (recommandé) ou de le retirer sans remplaçant ;
+  2. placement : « Option “Création” (Recommandé) », plutôt que dans Simple ou dans l'image ; puis précisé : « L'option Création devrait être pour les clones d'Adobe, mais ceux qui clonent Office devraient être toujours là, dans Simple » ;
+  3. applications : « Les 10 Crafting Apps (Recommandé) », sans le studio ArtCraft (services payants en ligne) ;
+  4. calendrier : « Après le lot 0 (Recommandé) ».
+- **Décision** :
+  - **OnlyOffice est retiré** d'Ankh : de l'image, de son dépôt et de sa clé, des applications par défaut, des favoris du menu et des tests. LibreOffice reste absent (D-035) ;
+  - **Simple**, toujours là : Chrome et VLC dans l'image, et la bureautique de la suite Craft, **WordCraft, GridCraft et DeckCraft**, dans le menu de toute installation, prêtes au premier clic en Flatpak, pour toute la machine. Le premier clic demande donc internet, comme les options (D-049) ;
+  - **nouvelle option « Création »**, à cocher à l'installation et dans « Options d'Ankh », comme Gaming (D-046, D-050) : les clones d'Adobe, **PhotoCraft, VectorCraft, FilmCraft, LightCraft, PdfCraft, EffectCraft et DesignCraft**, dans le menu, prêts au premier clic, en Flatpak, pour toute la machine. **Complète** la coche aussi.
+- **Mise en œuvre prévue** (à confirmer à la réalisation, dans la PR) :
+  - **versions figées** : à chaque construction de l'image, la dernière version publiée de chaque application, et l'empreinte SHA256 de son Flatpak, sont écrites dans l'image. La construction échoue s'il manque le Flatpak x86_64 ou son empreinte ;
+  - **premier clic** : une fenêtre montre le téléchargement du Flatpak depuis GitHub. Son empreinte est vérifiée contre celle de l'image avant l'installation, pour toute la machine ; le runtime vient de Flathub, comme pour Gaming. Rien ne se télécharge avant ce clic (D-031) ;
+  - **mises à jour** : pas dans Discover tant que les applications ne sont pas sur Flathub. Une nouvelle version, figée dans une nouvelle image, est proposée à l'ouverture de l'application, jamais imposée (D-031). Le jour où elles arrivent sur Flathub, Ankh passe par Flathub, par une nouvelle décision ;
+  - **formats de fichiers** : les applications installées déclarent leurs formats (.docx, .xlsx, .pptx, .pdf, .psd…), et KDE les propose à l'ouverture.
+- **Risques acceptés par moi** : logiciels en alpha pour mes documents (garder des copies ; tester sur ma machine en phase 9) ; paquets Linux non signés, vérifiés seulement par l'empreinte figée dans l'image signée d'Ankh ; projet jeune, dont la suite reste à voir.
+- **Vérification prévue** : Test 12 adapté (OnlyOffice absent, entrées de WordCraft, GridCraft et DeckCraft dans le menu) ; en VM, premier clic sur WordCraft pour chaque PR, et sur chacune des dix applications dans le test complet (chaque lundi et à la demande, comme Gaming).

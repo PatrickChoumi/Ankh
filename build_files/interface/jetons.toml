@@ -1,0 +1,411 @@
+# Valeurs de référence de l'interface d'Ankh (D-052) : celles de Windows 11,
+# que le banc de mesure compare à ce qu'Ankh affiche dans la VM de test
+# (tests/vm/banc, rapport « ui-rapport.md » joint aux captures).
+#
+# Sources, toutes à l'échelle 100 % (pixels effectifs de Windows) :
+#   WinUI : https://github.com/microsoft/microsoft-ui-xaml, commit 566a040
+#           (2026-10-14), dossier controls/dev ; licence MIT ;
+#   Doc   : https://learn.microsoft.com/windows/apps/design/ ;
+#   Terminal : https://github.com/microsoft/terminal.
+# Les couleurs ne sont pas celles de Windows : Ankh garde les siennes
+# (D-037, D-042). Elles sont relevées ici, et rangées par couches au lot 1.
+#
+# Chaque [[mesure]] :
+#   id         nom de la mesure produite par le banc (tests/vm/banc/banc.sh)
+#   libelle    ce qui est mesuré
+#   cible      la valeur retenue pour Ankh ; absente pour un simple relevé
+#   tolerance  écart admis pour un nombre (même unité)
+#   unite      px, ms, pt…
+#   lot        le lot de D-052 qui atteint la cible
+#   source     d'où vient la cible
+#
+# Une mesure devient obligatoire quand son lot figure dans lots_termines :
+# un écart fait alors échouer le test en VM. Chaque PR de lot ajoute son
+# numéro ici, avec les mesures qu'elle atteint.
+lots_termines = []
+
+# --- Lot 1 : fondations ---------------------------------------------------
+
+[[mesure]]
+id = "police.famille"
+libelle = "Police de l'interface"
+cible = "Selawik"
+lot = 1
+source = "Mon choix du 2026-10-15 : sosie libre de Segoe UI (D-052)"
+
+[[mesure]]
+id = "police.corps.px"
+libelle = "Taille du texte courant"
+cible = 14
+tolerance = 0.5
+unite = "px"
+lot = 1
+source = "WinUI CommonStyles/TextBlock_themeresources.xaml, BodyTextBlockFontSize"
+
+[[mesure]]
+id = "police.legende.px"
+libelle = "Taille des petits textes (légendes)"
+cible = 12
+tolerance = 0.5
+unite = "px"
+lot = 1
+source = "WinUI CommonStyles/TextBlock_themeresources.xaml, CaptionTextBlockFontSize"
+
+[[mesure]]
+id = "police.corps.interligne"
+libelle = "Hauteur d'une ligne de texte courant"
+unite = "px"
+lot = 1
+source = "Windows : 20 px pour un texte de 14 px (doc signature-experiences/typography) ; dépend de la police"
+
+[[mesure]]
+id = "curseur.theme"
+libelle = "Curseur de la souris"
+cible = "Breeze_Light"
+lot = 1
+source = "Mon choix du 2026-10-14 : blanc, comme Windows (D-052)"
+
+[[mesure]]
+id = "curseur.taille"
+libelle = "Taille du curseur"
+cible = 24
+tolerance = 0
+unite = "px"
+lot = 1
+source = "Taille de Plasma, gardée (D-052)"
+
+[[mesure]]
+id = "animations.facteur"
+libelle = "Facteur de durée des animations de KDE"
+lot = 1
+source = "Relevé ; les durées de Windows sont 83, 167, 250 et 333 ms (doc signature-experiences/motion)"
+
+[[mesure]]
+id = "kirigami.rayon"
+libelle = "Rayon des coins de Kirigami (applications QML)"
+unite = "px"
+lot = 3
+source = "Relevé (Kirigami.Units.cornerRadius) ; Windows : 4 pour les contrôles, 8 pour les volets"
+
+[[mesure]]
+id = "kirigami.unite"
+libelle = "Unité de grille de Kirigami"
+unite = "px"
+lot = 1
+source = "Relevé (Kirigami.Units.gridUnit) ; Windows place tout sur une grille de 4 px"
+
+[[mesure]]
+id = "couleur.fenetre"
+libelle = "Fond des fenêtres (Dolphin)"
+lot = 1
+source = "Relevé ; couleurs d'Ankh (D-037)"
+
+[[mesure]]
+id = "couleur.barre_de_titre"
+libelle = "Barre de titre de la fenêtre active"
+lot = 1
+source = "Relevé ; couleurs d'Ankh (D-037)"
+
+[[mesure]]
+id = "couleur.barre"
+libelle = "Barre des tâches, sur fond noir"
+lot = 4
+source = "Relevé ; couleurs d'Ankh (D-037)"
+
+# --- Lot 2 : fenêtres -----------------------------------------------------
+
+[[mesure]]
+id = "fenetre.barre_de_titre.hauteur"
+libelle = "Hauteur de la barre de titre"
+cible = 32
+tolerance = 0
+unite = "px"
+lot = 2
+source = "WinUI TitleBar/TitleBar_themeresources.xaml, TitleBarCompactHeight ; doc basics/titlebar-design"
+
+[[mesure]]
+id = "fenetre.bord.gauche"
+libelle = "Bord gauche de la décoration"
+unite = "px"
+lot = 2
+source = "Relevé ; Windows : contour de 1 px (doc signature-experiences/layering)"
+
+[[mesure]]
+id = "fenetre.bord.droit"
+libelle = "Bord droit de la décoration"
+unite = "px"
+lot = 2
+source = "Relevé ; Windows : contour de 1 px (doc signature-experiences/layering)"
+
+[[mesure]]
+id = "fenetre.bord.bas"
+libelle = "Bord bas de la décoration"
+unite = "px"
+lot = 2
+source = "Relevé ; Windows : contour de 1 px (doc signature-experiences/layering)"
+
+[[mesure]]
+id = "fenetre.coin.rayon"
+libelle = "Rayon des coins d'une fenêtre"
+cible = 8
+tolerance = 0.75
+unite = "px"
+lot = 2
+source = "WinUI CommonStyles/CornerRadius_themeresources.xaml, OverlayCornerRadius"
+
+[[mesure]]
+id = "fenetre.titre.alignement"
+libelle = "Place du titre"
+cible = "gauche"
+lot = 2
+source = "Doc basics/titlebar-design : icône de 16 px à 16 px du bord, puis le titre"
+
+[[mesure]]
+id = "fenetre.boutons.gauche"
+libelle = "Boutons à gauche de la barre de titre (M : icône et menu de la fenêtre)"
+cible = "M"
+lot = 2
+source = "Doc basics/titlebar-design : l'icône de l'application, à gauche"
+
+[[mesure]]
+id = "fenetre.boutons.droite"
+libelle = "Boutons à droite (I : réduire, A : agrandir, X : fermer)"
+cible = "IAX"
+lot = 2
+source = "Doc basics/titlebar-design : réduire, agrandir, fermer"
+
+[[mesure]]
+id = "fenetre.fermer.largeur"
+libelle = "Largeur du bouton Fermer, au survol"
+cible = 46
+tolerance = 1
+unite = "px"
+lot = 2
+source = "Terminal src/cascadia/TerminalApp/MinMaxCloseControl.xaml (copie des boutons de Windows)"
+
+[[mesure]]
+id = "fenetre.fermer.hauteur"
+libelle = "Hauteur du bouton Fermer, au survol"
+cible = 32
+tolerance = 1
+unite = "px"
+lot = 2
+source = "Pleine hauteur de la barre de titre (doc basics/titlebar-design)"
+
+[[mesure]]
+id = "fenetre.fermer.couleur"
+libelle = "Couleur du bouton Fermer, au survol"
+cible = "#c42b1c"
+tolerance = 16
+lot = 2
+source = "Terminal src/cascadia/TerminalApp/MinMaxCloseControl.xaml ; doc develop/title-bar"
+
+# --- Lot 3 : contrôles (galerie du banc, style des applications QML) ------
+
+[[mesure]]
+id = "controle.bouton.hauteur"
+libelle = "Hauteur d'un bouton"
+cible = 32
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/Button_themeresources.xaml : ButtonPadding 11,5,11,6, texte de 14 px, bordure de 1"
+
+[[mesure]]
+id = "controle.bouton.rayon"
+libelle = "Rayon des coins d'un bouton"
+cible = 4
+tolerance = 0.75
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/CornerRadius_themeresources.xaml, ControlCornerRadius"
+
+[[mesure]]
+id = "controle.champ.hauteur"
+libelle = "Hauteur d'un champ de texte"
+cible = 32
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI dxaml/xcp/dxaml/themes/generic.xaml, TextControlThemeMinHeight"
+
+[[mesure]]
+id = "controle.champ.rayon"
+libelle = "Rayon des coins d'un champ de texte"
+cible = 4
+tolerance = 0.75
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/CornerRadius_themeresources.xaml, ControlCornerRadius"
+
+[[mesure]]
+id = "controle.liste_deroulante.hauteur"
+libelle = "Hauteur d'une liste déroulante"
+cible = 32
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI ComboBox/ComboBox_themeresources.xaml, ComboBoxMinHeight"
+
+[[mesure]]
+id = "controle.case.taille"
+libelle = "Taille d'une case à cocher"
+cible = 20
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/CheckBox_themeresources.xaml, CheckBoxSize"
+
+[[mesure]]
+id = "controle.case.hauteur"
+libelle = "Hauteur d'une case à cocher avec son texte"
+cible = 32
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/CheckBox_themeresources.xaml, CheckBoxHeight"
+
+[[mesure]]
+id = "controle.radio.taille"
+libelle = "Taille d'un bouton radio"
+cible = 20
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/RadioButton_themeresources.xaml, OuterEllipse 20×20"
+
+[[mesure]]
+id = "controle.interrupteur.largeur"
+libelle = "Largeur d'un interrupteur"
+cible = 40
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/ToggleSwitch_themeresources.xaml, OuterBorder 40×20"
+
+[[mesure]]
+id = "controle.interrupteur.hauteur"
+libelle = "Hauteur d'un interrupteur"
+cible = 20
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/ToggleSwitch_themeresources.xaml, OuterBorder 40×20"
+
+[[mesure]]
+id = "controle.curseur.poignee"
+libelle = "Poignée d'un curseur (slider)"
+cible = 18
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/Slider_themeresources.xaml, SliderHorizontalThumbWidth"
+
+[[mesure]]
+id = "controle.progression.hauteur"
+libelle = "Hauteur d'une barre de progression"
+cible = 3
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI ProgressBar/ProgressBar_themeresources.xaml, ProgressBarMinHeight"
+
+[[mesure]]
+id = "controle.defilement.largeur"
+libelle = "Largeur d'une barre de défilement"
+cible = 12
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/ScrollBar_themeresources.xaml, ScrollBarSize"
+
+[[mesure]]
+id = "controle.liste.hauteur"
+libelle = "Hauteur d'un élément de liste"
+cible = 40
+tolerance = 0
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/ListViewItem_themeresources.xaml, ListViewItemMinHeight"
+
+[[mesure]]
+id = "controle.menu.element.hauteur"
+libelle = "Hauteur d'un élément de menu"
+unite = "px"
+lot = 3
+source = "Relevé ; Windows : marges 11,4,11,5 à la souris, 11,8,11,9 au toucher (WinUI CommonStyles/MenuFlyout_themeresources.xaml)"
+
+[[mesure]]
+id = "controle.infobulle.px"
+libelle = "Taille du texte des infobulles"
+cible = 12
+tolerance = 0.5
+unite = "px"
+lot = 3
+source = "WinUI CommonStyles/ToolTip_themeresources.xaml, ToolTipContentThemeFontSize"
+
+# --- Lot 4 : shell --------------------------------------------------------
+
+[[mesure]]
+id = "barre.hauteur"
+libelle = "Hauteur de la barre des tâches (réglage)"
+cible = 48
+tolerance = 0
+unite = "px"
+lot = 4
+source = "Observée sous Windows 11, sans source publiée (À VALIDER) ; mon choix du 2026-10-14 (D-052)"
+
+[[mesure]]
+id = "barre.hauteur_visible"
+libelle = "Hauteur visible de la barre des tâches"
+cible = 48
+tolerance = 1
+unite = "px"
+lot = 4
+source = "Comme barre.hauteur"
+
+[[mesure]]
+id = "barre.flottante"
+libelle = "Barre flottante"
+cible = "non"
+lot = 4
+source = "Mon choix du 2026-10-14 : collée, comme Windows 11 (D-052)"
+
+[[mesure]]
+id = "barre.marge_bas"
+libelle = "Espace sous la barre des tâches"
+cible = 0
+tolerance = 0
+unite = "px"
+lot = 4
+source = "Barre collée au bord (D-052)"
+
+[[mesure]]
+id = "barre.position"
+libelle = "Place de la barre des tâches"
+cible = "bottom"
+lot = 4
+source = "Windows 11 : en bas"
+
+[[mesure]]
+id = "barre.horloge.date"
+libelle = "Date de l'horloge (0 : selon la place, 1 : à côté, 2 : sous l'heure)"
+cible = "2"
+lot = 4
+source = "Windows 11 : heure et date sur deux lignes (D-052)"
+
+[[mesure]]
+id = "volet.rayon"
+libelle = "Rayon des coins du menu de Plasma (volet)"
+cible = 8
+tolerance = 0.75
+unite = "px"
+lot = 4
+source = "WinUI CommonStyles/CornerRadius_themeresources.xaml, OverlayCornerRadius"
+
+[[mesure]]
+id = "notifications.position"
+libelle = "Place des notifications"
+cible = "BottomRight"
+lot = 4
+source = "Windows 11 : en bas à droite (D-052)"

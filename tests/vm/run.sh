@@ -22,7 +22,9 @@
 # capture de Discover, son journal, pour expliquer un message d'erreur (D-028).
 # À l'étape 1, l'interface d'Ankh (D-037, D-039) : réglages appliqués dans la
 # session, menu, Dolphin, Konsole, réglages des couleurs, écrans de connexion
-# et de verrouillage.
+# et de verrouillage. Puis le banc de l'interface (D-052, tests/vm/banc) :
+# captures de chaque surface en sombre et en clair, à 100, 125 et 150 %, et
+# mesures comparées à Windows 11 (rapport ui-rapport.md, joint aux captures).
 #
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local),
@@ -80,6 +82,14 @@ vm() {
         root@127.0.0.1 "$@"
 }
 
+# Copie un fichier local dans la VM : vm_copier FICHIER CHEMIN_DANS_LA_VM.
+vm_copier() {
+    ssh -i "$work/id_ed25519" -p "$port" \
+        -o BatchMode=yes -o ConnectTimeout=5 -o LogLevel=ERROR \
+        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        root@127.0.0.1 "cat > $(printf '%q' "$2")" < "$1"
+}
+
 # Commande dans la session graphique d'un compte (par son gestionnaire
 # systemd), attendue jusqu'au bout. Les arguments sont protégés du shell de
 # la VM, car ssh les recolle, et de systemd, qui remplace sinon « $$ » par
@@ -135,12 +145,16 @@ sock.close()
 PY
 }
 
-# Clic de souris à la position (X, Y) de l'écran de la VM (1280x800), par le
-# protocole QMP de QEMU (commande input-send-event) : la tablette USB de la VM
-# donne un pointeur absolu, de 0 à 32767 sur chaque axe
-# (https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html).
-click() {
-    python3 - "$work/qmp.sock" "$1" "$2" << 'PY'
+# Souris et clavier de la VM, par le protocole QMP de QEMU (commande
+# input-send-event, https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html) :
+#   qmp_entree souris survol|clic|clic-droit X Y
+#     à la position (X, Y) de l'écran de la VM (1280x800) : la tablette USB
+#     de la VM donne un pointeur absolu, de 0 à 32767 sur chaque axe ;
+#   qmp_entree touche appui|relache CODE
+#     touche appuyée ou relâchée, par son code QEMU (« qcode » : alt, tab,
+#     ret, esc…), pour tenir une touche pendant qu'une autre est tapée.
+qmp_entree() {
+    python3 - "$work/qmp.sock" "$@" << 'PY'
 import json, socket, sys
 sock = socket.socket(socket.AF_UNIX)
 sock.settimeout(30)
@@ -165,13 +179,39 @@ def evenements(*liste):
 
 json.loads(f.readline())  # message d'accueil de QMP
 cmd("qmp_capabilities")
-x = int(sys.argv[2]) * 32767 // 1280
-y = int(sys.argv[3]) * 32767 // 800
+peripherique, action = sys.argv[2], sys.argv[3]
+if peripherique == "touche":
+    evenements({"type": "key", "data": {"down": action == "appui",
+                                        "key": {"type": "qcode", "data": sys.argv[4]}}})
+    sys.exit()
+x = int(sys.argv[4]) * 32767 // 1280
+y = int(sys.argv[5]) * 32767 // 800
 evenements({"type": "abs", "data": {"axis": "x", "value": x}},
            {"type": "abs", "data": {"axis": "y", "value": y}})
-evenements({"type": "btn", "data": {"down": True, "button": "left"}})
-evenements({"type": "btn", "data": {"down": False, "button": "left"}})
+if action != "survol":
+    bouton = "right" if action == "clic-droit" else "left"
+    evenements({"type": "btn", "data": {"down": True, "button": bouton}})
+    evenements({"type": "btn", "data": {"down": False, "button": bouton}})
 PY
+}
+
+#   souris survol|clic|clic-droit X Y
+souris() {
+    qmp_entree souris "$@"
+}
+
+# Raccourci clavier tapé avec une touche tenue : raccourci MAINTENUE TOUCHE
+# (par exemple « raccourci alt ret »).
+raccourci() {
+    qmp_entree touche appui "$1"
+    qmp_entree touche appui "$2"
+    qmp_entree touche relache "$2"
+    qmp_entree touche relache "$1"
+}
+
+# Clic gauche à la position (X, Y) de l'écran de la VM.
+click() {
+    souris clic "$1" "$2"
 }
 
 # Capture l'écran de la VM en PNG (commande screendump du moniteur de QEMU).
@@ -1113,6 +1153,10 @@ check_identity() {
     sleep 5
 }
 
+# D-052 : banc de l'interface (check_interface), comparé à Windows 11
+# shellcheck source=tests/vm/banc/banc.sh
+source "$repo/tests/vm/banc/banc.sh"
+
 ((EUID == 0)) || die "à lancer en root (podman de root, disque en boucle, KVM)"
 [[ -e /dev/kvm ]] || die "/dev/kvm absent : KVM est nécessaire"
 for f in OVMF_CODE_4M.secboot.fd OVMF_VARS_4M.ms.fd; do
@@ -1235,6 +1279,7 @@ close_app ankhvm DesktopEditors
 check_vscode
 check_options_reglages
 check_identity
+check_interface
 check_steam
 if [[ $gaming_complet == 1 ]]; then
     check_gaming_apps

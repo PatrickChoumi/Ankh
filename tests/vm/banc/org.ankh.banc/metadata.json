@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Description": "Galerie des contrôles du banc de l'interface (D-052), installée seulement dans la VM de test.",
+        "Icon": "ankh-logo",
+        "Id": "org.ankh.banc",
+        "License": "GPL-2.0-or-later",
+        "Name": "Banc d'Ankh",
+        "Version": "1.0"
+    },
+    "NoDisplay": true,
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
