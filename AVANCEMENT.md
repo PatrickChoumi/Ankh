@@ -321,11 +321,11 @@
   - la référence Windows 11, chiffrée et sourcée, lue dans le code de WinUI (licence MIT) et la documentation de Microsoft : coins, textes, couleurs, matières, ombres, animations, contrôles, barre de titre, icônes ;
   - ce que Plasma 6.7 permet, lu dans le code de KDE : ce qui se règle, ce qui demande nos propres fichiers, ce qui demande de reprendre le code de Breeze, ce qui est impossible ;
   - les licences : rien de Windows ne peut entrer dans l'image (police, icônes, sons, curseurs, fonds) ; ses mesures, si.
-- **Mes choix** (D-052) : la rigueur de Windows 11 avec l'identité d'Ankh ; nos propres thèmes, dérivés du code de KDE et compilés dans l'image ; la barre des tâches collée en bas, 48 px ; le curseur blanc ; le chantier tout de suite, en parallèle de la phase 5.
+- **Mes choix** (D-052) : la rigueur de Windows 11 avec l'identité d'Ankh ; nos propres thèmes, dérivés du code de KDE et compilés dans l'image ; la barre des tâches collée en bas, 48 px ; le curseur blanc ; le chantier tout de suite, en parallèle de la phase 5. Le 2026-10-15, sur les planches : police Selawik, icônes Fluent au violet d'Ankh.
 - **Planches de comparaison** envoyées le 2026-10-14, aux mesures de Windows 11 et aux couleurs d'Ankh :
   - polices : Inter, Selawik, Noto Sans, Open Sans, Source Sans 3 ;
   - icônes : Breeze, Fluent, Papirus, dans un explorateur, Démarrer et la barre des tâches.
-- **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés ; second passage en VM en cours.
+- **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés et vérifiés au second passage ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701)) ; le rayon du menu reste à vérifier.
 
 ---
 
@@ -342,7 +342,7 @@
 
 Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
 
-0. **Banc de mesure** (premier passage vert, second en cours ; PR à ouvrir avec mon accord) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
+0. **Banc de mesure** (deux passages verts en VM ; PR ouverte le 2026-10-15) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
 1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc.
 2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
 3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.
@@ -416,10 +416,9 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 
 ## Ce que je dois faire
 
-1. **Choisir la police et les icônes** de l'interface sur les planches envoyées le 2026-10-14 (D-052).
-2. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
-3. **Regarder les captures des sept autres applications Gaming**, envoyées le 2026-10-14, et dire à Claude ce qui ne va pas (D-050). Les PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) et [#16](https://github.com/PatrickChoumi/Ankh/pull/16) sont fusionnées.
-4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
-5. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
-6. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
-7. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; le critère de la phase 5 les attend. Et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).
+1. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
+2. **Regarder les captures des sept autres applications Gaming**, envoyées le 2026-10-14, et dire à Claude ce qui ne va pas (D-050). Les PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) et [#16](https://github.com/PatrickChoumi/Ankh/pull/16) sont fusionnées.
+3. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
+4. **Regarder les captures** que Claude m'envoie à chaque compte rendu, et lui dire ce qui ne va pas à l'écran.
+5. **Optionnel** : rendre obligatoire le test « Démarrer ankh en VM » dans `protection-main`. Claude doit d'abord retirer le filtre qui saute ce test sur les PR qui ne touchent que la documentation.
+6. **Plus tard** : donner les noms de mes jeux principaux (question 6), pour vérifier chacun sous Linux ; le critère de la phase 5 les attend. Et, avant la phase 9, les questions 1 à 5 et 10 à 12 (matériel, distro actuelle).

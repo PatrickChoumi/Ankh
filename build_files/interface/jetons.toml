@@ -29,8 +29,9 @@ lots_termines = []
 [[mesure]]
 id = "police.famille"
 libelle = "Police de l'interface"
+cible = "Selawik"
 lot = 1
-source = "À DÉCIDER sur les planches du 2026-10-14 (D-052)"
+source = "Mon choix du 2026-10-15 : sosie libre de Segoe UI (D-052)"
 
 [[mesure]]
 id = "police.corps.px"

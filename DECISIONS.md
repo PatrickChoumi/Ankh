@@ -69,7 +69,7 @@
 | D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
 | D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; précisé par D-051 ; vérifié en VM le 2026-10-13) |
 | D-051 | Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050) | DÉCIDÉ (2026-10-13, mon choix ; vérifié en VM le 2026-10-13) |
-| D-052 | Interface au pixel près, au niveau de Windows 11 : nos propres thèmes, dérivés du code de KDE (modifie D-037, D-039 et D-042) | DÉCIDÉ (2026-10-14, mes choix ; police et icônes À DÉCIDER sur planches ; mise en œuvre en onze lots, en parallèle de la phase 5) |
+| D-052 | Interface au pixel près, au niveau de Windows 11 : nos propres thèmes, dérivés du code de KDE (modifie D-037, D-039 et D-042) | DÉCIDÉ (2026-10-14, mes choix ; police Selawik et icônes Fluent au violet d'Ankh choisies le 2026-10-15 ; mise en œuvre en onze lots, en parallèle de la phase 5 ; lot 0 vérifié en VM) |
 | D-053 | La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046) | DÉCIDÉ (2026-10-15, mes choix : bureautique Craft dans Simple, clones d'Adobe dans « Création » ; mise en œuvre après le lot 0 de D-052) |
 
 ---
@@ -1693,7 +1693,7 @@
 
 ## D-052 — Interface au pixel près, au niveau de Windows 11 : nos propres thèmes, dérivés du code de KDE (modifie D-037, D-039 et D-042)
 
-- **Statut** : DÉCIDÉ (2026-10-14), mes choix. Police et icônes À DÉCIDER, sur les planches de comparaison envoyées le 2026-10-14. Mise en œuvre lot par lot, en parallèle de la phase 5.
+- **Statut** : DÉCIDÉ (2026-10-14), mes choix. Police et icônes choisies le 2026-10-15, sur les planches de comparaison du 2026-10-14. Mise en œuvre lot par lot, en parallèle de la phase 5.
 - **Contexte** : ma demande du 2026-10-14 : « Je mets un point d'honneur sur l'aspect pixel perfect, du même niveau que Windows 11 en termes d'interface. Fais d'abord un plan super exhaustif, pose-moi des questions, fais des recherches, puis allons-y. »
   - D-039 et D-042 s'en tenaient aux paquets de Fedora et aux réglages de KDE, sans thème tiers.
   - Sur les captures du dernier test complet en VM, les écarts avec Windows 11 se voient encore :
@@ -1751,15 +1751,18 @@
   - **Curseur blanc** `Breeze_Light`, à la taille de Plasma (24).
   - **Rien de Windows dans l'image** : ni Segoe UI, ni ses icônes, ni ses sons, ni ses curseurs, ni ses fonds d'écran. Leur licence l'interdit (<https://learn.microsoft.com/typography/fonts/font-faq> ; conditions des produits Microsoft). Seules les mesures sont reprises : les valeurs de WinUI sont publiées sous licence MIT.
   - **Ce que D-039 et D-042 deviennent** : leurs réglages restent. La règle « uniquement des paquets de Fedora et des réglages de KDE » est remplacée par celle-ci : des paquets de Fedora, des réglages de KDE, et notre propre code dérivé de KDE. Les projets tiers (Klassy, Lightly, Menu11, thèmes macOS) restent écartés (D-042), sauf les icônes et la police si je les choisis ci-dessous.
-- **Police (À DÉCIDER)** : planche du 2026-10-14, la même fenêtre de réglages aux mesures de Windows 11, dans chaque police :
+- **Police (choisie le 2026-10-15 : Selawik)** : planche du 2026-10-14, la même fenêtre de réglages aux mesures de Windows 11, dans chaque police :
   - **Inter** (actuelle, `rsms-inter-fonts` 4.1 de Fedora) : très lisible, mais plus large et plus géométrique que Segoe UI ;
   - **Selawik** : le remplaçant libre de Segoe UI publié par Microsoft (OFL 1.1, <https://github.com/microsoft/Selawik>), aux mêmes mesures. La plus proche de Windows 11 sur la planche. Mais elle n'est plus suivie depuis 2023 ; son README dit qu'il lui manque le crénage de Segoe UI ; elle est absente de Fedora : il faudrait la compiler depuis sa source, à une version figée, dans l'image ;
   - **Open Sans** : humaniste, comme Segoe UI ; dans Fedora (`open-sans-fonts`), mais en version 1.10, plus ancienne que la version 3 montrée sur la planche ;
   - **Noto Sans** (la police de Fedora) et **Source Sans 3** : humanistes, dans Fedora.
-- **Icônes (À DÉCIDER)** : planche du 2026-10-14, dossiers et fichiers à 48 px, épingles de Démarrer à 32, barre des tâches à 24, barre d'outils à 16 :
+- **Icônes (choisies le 2026-10-15 : Fluent, recolorées au violet d'Ankh)** : planche du 2026-10-14, dossiers et fichiers à 48 px, épingles de Démarrer à 32, barre des tâches à 24, barre d'outils à 16 :
   - **Breeze**, dossiers violets (actuelles, KDE, LGPL) ;
   - **Fluent** (<https://github.com/vinceliuice/Fluent-icon-theme>, GPL-3.0) : le style de Windows 11. Absent de Fedora : il serait inclus dans l'image depuis une version figée, avec Breeze pour les icônes qui lui manquent. Sa variante « violette » est en fait rose-magenta (#dc63ee) : elle serait recolorée au violet d'Ankh. Ce sont des images, pas du code : une nouvelle version de Plasma ne les casse pas ;
   - **Papirus**, violet (dans Fedora, GPL-3.0).
+- **Mes choix du 2026-10-15** (recommandés par Claude) :
+  - **police : Selawik**, la plus proche de Segoe UI. Elle sera compilée depuis sa source officielle, à une version figée, dans l'image (lot 1). Son crénage incomplet est accepté ; il se verra peut-être sur certaines paires de lettres (À VALIDER sur les captures du lot 1) ;
+  - **icônes : Fluent**, recolorées au violet d'Ankh, incluses dans l'image depuis une version figée, avec Breeze pour celles qui manquent (lot 9).
 - **Mise en œuvre : onze lots, chacun dans sa PR**, avec des captures « avant » et « après », les mesures du banc (lot 0) et mon accord avant de fusionner :
   0. **Banc de mesure** : la référence dans un seul fichier de valeurs (`build_files/interface/jetons.toml`) ; des mesures automatiques en VM (barre de titre et bords des fenêtres par KWin, barre des tâches par Plasma, tailles des contrôles, rayons et couleurs lus sur l'image) ; des captures de chaque surface, en sombre et en clair, à 100, 125 et 150 %. Le test compare chaque mesure à sa valeur cible : un écart est signalé, et il fait échouer le test dès que le lot qui règle cette mesure est fusionné.
   1. **Fondations** : police et tailles (corps de 14 px), couleurs d'Ankh rangées par couches en sombre et en clair, rendu des polices, durées des animations, curseur blanc.
