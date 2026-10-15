@@ -408,7 +408,11 @@ banc_pixels() {
     banc_noter barre.marge_bas "$espace"
     banc_noter barre.hauteur_visible "$hauteur"
     banc_noter couleur.barre "$couleur"
-    # Volet du menu : la fenêtre de plasmashell qui n'est ni la barre ni le bureau
+    # Volet du menu : la fenêtre de plasmashell qui n'est ni la barre ni le
+    # bureau. Les fenêtres sont d'abord réduites : le menu doit se détacher
+    # sur le fond noir (Dolphin, derrière lui, faussait son bord haut : run
+    # 38709938834).
+    banc_bureau oui
     banc_essayer "menu" banc_session org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
     # Le menu peut mettre plus de 4 secondes à s'ouvrir (run 38702400701 :
     # absent pour KWin, mais ouvert sur l'image prise juste après) : KWin
@@ -435,6 +439,7 @@ banc_pixels() {
     done <<< "$volets"
     monitor 'sendkey esc'
     sleep 2
+    banc_bureau non
     # Contrôles de la zone noire de la galerie
     galerie=$(banc_galerie_devant)
     if read -r gx gy _ _ <<< "$galerie" && [[ -n $gy ]]; then

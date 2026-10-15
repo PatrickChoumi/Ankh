@@ -75,16 +75,20 @@ def bord(profil):
     """Position du bord d'un objet clair sur un fond sombre, le long d'un
     profil (écarts au fond, de l'extérieur vers l'intérieur), à la fraction
     de pixel près : là où l'écart atteint la moitié de celui de l'objet,
-    juste après le bord (lissage des contours). None si rien n'est trouvé."""
+    juste après le bord (lissage des contours). None si rien n'est trouvé,
+    ou si le profil ne commence pas sur le fond : un autre objet touche
+    celui qu'on mesure (run 38709938834 : Dolphin derrière le menu)."""
     for i, v in enumerate(profil):
         if v >= SEUIL_FOND:
             break
     else:
         return None
+    if i == 0:
+        return None
     interieur = sorted(profil[i + 1:i + 4]) or [profil[i]]
     plateau = max(interieur[len(interieur) // 2], profil[i])
     moitie = plateau / 2
-    for j in range(max(i, 1), len(profil)):
+    for j in range(i, len(profil)):
         if profil[j] >= moitie:
             avant = profil[j - 1]
             return j - 1 + (moitie - avant) / (profil[j] - avant) + 0.5
