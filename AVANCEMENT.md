@@ -325,6 +325,7 @@
 - **Planches de comparaison** envoyées le 2026-10-14, aux mesures de Windows 11 et aux couleurs d'Ankh :
   - polices : Inter, Selawik, Noto Sans, Open Sans, Source Sans 3 ;
   - icônes : Breeze, Fluent, Papirus, dans un explorateur, Démarrer et la barre des tâches.
+- **Inspiration AnduinOS** (2026-10-15, D-052) : distribution Ubuntu qui ressemble à Windows 11 ; ses sources lues par Claude. Elle confirme nos choix (icônes Fluent, barre de 48 px, Démarrer de Windows 11) et donne ses valeurs pour la barre. Mes choix : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
 - **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés et vérifiés au second passage ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701)) ; le rayon du menu reste à vérifier.
 
 ---
@@ -342,7 +343,7 @@
 
 Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
 
-0. **Banc de mesure** (deux passages verts en VM ; PR ouverte le 2026-10-15) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
+0. **Banc de mesure** (fusionné le 2026-10-15, PR [#17](https://github.com/PatrickChoumi/Ankh/pull/17) ; rayon du menu corrigé ensuite, à vérifier en VM) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
 1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc.
 2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
 3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.

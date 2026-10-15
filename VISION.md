@@ -77,7 +77,8 @@ C'est mon exigence générale (ANKH-SPEC.md).
 - Une interface au pixel près de Windows 11, avec l'identité d'Ankh, faite de nos propres thèmes dérivés du code de KDE (D-052) :
   - les mesures de Windows 11 : barres de titre, coins de 4 et 8 px, contrôles, textes, ombres et animations ;
   - sa disposition : la barre des tâches collée en bas, en verre, avec Démarrer et les applications au centre ; les paramètres rapides en un seul volet ;
-  - la police Selawik, sosie libre de Segoe UI, les icônes Fluent au violet d'Ankh et un curseur blanc ;
+  - la police Selawik, sosie libre de Segoe UI, les icônes Fluent au violet d'Ankh, et les curseurs Fluent blancs à l'anneau d'attente violet ;
+  - les applications GTK au même style, avec le thème Fluent au violet d'Ankh ;
   - chaque mesure vérifiée automatiquement en VM, à chaque changement.
 - Des finitions venues de macOS et de Windows 11 (D-039, D-042) : la recherche au centre de l'écran, un accueil et des raccourcis utiles.
 - Une collection de fonds d'écran d'Ankh (D-034).
