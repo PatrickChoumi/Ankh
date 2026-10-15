@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=EffectCraft
+GenericName=Animation et effets visuels
+Comment=Animer des graphismes et composer des effets visuels. Suite Craft, dans l'option Création d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.effectcraft %F
+Icon=ai.storyteller.effectcraft
+Terminal=false
+StartupWMClass=ai.storyteller.effectcraft
+Categories=AudioVideo;Video;Graphics;2DGraphics;
+Keywords=animation;effets;images clés;compositing;after effects;motion;graphics;compositor;effects;keyframe;vfx;

@@ -154,7 +154,8 @@ if LC_ALL=C.UTF-8 grep -nE "(\"|=)[^\"]*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/p
     /usr/lib64/qt6/qml/org/ankh/composants/*.qml /usr/share/plasma/plasmoids/org.ankh.options/contents/ui/*.qml \
     /usr/share/applications/ankh-options.desktop /usr/libexec/ankh-options-reglages \
     /usr/share/ankh/options/gaming/applications/*.desktop /usr/share/ankh/options/gaming/wayland-sessions/*.desktop \
-    /usr/libexec/ankh-flatpak; then
+    /usr/libexec/ankh-flatpak /usr/share/applications/ai.storyteller.*.desktop \
+    /usr/share/ankh/options/creation/applications/*.desktop /usr/libexec/ankh-craft; then
     echec "tutoiement dans un texte affiché par Ankh (lignes ci-dessus)"
 fi
 # Le message de la fenêtre du mot de passe, dans l'action polkit des options

@@ -26,6 +26,10 @@ on:
         description: "Premier clic sur toutes les applications de l'option Gaming (D-050) : plusieurs Go depuis Flathub"
         type: boolean
         default: false
+      craft_complet:
+        description: "Premier clic sur les dix applications de la suite Craft (D-053) : environ 1 Go depuis GitHub"
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -38,7 +42,8 @@ jobs:
   vm:
     name: Démarrer ankh en VM
     runs-on: ubuntu-24.04
-    timeout-minutes: 150
+    # Le test complet (Gaming et suite Craft, chaque lundi) dure plus longtemps
+    timeout-minutes: 210
 
     steps:
       # Versions des actions épinglées par commit, tenues à jour par Renovate.
@@ -64,14 +69,16 @@ jobs:
         run: sudo env "PATH=${PATH}" just build ankh
 
       # Toutes les applications de l'option Gaming chaque lundi, et à la
-      # demande ; Steam seul pour les PR (D-050).
+      # demande ; Steam seul pour les PR (D-050). De même pour la suite
+      # Craft ; WordCraft seul pour les PR (D-053).
       - name: Démarrer, mettre à jour, revenir en arrière, revenir à la base
         env:
           ANKH_VM_WORKDIR: ${{ runner.temp }}/vm
           ANKH_VM_GAMING_COMPLET: ${{ (github.event_name == 'schedule' || inputs.gaming_complet) && '1' || '0' }}
+          ANKH_VM_CRAFT_COMPLET: ${{ (github.event_name == 'schedule' || inputs.craft_complet) && '1' || '0' }}
         run: |
           sudo env "ANKH_VM_WORKDIR=${ANKH_VM_WORKDIR}" "ANKH_VM_GAMING_COMPLET=${ANKH_VM_GAMING_COMPLET}" \
-            tests/vm/run.sh localhost/ankh:latest
+            "ANKH_VM_CRAFT_COMPLET=${ANKH_VM_CRAFT_COMPLET}" tests/vm/run.sh localhost/ankh:latest
 
       # Captures d'écran de la VM, téléchargeables depuis la page du run
       # (section « Artifacts »), même si le test échoue.

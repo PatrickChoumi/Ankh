@@ -1,0 +1,297 @@
+#!/usr/bin/bash
+# D-053 : la suite Craft d'ArtCraft (https://github.com/storytold), depuis le
+# menu. WordCraft, GridCraft et DeckCraft sont dans Simple, toujours là ; les
+# sept autres viennent avec l'option Création. Elles ne sont pas sur Flathub :
+# chaque version publie un Flatpak en un seul fichier. Leur version, et
+# l'empreinte SHA256 de ce fichier, sont figées dans l'image à sa construction
+# (/usr/share/ankh/craft/versions, écrit par build_files/build.sh).
+#
+# Au premier clic, une fenêtre montre le téléchargement du Flatpak depuis
+# GitHub. Son empreinte est vérifiée contre celle de l'image, puis il est
+# installé pour toute la machine, avec son runtime depuis Flathub, et
+# l'application s'ouvre. Rien ne se télécharge avant ce clic (D-031). Ensuite,
+# l'entrée du menu est celle de Flatpak : elle porte le même nom de fichier
+# que celle d'Ankh et passe devant (voir /usr/libexec/ankh-flatpak).
+# Une nouvelle version, figée dans une nouvelle image, est donc proposée à
+# l'ouverture de la session, et non de l'application : une notification
+# propose de la mettre à jour, jamais d'office (D-031).
+#
+# Installer un Flatpak en un seul fichier demande le mot de passe d'un
+# administrateur, même au groupe wheel : l'action
+# org.freedesktop.Flatpak.install-bundle n'est pas dans la règle de Flatpak
+# pour ce groupe (system-helper/org.freedesktop.Flatpak.rules.in de
+# https://github.com/flatpak/flatpak). L'installation se fait donc en root,
+# par le service ankh-craft@<nom>.service, qu'un administrateur démarre sans
+# mot de passe dans sa session (/usr/share/polkit-1/rules.d/50-ankh-craft.rules) :
+# ce service n'installe que le fichier figé dans l'image, et seulement si
+# son option est choisie.
+#
+#   ankh-craft <application> [fichiers]  ouvre l'application (identifiant
+#                                        ai.storyteller.<nom>), préparée au besoin
+#   ankh-craft preparer <nom>...         les prépare, une à une (fenêtre de
+#                                        préparation)
+#   ankh-craft installer <nom>           en root, par ankh-craft@<nom>.service
+#   ankh-craft nouveautes                à l'ouverture de la session : propose
+#                                        les nouvelles versions figées dans l'image
+#   ankh-craft installees [option]       affiche celles qui sont installées
+#                                        (option : simple ou creation)
+#   ankh-craft supprimer                 désinstalle celles de l'option Création
+#                                        et ce qu'elles seules utilisaient ; les
+#                                        documents restent dans le dossier personnel
+set -euo pipefail
+
+# Une ligne par application : « option nom version empreinte adresse »
+readonly VERSIONS=/usr/share/ankh/craft/versions
+readonly PREFIXE=ai.storyteller.
+# Version installée de chaque application, écrite par le service
+# (StateDirectory de ankh-craft@.service)
+readonly ETAT=/var/lib/ankh-craft
+# Journal de la préparation en cours, que la fenêtre affiche ; systemd
+# l'efface à la fin du service (RuntimeDirectory), il reste dans le journal
+# du système.
+readonly EN_COURS=/run/ankh-craft
+# Entrées du menu installées par Flatpak pour toute la machine
+readonly EXPORTS=/var/lib/flatpak/exports/share/applications
+
+echec() {
+    echo "ankh-craft : $*" >&2
+    exit 1
+}
+
+# Champ de la ligne figée d'une application : 1 option, 3 version,
+# 4 empreinte, 5 adresse
+champ() { # $1 : nom, $2 : numéro du champ
+    local valeur
+    valeur="$(awk -v nom="$1" -v n="$2" '!/^#/ && NF == 5 && $2 == nom { print $n }' "${VERSIONS}")"
+    [[ -n "${valeur}" ]] || echec "application inconnue : $1"
+    echo "${valeur}"
+}
+
+# Noms des applications, dans l'ordre du fichier ; toutes, ou celles d'une option
+noms() { # $1 (facultatif) : option
+    awk -v option="${1:-}" '!/^#/ && NF == 5 && (option == "" || $1 == option) { print $2 }' "${VERSIONS}"
+}
+
+entree() { # $1 : nom ; son entrée du menu d'Ankh
+    case "$(champ "$1" 1)" in
+        simple) echo "/usr/share/applications/${PREFIXE}$1.desktop" ;;
+        *) echo "/usr/share/ankh/options/$(champ "$1" 1)/applications/${PREFIXE}$1.desktop" ;;
+    esac
+}
+
+titre() { # $1 : nom ; son nom dans le menu
+    sed -n 's/^Name=//p' "$(entree "$1")" | head -n 1
+}
+
+# Nom affiché de l'option d'une application
+option_affichee() { # $1 : nom
+    case "$(champ "$1" 1)" in
+        simple) echo "Simple" ;;
+        creation) echo "Création" ;;
+        *) champ "$1" 1 ;;
+    esac
+}
+
+installee() { # $1 : nom
+    flatpak info --system "${PREFIXE}$1" > /dev/null 2>&1
+}
+
+# Vrai si l'option de l'application est choisie (Simple l'est toujours)
+permise() { # $1 : nom
+    local option
+    option="$(champ "$1" 1)"
+    [[ "${option}" == simple || " $(/usr/libexec/ankh-options choix) " == *" ${option} "* ]]
+}
+
+# Version installée par le service ; à défaut, celle que l'application
+# déclare (ses métadonnées AppStream, lues par Flatpak)
+version_installee() { # $1 : nom
+    if [[ -s "${ETAT}/$1" ]]; then
+        awk '{ print $1; exit }' "${ETAT}/$1"
+    else
+        LC_ALL=C flatpak info --system "${PREFIXE}$1" | sed -n 's/^ *Version: *//p'
+    fi
+}
+
+# En root : télécharge le Flatpak figé, vérifie son empreinte, l'installe
+installer() { # $1 : nom
+    local nom=$1 version empreinte adresse dossier fichier
+    version="$(champ "${nom}" 3)"
+    empreinte="$(champ "${nom}" 4)"
+    adresse="$(champ "${nom}" 5)"
+    permise "${nom}" || echec "l'option $(option_affichee "${nom}") n'est pas choisie : $(titre "${nom}") n'est pas installé"
+    echo "Préparation de $(titre "${nom}") ${version} : téléchargement depuis GitHub, seulement cette fois-ci."
+    echo "${adresse}"
+    echo
+    dossier="$(mktemp -d /var/tmp/ankh-craft.XXXXXX)"
+    # shellcheck disable=SC2064 # le dossier est connu ici
+    trap "rm -rf '${dossier}'" EXIT
+    fichier="${dossier}/${adresse##*/}"
+    curl -fL --retry 3 --proto '=https' --proto-redir '=https' --progress-bar -o "${fichier}" "${adresse}"
+    if ! echo "${empreinte}  ${fichier}" | sha256sum --check --status; then
+        echec "le fichier téléchargé n'a pas l'empreinte figée dans Ankh (${empreinte}) : il n'est pas installé"
+    fi
+    echo "Empreinte SHA256 vérifiée : ${empreinte}"
+    echo
+    # Le runtime vient de Flathub (dépôt indiqué dans le fichier : runtime-repo)
+    flatpak install --system -y --reinstall --bundle "${fichier}"
+    install -d -m 0755 "${ETAT}"
+    echo "${version} ${empreinte}" > "${ETAT}/${nom}.nouveau"
+    mv "${ETAT}/${nom}.nouveau" "${ETAT}/${nom}"
+    echo
+    echo "Terminé : $(titre "${nom}") ${version} est installé."
+}
+
+# Dans la fenêtre de préparation : démarre le service de chaque application
+# et affiche son journal pendant qu'il travaille. tail le suit jusqu'à la fin
+# de systemctl (--pid), qui attend la fin du service.
+preparer() { # $@ : noms
+    local nom demarrage
+    for nom in "$@"; do
+        champ "${nom}" 1 > /dev/null
+        systemctl start "ankh-craft@${nom}.service" &
+        demarrage=$!
+        # Le code de tail ne dit rien de la préparation : le journal disparaît
+        # avec le service, parfois avant que tail l'ait ouvert. Seul compte
+        # celui de systemctl, juste après.
+        if ! tail -n +1 -F --pid="${demarrage}" "${EN_COURS}/${nom}/journal" 2> /dev/null; then
+            :
+        fi
+        if ! wait "${demarrage}"; then
+            echo
+            echo "La préparation de $(titre "${nom}") a échoué. Dernières lignes de son journal :"
+            if ! journalctl --no-pager -o cat -n 20 -u "ankh-craft@${nom}.service"; then
+                echo "(journal illisible : « journalctl -u ankh-craft@${nom}.service » en administrateur)"
+            fi
+            return 1
+        fi
+        echo
+    done
+    if (($# == 1)); then
+        echo "$(titre "$1") va s'ouvrir."
+    fi
+}
+
+# Ouvre une fenêtre Konsole qui prépare ces applications. En cas d'échec,
+# elle reste ouverte pour montrer pourquoi.
+fenetre_preparation() { # $@ : noms
+    # shellcheck disable=SC2016 # « $@ » est celui du bash de la fenêtre
+    konsole --nofork -e bash -c '/usr/libexec/ankh-craft preparer "$@" || {
+        echo
+        echo "Appuyez sur Entrée pour fermer cette fenêtre."
+        read -r
+        exit 1
+    }' ankh-craft "$@"
+}
+
+ouvrir() { # $1 : application, puis les fichiers à ouvrir
+    local application=$1 nom=${1#"${PREFIXE}"}
+    shift
+    [[ "${nom}" =~ ^[a-z]+$ ]] || echec "application inconnue : ${application}"
+    champ "${nom}" 1 > /dev/null
+    permise "${nom}" || echec "l'option $(option_affichee "${nom}") n'est pas choisie : $(titre "${nom}") n'est pas proposé"
+    if ! installee "${nom}"; then
+        fenetre_preparation "${nom}"
+        # konsole ne rend pas toujours le code de sortie de la commande :
+        # l'application doit être là, sinon on s'arrête là.
+        installee "${nom}" || echec "$(titre "${nom}") n'a pas pu être préparé"
+    fi
+    # Comme depuis sa propre entrée du menu, installée par Flatpak, qui donne
+    # à l'application l'accès aux fichiers à ouvrir (--file-forwarding)
+    exec gio launch "${EXPORTS}/${application}.desktop" "$@"
+}
+
+# À l'ouverture de la session : une notification propose les versions
+# figées dans l'image qui ne sont pas encore installées. « Mettre à jour »
+# ouvre la fenêtre de préparation ; « Ignorer cette version » ne la propose
+# plus à ce compte ; une notification fermée sans réponse revient à la
+# session suivante.
+nouveautes() {
+    local nom version ignorees proposees=() textes="" titre_notification reponse
+    ignorees="${XDG_STATE_HOME:-${HOME}/.local/state}/ankh/craft-ignorees"
+    for nom in $(noms); do
+        if ! installee "${nom}" || ! permise "${nom}"; then
+            continue
+        fi
+        version="$(champ "${nom}" 3)"
+        if [[ "$(version_installee "${nom}")" == "${version}" ]] ||
+            { [[ -f "${ignorees}" ]] && grep -qxF "${nom} ${version}" "${ignorees}"; }; then
+            continue
+        fi
+        proposees+=("${nom}")
+        textes+="${textes:+, }$(titre "${nom}") ${version}"
+    done
+    ((${#proposees[@]})) || return 0
+    if ((${#proposees[@]} == 1)); then
+        titre_notification="Nouvelle version de la suite Craft"
+        textes+=" : prête à être installée."
+    else
+        titre_notification="Nouvelles versions de la suite Craft"
+        textes+=" : prêtes à être installées."
+    fi
+    reponse="$(notify-send --app-name="Ankh" --icon="${PREFIXE}${proposees[0]}" --wait \
+        --action=mettre-a-jour="Mettre à jour" --action=ignorer="Ignorer cette version" \
+        "${titre_notification}" "${textes}")"
+    case "${reponse}" in
+        mettre-a-jour)
+            fenetre_preparation "${proposees[@]}"
+            ;;
+        ignorer)
+            install -d -m 0700 "$(dirname "${ignorees}")"
+            for nom in "${proposees[@]}"; do
+                echo "${nom} $(champ "${nom}" 3)" >> "${ignorees}"
+            done
+            ;;
+    esac
+}
+
+supprimer() {
+    local nom installees=()
+    for nom in $(noms creation); do
+        if installee "${nom}"; then
+            installees+=("${PREFIXE}${nom}")
+        fi
+    done
+    if ((${#installees[@]})); then
+        flatpak uninstall --system -y "${installees[@]}"
+    fi
+    # Runtimes que plus aucune application n'utilise
+    flatpak uninstall --system -y --unused
+}
+
+case "${1:-}" in
+    installer)
+        [[ $# -eq 2 && "$2" =~ ^[a-z]+$ ]] || echec "usage : ankh-craft installer <nom>"
+        [[ ${EUID} -eq 0 ]] || echec "installer : en root seulement, par ankh-craft@$2.service"
+        champ "$2" 1 > /dev/null
+        install -d -m 0755 "${EN_COURS}/$2"
+        installer "$2" 2>&1 | tee "${EN_COURS}/$2/journal"
+        ;;
+    preparer)
+        [[ $# -ge 2 ]] || echec "usage : ankh-craft preparer <nom>..."
+        shift
+        preparer "$@"
+        ;;
+    nouveautes)
+        [[ $# -eq 1 ]] || echec "usage : ankh-craft nouveautes"
+        nouveautes
+        ;;
+    installees)
+        [[ $# -le 2 ]] || echec "usage : ankh-craft installees [option]"
+        for nom in $(noms "${2:-}"); do
+            if installee "${nom}"; then
+                echo "${PREFIXE}${nom}"
+            fi
+        done
+        ;;
+    supprimer)
+        [[ $# -eq 1 ]] || echec "usage : ankh-craft supprimer"
+        supprimer
+        ;;
+    "${PREFIXE}"*)
+        ouvrir "$@"
+        ;;
+    *)
+        echec "usage : ankh-craft <application> [fichiers] | preparer <nom>... | installer <nom> | nouveautes | installees [option] | supprimer"
+        ;;
+esac

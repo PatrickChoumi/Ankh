@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=PdfCraft
+GenericName=Éditeur de PDF
+Comment=Lire, organiser, assembler, découper et protéger des PDF. Suite Craft, dans l'option Création d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.pdfcraft %F
+Icon=ai.storyteller.pdfcraft
+Terminal=false
+StartupWMClass=ai.storyteller.pdfcraft
+Categories=Office;Viewer;
+Keywords=pdf;annoter;signer;formulaire;fusionner;découper;acrobat;viewer;editor;annotate;sign;forms;merge;split;
+MimeType=application/pdf;

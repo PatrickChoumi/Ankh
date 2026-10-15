@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-15** (PR #16 fusionnée ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, commencé ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée, D-053).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-15** (PR #16 et #17 fusionnées ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, fusionné ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée et mise en œuvre sur la branche, D-053).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -313,6 +313,14 @@
 - **Ma demande** : remplacer OnlyOffice par la suite ArtCraft, découverte le jour même.
 - **Vérifié par Claude** dans les dépôts officiels : dix « Crafting Apps » open source (MIT ou Apache-2.0), en Rust, isolées en Flatpak, toutes en alpha (DesignCraft en pré-alpha), pas encore sur Flathub, paquets Linux non signés (sommes SHA256 seulement). Le studio ArtCraft, lui, génère par des services d'IA payants en ligne.
 - **Mes choix** : OnlyOffice remplacé, malgré l'alpha ; WordCraft, GridCraft et DeckCraft toujours là (Simple) ; les sept clones d'Adobe dans une nouvelle option « Création » ; sans le studio ArtCraft ; après le lot 0.
+- **Mise en œuvre** (2026-10-15, sur la branche de travail ; CI et VM en cours) :
+  - OnlyOffice retiré : paquet, dépôt, clé, formats, favori du menu (remplacé par WordCraft), tests ;
+  - à chaque construction, la dernière version de chacune des dix applications et l'empreinte SHA256 de son Flatpak sont figées dans l'image ; la construction échoue s'il en manque une ;
+  - entrées du menu en français et icônes officielles ; WordCraft, GridCraft et DeckCraft pour toute installation, les sept autres avec la carte « Création » (assistant et « Options d'Ankh ») ;
+  - premier clic : une fenêtre montre le téléchargement depuis GitHub ; l'empreinte est vérifiée, puis le Flatpak est installé pour toute la machine par un service d'Ankh, sans mot de passe pour un administrateur (nouvelle règle polkit, à relire) ;
+  - les documents de bureau s'ouvrent avec WordCraft, GridCraft et DeckCraft ; le texte, le PDF et les images restent aux applications qui les ouvrent déjà ;
+  - une nouvelle version est proposée par une notification à l'ouverture de la session, avec « Mettre à jour » et « Ignorer cette version » (et non à l'ouverture de l'application, comme prévu : après l'installation, l'entrée du menu est celle de Flatpak) ;
+  - tests : nouveau Test 17 ; en VM, premier clic sur WordCraft, Discover après l'installation, notification d'une nouvelle version ; les dix dans le test complet.
 
 ### Chantier Interface — au pixel près de Windows 11 (depuis le 2026-10-14)
 
@@ -355,13 +363,10 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
 
-### Suite Craft d'ArtCraft (D-053, après le lot 0)
+### Suite Craft d'ArtCraft (D-053, mise en œuvre sur la branche)
 
-- Retirer OnlyOffice : image, dépôt et clé, applications par défaut, favoris du menu, tests.
-- Simple : WordCraft, GridCraft et DeckCraft dans le menu, préparés au premier clic en Flatpak.
-- Nouvelle option « Création » (assistant, « Options d'Ankh », Complète) : PhotoCraft, VectorCraft, FilmCraft, LightCraft, PdfCraft, EffectCraft, DesignCraft.
-- Versions et empreintes SHA256 figées à chaque construction de l'image, vérifiées au premier clic ; nouvelle version proposée, jamais imposée.
-- Tests : Test 12 adapté ; en VM, premier clic sur WordCraft à chaque PR, sur les dix dans le test complet.
+- Vérifier par la CI et en VM : construction (versions figées), Tests 12, 15 et 17, premier clic sur WordCraft, Discover, notification ; puis le test complet sur les dix applications.
+- Ouvrir la PR avec mon accord, puis la mener au vert.
 
 ### Reste de la phase 3, sans la bloquer
 
@@ -411,6 +416,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 - **Protontricks** (D-050) : qu'il trouve Steam une fois Steam connecté à mon compte, sur ma machine.
 - **Lutris et Bottles** (D-050) : MangoHud, Gamescope et vkBasalt en Flatpak pour leurs jeux (runtime GNOME 49 et 50, pas de version publiée).
 - **Compte qui n'est pas administrateur** (D-050) : Flatpak devrait lui demander le mot de passe d'un administrateur au premier clic ; en VM, il a été refusé sans fenêtre. Seulement utile si un deuxième compte doit installer des jeux.
+- **Suite Craft** (D-053) : ses documents de bureau sur de vrais fichiers, sur ma machine (phase 9) ; garder des copies tant que les applications sont en alpha.
 - **« Options d'Ankh »** (D-046) : non testés en VM, le mot de passe refusé ou non donné, et les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée). Limite connue : seule la barre du compte qui ouvre la fenêtre suit ; un autre compte de la machine garderait VS Code épinglé.
 
 ---

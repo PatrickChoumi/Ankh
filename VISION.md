@@ -139,7 +139,7 @@ C'est mon exigence générale (ANKH-SPEC.md).
 ### Création
 
 - **Les clones d'Adobe de la suite Craft d'ArtCraft**, open source, en Rust, isolés en Flatpak, prêts au premier clic : PhotoCraft (comme Photoshop), VectorCraft (Illustrator), FilmCraft (Premiere Pro), LightCraft (Lightroom), PdfCraft (Acrobat), EffectCraft (After Effects) et DesignCraft (InDesign) (D-053).
-- **Limite assumée** : ce sont des logiciels jeunes, encore en alpha en 2026 ; leurs mises à jour passent par Ankh tant qu'ils ne sont pas sur Flathub (D-053).
+- **Limite assumée** : ce sont des logiciels jeunes, encore en alpha en 2026 ; leurs mises à jour passent par Ankh tant qu'ils ne sont pas sur Flathub : une notification, à l'ouverture de la session, propose chaque nouvelle version, jamais imposée (D-053).
 
 ### Complète
 

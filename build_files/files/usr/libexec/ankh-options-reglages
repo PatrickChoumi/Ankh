@@ -11,14 +11,15 @@
 #           ou la barre de cette session n'ont pas suivi ;
 #         « question : supprimer <options> » : ces options sont retirées et
 #           ce qu'elles ont téléchargé est encore là (environnement de dev de
-#           ce compte, applications Gaming de la machine).
+#           ce compte, applications Gaming et Création de la machine).
 #       Quand le choix n'est pas appliqué, le code de sortie est celui de
 #       pkexec : 126 si la fenêtre du mot de passe est fermée, 127 si
 #       l'autorisation est refusée (pkexec(1)).
 #   ankh-options-reglages supprimer <options>
 #       Supprime ce que ces options ont téléchargé : l'environnement de dev de
 #       ce compte (ankh-dev supprimer), les applications Gaming de la machine
-#       (ankh-flatpak supprimer). Les fichiers, les projets et les jeux
+#       (ankh-flatpak supprimer), les applications Création de la machine
+#       (ankh-craft supprimer). Les fichiers, les projets et les jeux
 #       restent dans le dossier personnel.
 #
 # pkexec plutôt que « systemctl start ankh-options@<choix> », le chemin de
@@ -102,6 +103,9 @@ appliquer() { # $1 : choix
     if [[ "${avant}" == *" gaming "* && "${apres}" != *" gaming "* && -n "$(/usr/libexec/ankh-flatpak installees)" ]]; then
         a_supprimer+=(gaming)
     fi
+    if [[ "${avant}" == *" creation "* && "${apres}" != *" creation "* && -n "$(/usr/libexec/ankh-craft installees creation)" ]]; then
+        a_supprimer+=(creation)
+    fi
     if ((${#a_supprimer[@]})); then
         echo "question : supprimer ${a_supprimer[*]}"
     fi
@@ -113,6 +117,7 @@ supprimer() { # $@ : options
         case "${option}" in
             dev) /usr/libexec/ankh-dev supprimer ;;
             gaming) /usr/libexec/ankh-flatpak supprimer ;;
+            creation) /usr/libexec/ankh-craft supprimer ;;
             *)
                 echo "ankh-options-reglages : rien à supprimer pour « ${option} »" >&2
                 exit 2

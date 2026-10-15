@@ -1,7 +1,8 @@
 #!/usr/bin/bash
-# D-046 : options d'Ankh (Simple toujours incluse ; Dev ; Gaming ; Hacking
-# bientôt ; Complète), page de l'assistant et fenêtre « Options d'Ankh ».
-# Le contenu de l'option Gaming a son propre test (tests/gaming.sh).
+# D-046 : options d'Ankh (Simple toujours incluse ; Dev ; Gaming ; Création ;
+# Hacking bientôt ; Complète), page de l'assistant et fenêtre « Options d'Ankh ».
+# Le contenu des options Gaming et Création a son propre test (tests/gaming.sh,
+# tests/craft.sh).
 # Lancé dans l'image par « just test » (Test 15), en root,
 # dans un conteneur jetable : ce qu'il écrit dans /etc et /usr/local disparaît
 # avec lui.
@@ -73,12 +74,13 @@ done
 
 echo "Sans choix enregistré : comme Complète"
 test ! -e /etc/ankh/options || echec "/etc/ankh/options existe déjà dans l'image"
-[[ "$(/usr/libexec/ankh-options choix)" == "dev gaming hacking" ]] || echec "choix par défaut inattendu"
+[[ "$(/usr/libexec/ankh-options choix)" == "dev gaming creation hacking" ]] || echec "choix par défaut inattendu"
 /usr/libexec/ankh-options synchroniser
 lien ankh-vscode.desktop || echec "VS Code absent du menu avec Complète"
 lien ankh-dev-mettre-a-jour.desktop || echec "« Mettre à jour les outils de dev » absent avec Complète"
 test -L "${menu}/com.valvesoftware.Steam.desktop" || echec "Steam absent du menu avec Complète"
 test -L /usr/local/share/wayland-sessions/ankh-console.desktop || echec "session « Ankh Console » absente avec Complète"
+test -L "${menu}/ai.storyteller.photocraft.desktop" || echec "PhotoCraft absent du menu avec Complète"
 
 echo "Simple seule : plus de VS Code"
 /usr/libexec/ankh-options appliquer simple
@@ -86,6 +88,8 @@ echo "Simple seule : plus de VS Code"
 test ! -e "${menu}/ankh-vscode.desktop" || echec "VS Code encore dans le menu avec Simple seule"
 test ! -e "${menu}/com.valvesoftware.Steam.desktop" || echec "Steam encore dans le menu avec Simple seule"
 test ! -e /usr/local/share/wayland-sessions/ankh-console.desktop || echec "session « Ankh Console » encore là avec Simple seule"
+test ! -e "${menu}/ai.storyteller.photocraft.desktop" || echec "PhotoCraft encore dans le menu avec Simple seule"
+test -f /usr/share/applications/ai.storyteller.wordcraft.desktop || echec "WordCraft absent du menu avec Simple seule"
 
 echo "Dev : VS Code revient ; l'ordre et les doublons ne comptent pas"
 /usr/libexec/ankh-options appliquer hacking_dev_dev

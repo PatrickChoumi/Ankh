@@ -3,7 +3,7 @@
 # premier démarrage ou dans « Options d'Ankh » de la Configuration du système.
 #   ankh-options appliquer <choix>  enregistre le choix, puis l'applique. Le
 #                                   choix est « simple », ou des options
-#                                   séparées par « _ » : dev_gaming…
+#                                   séparées par « _ » : dev_gaming_creation…
 #   ankh-options synchroniser       applique le choix enregistré (au démarrage)
 #   ankh-options choix              affiche les options choisies
 # Lancé en root par les services ankh-options.service et ankh-options@.service,
@@ -11,7 +11,8 @@
 #
 # Le choix est écrit dans /etc/ankh/options. Sans ce fichier, toutes les
 # options sont choisies, comme avec Complète : rien ne disparaît sans qu'on
-# l'ait demandé. Simple (Chrome, VLC, OnlyOffice) est toujours là.
+# l'ait demandé. Simple (Chrome, VLC, et WordCraft, GridCraft et DeckCraft de
+# la suite Craft, D-053) est toujours là.
 # Les entrées du menu de chaque option sont dans l'image, hors du menu
 # (/usr/share/ankh/options/<option>/applications). Une option choisie y gagne
 # un lien dans /usr/local/share/applications, dossier lu avant /usr/share
@@ -26,7 +27,7 @@
 set -euo pipefail
 shopt -s nullglob
 
-readonly OPTIONS_CONNUES=(dev gaming hacking)
+readonly OPTIONS_CONNUES=(dev gaming creation hacking)
 readonly FICHIER=/etc/ankh/options
 readonly SOURCE=/usr/share/ankh/options
 readonly CIBLE=/usr/local/share
@@ -134,7 +135,7 @@ appliquer() { # $1 : choix
     done
     install -d -m 0755 "$(dirname "${FICHIER}")"
     {
-        echo "# Options d'Ankh choisies (D-046) : dev, gaming, hacking. Vide : Simple seule."
+        echo "# Options d'Ankh choisies (D-046) : dev, gaming, creation, hacking. Vide : Simple seule."
         echo "# Écrit par /usr/libexec/ankh-options : à changer dans « Options d'Ankh »."
         echo "OPTIONS=${retenues[*]}"
     } > "${FICHIER}.nouveau"

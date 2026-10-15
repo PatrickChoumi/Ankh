@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=DeckCraft
+GenericName=Présentation
+Comment=Créer et présenter des diaporamas. Suite Craft, dans l'image d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.deckcraft %F
+Icon=ai.storyteller.deckcraft
+Terminal=false
+StartupWMClass=ai.storyteller.deckcraft
+Categories=Office;Presentation;
+Keywords=présentation;diapositives;diaporama;powerpoint;presentation;slides;slide show;deck;pptx;keynote;
+MimeType=application/x-deckcraft;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.presentationml.template;application/vnd.openxmlformats-officedocument.presentationml.slideshow;

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=VectorCraft
+GenericName=Éditeur de dessin vectoriel
+Comment=Dessiner et modifier des illustrations vectorielles, en SVG et en PDF. Suite Craft, dans l'option Création d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.vectorcraft %F
+Icon=ai.storyteller.vectorcraft
+Terminal=false
+StartupWMClass=ai.storyteller.vectorcraft
+Categories=Graphics;2DGraphics;VectorGraphics;
+Keywords=vectoriel;illustration;dessin;courbes;illustrator;vector;svg;pdf;drawing;bezier;
+MimeType=image/svg+xml;application/pdf;

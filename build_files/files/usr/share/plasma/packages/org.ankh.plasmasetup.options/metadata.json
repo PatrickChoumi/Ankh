@@ -6,7 +6,7 @@
                 "Name": "Ankh"
             }
         ],
-        "Description": "Choix des outils installés au premier démarrage : Simple, Dev, Gaming, Hacking, Complète (D-046).",
+        "Description": "Choix des outils installés au premier démarrage : Simple, Dev, Gaming, Création, Hacking, Complète (D-046, D-053).",
         "Id": "org.ankh.plasmasetup.options",
         "License": "GPL-2.0-or-later",
         "Name": "Choisissez vos outils",

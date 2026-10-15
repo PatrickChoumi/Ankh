@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Suite Craft : nouvelles versions
+Comment=Propose les nouvelles versions de la suite Craft figées dans Ankh (D-053)
+Exec=/usr/libexec/ankh-craft nouveautes
+NoDisplay=true
+OnlyShowIn=KDE;

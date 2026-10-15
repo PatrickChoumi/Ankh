@@ -1,0 +1,25 @@
+// Suite Craft (D-053) : un administrateur (groupe wheel), dans sa session
+// active et locale, démarre sans mot de passe le service qui télécharge et
+// installe une application de la suite pour toute la machine :
+// ankh-craft@<nom>.service (/usr/libexec/ankh-craft). Ce service n'installe
+// que le Flatpak dont l'empreinte SHA256 est figée dans l'image, et
+// seulement si son option est choisie ; il refuse tout autre nom.
+// C'est, pour ces Flatpak en un seul fichier, l'équivalent de la règle de
+// Flatpak pour le groupe wheel (system-helper/org.freedesktop.Flatpak.rules.in
+// de https://github.com/flatpak/flatpak : installer depuis un dépôt sans mot
+// de passe), qui ne couvre pas leur installation (action
+// org.freedesktop.Flatpak.install-bundle, mot de passe administrateur).
+// systemd transmet à polkit le nom du service (« unit ») et l'opération
+// (« verb ») depuis sa version 226 (voir 50-ankh-options.rules).
+// Les autres comptes suivent la règle par défaut de systemd : mot de passe
+// administrateur.
+polkit.addRule(function (action, subject) {
+    if (action.id !== "org.freedesktop.systemd1.manage-units" || !subject.active || !subject.local ||
+        !subject.isInGroup("wheel")) {
+        return;
+    }
+    var unite = /^ankh-craft@[a-z]+\.service$/;
+    if (action.lookup("verb") === "start" && unite.test(action.lookup("unit"))) {
+        return polkit.Result.YES;
+    }
+});

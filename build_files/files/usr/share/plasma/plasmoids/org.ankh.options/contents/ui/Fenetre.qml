@@ -8,7 +8,7 @@
 // administrateur ; le menu et la barre de la session suivent. Quand une option
 // est retirée, la fenêtre propose de supprimer ce qu'elle a téléchargé
 // (« ankh-options-reglages supprimer <options> » : environnement de dev du
-// compte, applications Gaming de la machine). Les commandes passent par le
+// compte, applications Gaming et Création de la machine). Les commandes passent par le
 // moteur « executable » de Plasma5Support, comme dans l'assistant.
 
 import QtQuick
@@ -25,7 +25,7 @@ Item {
 
     // plasmawindowed ouvre la fenêtre à cette taille (plasmawindowedview.cpp)
     Layout.minimumWidth: Kirigami.Units.gridUnit * 36
-    Layout.minimumHeight: Kirigami.Units.gridUnit * 34
+    Layout.minimumHeight: Kirigami.Units.gridUnit * 38
 
     readonly property string commandeChoix: "/usr/libexec/ankh-options choix"
     readonly property string commandeAppliquer: "/usr/libexec/ankh-options-reglages appliquer "
@@ -47,7 +47,8 @@ Item {
     // Ce que chaque option a téléchargé, pour la question de suppression
     readonly property var telechargements: ({
         dev: "l'environnement de dev de votre compte",
-        gaming: "les applications Gaming de la machine"
+        gaming: "les applications Gaming de la machine",
+        creation: "les applications Création de la machine"
     })
 
     function lancer(commande: string, texte: string): void {
@@ -111,6 +112,11 @@ Item {
                 phrases.push("Steam et les autres outils Gaming sont dans le menu, et Steam dans la barre : chacun se prépare à son premier lancement.");
             } else if (avant.includes("gaming") && !apres.includes("gaming")) {
                 phrases.push("Les outils Gaming ne sont plus dans le menu ni dans la barre.");
+            }
+            if (!avant.includes("creation") && apres.includes("creation")) {
+                phrases.push("PhotoCraft et les autres applications Création sont dans le menu : chacune se prépare à son premier lancement.");
+            } else if (avant.includes("creation") && !apres.includes("creation")) {
+                phrases.push("Les applications Création ne sont plus dans le menu.");
             }
             texteFait = "C'est fait. " + phrases.join(" ");
             // Lignes écrites par ankh-options-reglages
