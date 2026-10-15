@@ -30,7 +30,12 @@
   - Mes choix du 2026-10-13 (D-050, D-051) : les outils du jeu aussi en Flatpak, préparés avec chaque lanceur ; la session « Ankh Console » (KWin et Steam Big Picture, sans Gamescope) ; Steam dans la barre ; ntsync chargé avec l'option Gaming, seul réglage du système ajouté (D-051).
   - Fait ([#15](https://github.com/PatrickChoumi/Ankh/pull/15) fusionnée le 2026-10-14), vérifié en VM : huit applications au premier clic (Steam, Heroic, Lutris, Bottles, ProtonPlus, Protontricks, Discord, OBS), outils du jeu dans l'image, ntsync, session « Ankh Console », case Gaming dans l'assistant et dans « Options d'Ankh ». Le premier clic sur les huit applications est vérifié par le test complet en VM (chaque lundi et à la demande).
   - Les noms de mes jeux (ANKH-SPEC Q6) viendront plus tard : le critère de la phase les attend.
+  - Résultats des huit applications en VM notés dans D-050 ([#16](https://github.com/PatrickChoumi/Ankh/pull/16) fusionnée le 2026-10-15).
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
+- **Chantier Interface (D-052), en parallèle de la phase 5, depuis le 2026-10-14** : l'interface au pixel près de Windows 11, aux couleurs d'Ankh, avec nos propres thèmes dérivés du code de KDE. Onze lots, chacun dans sa PR, avec captures avant/après et mesures automatiques en VM.
+  - Mes choix du 2026-10-14 : rigueur de Windows 11 avec l'identité d'Ankh ; nos thèmes dérivés de KDE ; barre des tâches collée de 48 px ; curseur blanc.
+  - À DÉCIDER par moi : la police et les icônes, sur les planches de comparaison.
+  - En cours : lot 0, le banc de mesure.
 - **Phase 3 terminée le 2026-10-13** : son critère est rempli (Chrome par défaut, VLC et OnlyOffice, choix des options pour Simple et Dev, mises à jour dans Discover, VS Code et le conteneur de dev recréés depuis le dépôt au premier clic, tout testé en CI et en VM cloud). Détail :
   - Fait : les mises à jour du système dans Discover (D-028, [#4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée).
   - Fait ([#5](https://github.com/PatrickChoumi/Ankh/pull/5) fusionnée) :
@@ -156,6 +161,8 @@ Chaque phase a un critère de fin **vérifiable**. On ne passe pas à la suivant
 | **9. Bascule sur la vraie machine** | Ankh devient mon système | Ma distro actuelle est sauvegardée et la sauvegarde vérifiée. Avant d'installer : l'ISO d'Ankh est construite par la CI, et l'installation du système sans réseau réussit en VM (D-046, D-049). Installation depuis l'ISO, avec LUKS. Checklist matériel validée : GPU, son, réseau, Bluetooth, veille, écrans, jeux (le filtrage vient avec la phase 4, D-040). Une semaine d'usage sans retour arrière définitif |
 | **10. Vivre avec Ankh** | Corriger selon mes vraies irritations | Plusieurs semaines d'usage. Irritations notées, puis traitées une par une. Taille des mises à jour mesurée et réduite (D-027) |
 | **4. Protection** *(déplacée à la fin, D-040)* | safezone adapté et intégré (D-026, D-030) | Conception tranchée dans DECISIONS.md. Les tests de safezone passent sur l'image Ankh. Les contournements propres au modèle image-based (`bootc switch`, retour arrière, `/etc`) sont traités ou documentés. Filtrage vérifié sur ma machine. → **Ankh V1** |
+
+**Chantier Interface (D-052)** : il avance en parallèle des phases, lot par lot (0 à 10), sans bloquer ni attendre une phase. Chaque lot a son critère : ses mesures du banc deviennent obligatoires en VM, et j'ai vu ses captures avant et après.
 
 **Options d'installation (D-046)** : la phase 3 fait Simple, Dev et le choix des options ; la phase 5 remplit Gaming ; les phases 6 et 7 remplissent Hacking ; Complète les réunit. L'ISO se fait au début de la phase 9.
 

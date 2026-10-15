@@ -11,7 +11,7 @@ Ankh est **mon** système pour coder, jouer et faire de la cybersécurité. C'es
 
 - **incassable** : une mise à jour se défait d'un geste ;
 - **protégé** : ce qui est dangereux reste enfermé ;
-- **beau** : au niveau de macOS et de Windows 11, sans rien de Fedora à l'écran ;
+- **beau** : au pixel près de Windows 11, aux couleurs d'Ankh, sans rien de Fedora à l'écran ;
 - **à moi** : rien ne s'y installe ni ne s'y met à jour sans moi.
 
 ## Une version, des options choisies à l'installation (D-046)
@@ -73,11 +73,12 @@ C'est mon exigence générale (ANKH-SPEC.md).
   - le chargement de la session et le bureau ;
   - « À propos ».
 - Une identité à lui : graphite et violet, sombre par défaut. Un thème clair existe aussi, avec un passage automatique de l'un à l'autre si je l'active (D-037, D-042).
-- Des finitions au niveau de macOS et de Windows 11 (D-039, D-042) :
-  - une barre flottante en verre et des coins arrondis ;
-  - la recherche au centre de l'écran ;
-  - des animations douces ;
-  - un accueil et des raccourcis utiles.
+- Une interface au pixel près de Windows 11, avec l'identité d'Ankh, faite de nos propres thèmes dérivés du code de KDE (D-052) :
+  - les mesures de Windows 11 : barres de titre, coins de 4 et 8 px, contrôles, textes, ombres et animations ;
+  - sa disposition : la barre des tâches collée en bas, en verre, avec Démarrer et les applications au centre ; les paramètres rapides en un seul volet ;
+  - un curseur blanc ;
+  - chaque mesure vérifiée automatiquement en VM, à chaque changement.
+- Des finitions venues de macOS et de Windows 11 (D-039, D-042) : la recherche au centre de l'écran, un accueil et des raccourcis utiles.
 - Une collection de fonds d'écran d'Ankh (D-034).
 - Tout est en français, et Ankh me vouvoie (D-043).
 
@@ -147,6 +148,7 @@ C'est mon exigence générale (ANKH-SPEC.md).
 | Point ouvert | Où | Quand |
 |---|---|---|
 | Comment Ankh propose sa version NVIDIA au premier démarrage | D-049 | Phase 9 |
+| Police et icônes de l'interface | D-052 | Sur les planches de comparaison du 2026-10-14 |
 | Mon matériel et ma distro actuelle (questions 1 à 5 et 10 à 12) | ANKH-SPEC.md §1 | Avant la phase 9 |
 | Réseau bas niveau pour le hacking | D-013 | Phase 6 |
 | Sauvegarde et récupération | D-019 | Phase 8 |
