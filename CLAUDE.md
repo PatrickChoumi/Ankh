@@ -36,6 +36,7 @@
   - Mes choix du 2026-10-14 : rigueur de Windows 11 avec l'identité d'Ankh ; nos thèmes dérivés de KDE ; barre des tâches collée de 48 px ; curseur blanc.
   - À DÉCIDER par moi : la police et les icônes, sur les planches de comparaison.
   - En cours : lot 0, le banc de mesure.
+- **Suite Craft d'ArtCraft (D-053), décidée le 2026-10-15, à faire après le lot 0** : OnlyOffice retiré ; WordCraft, GridCraft et DeckCraft toujours là (Simple), les sept clones d'Adobe dans une nouvelle option « Création ». Applications en alpha, en Flatpak préparé au premier clic, versions et empreintes figées dans l'image.
 - **Phase 3 terminée le 2026-10-13** : son critère est rempli (Chrome par défaut, VLC et OnlyOffice, choix des options pour Simple et Dev, mises à jour dans Discover, VS Code et le conteneur de dev recréés depuis le dépôt au premier clic, tout testé en CI et en VM cloud). Détail :
   - Fait : les mises à jour du système dans Discover (D-028, [#4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée).
   - Fait ([#5](https://github.com/PatrickChoumi/Ankh/pull/5) fusionnée) :

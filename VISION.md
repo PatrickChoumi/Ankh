@@ -7,7 +7,7 @@
 
 ## En une phrase
 
-Ankh est **mon** système pour coder, jouer et faire de la cybersécurité. C'est **une seule version**, où je coche à l'installation ce que je veux : Simple, Dev, Gaming, Hacking, ou Complète. Il est :
+Ankh est **mon** système pour coder, jouer et faire de la cybersécurité. C'est **une seule version**, où je coche à l'installation ce que je veux : Simple, Dev, Gaming, Hacking, Création, ou Complète. Il est :
 
 - **incassable** : une mise à jour se défait d'un geste ;
 - **protégé** : ce qui est dangereux reste enfermé ;
@@ -20,11 +20,12 @@ Comme l'installation d'Ubuntu, adaptée à Ankh : des cases à cocher, combinabl
 
 | Case | Ce qu'elle installe |
 |---|---|
-| **Simple**, toujours incluse | Chrome, VLC et OnlyOffice |
+| **Simple**, toujours incluse | Chrome et VLC ; la bureautique de la suite Craft : WordCraft, GridCraft et DeckCraft (D-053) |
 | **Dev** | VS Code et les outils du dev, dans un conteneur |
 | **Gaming** | Steam et les autres lanceurs, les outils du jeu, les manettes, le mode console, Discord et OBS |
 | **Hacking** | Kali dans un conteneur isolé, les labs dans des VMs isolées ; plus tard, l'analyse de malware et le Wi-Fi offensif |
-| **Complète** | Coche Dev, Gaming et Hacking |
+| **Création** | Les clones d'Adobe de la suite Craft : PhotoCraft, VectorCraft, FilmCraft, LightCraft, PdfCraft, EffectCraft et DesignCraft (D-053) |
+| **Complète** | Coche Dev, Gaming, Hacking et Création |
 
 - **Une seule ISO d'installation d'Ankh** pour tous les PC, publiée dans une Release GitHub : elle contient le système, qui s'installe sans internet. Les options cochées se téléchargent ensuite, seulement elles. Sur un PC NVIDIA, Ankh propose sa version NVIDIA (D-048, D-049).
 - **Ce qui n'est pas coché n'est pas installé** : sans la case Dev, pas de VS Code ; sans Gaming, pas de Steam ; sans Hacking, pas de Kali. Seules quelques petites pièces du système restent présentes, cachées et à l'arrêt (D-046).
@@ -85,7 +86,7 @@ C'est mon exigence générale (ANKH-SPEC.md).
 ### Le quotidien sans terminal (D-025)
 
 - Chrome est le navigateur par défaut ; il n'y a pas de Firefox (D-023).
-- VLC et OnlyOffice sont toujours là (D-035, D-046).
+- VLC est toujours là (D-035). La bureautique aussi : WordCraft, GridCraft et DeckCraft, de la suite Craft d'ArtCraft, en Flatpak, préparées au premier clic (D-053).
 - Aucune application web n'est imposée dans Chrome : j'installe moi-même celles que je veux, comme Claude ou GitHub (D-047).
 - Chaque outil s'ouvre depuis le menu. S'il doit d'abord se télécharger, le premier clic le prépare en montrant la progression (D-036).
 - Le terminal reste là, sans restriction, pour quand j'en ai besoin (D-025).
@@ -134,9 +135,14 @@ C'est mon exigence générale (ANKH-SPEC.md).
 - **Cadre** : uniquement sur des systèmes à moi, ou avec une autorisation écrite (ANKH-SPEC 4.4).
 - **À préciser** (ANKH-SPEC 4.4, TODO) : les outils de Kali que j'utilise, les plateformes de CTF, les VMs nécessaires.
 
+### Création
+
+- **Les clones d'Adobe de la suite Craft d'ArtCraft**, open source, en Rust, isolés en Flatpak, prêts au premier clic : PhotoCraft (comme Photoshop), VectorCraft (Illustrator), FilmCraft (Premiere Pro), LightCraft (Lightroom), PdfCraft (Acrobat), EffectCraft (After Effects) et DesignCraft (InDesign) (D-053).
+- **Limite assumée** : ce sont des logiciels jeunes, encore en alpha en 2026 ; leurs mises à jour passent par Ankh tant qu'ils ne sont pas sur Flathub (D-053).
+
 ### Complète
 
-- Dev, Gaming et Hacking, dans la même installation.
+- Dev, Gaming, Hacking et Création, dans la même installation.
 
 ## Ce qu'Ankh ne sera jamais
 

@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-15** (PR #16 fusionnée ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, commencé).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-15** (PR #16 fusionnée ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, commencé ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée, D-053).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -308,6 +308,12 @@
   - ce test télécharge plusieurs Go : il tourne chaque lundi et à la demande, pas pour chaque PR.
 - **Résultats notés dans D-050** ([#16](https://github.com/PatrickChoumi/Ankh/pull/16) fusionnée le 2026-10-15).
 
+### Suite Craft d'ArtCraft (décidée le 2026-10-15, D-053)
+
+- **Ma demande** : remplacer OnlyOffice par la suite ArtCraft, découverte le jour même.
+- **Vérifié par Claude** dans les dépôts officiels : dix « Crafting Apps » open source (MIT ou Apache-2.0), en Rust, isolées en Flatpak, toutes en alpha (DesignCraft en pré-alpha), pas encore sur Flathub, paquets Linux non signés (sommes SHA256 seulement). Le studio ArtCraft, lui, génère par des services d'IA payants en ligne.
+- **Mes choix** : OnlyOffice remplacé, malgré l'alpha ; WordCraft, GridCraft et DeckCraft toujours là (Simple) ; les sept clones d'Adobe dans une nouvelle option « Création » ; sans le studio ArtCraft ; après le lot 0.
+
 ### Chantier Interface — au pixel près de Windows 11 (depuis le 2026-10-14)
 
 - **Ma demande du 2026-10-14** : une interface « pixel perfect », au niveau de Windows 11. D'abord un plan exhaustif, des questions et des recherches.
@@ -346,6 +352,14 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 8. Applications : Dolphin, réglages, Discover, Konsole, Chrome, VS Code, GTK, libadwaita, Electron ; plus de fenêtre de KDE Wallet.
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
+
+### Suite Craft d'ArtCraft (D-053, après le lot 0)
+
+- Retirer OnlyOffice : image, dépôt et clé, applications par défaut, favoris du menu, tests.
+- Simple : WordCraft, GridCraft et DeckCraft dans le menu, préparés au premier clic en Flatpak.
+- Nouvelle option « Création » (assistant, « Options d'Ankh », Complète) : PhotoCraft, VectorCraft, FilmCraft, LightCraft, PdfCraft, EffectCraft, DesignCraft.
+- Versions et empreintes SHA256 figées à chaque construction de l'image, vérifiées au premier clic ; nouvelle version proposée, jamais imposée.
+- Tests : Test 12 adapté ; en VM, premier clic sur WordCraft à chaque PR, sur les dix dans le test complet.
 
 ### Reste de la phase 3, sans la bloquer
 

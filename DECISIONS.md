@@ -41,7 +41,7 @@
 | D-021 | Image générique pour le maximum de PC (remplace D-002) | DÉCIDÉ (principe), couverture PROPOSÉE — À VALIDER |
 | D-022 | Signature sans clé (keyless) dans GitHub Actions (modifie D-018) | DÉCIDÉ (vérification sur la machine À VALIDER) |
 | D-023 | Chrome navigateur par défaut, installé dans l'image ; Firefox retiré | DÉCIDÉ |
-| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035 ; Claude et GitHub retirés : D-047) |
+| D-024 | Applications par défaut (VLC, OnlyOffice, Claude et GitHub via Chrome, VS Code) | DÉCIDÉ (VLC et OnlyOffice dans l'image : D-035 ; Claude et GitHub retirés : D-047 ; OnlyOffice remplacé par D-053) |
 | D-025 | Terminal : le quotidien se fait sans terminal (confort, pas de restriction) | DÉCIDÉ (interface des mises à jour : D-028) |
 | D-026 | Protection contre le contenu pour adultes : safezone adapté et intégré | DÉCIDÉ (principe), conception À DÉCIDER ; variantes avec et sans : D-030 |
 | D-027 | Connexion internet lente : tests dans le cloud, mises à jour au rythme que je choisis | DÉCIDÉ (2026-10-07, ajusté ; réduction de la taille des mises à jour en phase 10 ; ISO hors ligne reprise par D-046) |
@@ -52,7 +52,7 @@
 | D-032 | Conteneur de dev : Fedora, langages fullstack, VS Code dans le conteneur (précise D-012 et D-024) | DÉCIDÉ (CI verte ; extensions validées le 2026-10-09 ; versions de Node.js et Java : D-035 ; un seul Ankh, sans « ankh-dev » à gérer : D-036) |
 | D-033 | Habillage Ankh sur le bureau : nom, logo, fonds d'écran (modifie D-001) | DÉCIDÉ (complété par D-034) |
 | D-034 | Plus rien de Fedora à l'écran, démarrage compris ; collection de fonds d'écran (complète D-033) | DÉCIDÉ (corrigé le 2026-10-09 après lecture des captures : « À propos » et écran de démarrage ; écran de démarrage entièrement d'Ankh : D-043) |
-| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER) |
+| D-035 | VLC et OnlyOffice dans l'image, LibreOffice retiré ; Node.js et Java les plus récents dans le conteneur de dev (modifie D-011 et D-024) | DÉCIDÉ (CI et VM vertes ; versions du conteneur de dev remplacées par D-038 ; codecs et taille des mises à jour À VALIDER ; OnlyOffice remplacé par D-053) |
 | D-036 | Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032) | DÉCIDÉ (dev fait, vérifié en VM ; une seule version avec des options choisies à l'installation : D-046) |
 | D-037 | Identité visuelle d'Ankh : sombre partout, graphite et violet, barre flottante, icônes KDE à dossiers violets (complète D-033 et D-034) | DÉCIDÉ (aperçus validés le 2026-10-09 ; intégré dans l'image avec D-039 ; barre collée et curseur blanc : D-052) |
 | D-038 | Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035) | DÉCIDÉ (CI verte : Node.js 24, Java 25) |
@@ -63,13 +63,14 @@
 | D-043 | Démarrage et connexion entièrement d'Ankh : Plymouth « ankh » et SDDM ; logo officiel de VS Code ; vouvoiement (modifie D-034 et D-042) | DÉCIDÉ (2026-10-10, mes demandes ; à valider sur les captures en VM avant fusion ; touche au démarrage et à LUKS : à relire) |
 | D-044 | Quatre éditions d'Ankh : Dev, Gaming, Hacking, et Complète qui les réunit (modifie D-036) | REMPLACÉE par D-046 (2026-10-11) |
 | D-045 | VISION.md : le portrait d'Ankh à la fin, pour vérifier qu'on ne dévie pas | DÉCIDÉ (2026-10-11, ma demande) |
-| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre et vérifié en VM le 2026-10-12 (Simple et Dev) ; « Options d'Ankh » redessinée et vérifiée en VM le 2026-10-12 ; fabrication de l'ISO : D-048 |
+| D-046 | Une seule version d'Ankh, avec des options choisies à l'installation ; ISO d'installation hors ligne (remplace D-044 ; modifie D-001, D-027 et D-036) | DÉCIDÉ (2026-10-11, mes choix : choix au premier démarrage, pour toute la machine) ; choix des options mis en œuvre et vérifié en VM le 2026-10-12 (Simple et Dev) ; « Options d'Ankh » redessinée et vérifiée en VM le 2026-10-12 ; fabrication de l'ISO : D-048 ; Simple avec la bureautique Craft, option « Création » : D-053 |
 | D-047 | Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035) | DÉCIDÉ (2026-10-11, mon choix) |
 | D-048 | ISO d'installation : une seule pour toutes les cartes graphiques, construite et hébergée par GitHub (précise D-046) | DÉCIDÉ (2026-10-12, mon choix ; contenu allégé par D-049 ; mise en œuvre au début de la phase 9) |
 | D-049 | ISO légère : le système seul ; options et version NVIDIA téléchargées si besoin (modifie D-046 et D-048) | DÉCIDÉ (2026-10-12, mes choix ; mise en œuvre au début de la phase 9) |
 | D-050 | Phase 5 : l'option Gaming, avec les outils du jeu en Flatpak et la session « Ankh Console » (précise D-041 et D-046) | DÉCIDÉ (2026-10-13, mes choix ; précisé par D-051 ; vérifié en VM le 2026-10-13) |
 | D-051 | Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050) | DÉCIDÉ (2026-10-13, mon choix ; vérifié en VM le 2026-10-13) |
 | D-052 | Interface au pixel près, au niveau de Windows 11 : nos propres thèmes, dérivés du code de KDE (modifie D-037, D-039 et D-042) | DÉCIDÉ (2026-10-14, mes choix ; police et icônes À DÉCIDER sur planches ; mise en œuvre en onze lots, en parallèle de la phase 5) |
+| D-053 | La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046) | DÉCIDÉ (2026-10-15, mes choix : bureautique Craft dans Simple, clones d'Adobe dans « Création » ; mise en œuvre après le lot 0 de D-052) |
 
 ---
 
@@ -597,6 +598,7 @@
 - **Vérification** : tests CI pour les fichiers de préinstallation et la politique ; test réel au premier démarrage.
 - **Modifiée par D-035 (2026-10-09)** : VLC et OnlyOffice deviennent des paquets de l'image, et non des Flatpaks préinstallés. Claude et GitHub restent des applications web de Chrome, installées par la politique `WebAppInstallForceList`.
 - **Modifiée par D-047 (2026-10-11)** : Chrome n'installe plus Claude ni GitHub. Je les installe moi-même si je les veux ; GitHub reste accessible dans VS Code par Git.
+- **Modifiée par D-053 (2026-10-15)** : OnlyOffice est retiré ; les documents de bureau passent à WordCraft, GridCraft et DeckCraft, toujours dans le menu (Simple).
 
 ## D-025 — Terminal : le quotidien se fait sans terminal
 
@@ -1054,6 +1056,7 @@
     - la couche d'Ankh publiée sur `main` (sans OnlyOffice) se télécharge en 501,1 Mo. Avec OnlyOffice, une mise à jour devrait approcher 870 Mo (501 + 366, estimation). À MESURER après la fusion (D-027).
     - **Mesuré le 2026-10-09** ([run 37961330515](https://github.com/PatrickChoumi/Ankh/actions/runs/37961330515)) : passer à l'image publiée sur `main`, avec OnlyOffice et VLC, a téléchargé **1,2 Go** (2 couches), contre 501,1 Mo avant D-035. Comme toute reconstruction renouvelle la couche d'Ankh en entier, c'est la taille de chaque mise à jour que je lance. Réduire cette taille (découper l'image en couches qui ne changent pas à chaque fois) est une piste pour la phase 10 (D-027), ou plus tôt si je le décide.
 - **Modifiée par D-047 (2026-10-11)** : plus d'applications web Claude et GitHub installées par Chrome.
+- **Modifiée par D-053 (2026-10-15)** : OnlyOffice est retiré de l'image, remplacé par WordCraft, GridCraft et DeckCraft, préparés au premier clic (Simple). VLC reste dans l'image ; LibreOffice reste absent.
 
 ## D-036 — Un seul Ankh : outils de dev, de hacking et de gaming dans le menu, isolés dessous (précise D-011, D-012, D-013 et D-032)
 
@@ -1511,6 +1514,7 @@
   - en VM, une installation par choix utile (Simple seule, Dev, Complète) : ce qui n'est pas choisi est absent du disque et du menu ;
   - ajout puis retrait d'une option dans les réglages ;
   - avec l'ISO : installation en VM sans réseau.
+- **Modifiée par D-053 (2026-10-15)** : Simple contient Chrome, VLC, WordCraft, GridCraft et DeckCraft ; une option « Création » s'ajoute (les sept clones d'Adobe de la suite Craft), et Complète la coche aussi.
 
 ## D-047 — Plus de fenêtres Claude ni GitHub installées par Chrome (modifie D-024 et D-035)
 
@@ -1787,3 +1791,44 @@
     - **captures de chaque surface**, nommées `ui-<thème>-<échelle>-<surface>` : bureau, Démarrer, menu du bureau, Dolphin, dialogue, Configuration du système, Konsole, galerie, notification, volume, calendrier, infobulle, Alt+Tab, vue d'ensemble, recherche, déconnexion, en sombre à 100 % ; les principales en clair à 100 %, puis en sombre à 125 et 150 % ;
     - **rapport** `ui-rapport.md`, joint aux captures : chaque mesure, la cible de Windows 11, l'écart, son lot et son état (conforme, écart, relevé, non mesuré) ;
   - **vérifié en local le 2026-10-15** : la galerie se charge et écrit toutes ses mesures (Qt 6.12, sans Plasma, avec un Kirigami simulé) ; sur des images de synthèse, le rayon d'un coin est retrouvé à 0,2 px près sans contour, à 0,5 px près avec un contour clair, mais sous-estimé d'environ 1 px avec un contour plus sombre que le fond de la fenêtre ; un bouton Fermer de 46×32 et une barre de 44 px avec 8 px d'espace sont retrouvés exactement. Dans la VM : À VALIDER au premier passage.
+
+## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)
+
+- **Statut** : DÉCIDÉ (2026-10-15), mes choix. Mise en œuvre après le lot 0 de D-052, dans sa propre PR.
+- **Contexte** : ma demande du 2026-10-15 : « Laisse tomber OnlyOffice, retire tout ce qui y a trait, et mets toute la suite ArtCraft à la place. Je viens de tomber dessus et c'est trop une masterclass. Penses-tu que c'est une bonne idée ? »
+- **Ce que Claude a vérifié** dans les dépôts officiels (<https://github.com/storytold>, lus le 2026-10-15 ; presse : <https://gizmodo.com/someone-vibe-coded-a-free-knockoff-of-adobe-creative-suite-2000823322>, <https://futurism.com/future-society/adobe-creative-suite-software-open-source-artcraft>) :
+  - **les « Crafting Apps »**, de l'équipe ArtCraft : des réécritures « en salle blanche », en Rust, écrites en grande partie par des agents d'IA. Dix applications :
+    - PhotoCraft (comme Photoshop), VectorCraft (Illustrator), FilmCraft (Premiere Pro), LightCraft (Lightroom) ;
+    - PdfCraft (Acrobat), EffectCraft (After Effects), DesignCraft (InDesign) ;
+    - WordCraft (Word), GridCraft (Excel), DeckCraft (PowerPoint) ;
+  - **licence** : MIT ou Apache-2.0, au choix. Les noms et logos d'ArtCraft sont des marques, utilisables seulement sans modification (`docs/brand/LICENSE-brand.txt`) ;
+  - **maturité**, selon leurs propres feuilles de route (`ROADMAP.md` de chaque dépôt, 2026-10-11 à 2026-10-15) :
+    - toutes en alpha, DesignCraft en pré-alpha ;
+    - « prêtes pour du vrai travail » à 45-61 % selon leurs propres estimations ;
+    - PhotoCraft : 953 tickets ouverts, et les PSD qu'il écrit ne sont pas encore acceptés de façon fiable par Photoshop ;
+    - WordCraft : ses fichiers .docx « n'ont jamais été testés sur de vrais fichiers » ;
+  - **Linux** : chaque version publie un Flatpak en un seul fichier, mais aussi une AppImage, un .deb, un .rpm et une archive (« Releases » GitHub). Les applications ne sont pas sur Flathub ; leurs manifestes se disent prêts à y être proposés. Les paquets Linux ne sont pas signés : chaque version publie seulement les sommes SHA256 de ses fichiers (les versions Windows et macOS sont signées) ;
+  - **isolation Flatpak** (`packaging/linux/flatpak/*.yml`) : runtime `org.freedesktop.Platform` 26.08, carte graphique, Wayland. Ni réseau ni dossier personnel en entier, sauf :
+    - EffectCraft : réseau, pour des modèles téléchargés seulement à la demande, « pas de télémétrie » selon son manifeste ;
+    - FilmCraft : dossier personnel en entier, car un projet vidéo désigne ses médias par leur chemin ;
+    - les autres : Images ou Documents seulement.
+  - **le studio ArtCraft** (`storytold/artcraft`) est autre chose : de la génération d'images et de vidéos par des services en ligne (ArtCraft, Grok, Midjourney, Sora), et pas de version Linux prête (à compiler).
+- **Avis de Claude, donné avant mes choix** :
+  - le projet est réel et prometteur, et il s'accorde avec Ankh : applications natives et rapides, open source, sans compte, isolées en Flatpak ;
+  - mais il est très jeune. Remplacer OnlyOffice confie mes documents de bureau à des logiciels en alpha, qui peuvent abîmer un .docx ou un .xlsx. Claude recommandait de garder OnlyOffice à côté jusqu'à la bêta de WordCraft et GridCraft.
+- **Questions et mes réponses (2026-10-15)** :
+  1. OnlyOffice : « Remplacer par les Craft », plutôt que de le garder à côté (recommandé) ou de le retirer sans remplaçant ;
+  2. placement : « Option “Création” (Recommandé) », plutôt que dans Simple ou dans l'image ; puis précisé : « L'option Création devrait être pour les clones d'Adobe, mais ceux qui clonent Office devraient être toujours là, dans Simple » ;
+  3. applications : « Les 10 Crafting Apps (Recommandé) », sans le studio ArtCraft (services payants en ligne) ;
+  4. calendrier : « Après le lot 0 (Recommandé) ».
+- **Décision** :
+  - **OnlyOffice est retiré** d'Ankh : de l'image, de son dépôt et de sa clé, des applications par défaut, des favoris du menu et des tests. LibreOffice reste absent (D-035) ;
+  - **Simple**, toujours là : Chrome et VLC dans l'image, et la bureautique de la suite Craft, **WordCraft, GridCraft et DeckCraft**, dans le menu de toute installation, prêtes au premier clic en Flatpak, pour toute la machine. Le premier clic demande donc internet, comme les options (D-049) ;
+  - **nouvelle option « Création »**, à cocher à l'installation et dans « Options d'Ankh », comme Gaming (D-046, D-050) : les clones d'Adobe, **PhotoCraft, VectorCraft, FilmCraft, LightCraft, PdfCraft, EffectCraft et DesignCraft**, dans le menu, prêts au premier clic, en Flatpak, pour toute la machine. **Complète** la coche aussi.
+- **Mise en œuvre prévue** (à confirmer à la réalisation, dans la PR) :
+  - **versions figées** : à chaque construction de l'image, la dernière version publiée de chaque application, et l'empreinte SHA256 de son Flatpak, sont écrites dans l'image. La construction échoue s'il manque le Flatpak x86_64 ou son empreinte ;
+  - **premier clic** : une fenêtre montre le téléchargement du Flatpak depuis GitHub. Son empreinte est vérifiée contre celle de l'image avant l'installation, pour toute la machine ; le runtime vient de Flathub, comme pour Gaming. Rien ne se télécharge avant ce clic (D-031) ;
+  - **mises à jour** : pas dans Discover tant que les applications ne sont pas sur Flathub. Une nouvelle version, figée dans une nouvelle image, est proposée à l'ouverture de l'application, jamais imposée (D-031). Le jour où elles arrivent sur Flathub, Ankh passe par Flathub, par une nouvelle décision ;
+  - **formats de fichiers** : les applications installées déclarent leurs formats (.docx, .xlsx, .pptx, .pdf, .psd…), et KDE les propose à l'ouverture.
+- **Risques acceptés par moi** : logiciels en alpha pour mes documents (garder des copies ; tester sur ma machine en phase 9) ; paquets Linux non signés, vérifiés seulement par l'empreinte figée dans l'image signée d'Ankh ; projet jeune, dont la suite reste à voir.
+- **Vérification prévue** : Test 12 adapté (OnlyOffice absent, entrées de WordCraft, GridCraft et DeckCraft dans le menu) ; en VM, premier clic sur WordCraft pour chaque PR, et sur chacune des dix applications dans le test complet (chaque lundi et à la demande, comme Gaming).
