@@ -29,8 +29,9 @@ attendu() { # $1 : description, $2 : valeur attendue, $3… : options de kreadco
     fi
 }
 
-# Polices de l'interface et du code, installées et trouvées par fontconfig
-for police in Inter 'JetBrains Mono'; do
+# Polices de l'interface (D-052, lot 1), du code, et de l'écran de connexion,
+# installées et trouvées par fontconfig
+for police in Selawik 'JetBrains Mono' Inter; do
     trouvee="$(fc-match -f '%{family}' "${police}")"
     if [[ ",${trouvee}," == *",${police},"* ]]; then
         echo "Police ${police} : installée"
@@ -38,8 +39,36 @@ for police in Inter 'JetBrains Mono'; do
         echec "police ${police} absente (fontconfig propose « ${trouvee} »)"
     fi
 done
-attendu "Police de l'interface" 'Inter,10,-1,5,50,0,0,0,0,0' --group General --key font
+attendu "Police de l'interface" 'Selawik,10.5,-1,5,50,0,0,0,0,0' --group General --key font
+attendu "Petite police" 'Selawik,9,-1,5,50,0,0,0,0,0' --group General --key smallestReadableFont
+attendu "Police des barres de titre" 'Selawik,9,-1,5,50,0,0,0,0,0' --group WM --key activeFont
 attendu "Police du code" 'JetBrains Mono,10,-1,5,50,0,0,0,0,0' --group General --key fixed
+# D-052, lot 1 : Selawik, ses trois graisses et sa licence
+for graisse in Light Regular Bold; do
+    [[ -f "/usr/share/fonts/selawik/Selawik-${graisse}.ttf" ]] || echec "Selawik ${graisse} absente"
+done
+[[ -f /usr/share/licenses/selawik/OFL.txt ]] || echec "licence de Selawik absente"
+# Rendu des polices en niveaux de gris (rgba 5 : aucun sous-pixel ;
+# hintstyle 1 : léger), décidé par fontconfig
+rendu="$(fc-match -f '%{rgba} %{hintstyle} %{antialias}' Selawik)"
+if [[ "${rendu}" == "5 1 True" ]]; then
+    echo "Rendu des polices : niveaux de gris, contours légers (${rendu})"
+else
+    echec "rendu des polices : « ${rendu} » au lieu de « 5 1 True » (rgba, hintstyle, antialias)"
+fi
+attendu "Sous-pixels pour X11" none --group General --key XftSubPixel
+attendu "Facteur des animations" 0.8333333 --group KDE --key AnimationDurationFactor
+# Curseurs blancs d'Ankh, dans l'image et dans chaque thème global
+for curseur in default left_ptr pointer text wait progress; do
+    [[ -e "/usr/share/icons/Ankh-curseurs/cursors/${curseur}" ]] || echec "curseur « ${curseur} » absent d'Ankh-curseurs"
+done
+[[ -f /usr/share/icons/Ankh-curseurs/LICENSE ]] || echec "licence des curseurs d'Ankh absente"
+attendu "Curseurs" Ankh-curseurs --file kcminputrc --group Mouse --key cursorTheme
+attendu "Taille des curseurs" 24 --file kcminputrc --group Mouse --key cursorSize
+for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
+    attendu "Curseurs de $(basename "$(dirname "$(dirname "${defauts}")")")" Ankh-curseurs \
+        --file "${defauts}" --group kcminputrc --group Mouse --key cursorTheme
+done
 
 # Thème global « Ankh Sombre », avec le jeu de couleurs Ankh
 sombre=/usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop

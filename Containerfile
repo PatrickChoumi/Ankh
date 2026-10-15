@@ -7,9 +7,21 @@ ARG BASE_IMAGE
 FROM scratch AS ctx
 COPY build_files /
 
+# D-052, lot 1 : la police Selawik et les curseurs d'Ankh, compilés depuis
+# leurs sources (build_files/outils.sh). Leurs outils de compilation restent
+# dans cette étape : seul le résultat, /sortie, entre dans l'image.
+FROM ${BASE_IMAGE} AS outils
+
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=cache,dst=/var/cache \
+    --mount=type=tmpfs,dst=/tmp \
+    dnf5 -y --setopt=install_weak_deps=False install fontmake xcursorgen librsvg2-tools git-core && \
+    /ctx/outils.sh /sortie
+
 FROM ${BASE_IMAGE}
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=bind,from=outils,source=/sortie,target=/outils \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
