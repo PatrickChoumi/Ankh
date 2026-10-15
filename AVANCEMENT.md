@@ -325,6 +325,7 @@
 - **Planches de comparaison** envoyées le 2026-10-14, aux mesures de Windows 11 et aux couleurs d'Ankh :
   - polices : Inter, Selawik, Noto Sans, Open Sans, Source Sans 3 ;
   - icônes : Breeze, Fluent, Papirus, dans un explorateur, Démarrer et la barre des tâches.
+- **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés ; second passage en VM en cours.
 
 ---
 
@@ -341,7 +342,7 @@
 
 Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
 
-0. **Banc de mesure** (en cours) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
+0. **Banc de mesure** (premier passage vert, second en cours ; PR à ouvrir avec mon accord) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
 1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc.
 2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
 3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.
