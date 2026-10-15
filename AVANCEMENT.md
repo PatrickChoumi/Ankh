@@ -313,7 +313,7 @@
 - **Ma demande** : remplacer OnlyOffice par la suite ArtCraft, découverte le jour même.
 - **Vérifié par Claude** dans les dépôts officiels : dix « Crafting Apps » open source (MIT ou Apache-2.0), en Rust, isolées en Flatpak, toutes en alpha (DesignCraft en pré-alpha), pas encore sur Flathub, paquets Linux non signés (sommes SHA256 seulement). Le studio ArtCraft, lui, génère par des services d'IA payants en ligne.
 - **Mes choix** : OnlyOffice remplacé, malgré l'alpha ; WordCraft, GridCraft et DeckCraft toujours là (Simple) ; les sept clones d'Adobe dans une nouvelle option « Création » ; sans le studio ArtCraft ; après le lot 0.
-- **Mise en œuvre** (2026-10-15, sur la branche de travail ; CI et VM en cours) :
+- **Mise en œuvre** (2026-10-15, sur la branche de travail ; CI verte ; en VM, les dix applications se préparent et s'ouvrent) :
   - OnlyOffice retiré : paquet, dépôt, clé, formats, favori du menu (remplacé par WordCraft), tests ;
   - à chaque construction, la dernière version de chacune des dix applications et l'empreinte SHA256 de son Flatpak sont figées dans l'image ; la construction échoue s'il en manque une ;
   - entrées du menu en français et icônes officielles ; WordCraft, GridCraft et DeckCraft pour toute installation, les sept autres avec la carte « Création » (assistant et « Options d'Ankh ») ;
@@ -365,7 +365,8 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 
 ### Suite Craft d'ArtCraft (D-053, mise en œuvre sur la branche)
 
-- Vérifier par la CI et en VM : construction (versions figées), Tests 12, 15 et 17, premier clic sur WordCraft, Discover, notification ; puis le test complet sur les dix applications.
+- Fait le 2026-10-15 : construction et Tests 12, 15 et 17 verts ; en VM, les dix applications préparées au premier clic et ouvertes. « Update Issue » de Discover après l'installation : défaut connu de fwupd (D-028), pas de la suite.
+- Vérifier en VM les correctifs du premier passage : notification qui reste à l'écran, option inconnue ignorée après un retour arrière.
 - Ouvrir la PR avec mon accord, puis la mener au vert.
 
 ### Reste de la phase 3, sans la bloquer

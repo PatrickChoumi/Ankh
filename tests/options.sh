@@ -104,6 +104,14 @@ for mauvais in "dev;id" "Dev" "inconnue" "dev__gaming" "_dev" "dev gaming" ""; d
 done
 [[ "$(/usr/libexec/ankh-options choix)" == "dev hacking" ]] || echec "un choix refusé a changé l'enregistrement"
 
+echo "Option d'une version plus récente (avant un retour arrière) : ignorée, gardée"
+printf 'OPTIONS=dev future\n' > /etc/ankh/options
+/usr/libexec/ankh-options synchroniser 2> /tmp/synchroniser.txt || echec "une option inconnue bloque les options connues"
+grep -q "ignorée : future" /tmp/synchroniser.txt || echec "l'option inconnue n'est pas signalée"
+lien ankh-vscode.desktop || echec "VS Code absent du menu à côté d'une option inconnue"
+grep -qx 'OPTIONS=dev future' /etc/ankh/options || echec "l'option inconnue n'est plus enregistrée"
+/usr/libexec/ankh-options appliquer dev_hacking
+
 echo "La règle polkit ne vise que le compte de l'assistant et ce service"
 grep -q 'subject.user !== "plasma-setup"' /usr/share/polkit-1/rules.d/50-ankh-options.rules || echec "règle polkit : compte"
 grep -q '"org.freedesktop.systemd1.manage-units"' /usr/share/polkit-1/rules.d/50-ankh-options.rules || echec "règle polkit : action"

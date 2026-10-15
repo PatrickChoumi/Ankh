@@ -205,7 +205,10 @@ ouvrir() { # $1 : application, puis les fichiers à ouvrir
 # figées dans l'image qui ne sont pas encore installées. « Mettre à jour »
 # ouvre la fenêtre de préparation ; « Ignorer cette version » ne la propose
 # plus à ce compte ; une notification fermée sans réponse revient à la
-# session suivante.
+# session suivante. Elle reste à l'écran jusqu'à la réponse (durée 0) :
+# Plasma masque sinon la bulle après 5 secondes (defaultTimeout,
+# applets/notifications/NotificationPopup.qml de plasma-workspace ; vu en
+# VM, run 38736525586).
 nouveautes() {
     local nom version ignorees proposees=() textes="" titre_notification reponse
     ignorees="${XDG_STATE_HOME:-${HOME}/.local/state}/ankh/craft-ignorees"
@@ -229,7 +232,7 @@ nouveautes() {
         titre_notification="Nouvelles versions de la suite Craft"
         textes+=" : prêtes à être installées."
     fi
-    reponse="$(notify-send --app-name="Ankh" --icon="${PREFIXE}${proposees[0]}" --wait \
+    reponse="$(notify-send --app-name="Ankh" --icon="${PREFIXE}${proposees[0]}" --wait --expire-time=0 \
         --action=mettre-a-jour="Mettre à jour" --action=ignorer="Ignorer cette version" \
         "${titre_notification}" "${textes}")"
     case "${reponse}" in

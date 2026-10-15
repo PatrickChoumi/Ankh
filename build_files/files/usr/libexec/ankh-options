@@ -87,10 +87,15 @@ modules() { # $1 : options choisies, entourées d'espaces
 }
 
 synchroniser() {
-    local choisies option dossier fichier lien
+    local choisies option dossier fichier lien appliquees
     choisies=" $(choix_enregistre) "
+    # Une option inconnue de cette version d'Ankh a été choisie avec une
+    # version plus récente, avant un retour arrière (D-004) : elle est
+    # ignorée ici, et gardée dans le fichier pour le retour à cette version.
     for option in ${choisies}; do
-        connue "${option}" || echec "option inconnue dans ${FICHIER} : ${option}"
+        if ! connue "${option}"; then
+            echo "ankh-options : option inconnue de cette version d'Ankh, ignorée : ${option}" >&2
+        fi
     done
     for dossier in "${DOSSIERS[@]}"; do
         # Sur Fedora Atomic, /usr/local est un lien vers /var/usrlocal : le
@@ -115,7 +120,13 @@ synchroniser() {
         done
     done
     modules "${choisies}"
-    echo "Options d'Ankh appliquées : Simple${choisies% }"
+    appliquees=""
+    for option in "${OPTIONS_CONNUES[@]}"; do
+        if [[ "${choisies}" == *" ${option} "* ]]; then
+            appliquees+=" ${option}"
+        fi
+    done
+    echo "Options d'Ankh appliquées : Simple${appliquees}"
 }
 
 appliquer() { # $1 : choix

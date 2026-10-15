@@ -54,8 +54,14 @@ autologin_main=no
 #   (https://github.com/andikleen/mcelog/blob/master/mcelog.service) ; ce
 #   module ne se charge pas dans la VM, dont le processeur est celui de la
 #   machine GitHub.
+# - ankh-options.service de la version publiée avant D-053 ne connaît pas
+#   l'option « creation », choisie à l'étape 1 (étape 2 seulement). Depuis
+#   D-053, une option inconnue est ignorée au lieu de faire échouer le
+#   service (retour arrière vers une version plus ancienne) ; cette entrée
+#   ne sert plus une fois D-053 publiée.
 declare -A known_failures=(
     [mcelog.service]='CPU is unsupported'
+    [ankh-options.service]='option inconnue dans /etc/ankh/options : creation'
 )
 
 log() { printf '\n==> %s\n' "$*"; }
@@ -451,7 +457,7 @@ check_failed_units() {
         printf 'Service en échec : %s\n%s\n' "${unit}" "${journal}"
         [[ -n ${known_failures[${unit}]:-} && ${journal} == *"${known_failures[${unit}]}"* ]] ||
             die "service en échec non expliqué : ${unit}"
-        echo "Échec connu, propre à la VM de test : ${unit}"
+        echo "Échec connu et expliqué : ${unit}"
     done
 }
 
