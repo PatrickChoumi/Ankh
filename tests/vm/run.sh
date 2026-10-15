@@ -145,13 +145,16 @@ sock.close()
 PY
 }
 
-# Souris à la position (X, Y) de l'écran de la VM (1280x800), par le
-# protocole QMP de QEMU (commande input-send-event) : la tablette USB de la VM
-# donne un pointeur absolu, de 0 à 32767 sur chaque axe
-# (https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html).
-#   souris survol|clic|clic-droit X Y
-souris() {
-    python3 - "$work/qmp.sock" "$1" "$2" "$3" << 'PY'
+# Souris et clavier de la VM, par le protocole QMP de QEMU (commande
+# input-send-event, https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html) :
+#   qmp_entree souris survol|clic|clic-droit X Y
+#     à la position (X, Y) de l'écran de la VM (1280x800) : la tablette USB
+#     de la VM donne un pointeur absolu, de 0 à 32767 sur chaque axe ;
+#   qmp_entree touche appui|relache CODE
+#     touche appuyée ou relâchée, par son code QEMU (« qcode » : alt, tab,
+#     ret, esc…), pour tenir une touche pendant qu'une autre est tapée.
+qmp_entree() {
+    python3 - "$work/qmp.sock" "$@" << 'PY'
 import json, socket, sys
 sock = socket.socket(socket.AF_UNIX)
 sock.settimeout(30)
@@ -176,9 +179,13 @@ def evenements(*liste):
 
 json.loads(f.readline())  # message d'accueil de QMP
 cmd("qmp_capabilities")
-action = sys.argv[2]
-x = int(sys.argv[3]) * 32767 // 1280
-y = int(sys.argv[4]) * 32767 // 800
+peripherique, action = sys.argv[2], sys.argv[3]
+if peripherique == "touche":
+    evenements({"type": "key", "data": {"down": action == "appui",
+                                        "key": {"type": "qcode", "data": sys.argv[4]}}})
+    sys.exit()
+x = int(sys.argv[4]) * 32767 // 1280
+y = int(sys.argv[5]) * 32767 // 800
 evenements({"type": "abs", "data": {"axis": "x", "value": x}},
            {"type": "abs", "data": {"axis": "y", "value": y}})
 if action != "survol":
@@ -186,6 +193,20 @@ if action != "survol":
     evenements({"type": "btn", "data": {"down": True, "button": bouton}})
     evenements({"type": "btn", "data": {"down": False, "button": bouton}})
 PY
+}
+
+#   souris survol|clic|clic-droit X Y
+souris() {
+    qmp_entree souris "$@"
+}
+
+# Raccourci clavier tapé avec une touche tenue : raccourci MAINTENUE TOUCHE
+# (par exemple « raccourci alt ret »).
+raccourci() {
+    qmp_entree touche appui "$1"
+    qmp_entree touche appui "$2"
+    qmp_entree touche relache "$2"
+    qmp_entree touche relache "$1"
 }
 
 # Clic gauche à la position (X, Y) de l'écran de la VM.

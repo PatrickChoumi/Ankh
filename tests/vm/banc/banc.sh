@@ -76,11 +76,13 @@ banc_mesurer() {
     python3 "$banc_dossier/mesurer.py" "$@"
 }
 
-# Capture au format PPM pour les mesures (pas jointe au run).
+# Capture au format PPM pour les mesures, et sa copie en PNG jointe au run
+# (ui-mesure-…), pour vérifier les mesures à l'œil.
 banc_image() {
     local fichier="$banc_images/$1.ppm"
     monitor "screendump $fichier"
     [[ -s $fichier ]] || die "capture de mesure impossible : $fichier"
+    screenshot "ui-mesure-$1" > /dev/null
     echo "$fichier"
 }
 
@@ -100,6 +102,21 @@ banc_dolphin() {
     }
 }"
     sleep 3
+}
+
+# Bureau dégagé : toutes les fenêtres réduites par KWin (oui), puis rendues
+# (non). La méthode showDesktop de KWin, appelée par D-Bus, ne les masquait
+# pas (run 38695602550).
+banc_bureau() { # $1 : oui | non
+    local reduire=true
+    [[ $1 == oui ]] || reduire=false
+    banc_kwin ankh-banc-bureau ANKH-BANC-BUREAU "for (const w of workspace.windowList()) {
+    if (w.normalWindow) {
+        w.minimized = $reduire;
+    }
+}
+console.warn('ANKH-BANC-BUREAU $1');" > /dev/null
+    sleep 2
 }
 
 # Galerie au premier plan ; affiche la place de son contenu à l'écran :
@@ -204,10 +221,9 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
     local nom="$1-$2" barre=${3:-44}
     case $2 in
         bureau)
-            banc_essayer "bureau dégagé" banc_session org.kde.KWin /KWin org.kde.KWin showDesktop b true
-            sleep 3
+            banc_bureau oui
             screenshot "$nom"
-            banc_essayer "fenêtres rendues" banc_session org.kde.KWin /KWin org.kde.KWin showDesktop b false
+            banc_bureau non
             ;;
         demarrer)
             banc_essayer "menu" banc_session org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
@@ -217,22 +233,21 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             sleep 2
             ;;
         menu-bureau)
-            banc_essayer "bureau dégagé" banc_session org.kde.KWin /KWin org.kde.KWin showDesktop b true
-            sleep 2
+            banc_bureau oui
             souris clic-droit 900 300
             sleep 2
             screenshot "$nom"
             monitor 'sendkey esc'
             sleep 1
-            banc_essayer "fenêtres rendues" banc_session org.kde.KWin /KWin org.kde.KWin showDesktop b false
+            banc_bureau non
             ;;
         dolphin)
             activate_window org.kde.dolphin
             sleep 2
             screenshot "$nom"
             ;;
-        dialogue)
-            # F10 : « Créer un dossier », dialogue de Qt avec un champ et des boutons
+        menu-application)
+            # F10 : le menu principal de Dolphin (menu « hamburger »)
             activate_window org.kde.dolphin
             sleep 1
             monitor 'sendkey f10'
@@ -240,6 +255,17 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             screenshot "$nom"
             monitor 'sendkey esc'
             sleep 1
+            ;;
+        dialogue)
+            # Alt+Entrée : les propriétés du dossier ouvert, un dialogue de
+            # Qt avec onglets, champs et boutons
+            activate_window org.kde.dolphin
+            sleep 1
+            raccourci alt ret
+            sleep 4
+            screenshot "$nom"
+            monitor 'sendkey esc'
+            sleep 2
             ;;
         reglages)
             launch_in_session "$banc_compte" systemsettings
@@ -285,11 +311,16 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             sleep 1
             ;;
         alt-tab)
-            # Alt+Tab tenu 4 secondes : le sélecteur de fenêtres reste affiché
-            monitor 'sendkey alt-tab 4000'
-            sleep 1.5
+            # Alt tenu, Tab tapé : le sélecteur de fenêtres reste affiché tant
+            # qu'Alt est tenu (« sendkey alt-tab », qui envoie les deux touches
+            # ensemble, ne l'affichait pas : run 38695602550)
+            qmp_entree touche appui alt
+            qmp_entree touche appui tab
+            qmp_entree touche relache tab
+            sleep 2
             screenshot "$nom"
-            sleep 4
+            qmp_entree touche relache alt
+            sleep 2
             ;;
         vue-ensemble)
             banc_essayer "vue d'ensemble" banc_session org.kde.kglobalaccel /component/kwin org.kde.kglobalaccel.Component invokeShortcut s Overview
@@ -302,8 +333,11 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             banc_essayer "recherche" banc_session org.kde.krunner /App org.kde.krunner.App query s code
             sleep 4
             screenshot "$nom"
+            # Échap ne la fermait pas toujours (captures suivantes du run
+            # 38695602550) : KRunner est arrêté ; D-Bus le relance au besoin.
             monitor 'sendkey esc'
             sleep 1
+            close_app "$banc_compte" krunner
             ;;
         deconnexion)
             # Écran de déconnexion, refermé sans se déconnecter : Échap, puis,
@@ -386,7 +420,7 @@ banc_pixels() {
     echo "$volets"
     image=$(banc_image volet)
     while read -r classe type vx vy vw vh; do
-        if [[ $classe == plasmashell && $type == autre && ${vh:-0} -gt 200 ]]; then
+        if [[ $classe == *plasmashell && $type == autre && ${vh:-0} -gt 200 ]]; then
             banc_noter volet.rayon "$(banc_mesurer coin "$image" "$vx" "$vy" "$vw" "$vh")"
             break
         fi
@@ -424,15 +458,15 @@ check_interface() {
     log "Banc de l'interface (D-052) : captures et mesures, comparées à Windows 11"
     mkdir -p "$banc_images"
     : > "$banc_mesures"
-    for surface in konsole systemsettings plasma-welcome; do
+    for surface in konsole systemsettings plasma-welcome plasma-discover; do
         close_app "$banc_compte" "$surface"
     done
     banc_reglages
     barre=$(sed -n 's/^barre\.hauteur\t//p' "$banc_mesures")
     banc_galerie
     banc_dolphin 200 120 880 520
-    for surface in bureau demarrer menu-bureau dolphin dialogue reglages konsole galerie notification volume \
-        calendrier infobulle alt-tab vue-ensemble recherche deconnexion; do
+    for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages konsole galerie \
+        notification volume calendrier infobulle alt-tab vue-ensemble recherche deconnexion; do
         banc_surface ui-sombre-100 "$surface" "$barre"
     done
     banc_pixels
@@ -440,7 +474,7 @@ check_interface() {
     banc_essayer "thème clair" in_session "$banc_compte" plasma-apply-lookandfeel -a org.fedoraproject.fedoralight.desktop
     sleep 10
     banc_dolphin 200 120 880 520
-    for surface in bureau demarrer menu-bureau dolphin dialogue reglages galerie notification; do
+    for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages galerie notification; do
         banc_surface ui-clair-100 "$surface" "$barre"
     done
     banc_essayer "thème sombre" in_session "$banc_compte" plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop
