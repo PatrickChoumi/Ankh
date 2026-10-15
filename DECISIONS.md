@@ -1797,6 +1797,7 @@
     - texte : 13 px (14), légendes de 10 px (12), police Inter ;
     - barre des tâches : 44 px (48), réglée flottante mais affichée collée sur les captures, horloge sur une ligne ;
     - défauts du banc vus sur les captures et corrigés ensuite : bureau jamais dégagé, sélecteur Alt+Tab absent, dialogue remplacé par le menu de Dolphin, recherche restée ouverte, volet du menu non mesuré (son nom pour KWin est `org.kde.plasmashell`).
+  - **second passage, le 2026-10-15** ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701), vert) : les corrections sont vérifiées sur les captures (bureau dégagé, sélecteur Alt+Tab, dialogue Propriétés, menu du bureau). Le bouton Fermer a été vérifié à l'œil sur l'image de mesure : au survol, Breeze dessine un cercle rose pâle (#ffc3c0) de 16 px avec une croix sombre. Le rayon du menu manquait encore : KWin était interrogé avant l'ouverture du menu ; il l'est maintenant jusqu'à trois fois (À VALIDER au prochain passage).
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)
 

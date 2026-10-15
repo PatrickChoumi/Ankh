@@ -361,7 +361,7 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
 # 4. Mesures sur l'image, sur un fond d'écran noir.
 banc_pixels() {
     local geometrie fx fy fw fh cx cy cw ch titre image largeur hauteur couleur espace volets ligne
-    local classe type vx vy vw vh galerie gx gy nom x y l h
+    local classe type vx vy vw vh galerie gx gy nom x y l h essai
     log "Banc de l'interface (D-052) : mesures sur l'image"
     banc_essayer "fond d'écran noir" banc_plasma 'for (const d of desktops()) {
     d.wallpaperPlugin = "org.kde.color";
@@ -410,14 +410,22 @@ banc_pixels() {
     banc_noter couleur.barre "$couleur"
     # Volet du menu : la fenêtre de plasmashell qui n'est ni la barre ni le bureau
     banc_essayer "menu" banc_session org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
-    sleep 4
-    volets=$(banc_kwin ankh-banc-volets ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
+    # Le menu peut mettre plus de 4 secondes à s'ouvrir (run 38702400701 :
+    # absent pour KWin, mais ouvert sur l'image prise juste après) : KWin
+    # est interrogé jusqu'à trois fois.
+    for essai in 1 2 3; do
+        sleep 4
+        volets=$(banc_kwin ankh-banc-volets ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
     const f = w.frameGeometry;
     const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.normalWindow ? 'fenetre' : 'autre'));
     console.warn('ANKH-BANC-VOLET ' + w.resourceClass + ' ' + type + ' ' + [f.x, f.y, f.width, f.height].map(Math.round).join(' '));
 }")
-    echo "Fenêtres vues par KWin, menu ouvert :"
-    echo "$volets"
+        echo "Fenêtres vues par KWin, menu ouvert (essai $essai) :"
+        echo "$volets"
+        if grep -q 'plasmashell autre' <<< "$volets"; then
+            break
+        fi
+    done
     image=$(banc_image volet)
     while read -r classe type vx vy vw vh; do
         if [[ $classe == *plasmashell && $type == autre && ${vh:-0} -gt 200 ]]; then
