@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=DesignCraft
+GenericName=Mise en page
+Comment=Mettre en page des magazines, des livres et des documents à imprimer. Suite Craft, dans l'option Création d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.designcraft %F
+Icon=ai.storyteller.designcraft
+Terminal=false
+StartupWMClass=ai.storyteller.designcraft
+Categories=Graphics;Publishing;
+Keywords=mise en page;publication;magazine;livre;imprimer;indesign;layout;page;desktop publishing;dtp;book;idml;typesetting;

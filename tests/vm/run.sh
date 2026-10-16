@@ -18,7 +18,7 @@
 # Captures d'écran de la VM à chaque étape, dans $work/captures : écran de
 # connexion, bureau KDE (compte de test « ankhvm » connecté automatiquement
 # par le gestionnaire de connexion),
-# Discover, Chrome, VLC, OnlyOffice et VS Code (premier clic). Après chaque
+# Discover, Chrome, VLC, WordCraft et VS Code (premier clic). Après chaque
 # capture de Discover, son journal, pour expliquer un message d'erreur (D-028).
 # À l'étape 1, l'interface d'Ankh (D-037, D-039) : réglages appliqués dans la
 # session, menu, Dolphin, Konsole, réglages des couleurs, écrans de connexion
@@ -29,7 +29,9 @@
 # Variables facultatives : ANKH_VM_OTHER (image de l'étape 2),
 # ANKH_VM_WORKDIR (dossier de travail), ANKH_VM_SSH_PORT (port local),
 # ANKH_VM_GAMING_COMPLET=1 (premier clic sur toutes les applications de
-# l'option Gaming, pas seulement Steam : plusieurs Go depuis Flathub).
+# l'option Gaming, pas seulement Steam : plusieurs Go depuis Flathub),
+# ANKH_VM_CRAFT_COMPLET=1 (premier clic sur les dix applications de la suite
+# Craft, pas seulement WordCraft : environ 1 Go depuis GitHub).
 set -euo pipefail
 
 image=${1:-localhost/ankh:latest}
@@ -38,6 +40,7 @@ repo=$(cd "$(dirname "$0")/../.." && pwd)
 work=${ANKH_VM_WORKDIR:-$(mktemp -d)}
 port=${ANKH_VM_SSH_PORT:-2222}
 gaming_complet=${ANKH_VM_GAMING_COMPLET:-0}
+craft_complet=${ANKH_VM_CRAFT_COMPLET:-0}
 ovmf=/usr/share/OVMF
 qemu_pid=
 boot_id=
@@ -51,8 +54,14 @@ autologin_main=no
 #   (https://github.com/andikleen/mcelog/blob/master/mcelog.service) ; ce
 #   module ne se charge pas dans la VM, dont le processeur est celui de la
 #   machine GitHub.
+# - ankh-options.service de la version publiée avant D-053 ne connaît pas
+#   l'option « creation », choisie à l'étape 1 (étape 2 seulement). Depuis
+#   D-053, une option inconnue est ignorée au lieu de faire échouer le
+#   service (retour arrière vers une version plus ancienne) ; cette entrée
+#   ne sert plus une fois D-053 publiée.
 declare -A known_failures=(
     [mcelog.service]='CPU is unsupported'
+    [ankh-options.service]='option inconnue dans /etc/ankh/options : creation'
 )
 
 log() { printf '\n==> %s\n' "$*"; }
@@ -448,7 +457,7 @@ check_failed_units() {
         printf 'Service en échec : %s\n%s\n' "${unit}" "${journal}"
         [[ -n ${known_failures[${unit}]:-} && ${journal} == *"${known_failures[${unit}]}"* ]] ||
             die "service en échec non expliqué : ${unit}"
-        echo "Échec connu, propre à la VM de test : ${unit}"
+        echo "Échec connu et expliqué : ${unit}"
     done
 }
 
@@ -517,9 +526,15 @@ check_installed() {
     # D-004 : /boot n'est pas monté automatiquement par-dessus le montage d'ostree.
     [[ $(vm systemctl is-enabled boot.automount) == masked ]] ||
         die "le montage automatique de /boot n'est pas masqué (D-004)"
-    # D-035 : VLC et OnlyOffice présents dès l'installation, LibreOffice absent.
-    vm rpm -q vlc onlyoffice-desktopeditors || die "VLC ou OnlyOffice absent (D-035)"
+    # D-035 : VLC présent dès l'installation, LibreOffice absent.
+    vm rpm -q vlc || die "VLC absent (D-035)"
     [[ -z $(vm "rpm -qa 'libreoffice*'") ]] || die "LibreOffice est présent (D-035)"
+    # D-053 : OnlyOffice absent ; WordCraft dans le menu de toute installation,
+    # PhotoCraft par l'option Création (choisie ici).
+    [[ -z $(vm "rpm -qa 'onlyoffice*'") ]] || die "OnlyOffice est présent (D-053)"
+    vm test -x /usr/libexec/ankh-craft -a -f /usr/share/applications/ai.storyteller.wordcraft.desktop \
+        -a -f /usr/local/share/applications/ai.storyteller.photocraft.desktop ||
+        die "WordCraft ou PhotoCraft absents du menu (D-053)"
 }
 
 # Lance une application dans la session du compte de test, par la commande
@@ -640,7 +655,7 @@ explain_vscode() {
 # Store ou avis. Chacune écrit son erreur dans le journal
 # (libdiscover/backends de https://invent.kde.org/plasma/discover).
 open_discover() {
-    local name=$1 unit=ankh-test-discover-${1%%-*} since ref cmd
+    local name=$1 unit=ankh-test-discover-$1 since ref cmd
     since=$(vm date +%s)
     # ssh recolle les arguments : la règle de journalisation est protégée du
     # shell de la VM. Les messages de détail de la source « système » sont
@@ -711,7 +726,7 @@ check_options_assistant() {
     screenshot 1-assistant-options
     # ssh recolle les arguments : le motif, qui contient une espace, est
     # protégé pour le shell de la VM.
-    if ! vm "grep -qx 'OPTIONS=dev gaming' /etc/ankh/options"; then
+    if ! vm "grep -qx 'OPTIONS=dev gaming creation' /etc/ankh/options"; then
         # shellcheck disable=SC2016 # variables lues dans la VM
         if ! vm 'cat /etc/ankh/options; journalctl -b --no-pager -o cat -u "ankh-options@*";
             journalctl -b --no-pager -o cat _UID="$(id -u plasma-setup)" | tail -n 30'; then
@@ -728,10 +743,11 @@ check_options_assistant() {
     if vm test -e /usr/local/share/applications/ankh-vscode.desktop; then
         die "VS Code reste dans le menu avec Simple seule (D-046)"
     fi
-    vm systemctl start ankh-options@dev_gaming.service
-    vm test -e /usr/local/share/applications/ankh-vscode.desktop -a -e /usr/local/share/applications/com.valvesoftware.Steam.desktop ||
-        die "VS Code ou Steam ne reviennent pas dans le menu avec Dev et Gaming (D-046, D-050)"
-    echo "Options : Simple seule retire VS Code du menu, Dev et Gaming les remettent ; le compte de l'assistant ne démarre que ankh-options@"
+    vm systemctl start ankh-options@dev_gaming_creation.service
+    vm test -e /usr/local/share/applications/ankh-vscode.desktop -a -e /usr/local/share/applications/com.valvesoftware.Steam.desktop \
+        -a -e /usr/local/share/applications/ai.storyteller.photocraft.desktop ||
+        die "VS Code, Steam ou PhotoCraft ne reviennent pas dans le menu avec Dev, Gaming et Création (D-046, D-050, D-053)"
+    echo "Options : Simple seule retire VS Code du menu, Dev, Gaming et Création les remettent ; le compte de l'assistant ne démarre que ankh-options@"
 }
 
 # Quand « Options d'Ankh » ne fait pas ce qui est attendu : choix enregistré,
@@ -815,12 +831,15 @@ check_options_reglages() {
     fi
     echo "Barre avant : $epinglees"
 
-    log "Options d'Ankh : Dev et Gaming retirées"
+    log "Options d'Ankh : Dev, Gaming et Création retirées"
     choose_options 1-options-reglages-simple 1-options-mot-de-passe ""
     screenshot 1-options-reglages-fait
-    if vm test -e /usr/local/share/applications/ankh-vscode.desktop -o -e /usr/local/share/applications/com.valvesoftware.Steam.desktop; then
-        die "VS Code ou Steam restent dans le menu après le retrait de Dev et Gaming (D-046, D-050)"
+    if vm test -e /usr/local/share/applications/ankh-vscode.desktop -o -e /usr/local/share/applications/com.valvesoftware.Steam.desktop \
+        -o -e /usr/local/share/applications/ai.storyteller.photocraft.desktop; then
+        die "VS Code, Steam ou PhotoCraft restent dans le menu après le retrait de Dev, Gaming et Création (D-046, D-050, D-053)"
     fi
+    # WordCraft (Simple) reste, préparé par check_craft
+    vm flatpak info --system ai.storyteller.wordcraft > /dev/null || die "WordCraft a été retiré avec les options (D-053)"
     if ! epinglees=$(pinned_apps); then
         die "barre du compte de test illisible"
     fi
@@ -841,13 +860,14 @@ check_options_reglages() {
     fi
     echo "Environnement de dev supprimé : conteneur et image"
 
-    log "Options d'Ankh : Dev et Gaming remises"
+    log "Options d'Ankh : Dev, Gaming et Création remises"
     launch_in_session "$user" plasmawindowed org.ankh.options
     sleep 15
-    choose_options 1-options-reglages-dev 1-options-mot-de-passe-dev "dev gaming"
+    choose_options 1-options-reglages-dev 1-options-mot-de-passe-dev "dev gaming creation"
     screenshot 1-options-reglages-dev-fait
-    vm test -e /usr/local/share/applications/ankh-vscode.desktop -a -e /usr/local/share/applications/com.valvesoftware.Steam.desktop ||
-        die "VS Code ou Steam ne reviennent pas dans le menu (D-046, D-050)"
+    vm test -e /usr/local/share/applications/ankh-vscode.desktop -a -e /usr/local/share/applications/com.valvesoftware.Steam.desktop \
+        -a -e /usr/local/share/applications/ai.storyteller.photocraft.desktop ||
+        die "VS Code, Steam ou PhotoCraft ne reviennent pas dans le menu (D-046, D-050, D-053)"
     if ! epinglees=$(pinned_apps); then
         die "barre du compte de test illisible"
     fi
@@ -862,7 +882,7 @@ check_options_reglages() {
     if vm pgrep -u "$user" -x plasmawindowed > /dev/null; then
         die "Échap ne ferme pas la fenêtre « Options d'Ankh » (D-046)"
     fi
-    echo "Options d'Ankh : Dev et Gaming retirées puis remises avec le mot de passe, menu, barre et ntsync à jour"
+    echo "Options d'Ankh : Dev, Gaming et Création retirées puis remises avec le mot de passe, menu, barre et ntsync à jour"
 }
 
 # Quand une application Gaming (Steam par défaut) ou la session « Ankh
@@ -889,9 +909,10 @@ explain_gaming() {
 # Attend qu'une application Gaming tourne (flatpak ps). Sa préparation est
 # alors finie : ankh-flatpak installe les outils du jeu en Flatpak après
 # l'application, et ne l'ouvre qu'ensuite (vu le 2026-10-14 : Gamescope
-# encore en téléchargement quand le test, trop tôt, l'a cherché).
-wait_running() { # $1 : compte, $2 : application, $3 : nom des captures
-    local user=$1 application=$2 nom=$3 deadline=$((SECONDS + 300)) instances
+# encore en téléchargement quand le test, trop tôt, l'a cherché). De même
+# pour la suite Craft (D-053), avec son propre diagnostic.
+wait_running() { # $1 : compte, $2 : application, $3 : nom des captures, $4 : diagnostic
+    local user=$1 application=$2 nom=$3 diagnostic=${4:-explain_gaming} deadline=$((SECONDS + 300)) instances
     while :; do
         if instances=$(in_session "$user" flatpak ps --columns=application) &&
             [[ $'\n'$instances$'\n' == *$'\n'$application$'\n'* ]]; then
@@ -899,8 +920,8 @@ wait_running() { # $1 : compte, $2 : application, $3 : nom des captures
         fi
         if ((SECONDS >= deadline)); then
             screenshot "1-$nom-echec"
-            explain_gaming "$application"
-            die "$application ne tourne pas 5 minutes après sa préparation (D-050)"
+            "$diagnostic" "$application"
+            die "$application ne tourne pas 5 minutes après sa préparation"
         fi
         sleep 5
     done
@@ -1022,6 +1043,122 @@ check_gaming_apps() {
         sleep 5
     done
     echo "Les sept autres applications Gaming se préparent au premier clic et s'ouvrent"
+}
+
+# Quand une application de la suite Craft ne fait pas ce qui est attendu :
+# journal de son service, versions figées et installées, Flatpak, messages
+# de la session et de polkit.
+explain_craft() {
+    local application=${1:-ai.storyteller.wordcraft} cmd
+    log "Diagnostic : suite Craft"
+    for cmd in \
+        "journalctl --no-pager -b -o cat -u ankh-craft@${application#ai.storyteller.}.service | tail -n 60" \
+        'cat /usr/share/ankh/craft/versions' \
+        'head -n 5 /var/lib/ankh-craft/*' \
+        'flatpak list --system --columns=ref,origin' \
+        'flatpak remotes --system --show-details' \
+        "journalctl --no-pager -b -o cat _UID=$(vm id -u ankhvm) | grep -iE 'craft|flatpak|konsole|polkit|systemctl' | tail -n 40" \
+        'journalctl --no-pager -b -o cat -u polkit.service | tail -n 20' \
+        'pgrep -a -u ankhvm -f "craft|konsole|tail|systemctl"'; do
+        echo "--- $cmd"
+        if ! vm "$cmd"; then
+            echo "(commande en échec)"
+        fi
+    done
+    explain_session ankhvm
+}
+
+# Réponse de polkit pour plasmashell du compte de test (comme le menu, voir
+# check_steam) : démarrer un service, sans fenêtre de mot de passe.
+polkit_demarrer() { # $1 : compte, $2 : service
+    local nom
+    nom=$(vm "busctl --system list --unique --no-legend | awk '\$3 == \"plasmashell\" && \$4 == \"$1\" { print \$1; exit }'")
+    [[ $nom == :* ]] || die "plasmashell du compte $1 absent du bus système"
+    vm "busctl --system call org.freedesktop.PolicyKit1 /org/freedesktop/PolicyKit1/Authority org.freedesktop.PolicyKit1.Authority CheckAuthorization '(sa{sv})sa{ss}us' system-bus-name 1 name s $nom org.freedesktop.systemd1.manage-units 2 unit $2 verb start 0 ''"
+}
+
+# D-053 : premier clic sur une application de la suite Craft, depuis le menu :
+# une fenêtre montre le téléchargement de son Flatpak depuis GitHub, son
+# empreinte est vérifiée contre celle de l'image, il est installé pour toute
+# la machine par le service ankh-craft@<nom>, puis l'application s'ouvre par
+# sa propre entrée du menu. Captures : la préparation, puis l'application.
+craft_premier_clic() { # $1 : nom (wordcraft…)
+    local user=ankhvm nom=$1 application=ai.storyteller.$1 deadline=$((SECONDS + 1200)) version
+    echo "--- $application"
+    vm systemd-run --machine=$user@ --user --unit="ankh-premier-clic-$nom" --quiet \
+        --property=Type=simple --property=ExitType=cgroup /usr/libexec/ankh-craft "$application"
+    sleep 20
+    screenshot "1-craft-$nom-preparation"
+    until vm flatpak info --system "$application" > /dev/null 2>&1; do
+        if ((SECONDS >= deadline)); then
+            screenshot "1-craft-$nom-echec"
+            explain_craft "$application"
+            die "$application ne s'est pas préparé 20 minutes après le premier clic (D-053)"
+        fi
+        sleep 15
+    done
+    wait_running "$user" "$application" "craft-$nom" explain_craft
+    version=$(vm "awk '\$2 == \"$nom\" { print \$3 }' /usr/share/ankh/craft/versions")
+    [[ $(vm "awk '{ print \$1 }' /var/lib/ankh-craft/$nom") == "$version" ]] ||
+        die "$application : la version installée n'est pas celle figée dans l'image ($version, D-053)"
+    echo "$application $version préparé et ouvert ; Flatpak : $(vm flatpak info --system --show-ref "$application")"
+    sleep 45
+    screenshot "1-craft-$nom"
+    if ! in_session "$user" flatpak kill "$application"; then
+        echo "($application ne tournait plus)"
+    fi
+    sleep 5
+}
+
+# D-053 : WordCraft, de Simple. polkit laisse l'administrateur démarrer le
+# service de la suite sans mot de passe, et rien d'autre ; puis premier clic.
+# Ensuite : formats ouverts par défaut, Discover (pas de mise à jour ni
+# d'erreur pour un Flatpak venu d'un fichier, sans adresse de mise à jour),
+# et la notification qui propose une nouvelle version.
+check_craft() {
+    local user=ankhvm reponse t
+    log "Premier clic sur WordCraft (D-053)"
+    reponse=$(polkit_demarrer "$user" ankh-craft@wordcraft.service) || die "polkit n'a pas répondu pour ankh-craft@wordcraft.service"
+    echo "polkit, démarrer ankh-craft@wordcraft.service : $reponse"
+    [[ $reponse == "(bba{ss}) true false"* ]] ||
+        die "polkit demanderait un mot de passe à l'administrateur pour préparer WordCraft (D-053)"
+    reponse=$(polkit_demarrer "$user" ankh-options@simple.service) || die "polkit n'a pas répondu pour ankh-options@simple.service"
+    echo "polkit, démarrer ankh-options@simple.service : $reponse"
+    [[ $reponse != "(bba{ss}) true"* ]] || die "la règle de la suite Craft autorise un autre service (D-053)"
+    craft_premier_clic wordcraft
+    # Formats : la bureautique à WordCraft ; le reste aux applications de l'image
+    for t in application/vnd.openxmlformats-officedocument.wordprocessingml.document text/plain application/pdf image/png; do
+        echo "$t : $(in_session "$user" env XDG_CURRENT_DESKTOP=KDE gio mime "$t" | head -n 1)"
+    done
+    [[ $(in_session "$user" env XDG_CURRENT_DESKTOP=KDE gio mime application/vnd.openxmlformats-officedocument.wordprocessingml.document | head -n 1) == *ai.storyteller.wordcraft.desktop ]] ||
+        die "les .docx ne s'ouvrent pas avec WordCraft (D-053)"
+    open_discover 1-discover-apres-wordcraft
+    close_app "$user" plasma-discover
+    # Une version plus ancienne est installée, pour voir la notification
+    log "Nouvelle version de WordCraft proposée à l'ouverture de la session (D-053)"
+    vm "cp /var/lib/ankh-craft/wordcraft /var/lib/ankh-craft/wordcraft.test && echo '0.0.1 test' > /var/lib/ankh-craft/wordcraft"
+    vm systemd-run --machine=$user@ --user --unit=ankh-test-nouveautes --collect --quiet /usr/libexec/ankh-craft nouveautes
+    sleep 8
+    screenshot 1-craft-nouvelle-version
+    if ! vm "pgrep -u $user -x notify-send" > /dev/null; then
+        explain_craft
+        die "aucune notification ne propose la nouvelle version de WordCraft (D-053)"
+    fi
+    vm systemctl --machine=$user@ --user stop ankh-test-nouveautes.service
+    vm mv /var/lib/ankh-craft/wordcraft.test /var/lib/ankh-craft/wordcraft
+    echo "WordCraft : préparé au premier clic, ouvert, nouvelle version proposée par une notification"
+}
+
+# D-053 : premier clic sur les neuf autres applications de la suite Craft,
+# comme pour WordCraft. Environ 1 Go depuis GitHub : seulement avec
+# ANKH_VM_CRAFT_COMPLET=1 (entrée « craft_complet » du workflow, et chaque lundi).
+check_craft_apps() {
+    local nom
+    log "Premier clic sur les neuf autres applications de la suite Craft (D-053)"
+    for nom in gridcraft deckcraft photocraft vectorcraft filmcraft lightcraft pdfcraft effectcraft designcraft; do
+        craft_premier_clic "$nom"
+    done
+    echo "Les neuf autres applications de la suite Craft se préparent au premier clic et s'ouvrent"
 }
 
 # D-050 : session « Ankh Console », ouverte comme si on la choisissait sur
@@ -1268,14 +1405,15 @@ vm systemd-run --machine=ankhvm@ --user --collect --quiet \
 sleep 30
 screenshot 1-chrome
 capture_app 1-vlc vlc
-capture_app 1-onlyoffice onlyoffice-desktopeditors
 vm systemd-run --machine=ankhvm@ --user --collect --quiet systemsettings kcm_about-distro
 sleep 20
 screenshot 1-a-propos
-# Chrome, VLC et OnlyOffice, capturés plus haut, resteraient derrière les fenêtres suivantes
+# Chrome, VLC et Discover, capturés plus haut, resteraient derrière les fenêtres suivantes
 close_app ankhvm chrome
 close_app ankhvm vlc
-close_app ankhvm DesktopEditors
+close_app ankhvm plasma-discover
+close_app ankhvm systemsettings
+check_craft
 check_vscode
 check_options_reglages
 check_identity
@@ -1285,6 +1423,11 @@ if [[ $gaming_complet == 1 ]]; then
     check_gaming_apps
 else
     echo "(premier clic sur les sept autres applications Gaming : seulement avec ANKH_VM_GAMING_COMPLET=1)"
+fi
+if [[ $craft_complet == 1 ]]; then
+    check_craft_apps
+else
+    echo "(premier clic sur les neuf autres applications de la suite Craft : seulement avec ANKH_VM_CRAFT_COMPLET=1)"
 fi
 check_console
 # D-043 : connexion par l'écran de connexion d'Ankh, avec un mot de passe,

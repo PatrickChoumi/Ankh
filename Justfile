@@ -126,7 +126,7 @@ test variant:
     echo "Test 11 : plus rien de Fedora à l'écran, démarrage compris (D-034)"
     podman run --rm -i --network=none "${image}" bash -s < tests/sans-fedora.sh
 
-    echo "Test 12 : VLC et OnlyOffice présents et par défaut, LibreOffice absent, aucune application web imposée par Chrome (D-035, D-047)"
+    echo "Test 12 : VLC présent, VLC et la bureautique de la suite Craft par défaut, LibreOffice absent, aucune application web imposée par Chrome (D-035, D-047, D-053)"
     podman run --rm -i --network=none "${image}" bash -s < tests/applications.sh
 
     echo "Test 14 : identité visuelle d'Ankh et interface douce : couleurs, polices, barre, Breeze, Konsole (D-037, D-039)"
@@ -137,6 +137,9 @@ test variant:
 
     echo "Test 16 : option Gaming, outils du jeu, ntsync, applications préparées au premier clic, session « Ankh Console » (D-041, D-050, D-051)"
     podman run --rm -i --network=none "${image}" bash -s < tests/gaming.sh
+
+    echo "Test 17 : suite Craft à la place d'OnlyOffice, WordCraft, GridCraft et DeckCraft dans Simple, option Création, versions figées, préparées au premier clic (D-053)"
+    podman run --rm -i --network=none "${image}" bash -s < tests/craft.sh
 
     if [[ "{{ variant }}" == "ankh-nvidia" ]]; then
         echo "Test 13 : module NVIDIA présent pour le noyau de l'image, et signé"

@@ -61,9 +61,9 @@ source = "Windows : 20 px pour un texte de 14 px (doc signature-experiences/typo
 [[mesure]]
 id = "curseur.theme"
 libelle = "Curseur de la souris"
-cible = "Breeze_Light"
+cible = "Ankh-curseurs"
 lot = 1
-source = "Mon choix du 2026-10-14 : blanc, comme Windows (D-052)"
+source = "Mon choix du 2026-10-15 : curseurs Fluent blancs, anneau d'attente au violet d'Ankh, comme AnduinOS (D-052)"
 
 [[mesure]]
 id = "curseur.taille"

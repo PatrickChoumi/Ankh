@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=FilmCraft
+GenericName=Montage vidéo
+Comment=Monter une vidéo, étalonner ses couleurs et travailler son son. Suite Craft, dans l'option Création d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.filmcraft %F
+Icon=ai.storyteller.filmcraft
+Terminal=false
+StartupWMClass=ai.storyteller.filmcraft
+Categories=AudioVideo;Video;AudioVideoEditing;
+Keywords=vidéo;montage;film;étalonnage;premiere;video;editor;timeline;color;grading;nle;
+MimeType=application/x-filmcraft;video/mp4;video/x-m4v;video/quicktime;video/x-matroska;video/webm;video/vnd.avi;video/x-msvideo;application/mxf;video/mp2t;video/mpeg;video/3gpp;

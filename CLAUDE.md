@@ -34,9 +34,10 @@
   - La phase 4 (protection, safezone) se fait en dernier, après la phase 10 (D-040). La réduction de la taille des mises à jour se fait en phase 10 (D-027).
 - **Chantier Interface (D-052), en parallèle de la phase 5, depuis le 2026-10-14** : l'interface au pixel près de Windows 11, aux couleurs d'Ankh, avec nos propres thèmes dérivés du code de KDE. Onze lots, chacun dans sa PR, avec captures avant/après et mesures automatiques en VM.
   - Mes choix du 2026-10-14 : rigueur de Windows 11 avec l'identité d'Ankh ; nos thèmes dérivés de KDE ; barre des tâches collée de 48 px ; curseur blanc.
-  - Mes choix du 2026-10-15 : police Selawik ; icônes Fluent, au violet d'Ankh.
-  - Lot 0, le banc de mesure : vérifié en VM le 2026-10-15 ; PR ouverte.
-- **Suite Craft d'ArtCraft (D-053), décidée le 2026-10-15, à faire après le lot 0** : OnlyOffice retiré ; WordCraft, GridCraft et DeckCraft toujours là (Simple), les sept clones d'Adobe dans une nouvelle option « Création ». Applications en alpha, en Flatpak préparé au premier clic, versions et empreintes figées dans l'image.
+  - Mes choix du 2026-10-15 : police Selawik ; icônes Fluent, au violet d'Ankh. Inspiration AnduinOS : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
+  - Lot 0, le banc de mesure : fusionné ([#17](https://github.com/PatrickChoumi/Ankh/pull/17), 2026-10-15).
+- **Suite Craft d'ArtCraft (D-053), décidée le 2026-10-15** : OnlyOffice retiré ; WordCraft, GridCraft et DeckCraft toujours là (Simple), les sept clones d'Adobe dans une nouvelle option « Création ». Applications en alpha, en Flatpak préparé au premier clic, versions et empreintes figées dans l'image ; nouvelle version proposée à l'ouverture de la session.
+  - Mise en œuvre le 2026-10-15 ; CI et VM vertes (dix applications au premier clic, notification d'une nouvelle version visible) ; PR [#18](https://github.com/PatrickChoumi/Ankh/pull/18) ouverte le 2026-10-16, avec mon accord.
 - **Phase 3 terminée le 2026-10-13** : son critère est rempli (Chrome par défaut, VLC et OnlyOffice, choix des options pour Simple et Dev, mises à jour dans Discover, VS Code et le conteneur de dev recréés depuis le dépôt au premier clic, tout testé en CI et en VM cloud). Détail :
   - Fait : les mises à jour du système dans Discover (D-028, [#4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée).
   - Fait ([#5](https://github.com/PatrickChoumi/Ankh/pull/5) fusionnée) :

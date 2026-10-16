@@ -1,0 +1,21 @@
+# Suite Craft (D-053) : télécharge et installe une application de la suite
+# pour toute la machine, par exemple « systemctl start ankh-craft@wordcraft.service ».
+# Démarré au premier clic sur son entrée du menu, ou pour une nouvelle
+# version (/usr/libexec/ankh-craft), sans mot de passe pour un administrateur
+# dans sa session (/usr/share/polkit-1/rules.d/50-ankh-craft.rules). N'installe
+# que le Flatpak dont l'empreinte SHA256 est figée dans l'image, et seulement
+# si son option est choisie.
+[Unit]
+Description=Suite Craft : préparer %i
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/ankh-craft installer %i
+# Journal de la préparation, que la fenêtre du premier clic affiche ; systemd
+# l'efface à la fin du service, il reste dans le journal du système.
+RuntimeDirectory=ankh-craft/%i
+# Version installée de chaque application
+StateDirectory=ankh-craft
+TimeoutStartSec=1h

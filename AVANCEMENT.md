@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-15** (PR #16 fusionnée ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, commencé ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée, D-053).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-16** (PR #16 et #17 fusionnées ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, fusionné ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée et mise en œuvre sur la branche, CI et VM vertes, D-053).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -313,6 +313,14 @@
 - **Ma demande** : remplacer OnlyOffice par la suite ArtCraft, découverte le jour même.
 - **Vérifié par Claude** dans les dépôts officiels : dix « Crafting Apps » open source (MIT ou Apache-2.0), en Rust, isolées en Flatpak, toutes en alpha (DesignCraft en pré-alpha), pas encore sur Flathub, paquets Linux non signés (sommes SHA256 seulement). Le studio ArtCraft, lui, génère par des services d'IA payants en ligne.
 - **Mes choix** : OnlyOffice remplacé, malgré l'alpha ; WordCraft, GridCraft et DeckCraft toujours là (Simple) ; les sept clones d'Adobe dans une nouvelle option « Création » ; sans le studio ArtCraft ; après le lot 0.
+- **Mise en œuvre** (2026-10-15, sur la branche de travail ; CI verte ; en VM, les dix applications se préparent et s'ouvrent) :
+  - OnlyOffice retiré : paquet, dépôt, clé, formats, favori du menu (remplacé par WordCraft), tests ;
+  - à chaque construction, la dernière version de chacune des dix applications et l'empreinte SHA256 de son Flatpak sont figées dans l'image ; la construction échoue s'il en manque une ;
+  - entrées du menu en français et icônes officielles ; WordCraft, GridCraft et DeckCraft pour toute installation, les sept autres avec la carte « Création » (assistant et « Options d'Ankh ») ;
+  - premier clic : une fenêtre montre le téléchargement depuis GitHub ; l'empreinte est vérifiée, puis le Flatpak est installé pour toute la machine par un service d'Ankh, sans mot de passe pour un administrateur (nouvelle règle polkit, à relire) ;
+  - les documents de bureau s'ouvrent avec WordCraft, GridCraft et DeckCraft ; le texte, le PDF et les images restent aux applications qui les ouvrent déjà ;
+  - une nouvelle version est proposée par une notification à l'ouverture de la session, avec « Mettre à jour » et « Ignorer cette version » (et non à l'ouverture de l'application, comme prévu : après l'installation, l'entrée du menu est celle de Flatpak) ;
+  - tests : nouveau Test 17 ; en VM, premier clic sur WordCraft, Discover après l'installation, notification d'une nouvelle version ; les dix dans le test complet.
 
 ### Chantier Interface — au pixel près de Windows 11 (depuis le 2026-10-14)
 
@@ -325,6 +333,7 @@
 - **Planches de comparaison** envoyées le 2026-10-14, aux mesures de Windows 11 et aux couleurs d'Ankh :
   - polices : Inter, Selawik, Noto Sans, Open Sans, Source Sans 3 ;
   - icônes : Breeze, Fluent, Papirus, dans un explorateur, Démarrer et la barre des tâches.
+- **Inspiration AnduinOS** (2026-10-15, D-052) : distribution Ubuntu qui ressemble à Windows 11 ; ses sources lues par Claude. Elle confirme nos choix (icônes Fluent, barre de 48 px, Démarrer de Windows 11) et donne ses valeurs pour la barre. Mes choix : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
 - **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés et vérifiés au second passage ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701)) ; le rayon du menu reste à vérifier.
 
 ---
@@ -342,7 +351,7 @@
 
 Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
 
-0. **Banc de mesure** (deux passages verts en VM ; PR ouverte le 2026-10-15) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
+0. **Banc de mesure** (fusionné le 2026-10-15, PR [#17](https://github.com/PatrickChoumi/Ankh/pull/17) ; rayon du menu corrigé ensuite, à vérifier en VM) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
 1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc.
 2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
 3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.
@@ -354,13 +363,11 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
 
-### Suite Craft d'ArtCraft (D-053, après le lot 0)
+### Suite Craft d'ArtCraft (D-053, mise en œuvre sur la branche)
 
-- Retirer OnlyOffice : image, dépôt et clé, applications par défaut, favoris du menu, tests.
-- Simple : WordCraft, GridCraft et DeckCraft dans le menu, préparés au premier clic en Flatpak.
-- Nouvelle option « Création » (assistant, « Options d'Ankh », Complète) : PhotoCraft, VectorCraft, FilmCraft, LightCraft, PdfCraft, EffectCraft, DesignCraft.
-- Versions et empreintes SHA256 figées à chaque construction de l'image, vérifiées au premier clic ; nouvelle version proposée, jamais imposée.
-- Tests : Test 12 adapté ; en VM, premier clic sur WordCraft à chaque PR, sur les dix dans le test complet.
+- Fait le 2026-10-15 : construction et Tests 12, 15 et 17 verts ; en VM, les dix applications préparées au premier clic et ouvertes. « Update Issue » de Discover après l'installation : défaut connu de fwupd (D-028), pas de la suite.
+- Fait le 2026-10-15 : correctifs du premier passage vérifiés en VM ([run 38745557276](https://github.com/PatrickChoumi/Ankh/actions/runs/38745557276)) : la notification reste à l'écran, l'option inconnue est ignorée après un retour arrière ; les quatre étapes réussissent.
+- PR [#18](https://github.com/PatrickChoumi/Ankh/pull/18) ouverte le 2026-10-16, avec mon accord : la mener au vert, puis la fusionner.
 
 ### Reste de la phase 3, sans la bloquer
 
@@ -410,6 +417,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 - **Protontricks** (D-050) : qu'il trouve Steam une fois Steam connecté à mon compte, sur ma machine.
 - **Lutris et Bottles** (D-050) : MangoHud, Gamescope et vkBasalt en Flatpak pour leurs jeux (runtime GNOME 49 et 50, pas de version publiée).
 - **Compte qui n'est pas administrateur** (D-050) : Flatpak devrait lui demander le mot de passe d'un administrateur au premier clic ; en VM, il a été refusé sans fenêtre. Seulement utile si un deuxième compte doit installer des jeux.
+- **Suite Craft** (D-053) : ses documents de bureau sur de vrais fichiers, sur ma machine (phase 9) ; garder des copies tant que les applications sont en alpha.
 - **« Options d'Ankh »** (D-046) : non testés en VM, le mot de passe refusé ou non donné, et les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée). Limite connue : seule la barre du compte qui ouvre la fenêtre suit ; un autre compte de la machine garderait VS Code épinglé.
 
 ---

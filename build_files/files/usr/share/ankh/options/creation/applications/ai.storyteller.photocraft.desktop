@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=PhotoCraft
+GenericName=Éditeur d'images
+Comment=Retoucher des photos et des documents PSD à calques. Suite Craft, dans l'option Création d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.photocraft %F
+Icon=ai.storyteller.photocraft
+Terminal=false
+StartupWMClass=ai.storyteller.photocraft
+Categories=Graphics;2DGraphics;RasterGraphics;Photography;
+Keywords=photo;image;retouche;calques;dessin;photoshop;editor;psd;layers;retouch;paint;
+MimeType=application/x-photocraft;image/x-paintnet;image/openraster;application/x-krita;image/vnd.adobe.photoshop;image/x-psd;image/x-psb;image/png;image/jpeg;image/tiff;image/webp;image/gif;image/bmp;image/x-tga;image/x-icon;image/vnd.microsoft.icon;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-exr;image/vnd.radiance;image/avif;image/qoi;

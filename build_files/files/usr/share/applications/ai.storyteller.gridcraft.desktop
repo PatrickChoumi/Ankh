@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=GridCraft
+GenericName=Tableur
+Comment=Calculer, analyser et représenter des données dans des classeurs. Suite Craft, dans l'image d'Ankh : se prépare au premier lancement (téléchargement depuis GitHub, une seule fois).
+Exec=/usr/libexec/ankh-craft ai.storyteller.gridcraft %F
+Icon=ai.storyteller.gridcraft
+Terminal=false
+StartupWMClass=ai.storyteller.gridcraft
+Categories=Office;Spreadsheet;
+Keywords=tableur;classeur;feuille;tableau;formule;graphique;excel;spreadsheet;workbook;sheet;table;formula;chart;pivot;xlsx;xlsb;ods;csv;tsv;
+MimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/vnd.ms-excel.sheet.macroEnabled.12;application/vnd.ms-excel.sheet.binary.macroEnabled.12;application/vnd.oasis.opendocument.spreadsheet;text/csv;text/tab-separated-values;

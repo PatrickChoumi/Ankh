@@ -1,6 +1,6 @@
 #!/usr/bin/bash
-# D-035 : applications du quotidien présentes dès l'installation. Lancé dans
-# l'image par « just test ».
+# D-035, D-053 : applications du quotidien présentes dès l'installation.
+# Lancé dans l'image par « just test ».
 set -euo pipefail
 
 echec() {
@@ -36,37 +36,34 @@ version="$(runuser -u nobody -- vlc --version)"
 echo "${version%%$'\n'*}"
 vlc="$(lanceur vlc)"
 
-echo "OnlyOffice installé dans /opt, toutes ses bibliothèques trouvées"
-rpm -q onlyoffice-desktopeditors
-mapfile -t trouves < <(rpm -ql onlyoffice-desktopeditors | grep '/DesktopEditors$')
-[[ ${#trouves[@]} -eq 1 && "${trouves[0]}" == /opt/* ]] || echec "OnlyOffice hors de /opt : ${trouves[*]:-aucun DesktopEditors}"
-editeurs="${trouves[0]}"
-# OnlyOffice apporte une partie de ses bibliothèques, dans son propre dossier :
-# seules celles du système doivent manquer à l'appel pour échouer.
-mapfile -t dossiers < <(find "$(dirname "${editeurs}")" -name '*.so*' -printf '%h\n' | sort -u)
-LD_LIBRARY_PATH="$(
-    IFS=:
-    echo "${dossiers[*]}"
-)" ldd "${editeurs}" > /tmp/ldd.txt
-if grep 'not found' /tmp/ldd.txt; then
-    echec "bibliothèques introuvables pour ${editeurs}"
-fi
-onlyoffice="$(lanceur onlyoffice-desktopeditors)"
-
-echo "Applications par défaut : ${vlc} et ${onlyoffice}"
+# D-053 : la bureautique vient de la suite Craft (tests/craft.sh), préparée
+# au premier clic : ses entrées du menu sont dans l'image dès l'installation.
+echo "Applications par défaut : ${vlc}, WordCraft, GridCraft et DeckCraft"
 for t in video/mp4 video/x-matroska audio/mpeg audio/flac; do
     par_defaut "${t}" "${vlc}"
 done
 for t in application/vnd.openxmlformats-officedocument.wordprocessingml.document \
-    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet \
-    application/vnd.openxmlformats-officedocument.presentationml.presentation \
-    application/vnd.oasis.opendocument.text; do
-    par_defaut "${t}" "${onlyoffice}"
+    application/msword application/vnd.oasis.opendocument.text application/rtf; do
+    par_defaut "${t}" ai.storyteller.wordcraft.desktop
 done
-# Le PDF et le texte brut ne sont pas confiés à OnlyOffice.
-if grep -E "^(application/pdf|text/plain)=" /etc/xdg/mimeapps.list; then
-    echec "PDF ou texte brut réglés dans /etc/xdg/mimeapps.list"
-fi
+for t in application/vnd.openxmlformats-officedocument.spreadsheetml.sheet \
+    application/vnd.oasis.opendocument.spreadsheet text/csv; do
+    par_defaut "${t}" ai.storyteller.gridcraft.desktop
+done
+par_defaut application/vnd.openxmlformats-officedocument.presentationml.presentation ai.storyteller.deckcraft.desktop
+# Les autres formats que la suite déclare (PDF, images, texte brut) ne lui
+# sont pas confiés quand une application de l'image les ouvre déjà : Chrome,
+# au moins, ouvre le PDF et les images.
+for t in application/pdf image/png image/jpeg text/plain; do
+    reponse="$(XDG_CURRENT_DESKTOP=KDE gio mime "${t}")"
+    reponse="${reponse%%$'\n'*}"
+    echo "${t} : ${reponse}"
+    if grep -q "^${t}=" /etc/xdg/mimeapps.list; then
+        [[ "${reponse}" != *ai.storyteller.* ]] || echec "${t} est confié à la suite Craft alors qu'une application de l'image l'ouvre"
+    elif [[ "${t}" != text/plain ]]; then
+        echec "${t} n'a pas d'application par défaut dans /etc/xdg/mimeapps.list"
+    fi
+done
 par_defaut text/html google-chrome.desktop
 
 echo "Aucune application web imposée par Chrome (D-047)"

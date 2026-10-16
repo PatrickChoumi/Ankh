@@ -1,5 +1,6 @@
 // Page « Choisissez vos outils » de l'assistant de premier démarrage (D-046) :
-// Simple (toujours incluse), Dev, Gaming, Hacking, et Complète qui coche tout.
+// Simple (toujours incluse), Dev, Gaming, Création (D-053), Hacking, et
+// Complète qui coche tout.
 // Ajoutée comme « Bienvenue dans Ankh », par la méthode prévue par KDE
 // (docs/CUSTOM_MODULES.md de https://invent.kde.org/plasma/plasma-setup),
 // juste après la langue (poids 1 ; langue : 0).

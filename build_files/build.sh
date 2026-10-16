@@ -75,11 +75,12 @@ BrowserApplication=google-chrome.desktop
 KDE
 
 # D-035 : les applications du quotidien sont dans l'image dès l'installation,
-# comme Chrome (modifie D-011 et D-024) : VLC et OnlyOffice. Elles se mettent
-# à jour avec l'image, chaque semaine (D-023, D-031).
+# comme Chrome (modifie D-011 et D-024) : VLC. Il se met à jour avec l'image,
+# chaque semaine (D-023, D-031). La bureautique vient de la suite Craft
+# (D-053, plus bas), qui remplace OnlyOffice.
 #
-# LibreOffice est retiré : une seule suite bureautique, OnlyOffice. Tous ses
-# paquets, s'il y en a dans la base. La liste de ce qui part est affichée.
+# LibreOffice est retiré : une seule suite bureautique. Tous ses paquets,
+# s'il y en a dans la base. La liste de ce qui part est affichée.
 mapfile -t libreoffice < <(rpm -qa --qf '%{NAME}\n' 'libreoffice*' | sort -u)
 if [[ ${#libreoffice[@]} -gt 0 ]]; then
     avant="$(rpm -qa --qf '%{NAME}\n' | sort -u)"
@@ -95,42 +96,68 @@ fi
 dnf5 -y install vlc
 rpm -q --qf 'VLC installé : %{NAME} %{VERSION}-%{RELEASE} (%{VENDOR})\n' vlc
 
-# OnlyOffice, depuis son dépôt officiel pour Red Hat et dérivés
-# (https://helpcenter.onlyoffice.com/desktop/installation/desktop-install-rhel.aspx),
-# installé dans /opt comme Chrome. La clé de signature est refusée si son
-# empreinte n'est pas celle-ci : la documentation d'OnlyOffice pour Ubuntu
-# désigne la clé par son identifiant court CB2DE8E5, sur keyserver.ubuntu.com
-# (https://helpcenter.onlyoffice.com/installation/desktop-install-ubuntu.aspx),
-# et ce serveur donne cette empreinte complète, au nom d'Ascensio System
-# (l'éditeur d'OnlyOffice). La clé est prise sur ce même serveur.
-onlyoffice_fpr=E09CA29F6E178040EF22B4098320CA65CB2DE8E5
-onlyoffice_key=/etc/pki/rpm-gpg/onlyoffice.asc
-curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x${onlyoffice_fpr}" -o "${onlyoffice_key}"
-gnupg_home=$(mktemp -d)
-fpr=$(gpg --homedir "${gnupg_home}" --show-keys --with-colons "${onlyoffice_key}" | awk -F: '/^fpr:/ {print $10; exit}')
-rm -rf "${gnupg_home}"
-if [[ "${fpr}" != "${onlyoffice_fpr}" ]]; then
-    echo "Clé d'OnlyOffice inattendue : ${fpr} (attendu ${onlyoffice_fpr})" >&2
+# D-053 : la suite Craft d'ArtCraft (https://github.com/storytold), à la place
+# d'OnlyOffice : WordCraft, GridCraft et DeckCraft dans Simple (entrées du menu
+# dans /usr/share/applications), les sept autres avec l'option Création
+# (/usr/share/ankh/options/creation/applications). Elles ne sont pas sur
+# Flathub : chaque version publie, dans ses « Releases » GitHub, un Flatpak en
+# un seul fichier (<nom>-<version>-linux-x86_64.flatpak) et les empreintes
+# SHA256 de ses fichiers (SHA256SUMS.txt). La dernière version de chacune, et
+# l'empreinte de son Flatpak, sont figées ici dans l'image
+# (/usr/share/ankh/craft/versions) : /usr/libexec/ankh-craft le télécharge au
+# premier clic, et refuse un fichier d'une autre empreinte. La construction
+# échoue s'il manque le Flatpak x86_64 ou son empreinte.
+# Les entrées, les icônes, le lanceur, son service et sa règle polkit sont
+# dans build_files/files (copiés plus bas).
+# Ce changement touche à polkit (/usr/share/polkit-1/rules.d/50-ankh-craft.rules) :
+# à relire.
+craft_entrees=(/ctx/files/usr/share/applications/ai.storyteller.*.desktop
+    /ctx/files/usr/share/ankh/options/creation/applications/ai.storyteller.*.desktop)
+craft_versions=/usr/share/ankh/craft/versions
+install -d -m 0755 "$(dirname "${craft_versions}")"
+{
+    echo "# Suite Craft (D-053) : version et empreinte SHA256 du Flatpak x86_64 de"
+    echo "# chaque application, figées à la construction de l'image ($(date -u +%Y-%m-%d))."
+    echo "# option nom version empreinte adresse"
+    for entree in "${craft_entrees[@]}"; do
+        nom="$(basename "${entree}" .desktop)"
+        nom="${nom#ai.storyteller.}"
+        case "${entree}" in
+            /ctx/files/usr/share/applications/*) option=simple ;;
+            *) option=creation ;;
+        esac
+        sommes="$(curl -fsSL --retry 3 "https://github.com/storytold/${nom}/releases/latest/download/SHA256SUMS.txt")"
+        # awk plutôt que grep : aucune ligne n'est un résultat, pas une erreur
+        lignes="$(awk -v nom="${nom}" '$1 ~ /^[0-9a-f]+$/ && length($1) == 64 && NF == 2 &&
+            $2 ~ ("^" nom "-[0-9]+[.][0-9]+[.][0-9]+-linux-x86_64[.]flatpak$")' <<< "${sommes}")"
+        if [[ -z "${lignes}" || "$(wc -l <<< "${lignes}")" -ne 1 ]]; then
+            echo "${nom} : pas un seul Flatpak x86_64 dans SHA256SUMS.txt de sa dernière version :" >&2
+            echo "${sommes}" >&2
+            exit 1
+        fi
+        empreinte="${lignes%% *}"
+        fichier="${lignes##* }"
+        version="${fichier#"${nom}-"}"
+        version="${version%-linux-x86_64.flatpak}"
+        adresse="https://github.com/storytold/${nom}/releases/download/v${version}/${fichier}"
+        # Le fichier existe bien à cette adresse (sans le télécharger)
+        curl -fsSIL --retry 3 -o /dev/null "${adresse}"
+        echo "${option} ${nom} ${version} ${empreinte} ${adresse}"
+    done
+} > "${craft_versions}"
+chmod 0644 "${craft_versions}"
+cat "${craft_versions}"
+if [[ "$(grep -c '^simple ' "${craft_versions}")" -ne 3 || "$(grep -c '^creation ' "${craft_versions}")" -ne 7 ]]; then
+    echo "Suite Craft : 3 applications dans Simple et 7 dans Création attendues" >&2
     exit 1
 fi
-rpm --import "${onlyoffice_key}"
-cat > /etc/yum.repos.d/onlyoffice.repo << REPO
-[onlyoffice]
-name=onlyoffice
-baseurl=https://download.onlyoffice.com/repo/centos/main/noarch/
-enabled=1
-gpgcheck=1
-gpgkey=file://${onlyoffice_key}
-REPO
-dnf5 -y install onlyoffice-desktopeditors
 
 # Applications par défaut (spécification XDG, comme Chrome plus haut) : VLC
-# pour la vidéo et l'audio, OnlyOffice pour les documents de bureau. Les
-# formats sont ceux que chaque application déclare dans son lanceur, filtrés :
-# OnlyOffice déclare aussi le PDF et le texte brut, qui restent à Chrome et à
-# l'éditeur de texte.
-# Le lanceur principal porte le nom de l'application et appartient à l'un de
-# ses paquets (VLC en a d'autres, pour ouvrir un DVD, un Blu-ray…).
+# pour la vidéo et l'audio, WordCraft, GridCraft et DeckCraft pour les
+# documents de bureau. Les formats sont ceux que chaque application déclare
+# dans son lanceur, filtrés : WordCraft déclare aussi le texte brut et le HTML.
+# Le lanceur principal de VLC porte son nom et appartient à l'un de ses
+# paquets (VLC en a d'autres, pour ouvrir un DVD, un Blu-ray…).
 lanceur() { # $1 : nom de l'application et de son paquet principal
     local fichier="/usr/share/applications/$1.desktop"
     if [[ "$(rpm -qf --qf '%{NAME}' "${fichier}")" != "$1"* ]]; then
@@ -143,23 +170,53 @@ lanceur() { # $1 : nom de l'application et de son paquet principal
 formats() { # $1 : lanceur, $2 : formats retenus (expression régulière)
     sed -n 's/^MimeType=//p' "$1" | tr ';' '\n' | grep -E "$2" | sort -u
 }
+par_defaut() { # $1 : lanceur, $2 : formats retenus ; au moins un format
+    local t n=0
+    while IFS= read -r t; do
+        echo "${t}=$(basename "$1")" >> /etc/xdg/mimeapps.list
+        n=$((n + 1))
+    done < <(formats "$1" "$2")
+    if ((n == 0)); then
+        echo "Aucun format retenu pour $1" >&2
+        return 1
+    fi
+    echo "$(basename "$1") par défaut pour ${n} formats"
+}
+bureautique='^(application/(msword|rtf|vnd\.ms-(excel|powerpoint|word)|vnd\.openxmlformats-officedocument\.|vnd\.oasis\.opendocument\.(text|spreadsheet|presentation))|text/(csv|rtf)$)'
 vlc_lanceur="$(lanceur vlc)"
-onlyoffice_lanceur="$(lanceur onlyoffice-desktopeditors)"
-mapfile -t vlc_formats < <(formats "${vlc_lanceur}" '^(video|audio)/')
-mapfile -t onlyoffice_formats < <(formats "${onlyoffice_lanceur}" \
-    '^(application/(msword|rtf|vnd\.ms-(excel|powerpoint|word)|vnd\.openxmlformats-officedocument\.|vnd\.oasis\.opendocument\.(text|spreadsheet|presentation))|text/(csv|rtf)$)')
-if [[ ${#vlc_formats[@]} -eq 0 || ${#onlyoffice_formats[@]} -eq 0 ]]; then
-    echo "Formats introuvables : ${#vlc_formats[@]} pour VLC, ${#onlyoffice_formats[@]} pour OnlyOffice" >&2
-    exit 1
-fi
-echo "VLC (${vlc_lanceur}) par défaut pour ${#vlc_formats[@]} formats"
-echo "OnlyOffice (${onlyoffice_lanceur}) par défaut pour ${#onlyoffice_formats[@]} formats"
-for t in "${vlc_formats[@]}"; do
-    echo "${t}=$(basename "${vlc_lanceur}")"
-done >> /etc/xdg/mimeapps.list
-for t in "${onlyoffice_formats[@]}"; do
-    echo "${t}=$(basename "${onlyoffice_lanceur}")"
-done >> /etc/xdg/mimeapps.list
+par_defaut "${vlc_lanceur}" '^(video|audio)/'
+for nom in wordcraft gridcraft deckcraft; do
+    par_defaut "/ctx/files/usr/share/applications/ai.storyteller.${nom}.desktop" "${bureautique}"
+done
+# Les autres formats que déclare la suite Craft (texte brut, PDF, images…)
+# restent aux applications de l'image qui les ouvrent déjà, pour qu'une
+# application en alpha ne les prenne pas une fois installée : Flatpak place
+# ses entrées du menu devant celles de /usr/share (XDG_DATA_DIRS, voir
+# /usr/libexec/ankh-flatpak). Pour chaque format, la première de ces
+# applications qui le déclare ; sans elle, KDE choisit.
+gardiens=(org.kde.gwenview.desktop org.kde.okular.desktop org.kde.kwrite.desktop org.kde.kate.desktop
+    google-chrome.desktop)
+laisses=()
+while IFS= read -r t; do
+    if awk -F= -v t="${t}" '$1 == t { trouve = 1 } END { exit !trouve }' /etc/xdg/mimeapps.list; then
+        continue
+    fi
+    gardien=""
+    for candidat in "${gardiens[@]}"; do
+        if [[ -f "/usr/share/applications/${candidat}" ]] &&
+            sed -n 's/^MimeType=//p' "/usr/share/applications/${candidat}" | tr ';' '\n' | grep -qxF "${t}"; then
+            gardien="${candidat}"
+            break
+        fi
+    done
+    if [[ -n "${gardien}" ]]; then
+        echo "${t}=${gardien}" >> /etc/xdg/mimeapps.list
+        echo "${t} : reste à ${gardien}"
+    else
+        laisses+=("${t}")
+    fi
+done < <(sed -n 's/^MimeType=//p' "${craft_entrees[@]}" | tr ';' '\n' | grep -v '^$' | sort -u)
+echo "Formats de la suite Craft laissés au choix de KDE : ${laisses[*]:-aucun}"
 
 # D-047 : Chrome n'installe plus d'applications web de lui-même (Claude et
 # GitHub, D-024) : je les installe moi-même si je les veux. Aucune politique
@@ -239,7 +296,15 @@ for f in /usr/share/applications/*.desktop; do
             ;;
     esac
 done
-desktop-file-validate /usr/share/ankh/options/*/applications/*.desktop /usr/share/applications/ankh-options.desktop
+# Une entrée d'option n'est jamais aussi dans le menu de toute installation
+for f in /usr/share/ankh/options/*/applications/*.desktop; do
+    if [[ -e "/usr/share/applications/$(basename "${f}")" ]]; then
+        echo "${f} : cette entrée d'option est aussi dans /usr/share/applications" >&2
+        exit 1
+    fi
+done
+desktop-file-validate /usr/share/ankh/options/*/applications/*.desktop /usr/share/applications/ankh-options.desktop \
+    /usr/share/applications/ai.storyteller.*.desktop /etc/xdg/autostart/ankh-craft-nouveautes.desktop
 install -d -m 0755 /usr/share/plasma/systemsettings/externalmodules
 ln -s /usr/share/applications/ankh-options.desktop /usr/share/plasma/systemsettings/externalmodules/ankh-options.desktop
 # La page de l'assistant et la fenêtre des réglages lancent leurs commandes
@@ -268,6 +333,23 @@ for outil in plasmawindowed pkexec kbuildsycoca6 busctl flatpak konsole kwin_way
 done
 # La fenêtre du mot de passe de pkexec : l'agent polkit de KDE
 rpm -q polkit-kde
+
+# D-053 : la suite Craft se prépare dans une fenêtre Konsole, qui suit le
+# journal du service ankh-craft@<nom> (tail) ; le service télécharge le
+# Flatpak (curl), vérifie son empreinte (sha256sum) et l'installe (flatpak).
+# Une nouvelle version est proposée par une notification à boutons
+# (notify-send de libnotify : --action et --wait).
+dnf5 -y install libnotify
+for outil in systemctl tail curl sha256sum notify-send; do
+    if ! chemin="$(command -v "${outil}")"; then
+        echo "${outil} introuvable : suite Craft à revoir" >&2
+        exit 1
+    fi
+    echo "${outil} : ${chemin} ($(rpm -qf "${chemin}"))"
+done
+aide_notify="$(notify-send --help)"
+grep -q -- '--action' <<< "${aide_notify}"
+grep -q -- '--wait' <<< "${aide_notify}"
 
 # D-033 : habillage Ankh, sur le bureau seulement (modifie D-001). Le logo et
 # les fonds d'écran viennent de build_files/artwork et sont copiés juste au-dessus.
@@ -641,7 +723,7 @@ if [[ -e /etc/xdg/kicker-extra-favoritesrc ]]; then
     exit 1
 fi
 favoris=(preferred://browser ankh-vscode.desktop org.kde.dolphin.desktop org.kde.konsole.desktop
-    org.kde.discover.desktop "$(basename "${vlc_lanceur}")" "$(basename "${onlyoffice_lanceur}")" systemsettings.desktop)
+    org.kde.discover.desktop "$(basename "${vlc_lanceur}")" ai.storyteller.wordcraft.desktop systemsettings.desktop)
 # Un favori peut venir d'une option (D-046) : il n'apparaît alors que si
 # l'option est choisie.
 for favori in "${favoris[@]}"; do

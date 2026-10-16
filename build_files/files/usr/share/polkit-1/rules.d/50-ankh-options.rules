@@ -12,7 +12,7 @@ polkit.addRule(function (action, subject) {
     if (subject.user !== "plasma-setup" || action.id !== "org.freedesktop.systemd1.manage-units") {
         return;
     }
-    var unite = /^ankh-options@(simple|(dev|gaming|hacking)(_(dev|gaming|hacking))*)\.service$/;
+    var unite = /^ankh-options@(simple|(dev|gaming|creation|hacking)(_(dev|gaming|creation|hacking))*)\.service$/;
     if (action.lookup("verb") === "start" && unite.test(action.lookup("unit"))) {
         return polkit.Result.YES;
     }
