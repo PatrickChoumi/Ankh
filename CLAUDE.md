@@ -37,7 +37,7 @@
   - Mes choix du 2026-10-15 : police Selawik ; icônes Fluent, au violet d'Ankh. Inspiration AnduinOS : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
   - Lot 0, le banc de mesure : fusionné ([#17](https://github.com/PatrickChoumi/Ankh/pull/17), 2026-10-15).
 - **Suite Craft d'ArtCraft (D-053), décidée le 2026-10-15** : OnlyOffice retiré ; WordCraft, GridCraft et DeckCraft toujours là (Simple), les sept clones d'Adobe dans une nouvelle option « Création ». Applications en alpha, en Flatpak préparé au premier clic, versions et empreintes figées dans l'image ; nouvelle version proposée à l'ouverture de la session.
-  - Mise en œuvre le 2026-10-15 sur la branche de travail ; CI et VM vertes (dix applications au premier clic, notification d'une nouvelle version visible) ; PR à ouvrir avec mon accord.
+  - Mise en œuvre le 2026-10-15 ; CI et VM vertes (dix applications au premier clic, notification d'une nouvelle version visible) ; PR [#18](https://github.com/PatrickChoumi/Ankh/pull/18) ouverte le 2026-10-16, avec mon accord.
 - **Phase 3 terminée le 2026-10-13** : son critère est rempli (Chrome par défaut, VLC et OnlyOffice, choix des options pour Simple et Dev, mises à jour dans Discover, VS Code et le conteneur de dev recréés depuis le dépôt au premier clic, tout testé en CI et en VM cloud). Détail :
   - Fait : les mises à jour du système dans Discover (D-028, [#4](https://github.com/PatrickChoumi/Ankh/pull/4) fusionnée).
   - Fait ([#5](https://github.com/PatrickChoumi/Ankh/pull/5) fusionnée) :
