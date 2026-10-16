@@ -682,6 +682,46 @@ for dossier in "${themes[@]}"; do
     fi
 done
 
+# D-052, lot 2 : décoration des fenêtres d'Ankh, aux mesures de Windows 11 :
+# barre de titre de 32 px de la couleur de la fenêtre, icône et titre à
+# gauche, boutons de 46×32 (Fermer rouge #C42B1C au survol), coins de 8 px,
+# contour de 1 px, ombre de Windows. Dérivée de celle de Breeze, ses sources
+# sont dans build_files/decoration ; compilée dans l'étape « outils » du
+# Containerfile (build_files/outils.sh).
+plugins_decoration=/usr/lib64/qt6/plugins/org.kde.kdecoration3
+test -f "${plugins_decoration}/org.kde.breeze.so"
+install -m 0755 /outils/decoration/org.ankh.decoration.so "${plugins_decoration}/org.ankh.decoration.so"
+# Compilée avec les en-têtes du moment : toutes ses bibliothèques, et chacun
+# de leurs symboles, doivent exister dans l'image
+if ldd -r "${plugins_decoration}/org.ankh.decoration.so" 2>&1 | grep -E 'not found|undefined symbol'; then
+    echo "La décoration d'Ankh ne trouve pas ses bibliothèques dans l'image" >&2
+    exit 1
+fi
+echo "Décoration d'Ankh : $(ldd "${plugins_decoration}/org.ankh.decoration.so" | grep -c '=>') bibliothèques trouvées ; kdecoration $(rpm -q --qf '%{VERSION}-%{RELEASE}' kdecoration)"
+# Réglages de KWin (src/kcms/decoration/kwindecorationsettings.kcfg) : la
+# décoration d'Ankh, son icône à gauche, réduire, agrandir et fermer à
+# droite, sans bords (elle n'en dessine aucun)
+kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key library org.ankh.decoration
+kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key theme --delete
+kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key ButtonsOnLeft M
+kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key ButtonsOnRight IAX
+kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key BorderSize None
+kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key BorderSizeAuto false
+chmod 0644 /etc/xdg/kwinrc
+# Chaque thème global désigne aussi sa décoration (kwinrc, dans
+# contents/defaults), recopiée à chaque session avant /etc/xdg, comme le
+# curseur plus haut
+for dossier in "${themes[@]}"; do
+    defauts="${dossier}/contents/defaults"
+    if [[ -e "${defauts}" ]]; then
+        avant="$(kreadconfig6 --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library)"
+        kwriteconfig6 --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library org.ankh.decoration
+        kwriteconfig6 --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key theme --delete
+        chmod 0644 "${defauts}"
+        echo "Décoration d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucune} »)"
+    fi
+done
+
 # Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
 # d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup).
 # Le fond d'Ankh y est mis, aux noms attendus

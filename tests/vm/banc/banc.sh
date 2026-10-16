@@ -134,7 +134,7 @@ banc_galerie_devant() {
 
 # 1. Réglages lus dans la session (valeurs par défaut de KDE s'ils sont absents).
 banc_reglages() {
-    local valeur alignement panneau hauteur flottante position date
+    local valeur alignement decoration panneau hauteur flottante position date
     log "Banc de l'interface (D-052) : réglages"
     if valeur=$(banc_reglage kcminputrc Mouse cursorTheme breeze_cursors); then
         banc_noter curseur.theme "$valeur"
@@ -145,8 +145,15 @@ banc_reglages() {
     if valeur=$(banc_reglage kdeglobals KDE AnimationDurationFactor 1); then
         banc_noter animations.facteur "$valeur"
     fi
-    # TitleAlignment de Breeze (kdecoration/breezesettingsdata.kcfg de breeze)
-    if alignement=$(banc_reglage breezerc Windeco TitleAlignment AlignCenterFullWidth); then
+    # Décoration des fenêtres : celle d'Ankh (D-052, lot 2) aligne toujours
+    # le titre à gauche ; Breeze suit son réglage TitleAlignment
+    # (kdecoration/breezesettingsdata.kcfg de breeze)
+    if decoration=$(banc_reglage kwinrc org.kde.kdecoration2 library org.kde.breeze); then
+        echo "Décoration des fenêtres : $decoration"
+    fi
+    if [[ ${decoration:-} == org.ankh.decoration ]]; then
+        banc_noter fenetre.titre.alignement gauche
+    elif alignement=$(banc_reglage breezerc Windeco TitleAlignment AlignCenterFullWidth); then
         case $alignement in
             AlignLeft) valeur=gauche ;;
             AlignRight) valeur=droite ;;

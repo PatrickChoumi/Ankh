@@ -1825,6 +1825,18 @@
   - **accent** : il suit le fond d'écran (D-054, ma demande du 2026-10-16), mis en œuvre avec ce lot ;
   - **banc** : `lots_termines = [1]` : la police, ses deux tailles et les curseurs deviennent obligatoires en VM ;
   - **tests** : Test 14 (Selawik et sa licence, tailles, rendu par fontconfig, facteur des animations, curseurs dans l'image et dans chaque thème global) ; en VM, police et curseur lus dans la session.
+- **Lot 2, les fenêtres (commencé le 2026-10-16, branche locale après le lot 1, à vérifier par la CI et en VM)** :
+  - **décoration « Ankh »** (`build_files/decoration`, C++), dérivée de celle de Breeze 6.7.5 (`kdecoration/` de <https://invent.kde.org/plasma/breeze>, commit `ca217f1`, même licence GPL), compilée dans l'étape « outils » du Containerfile et installée dans `/usr/lib64/qt6/plugins/org.kde.kdecoration3`. La construction échoue si une de ses bibliothèques ou un de ses symboles manque dans l'image (`ldd -r`) ;
+  - **mesures de Windows 11**, avec leurs sources dans `ankhmetrique.h` (WinUI, commit `866ba81` de <https://github.com/microsoft/microsoft-ui-xaml> ; boutons copiés par Windows Terminal, commit `44b440b` de <https://github.com/microsoft/terminal>) :
+    - barre de titre de 32 px, de la couleur de la fenêtre ; icône de 16 px à 16 px du bord, titre à gauche, 16 px après l'icône, coupé par « … » ; icône et titre à 50 % dans une fenêtre inactive ;
+    - boutons réduire, agrandir et fermer de 46×32, symboles de 10×10 ; survol en voile léger (blanc à 6 % en sombre, noir à 4 % en clair) ; Fermer rouge `#C42B1C` au survol, symbole blanc ;
+    - coins de 8 px, contour de 1 px (formule de Breeze), carrés quand la fenêtre est agrandie ou collée à un bord ;
+    - aucun bord visible ; une marge invisible de 8 px pour redimensionner ;
+    - ombre de Windows (élévation 64 : une ombre ambiante et une ombre dirigée, plus douce en clair), moitié moins forte pour une fenêtre inactive ;
+  - **réglages** : la décoration d'Ankh, l'icône à gauche, réduire, agrandir et fermer à droite, sans bords (`/etc/xdg/kwinrc`, et chaque thème global, dont les réglages passent avant à chaque session, comme pour le curseur) ;
+  - **aperçu hors écran** (outil d'aperçu des décorations de KWin, 2026-10-16) : la croix de Fermer paraissait plus pâle que les autres symboles. Qt répartit une diagonale de 1 px sur deux pixels à moitié allumés ; à 1,25 px, chaque rangée a un pixel plein (essai avec QPainter). Corrigé ;
+  - **banc** : `lots_termines = [1, 2]` : ses 11 mesures des fenêtres deviennent obligatoires en VM (barre de titre, bords, rayon des coins, alignement du titre, boutons, taille et couleur de Fermer). Le banc lit l'alignement du titre selon la décoration ;
+  - **tests** : Test 14 (décoration présente, ses bibliothèques trouvées, choisie par défaut et dans chaque thème global, boutons) ; en VM, décoration lue dans la session.
 - **Modifiée par D-054 (2026-10-16)** : l'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh. Les curseurs gardent leur anneau violet (images figées). Pour les icônes Fluent et le thème GTK (lot 9), suivre l'accent comme le reste : à étudier au lot 9.
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)

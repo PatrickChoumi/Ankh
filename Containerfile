@@ -7,15 +7,18 @@ ARG BASE_IMAGE
 FROM scratch AS ctx
 COPY build_files /
 
-# D-052, lot 1 : la police Selawik et les curseurs d'Ankh, compilés depuis
-# leurs sources (build_files/outils.sh). Leurs outils de compilation restent
-# dans cette étape : seul le résultat, /sortie, entre dans l'image.
+# D-052 : la police Selawik et les curseurs d'Ankh (lot 1), la décoration des
+# fenêtres d'Ankh (lot 2), compilés depuis leurs sources (build_files/outils.sh).
+# Leurs outils de compilation restent dans cette étape : seul le résultat,
+# /sortie, entre dans l'image.
 FROM ${BASE_IMAGE} AS outils
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=tmpfs,dst=/tmp \
-    dnf5 -y --setopt=install_weak_deps=False install fontmake xcursorgen librsvg2-tools git-core && \
+    dnf5 -y --setopt=install_weak_deps=False install fontmake xcursorgen librsvg2-tools git-core \
+        cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel kdecoration-devel kf6-kcolorscheme-devel \
+        kf6-kconfig-devel kf6-kcoreaddons-devel kf6-kguiaddons-devel kf6-kiconthemes-devel && \
     /ctx/outils.sh /sortie
 
 FROM ${BASE_IMAGE}
