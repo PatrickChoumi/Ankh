@@ -355,7 +355,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 0. **Banc de mesure** (fusionné le 2026-10-15, PR [#17](https://github.com/PatrickChoumi/Ankh/pull/17) ; rayon du menu corrigé ensuite, à vérifier en VM) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
 1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc. Écrit le 2026-10-15 sur une branche locale (Selawik et curseurs compilés depuis leurs sources ; rendu par fontconfig ; couleurs par couches ; animations à 5/6), à pousser après la fusion de D-053, puis à vérifier par la CI et en VM.
    - Accent qui suit le fond d'écran (D-054, ma demande du 2026-10-16), ajouté au lot 1 : le violet d'Ankh avec les fonds d'Ankh, la couleur de l'image avec une autre. À vérifier par la CI et en VM, avec le reste du lot.
-2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
+2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres). Écrite le 2026-10-16 sur une branche locale, après le lot 1 : compilée et vue en aperçu hors écran (croix de Fermer corrigée). À vérifier par la CI et en VM, avec ses 11 mesures.
 3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.
 4. Shell : style Plasma « Ankh », barre collée de 48 px, horloge, notifications.
 5. Démarrer d'Ankh.

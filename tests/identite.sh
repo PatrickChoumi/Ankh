@@ -83,6 +83,20 @@ for curseur in default left_ptr pointer text wait progress; do
 done
 [[ -f /usr/share/icons/Ankh-curseurs/LICENSE ]] || echec "licence des curseurs d'Ankh absente"
 attendu "Curseurs" Ankh-curseurs --file kcminputrc --group Mouse --key cursorTheme
+# D-052, lot 2 : décoration des fenêtres d'Ankh, ses bibliothèques trouvées,
+# choisie par défaut et dans chaque thème global
+decoration=/usr/lib64/qt6/plugins/org.kde.kdecoration3/org.ankh.decoration.so
+[[ -f "${decoration}" ]] || echec "décoration d'Ankh absente"
+if ldd -r "${decoration}" 2>&1 | grep -E 'not found|undefined symbol'; then
+    echec "la décoration d'Ankh ne trouve pas ses bibliothèques"
+fi
+attendu "Décoration des fenêtres" org.ankh.decoration --file kwinrc --group org.kde.kdecoration2 --key library
+attendu "Boutons à gauche" M --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnLeft
+attendu "Boutons à droite" IAX --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnRight
+for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
+    attendu "Décoration de $(basename "$(dirname "$(dirname "${defauts}")")")" org.ankh.decoration \
+        --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library
+done
 attendu "Taille des curseurs" 24 --file kcminputrc --group Mouse --key cursorSize
 for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
     attendu "Curseurs de $(basename "$(dirname "$(dirname "${defauts}")")")" Ankh-curseurs \

@@ -1,16 +1,19 @@
 #!/usr/bin/bash
-# D-052, lot 1 : ce qui se compile depuis ses sources avant l'image, dans une
-# étape à part du Containerfile (« outils »), pour que ses outils de
-# compilation (fontmake, xcursorgen, rsvg-convert) n'entrent pas dans l'image :
+# D-052, lots 1 et 2 : ce qui se compile depuis ses sources avant l'image,
+# dans une étape à part du Containerfile (« outils »), pour que ses outils de
+# compilation (fontmake, xcursorgen, rsvg-convert, cmake, g++ et les en-têtes
+# de KDE) n'entrent pas dans l'image :
 # - la police Selawik, de Microsoft (OFL 1.1, https://github.com/microsoft/Selawik),
 #   compilée depuis ses sources UFO ;
 # - les curseurs « Ankh-curseurs » : les curseurs Fluent blancs
 #   (GPL-3.0, dossier cursors de https://github.com/vinceliuice/Fluent-icon-theme,
 #   ceux qu'AnduinOS installe sous le nom « Fluent-dark-cursors »), dont le bleu
-#   d'accent, celui de l'anneau d'attente, devient le violet d'Ankh.
+#   d'accent, celui de l'anneau d'attente, devient le violet d'Ankh ;
+# - la décoration des fenêtres d'Ankh (lot 2), dérivée de celle de Breeze,
+#   dont les sources sont dans le dépôt d'Ankh (build_files/decoration).
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
-# build.sh : polices/selawik et icones/Ankh-curseurs.
+# build.sh : polices/selawik, icones/Ankh-curseurs et decoration.
 set -euo pipefail
 
 sortie=${1:-/sortie}
@@ -111,3 +114,11 @@ Inherits=breeze_cursors
 THEME
 install -m 0644 "${travail}/fluent/cursors/LICENSE" "${theme}/LICENSE"
 echo "$(find "${theme}/cursors" -type f | wc -l) curseurs, $(find "${theme}/cursors" -type l | wc -l) autres noms"
+
+echo "== Décoration des fenêtres d'Ankh"
+sources="$(dirname "$(readlink -f "$0")")/decoration"
+cmake -S "${sources}" -B "${travail}/decoration" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build "${travail}/decoration" -j "$(nproc)"
+install -d -m 0755 "${sortie}/decoration"
+install -m 0755 "${travail}/decoration/bin/org.ankh.decoration.so" "${sortie}/decoration/"
+echo "Compilée avec kdecoration $(rpm -q --qf '%{VERSION}-%{RELEASE}' kdecoration-devel) : $(ls -l "${sortie}/decoration")"

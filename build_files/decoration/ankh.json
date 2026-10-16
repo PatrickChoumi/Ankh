@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Description": "Window decoration of Ankh, with the measurements of Windows 11",
+        "Description[fr]": "Décoration des fenêtres d'Ankh, aux mesures de Windows 11",
+        "EnabledByDefault": true,
+        "Name": "Ankh",
+        "Name[fr]": "Ankh"
+    },
+    "org.kde.kdecoration3": {
+        "blur": false,
+        "recommendedBorderSize": "None"
+    }
+}
