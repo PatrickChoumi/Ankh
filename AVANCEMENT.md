@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-16** (PR #16 et #17 fusionnées ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, fusionné ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée et mise en œuvre sur la branche, CI et VM vertes, D-053).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-16** (PR #16, #17 et #18 fusionnées ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, fusionné ; suite Craft d'ArtCraft à la place d'OnlyOffice fusionnée, D-053).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -363,11 +363,11 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
 
-### Suite Craft d'ArtCraft (D-053, mise en œuvre sur la branche)
+### Suite Craft d'ArtCraft (D-053, fusionnée le 2026-10-16)
 
 - Fait le 2026-10-15 : construction et Tests 12, 15 et 17 verts ; en VM, les dix applications préparées au premier clic et ouvertes. « Update Issue » de Discover après l'installation : défaut connu de fwupd (D-028), pas de la suite.
 - Fait le 2026-10-15 : correctifs du premier passage vérifiés en VM ([run 38745557276](https://github.com/PatrickChoumi/Ankh/actions/runs/38745557276)) : la notification reste à l'écran, l'option inconnue est ignorée après un retour arrière ; les quatre étapes réussissent.
-- PR [#18](https://github.com/PatrickChoumi/Ankh/pull/18) ouverte le 2026-10-16, avec mon accord : la mener au vert, puis la fusionner.
+- Fusionnée le 2026-10-16 (PR [#18](https://github.com/PatrickChoumi/Ankh/pull/18)), CI et VM vertes.
 
 ### Reste de la phase 3, sans la bloquer
 
