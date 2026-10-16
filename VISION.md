@@ -74,6 +74,7 @@ C'est mon exigence générale (ANKH-SPEC.md).
   - le chargement de la session et le bureau ;
   - « À propos ».
 - Une identité à lui : graphite et violet, sombre par défaut. Un thème clair existe aussi, avec un passage automatique de l'un à l'autre si je l'active (D-037, D-042).
+- La couleur d'accent suit le fond d'écran, comme l'accent « Automatique » de Windows 11 : le violet d'Ankh avec les fonds d'Ankh, la couleur de l'image avec une autre (D-054).
 - Une interface au pixel près de Windows 11, avec l'identité d'Ankh, faite de nos propres thèmes dérivés du code de KDE (D-052) :
   - les mesures de Windows 11 : barres de titre, coins de 4 et 8 px, contrôles, textes, ombres et animations ;
   - sa disposition : la barre des tâches collée en bas, en verre, avec Démarrer et les applications au centre ; les paramètres rapides en un seul volet ;

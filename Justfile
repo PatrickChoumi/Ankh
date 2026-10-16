@@ -129,7 +129,7 @@ test variant:
     echo "Test 12 : VLC présent, VLC et la bureautique de la suite Craft par défaut, LibreOffice absent, aucune application web imposée par Chrome (D-035, D-047, D-053)"
     podman run --rm -i --network=none "${image}" bash -s < tests/applications.sh
 
-    echo "Test 14 : identité visuelle d'Ankh et interface douce : couleurs, polices, barre, Breeze, Konsole (D-037, D-039)"
+    echo "Test 14 : identité visuelle d'Ankh et interface douce : couleurs, accent qui suit le fond d'écran, polices, barre, Breeze, Konsole (D-037, D-039, D-052, D-054)"
     podman run --rm -i --network=none "${image}" bash -s < tests/identite.sh
 
     echo "Test 15 : options d'Ankh, Simple toujours incluse, Dev choisie ou non, fenêtre « Options d'Ankh » (D-046)"

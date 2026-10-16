@@ -35,6 +35,7 @@
 - **Chantier Interface (D-052), en parallèle de la phase 5, depuis le 2026-10-14** : l'interface au pixel près de Windows 11, aux couleurs d'Ankh, avec nos propres thèmes dérivés du code de KDE. Onze lots, chacun dans sa PR, avec captures avant/après et mesures automatiques en VM.
   - Mes choix du 2026-10-14 : rigueur de Windows 11 avec l'identité d'Ankh ; nos thèmes dérivés de KDE ; barre des tâches collée de 48 px ; curseur blanc.
   - Mes choix du 2026-10-15 : police Selawik ; icônes Fluent, au violet d'Ankh. Inspiration AnduinOS : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
+  - Mon choix du 2026-10-16 : la couleur d'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh (D-054).
   - Lot 0, le banc de mesure : fusionné ([#17](https://github.com/PatrickChoumi/Ankh/pull/17), 2026-10-15).
 - **Suite Craft d'ArtCraft (D-053), décidée le 2026-10-15** : OnlyOffice retiré ; WordCraft, GridCraft et DeckCraft toujours là (Simple), les sept clones d'Adobe dans une nouvelle option « Création ». Applications en alpha, en Flatpak préparé au premier clic, versions et empreintes figées dans l'image ; nouvelle version proposée à l'ouverture de la session.
   - Mise en œuvre le 2026-10-15 ; CI et VM vertes (dix applications au premier clic, notification d'une nouvelle version visible) ; fusionnée le 2026-10-16 ([#18](https://github.com/PatrickChoumi/Ankh/pull/18)).

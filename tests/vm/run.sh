@@ -704,6 +704,53 @@ identity_setting() {
     echo "$description : $lu"
 }
 
+# D-054 : couleur d'accent écrite dans les réglages du compte par Plasma
+# (module accentColorService de kded, kcms/colors de plasma-workspace), au
+# format « R,G,B ».
+accent_color() {
+    in_session "$1" kreadconfig6 --file kdeglobals --group General --key AccentColor
+}
+
+# Attend (30 secondes au plus) que l'accent du compte $1 soit à moins de 24 de
+# la couleur $2 (« R,G,B ») sur chaque composante. $3 : ce qui est vérifié.
+wait_accent() {
+    local user=$1 attendu=$2 quoi=$3 lu essai
+    for essai in $(seq 1 15); do
+        lu=$(accent_color "$user")
+        if python3 - "$lu" "$attendu" << 'PY'
+import sys
+try:
+    lu = [int(c) for c in sys.argv[1].split(",")[:3]]
+except ValueError:
+    sys.exit(1)
+attendu = [int(c) for c in sys.argv[2].split(",")]
+sys.exit(not (len(lu) == 3 and all(abs(a - b) < 24 for a, b in zip(lu, attendu))))
+PY
+        then
+            echo "Accent, $quoi : $lu"
+            return 0
+        fi
+        sleep 2
+    done
+    die "accent, $quoi : « $lu » au lieu d'environ « $attendu » (D-054)"
+}
+
+# Fond d'écran du compte de test, par le script de Plasma : $2 = image (fond
+# d'Ankh) ou une couleur unie « R,G,B ».
+set_wallpaper() {
+    local script
+    if [[ $2 == image ]]; then
+        script='for (const d of desktops()) { d.wallpaperPlugin = "org.kde.image"; }'
+    else
+        script="for (const d of desktops()) {
+    d.wallpaperPlugin = \"org.kde.color\";
+    d.currentConfigGroup = [\"Wallpaper\", \"org.kde.color\", \"General\"];
+    d.writeConfig(\"Color\", \"$2\");
+}"
+    fi
+    in_session "$1" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell evaluateScript s "$script" > /dev/null
+}
+
 # Ferme une application de la session d'un compte, si elle est ouverte.
 close_app() {
     local user=$1 name=$2
@@ -1247,6 +1294,21 @@ check_identity() {
     launch_in_session "$user" systemsettings kcm_colors
     sleep 20
     screenshot 1-reglages-couleurs
+    # D-054 : l'accent suit le fond d'écran. Avec le fond d'Ankh, c'est le
+    # violet d'Ankh qu'il désigne (sombre : #a78bfa) ; avec un fond orange uni,
+    # Plasma prend sa couleur dominante. Puis retour au fond d'Ankh.
+    identity_setting "$user" "Accent depuis le fond d'écran (D-054)" true --group General --key accentColorFromWallpaper
+    wait_accent "$user" 167,139,250 "fond d'Ankh"
+    set_wallpaper "$user" 230,120,30
+    wait_accent "$user" 230,120,30 "fond orange uni"
+    sleep 3
+    screenshot 1-accent-fond-orange
+    in_session "$user" busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell activateLauncherMenu
+    sleep 5
+    screenshot 1-accent-menu-orange
+    monitor 'sendkey esc'
+    set_wallpaper "$user" image
+    wait_accent "$user" 167,139,250 "retour au fond d'Ankh"
     # Écran de verrouillage : verrouillé puis déverrouillé par logind, que
     # l'écran de verrouillage de KDE écoute (le compte de test n'a pas de mot
     # de passe à taper).
@@ -1273,8 +1335,11 @@ check_identity() {
     launch_in_session "$user" dolphin "/home/$user"
     sleep 10
     screenshot 1-theme-clair
+    # D-054 : le fond d'Ankh désigne le violet du thème clair
+    wait_accent "$user" 124,58,237 "thème clair"
     in_session "$user" plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop
     sleep 10
+    wait_accent "$user" 167,139,250 "retour au thème sombre"
     vm loginctl lock-sessions
     sleep 10
     # Un clic fait apparaître l'image du compte et le bouton pour déverrouiller.

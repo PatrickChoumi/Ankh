@@ -58,6 +58,25 @@ else
 fi
 attendu "Sous-pixels pour X11" none --group General --key XftSubPixel
 attendu "Facteur des animations" 0.8333333 --group KDE --key AnimationDurationFactor
+# D-054 : accent pris du fond d'écran ; chaque fond d'Ankh désigne le violet
+# des jeux de couleurs d'Ankh (focus des listes : clair, puis sombre)
+attendu "Accent depuis le fond d'écran" true --group General --key accentColorFromWallpaper
+violets="$(for jeu in AnkhClair Ankh; do
+    reglage --file "/usr/share/color-schemes/${jeu}.colors" --group Colors:View --key DecorationFocus
+done | python3 -c 'import sys; print(" ".join("#%02x%02x%02x" % tuple(map(int, l.split(","))) for l in sys.stdin.read().split()))')"
+fonds=0
+for fiche in /usr/share/wallpapers/*/metadata.json; do
+    accent="$(python3 -c 'import json, sys
+a = json.load(open(sys.argv[1])).get("X-KDE-PlasmaImageWallpaper-AccentColor", {})
+print(a.get("Light", "absent"), a.get("Dark", "absent"))' "${fiche}")"
+    if [[ "${accent}" == "${violets}" ]]; then
+        fonds=$((fonds + 1))
+    else
+        echec "accent de $(basename "$(dirname "${fiche}")") : « ${accent} » au lieu de « ${violets} » (clair, sombre)"
+    fi
+done
+((fonds > 0)) || echec "aucun fond d'écran d'Ankh trouvé"
+echo "Accent d'Ankh (${violets}) désigné par ${fonds} fond(s) d'écran"
 # Curseurs blancs d'Ankh, dans l'image et dans chaque thème global
 for curseur in default left_ptr pointer text wait progress; do
     [[ -e "/usr/share/icons/Ankh-curseurs/cursors/${curseur}" ]] || echec "curseur « ${curseur} » absent d'Ankh-curseurs"

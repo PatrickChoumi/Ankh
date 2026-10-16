@@ -71,6 +71,7 @@
 | D-051 | Réglages du système pour le jeu : ntsync avec l'option Gaming (précise D-041 et D-050) | DÉCIDÉ (2026-10-13, mon choix ; vérifié en VM le 2026-10-13) |
 | D-052 | Interface au pixel près, au niveau de Windows 11 : nos propres thèmes, dérivés du code de KDE (modifie D-037, D-039 et D-042) | DÉCIDÉ (2026-10-14, mes choix ; police Selawik et icônes Fluent au violet d'Ankh choisies le 2026-10-15 ; inspiration AnduinOS le 2026-10-15 : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; mise en œuvre en onze lots, en parallèle de la phase 5 ; lot 0 fusionné, PR #17) |
 | D-053 | La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046) | DÉCIDÉ (2026-10-15, mes choix : bureautique Craft dans Simple, clones d'Adobe dans « Création ») ; mise en œuvre le 2026-10-15 ; CI verte, dix applications vérifiées en VM ; nouvelles versions proposées à l'ouverture de la session ; correctifs du premier passage vérifiés en VM ; fusionnée le 2026-10-16 (PR #18) |
+| D-054 | La couleur d'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh (modifie D-037 et D-052) | DÉCIDÉ (2026-10-16, à ma demande) ; mis en œuvre avec le lot 1 de D-052, à vérifier par la CI et en VM |
 
 ---
 
@@ -1146,6 +1147,7 @@
       - **Correction du 2026-10-10** ([PR #12](https://github.com/PatrickChoumi/Ankh/pull/12)) : la première construction s'est arrêtée sur la vérification prévue, car le fond « Next » de KDE est maintenant dans la base (paquet `plasma-breeze-common` de Fedora 44, vérifié dans <https://mdapi.fedoraproject.org>). Le dossier est retiré quand il vient de ce paquet, comme les fonds de Fedora (D-034) : aucun thème global ne le désigne (fond « Ankh Signal »), et les fonds proposés restent ceux d'Ankh. S'il vient d'un autre paquet, la construction s'arrête toujours.
 - **Pas encore traité** : polices (Inter, JetBrains Mono : présence dans Fedora À VALIDER), icône de VS Code dans le style d'Ankh, images de `generic-logos` (voir D-034), curseurs, effets.
 - **Modifiée par D-052 (2026-10-14)** : la barre n'est plus flottante mais collée en bas, pleine largeur, comme celle de Windows 11 ; le curseur devient blanc. Les couleurs graphite et violet restent. Icônes et police : À DÉCIDER dans D-052.
+- **Modifiée par D-054 (2026-10-16)** : la couleur d'accent suit le fond d'écran. Les fonds d'Ankh désignent le violet d'Ankh, qui reste donc l'accent par défaut ; avec une autre image, l'accent prend sa couleur. Le graphite reste.
 
 ## D-038 — Conteneur de dev : dernières versions LTS de Node.js et de Java (modifie D-035)
 
@@ -1820,8 +1822,10 @@
   - **animations** : facteur 5/6 (`AnimationDurationFactor`) : les durées de Kirigami, 50, 100, 200 et 400 ms, deviennent 42, 83, 167 et 333 ms, celles de Windows 11 ;
   - **curseurs « Ankh-curseurs »** : les curseurs Fluent blancs (commit `c8a244f` de <https://github.com/vinceliuice/Fluent-icon-theme>, dossier `cursors`, GPL-3.0), dessinés avec `rsvg-convert` et assemblés avec `xcursorgen` dans la même étape « outils ». Leur bleu d'accent (#0078d4 et son reflet #23e6fa) devient le violet d'Ankh (#8455f0 et #a78bfa) : l'anneau d'attente, et aussi les flèches de redimensionnement, qui portent le même bleu. 47 curseurs, 64 autres noms. Taille 24. Chaque thème global désigne son curseur dans ses réglages par défaut, recopiés à chaque session avant `/etc/xdg` : le curseur d'Ankh y est écrit aussi, et dans les réglages de SDDM ;
   - **couleurs par couches** (`Ankh.colors`, `AnkhClair.colors`) : chaque gris de Windows 11 (`Common_themeresources_any.xaml`), de niveau L, devient le graphite bleuté d'Ankh (L−4, L, L+7). En sombre : fenêtre 28,32,39 (Mica, #202020), barre de titre et en-têtes de la même couleur, continues avec la fenêtre ; contenu 24,28,35 (#1C1C1C) ; carte 39,43,50 ; contrôle 41,45,52 ; infobulle 40,44,51 ; texte secondaire au niveau de Windows (77 % du texte). En clair : fenêtre et barre de titre #f3f4f6, contenu blanc, carte et contrôle #fbfbfc, infobulle #f9f9fa. Le violet d'Ankh ne change pas ;
+  - **accent** : il suit le fond d'écran (D-054, ma demande du 2026-10-16), mis en œuvre avec ce lot ;
   - **banc** : `lots_termines = [1]` : la police, ses deux tailles et les curseurs deviennent obligatoires en VM ;
   - **tests** : Test 14 (Selawik et sa licence, tailles, rendu par fontconfig, facteur des animations, curseurs dans l'image et dans chaque thème global) ; en VM, police et curseur lus dans la session.
+- **Modifiée par D-054 (2026-10-16)** : l'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh. Les curseurs gardent leur anneau violet (images figées). Pour les icônes Fluent et le thème GTK (lot 9), suivre l'accent comme le reste : à étudier au lot 9.
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)
 
@@ -1885,3 +1889,30 @@
 - **Vérifié après ces correctifs, le 2026-10-15** (commit `0324fb1`) :
   - **construction et tests de l'image** ([run 38745564039](https://github.com/PatrickChoumi/Ankh/actions/runs/38745564039)) : verts ;
   - **en VM** ([run 38745557276](https://github.com/PatrickChoumi/Ankh/actions/runs/38745557276), test de chaque PR, premier clic sur WordCraft) : les quatre étapes réussissent (démarrage, basculement vers la version publiée, retour arrière, retour à l'image de base). La notification « nouvelle version » est à l'écran au moment de la capture, avec ses deux boutons. À l'étape 2, la version publiée échoue sur l'option « creation » avec le message attendu, et le test l'accepte.
+
+## D-054 — La couleur d'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh (modifie D-037 et D-052)
+
+- **Statut** : DÉCIDÉ (2026-10-16), à ma demande. Mis en œuvre avec le lot 1 de D-052, sur sa branche ; à vérifier par la CI et en VM.
+- **Contexte** : ma demande du 2026-10-16 : « faudrait que la couleur du système s'adapte à l'arrière-plan. C'était prévu ? ». Ce n'était pas prévu : D-037 fixait un accent violet, et D-052 le gardait (« aux couleurs d'Ankh »). Windows 11 le fait avec l'accent « Automatique » (Paramètres > Personnalisation > Couleurs : <https://support.microsoft.com/en-us/windows/experience/personalization/personalize-your-colors-in-windows>, lu le 2026-10-16).
+- **Ce que KDE fait déjà** (sources de Plasma 6.7, branche `Plasma/6.7` de plasma-workspace et de plasma-desktop sur <https://invent.kde.org>, lues le 2026-10-16) :
+  - le réglage `accentColorFromWallpaper` de kdeglobals (`kcms/colors/colorssettings.kcfg`), faux par défaut. C'est le choix « depuis le fond d'écran » de la page « Couleurs » des réglages ;
+  - Plasma prend la couleur dominante du fond de l'écran principal (Kirigami `ImageColors` : `desktoppackage/contents/views/Desktop.qml` de plasma-desktop ; `shell/desktopview.cpp`), et le module `accentColorService` de kded l'applique au jeu de couleurs (`kcms/colors/accentColorService/accentColorService.cpp`) ;
+  - un fond peut désigner sa couleur dans son `metadata.json` (`X-KDE-PlasmaImageWallpaper-AccentColor`) : une couleur, ou une pour « Light » et une pour « Dark », prise selon que le jeu de couleurs est clair ou sombre, et reprise quand il change (`wallpapers/image/plugin/utils/mediaproxy.cpp`) ;
+  - l'accent remplace le focus, le survol, le texte actif et les liens. Les liens sont éclaircis ou assombris s'ils n'ont pas un contraste de 5 avec le fond. Le fond des sélections devient l'accent à 70 % sur le fond des listes, avec un texte blanc, ou noir si le blanc n'a pas un contraste de 4,5 (`kcms/colors/colorsapplicator.cpp` et `colorsapplicator.h`).
+- **Décision** :
+  - l'accent suit le fond d'écran, par défaut, pour chaque compte (`accentColorFromWallpaper=true` dans `/etc/xdg/kdeglobals`). Une couleur fixe reste possible dans « Couleurs » ;
+  - chaque fond d'Ankh désigne le violet d'Ankh, celui des jeux de couleurs : `#7c3aed` en clair, `#a78bfa` en sombre. Ils sont tous violets ; la couleur que Plasma en tirerait seul serait plus terne (pour Ankh Signal, Claude estime `#b7a8de` en clair et `#412f76` en sombre, avec une méthode proche, pas celle de Plasma) ;
+  - avec une autre image, une photo par exemple, l'accent prend sa couleur dominante.
+- **Raisons** : c'est ma demande ; c'est le réglage de KDE, sans code d'Ankh à maintenir ; avec les fonds d'Ankh, le violet d'Ankh exact.
+- **Conséquences** :
+  - les sélections sont recalculées par Plasma : en sombre, `#7c6aba` (le violet du logo à 70 % sur le fond des listes) au lieu de `#8455f0` ; en clair, `#a375f2` avec un texte noir (le blanc n'a qu'un contraste de 3,25), au lieu de `#7c3aed` avec un texte blanc. Calculé par Claude avec les formules de KDE ; à voir sur les captures (À VALIDER) ;
+  - restent violets, quel que soit le fond : le logo, l'écran de démarrage et l'écran de connexion (avant toute session), l'anneau d'attente des curseurs (images figées) et les couleurs de Konsole ;
+  - avec une photo terne, l'accent peut être peu visible. Liens et sélections gardent un contraste minimal (formules de KDE ci-dessus), pas le focus ni le survol (À VALIDER sur mes propres images, en phase 10) ;
+  - seul l'écran principal compte, comme dans KDE.
+- **Mise en œuvre (2026-10-16)** :
+  - `build_files/build.sh` : `accentColorFromWallpaper=true` dans `/etc/xdg/kdeglobals` ;
+  - les sept `metadata.json` des fonds d'Ankh et `build_files/artwork/generer.py`, qui les écrit : `"X-KDE-PlasmaImageWallpaper-AccentColor": {"Light": "#7c3aed", "Dark": "#a78bfa"}` ;
+  - banc de l'interface : l'accent est figé pendant les mesures sur fond noir, puis rendu au fond d'écran.
+- **Tests** :
+  - `just test`, Test 14 : le réglage, et chaque fond désigne les violets des jeux de couleurs d'Ankh (`DecorationFocus` des listes, clair et sombre) ;
+  - en VM : accent `167,139,250` avec le fond d'Ankh ; orange avec un fond orange uni (`230,120,30`), avec deux captures (`1-accent-fond-orange`, `1-accent-menu-orange`) ; retour au violet avec le fond d'Ankh ; `124,58,237` en thème clair, puis retour au sombre.

@@ -8,5 +8,9 @@
         "Id": "Ankh-Code",
         "License": "Apache-2.0",
         "Name": "Ankh Code"
+    },
+    "X-KDE-PlasmaImageWallpaper-AccentColor": {
+        "Light": "#7c3aed",
+        "Dark": "#a78bfa"
     }
 }
