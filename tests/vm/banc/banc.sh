@@ -361,8 +361,19 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
 # 4. Mesures sur l'image, sur un fond d'écran noir.
 banc_pixels() {
     local geometrie fx fy fw fh cx cy cw ch titre image largeur hauteur couleur espace volets ligne
-    local classe type vx vy vw vh galerie gx gy nom x y l h essai
+    local classe type vx vy vw vh galerie gx gy nom x y l h essai accent
     log "Banc de l'interface (D-052) : mesures sur l'image"
+    # D-054 : l'accent suit le fond d'écran ; il garde celui d'Ankh pendant
+    # les mesures, sur fond noir, puis le réglage reprend sa valeur. Plasma le
+    # relit à chaque changement notifié (shell/shellcorona.cpp de
+    # plasma-workspace). Il est réécrit, pas effacé : effacer une clé que
+    # /etc/xdg définit la masque (« [$d] » de KConfig, vu avec kwriteconfig6).
+    if ! accent=$(banc_reglage kdeglobals General accentColorFromWallpaper false); then
+        echo "(accent : réglage illisible, remis ensuite à la valeur d'Ankh)"
+        accent=true
+    fi
+    banc_essayer "accent figé" in_session "$banc_compte" kwriteconfig6 --notify \
+        --file kdeglobals --group General --key accentColorFromWallpaper false
     banc_essayer "fond d'écran noir" banc_plasma 'for (const d of desktops()) {
     d.wallpaperPlugin = "org.kde.color";
     d.currentConfigGroup = ["Wallpaper", "org.kde.color", "General"];
@@ -453,6 +464,8 @@ banc_pixels() {
         echo "(galerie : fenêtre introuvable)"
     fi
     banc_essayer "fond d'écran d'Ankh" banc_plasma 'for (const d of desktops()) { d.wallpaperPlugin = "org.kde.image"; }'
+    banc_essayer "accent rendu au fond d'écran" in_session "$banc_compte" kwriteconfig6 --notify \
+        --file kdeglobals --group General --key accentColorFromWallpaper "$accent"
     sleep 5
 }
 

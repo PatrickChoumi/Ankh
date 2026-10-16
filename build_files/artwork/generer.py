@@ -109,9 +109,16 @@ def tramer(image: Image.Image) -> Image.Image:
 
 
 def decrire(paquet: pathlib.Path, nom: str) -> None:
-    """Fiche du paquet de fond d'écran, lue par Plasma."""
+    """Fiche du paquet de fond d'écran, lue par Plasma.
+
+    D-054 : la couleur d'accent suit le fond d'écran. Chaque fond d'Ankh
+    désigne le violet d'Ankh, celui des jeux de couleurs clair et sombre
+    (X-KDE-PlasmaImageWallpaper-AccentColor, lu par
+    wallpapers/image/plugin/utils/mediaproxy.cpp de plasma-workspace :
+    « Dark » avec un jeu de couleurs sombre, « Light » sinon)."""
     fiche = {"KPlugin": {"Authors": [{"Name": "Ankh"}], "Id": paquet.name,
-                         "License": "Apache-2.0", "Name": nom}}
+                         "License": "Apache-2.0", "Name": nom},
+             "X-KDE-PlasmaImageWallpaper-AccentColor": {"Light": VIOLET_FONCE, "Dark": VIOLET}}
     (paquet / "metadata.json").write_text(json.dumps(fiche, indent=4, ensure_ascii=False) + "\n")
 
 

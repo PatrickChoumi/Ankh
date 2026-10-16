@@ -590,6 +590,12 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftSubPixel none
 # 50, 100, 200 et 400 ms ; effets de KWin) sont multipliées par ce facteur :
 # 5/6 donne 42, 83, 167 et 333 ms.
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key AnimationDurationFactor 0.8333333
+# D-054 : la couleur d'accent suit le fond d'écran, comme « Automatique » dans
+# Windows 11 (accentColorFromWallpaper, faux par défaut :
+# kcms/colors/colorssettings.kcfg de plasma-workspace). Les fonds d'Ankh
+# désignent le violet d'Ankh dans leur metadata.json ; pour une autre image,
+# Plasma prend sa couleur dominante.
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key accentColorFromWallpaper true
 
 # Barre flottante en bas, menu et applications au centre (build_files/plasma/ankh-barre.js),
 # et écran de chargement de la session d'Ankh (build_files/plasma/ankh-splash.qml),
