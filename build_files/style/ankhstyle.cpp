@@ -3312,6 +3312,10 @@ QSize Style::checkBoxSizeFromContents(const QStyleOption *option, const QSize &c
     // make sure there is enough height for indicator
     size.setHeight(qMax(size.height(), int(Metrics::CheckBox_Size)));
 
+    // Ankh : une case et son texte occupent 32 de haut, comme dans Windows 11
+    // (CheckBoxHeight)
+    size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
+
     // Add space for the indicator
     size.rwidth() += Metrics::CheckBox_Size;
 
@@ -3344,7 +3348,14 @@ QSize Style::lineEditSizeFromContents(const QStyleOption *option, const QSize &c
 
     const bool flat(frameOption->lineWidth == 0);
     const int frameWidth(pixelMetric(PM_DefaultFrameWidth, option, widget));
-    return flat ? contentsSize : expandSize(contentsSize, frameWidth);
+    if (flat) {
+        return contentsSize;
+    }
+
+    // Ankh : 32 de haut au moins, comme un champ de Windows 11
+    QSize size(expandSize(contentsSize, frameWidth));
+    size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
+    return size;
 }
 
 //______________________________________________________________
@@ -3370,6 +3381,10 @@ QSize Style::comboBoxSizeFromContents(const QStyleOption *option, const QSize &c
     size.rwidth() += Metrics::MenuButton_IndicatorWidth + 2;
     size.rwidth() += Metrics::Button_ItemSpacing;
 
+    // Ankh : 32 de haut au moins, comme une liste déroulante de Windows 11
+    if (comboBoxOption->frame) {
+        size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
+    }
     return size;
 }
 
@@ -3402,6 +3417,10 @@ QSize Style::spinBoxSizeFromContents(const QStyleOption *option, const QSize &co
         size.rwidth() += Metrics::SpinBox_ArrowButtonWidth;
     }
 
+    // Ankh : 32 de haut au moins, comme un champ de Windows 11
+    if (!flat) {
+        size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
+    }
     return size;
 }
 
@@ -3553,7 +3572,7 @@ QSize Style::pushButtonSizeFromContents(const QStyleOption *option, const QSize 
     }
 
     // expand with buttons margin
-    size = expandSize(size, Metrics::Button_MarginWidth);
+    size = expandSize(size, Metrics::Button_MarginWidth, Metrics::Button_MarginHeight);
 
     // make sure buttons have a minimum width
     if (hasText) {
@@ -3561,7 +3580,13 @@ QSize Style::pushButtonSizeFromContents(const QStyleOption *option, const QSize 
     }
 
     // finally add frame margins
-    return expandSize(size, Metrics::Frame_FrameWidth);
+    size = expandSize(size, Metrics::Frame_FrameWidth);
+
+    // Ankh : 32 de haut, comme un bouton de Windows 11
+    if (hasText || hasIcon) {
+        size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
+    }
+    return size;
 }
 
 //______________________________________________________________
@@ -3732,6 +3757,10 @@ QSize Style::progressBarSizeFromContents(const QStyleOption *option, const QSize
         size.setHeight(qMax(size.height(), int(Metrics::ProgressBar_Thickness)));
         if (textVisible) {
             size.setHeight(qMax(size.height(), option->fontMetrics.height()));
+        } else {
+            // Ankh : sans texte, la barre n'a que son épaisseur, comme dans
+            // Windows 11 ; Qt propose la hauteur d'une ligne de texte
+            size.setHeight(Metrics::ProgressBar_Thickness);
         }
 
     } else {

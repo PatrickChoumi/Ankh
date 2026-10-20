@@ -39,7 +39,16 @@ struct Metrics {
 
     // frames
     static constexpr int Frame_FrameWidth = 2;
-    static constexpr int Frame_FrameRadius = 5;
+    // Ankh (D-052, lot 3) : rayon des contrôles de Windows 11
+    // (ControlCornerRadius 4, CommonStyles/CornerRadius_themeresources.xaml de
+    // WinUI) ; 5 dans Breeze
+    static constexpr int Frame_FrameRadius = 4;
+
+    // Ankh : hauteur minimale des champs, des listes déroulantes, des boutons et
+    // des cases à cocher avec leur texte (TextControlThemeMinHeight 32,
+    // ComboBoxMinHeight 32, CheckBoxHeight 32 ; un bouton de Windows mesure 32
+    // avec son texte de 14 px : ButtonPadding 11,5,11,6 et un bord de 1)
+    static constexpr int Control_MinHeight = 32;
 
     // layout
     static constexpr int Layout_TopLevelMarginWidth = 10;
@@ -72,7 +81,11 @@ struct Metrics {
 
     // buttons
     static constexpr int Button_MinWidth = 80;
-    static constexpr int Button_MarginWidth = 6;
+    // Ankh : marges d'un bouton, bord compris (Frame_FrameWidth, 2) : 12 sur les
+    // côtés comme Windows (ButtonPadding 11 et un bord de 1) ; en hauteur, la
+    // hauteur minimale de 32 l'emporte ; 6 dans les deux sens dans Breeze
+    static constexpr int Button_MarginWidth = 10;
+    static constexpr int Button_MarginHeight = 4;
     static constexpr int Button_ItemSpacing = 4;
 
     // tool buttons
@@ -94,8 +107,11 @@ struct Metrics {
     static constexpr int MenuBarItem_MarginHeight = 6;
 
     // scrollbars
-    static constexpr int ScrollBar_Extend = 21;
-    static constexpr int ScrollBar_SliderWidth = 8;
+    // Ankh : barre de 12 et poignée de 6, comme Windows 11 (ScrollBarSize 12,
+    // ScrollBarThumbStrokeThickness 6, CommonStyles/ScrollBar_themeresources.xaml) ;
+    // 21 et 8 dans Breeze
+    static constexpr int ScrollBar_Extend = 12;
+    static constexpr int ScrollBar_SliderWidth = 6;
     static constexpr int ScrollBar_MinSliderHeight = 20;
     static constexpr int ScrollBar_NoButtonHeight = 3;
     static constexpr int ScrollBar_SingleButtonHeight = ScrollBar_Extend;
@@ -113,7 +129,9 @@ struct Metrics {
 
     // progressbars
     static constexpr int ProgressBar_BusyIndicatorSize = 14;
-    static constexpr int ProgressBar_Thickness = 6;
+    // Ankh : 3 comme Windows 11 (ProgressBarMinHeight,
+    // ProgressBar/ProgressBar_themeresources.xaml) ; 6 dans Breeze
+    static constexpr int ProgressBar_Thickness = 3;
     static constexpr int ProgressBar_ItemSpacing = 4;
 
     // mdi title bar
@@ -122,8 +140,11 @@ struct Metrics {
     // sliders
     static constexpr int Slider_TickLength = 8;
     static constexpr int Slider_TickMarginWidth = 2;
-    static constexpr int Slider_GrooveThickness = 6;
-    static constexpr int Slider_ControlThickness = 20;
+    // Ankh : rail de 4 et poignée de 18, comme Windows 11 (SliderTrackThemeHeight
+    // et SliderHorizontalThumbWidth, CommonStyles/Slider_themeresources.xaml) ;
+    // 6 et 20 dans Breeze
+    static constexpr int Slider_GrooveThickness = 4;
+    static constexpr int Slider_ControlThickness = 18;
 
     // tabbar
     static constexpr int TabBar_TabMarginHeight = 4;
