@@ -263,7 +263,14 @@ public:
     QRectF pathForSliderHandleFocusFrame(QPainterPath &, const QRectF &, int hmargin, int vmargin) const;
 
     //* slider handle
-    void renderSliderHandle(QPainter *, const QRectF &, const QColor &, const QColor &outline, const QColor &shadow, bool sunken) const;
+    void renderSliderHandle(QPainter *,
+                            const QRectF &,
+                            const QColor &,
+                            const QColor &outline,
+                            const QColor &shadow,
+                            bool sunken,
+                            const QColor &inner = QColor(),
+                            qreal innerSize = 0) const;
 
     //* dial groove
     void renderDialGroove(QPainter *, const QRectF &, const QColor &fg, const QColor &bg, qreal first, qreal last) const;

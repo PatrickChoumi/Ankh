@@ -5384,8 +5384,10 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
             textRole = QPalette::WindowText;
         }
 
-    } else if (hasFocus) {
-        textRole = QPalette::ButtonText;
+    } else if (enabled && (buttonOption->features & QStyleOptionButton::DefaultButton)) {
+        // Ankh : le bouton principal est rempli de la couleur d'accent, comme
+        // AccentButtonStyle de Windows 11 ; texte de la couleur prévue sur l'accent
+        textRole = QPalette::HighlightedText;
     } else {
         textRole = QPalette::ButtonText;
     }
@@ -8147,18 +8149,23 @@ bool Style::drawSliderComplexControl(const QStyleOptionComplex *option, QPainter
         const AnimationMode mode(_animations->widgetStateEngine().buttonAnimationMode(widget));
         const qreal opacity(_animations->widgetStateEngine().buttonOpacity(widget));
 
-        // define colors
-        const auto &background = palette.color(QPalette::Button);
-        auto outline(_helper->sliderOutlineColor(palette, handleActive && mouseOver, hasFocus, opacity, mode));
-        if (hasFocus || (handleActive && mouseOver)) {
-            outline = hasHighlightNeutral(widget, option, handleActive && mouseOver, hasFocus)
-                ? _helper->neutralText(palette).lighter(mouseOver || hasFocus ? 150 : 100)
-                : outline;
+        // Ankh : poignée de Windows 11 (CommonStyles/Slider_themeresources.xaml de
+        // WinUI) : un rond plein (ControlSolidFillColorDefault, #454545 en sombre,
+        // blanc en clair) au bord discret, et un point d'accent de 12 ; 14 au
+        // survol, 10 à l'appui. Le contour d'accent ne reste que pour le focus
+        // au clavier.
+        const auto &bouton = palette.color(QPalette::Button);
+        const bool sombre(KColorUtils::luma(bouton) < 0.5);
+        const auto background(sombre ? KColorUtils::mix(bouton, palette.color(QPalette::ButtonText), 0.12) : palette.color(QPalette::Base));
+        auto outline(_helper->sliderOutlineColor(palette, false, hasFocus, opacity, mode));
+        if (hasFocus && hasHighlightNeutral(widget, option, false, hasFocus)) {
+            outline = _helper->neutralText(palette).lighter(150);
         }
         const auto shadow(_helper->shadowColor(palette));
+        const qreal point = sunken ? Metrics::Slider_InnerThumbSize - 2 : (handleActive && mouseOver) ? Metrics::Slider_InnerThumbSize + 2 : Metrics::Slider_InnerThumbSize;
 
         // render
-        _helper->renderSliderHandle(painter, handleRect, background, outline, shadow, sunken);
+        _helper->renderSliderHandle(painter, handleRect, background, outline, shadow, sunken, palette.color(QPalette::Highlight), point);
     }
 
     return true;

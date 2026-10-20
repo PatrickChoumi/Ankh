@@ -100,7 +100,15 @@ struct Metrics {
     static constexpr int CheckBox_Size = 20;
     static constexpr int CheckBox_FocusMarginWidth = 2;
     static constexpr int CheckBox_ItemSpacing = 4;
-    static constexpr int CheckBox_Radius = Frame_FrameRadius - 1;
+    // Ankh : case de 20 visible et coins de 4, comme Windows 11 (CheckBoxSize,
+    // ControlCornerRadius) ; dans Breeze, la case visible mesure 16
+    static constexpr int CheckBox_Radius = Frame_FrameRadius;
+    // Ankh : rond d'un bouton radio choisi (RadioButtonCheckGlyphSize 12, 14 au
+    // survol et 10 à l'appui) et point d'une poignée de curseur
+    // (SliderInnerThumbWidth 12), CommonStyles/RadioButton_ et
+    // Slider_themeresources.xaml de WinUI
+    static constexpr int RadioButton_GlyphSize = 12;
+    static constexpr int Slider_InnerThumbSize = 12;
 
     // menubar items
     static constexpr int MenuBarItem_MarginWidth = 10;

@@ -690,24 +690,41 @@ void Helper::renderButtonFrame(QPainter *painter,
             penBrush = hasNeutralHighlight ? neutralText(palette) : bgBrush;
         }
     } else {
-        if (down && enabled) {
-            bgBrush = KColorUtils::mix(palette.button().color(), highlightColor, Metrics::Blend_Value);
+        if (down && enabled && defaultButton) {
+            // Ankh : bouton principal enfoncé (AccentFillColorTertiary)
+            bgBrush = KColorUtils::mix(highlightColor, palette.window().color(), 0.2);
+            penBrush = highlightColor;
+        } else if (down && enabled) {
+            // Ankh : à l'appui, Windows 11 assombrit le bouton
+            // (ControlFillColorTertiary) au lieu de le teinter d'accent
+            bgBrush = KColorUtils::mix(palette.button().color(), palette.window().color(), 0.6);
+            penBrush = KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
         } else if (checked) {
             bgBrush = hasNeutralHighlight ? KColorUtils::mix(palette.button().color(), neutralText(palette), Metrics::Blend_Value)
                                           : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), 0.125);
             penBrush =
                 hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
-        } else if (isActiveWindow && defaultButton) {
-            bgBrush = KColorUtils::mix(palette.button().color(), highlightColor, 0.2);
-            penBrush = KColorUtils::mix(highlightColor, KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias()), 0.5);
+        } else if (defaultButton && enabled) {
+            // Ankh : bouton principal rempli de la couleur d'accent
+            // (AccentButtonStyle de Windows 11), un peu plus clair au survol
+            // (AccentFillColorSecondary)
+            bgBrush = hovered ? KColorUtils::mix(highlightColor, palette.highlightedText().color(), 0.1) : highlightColor;
+            penBrush = highlightColor;
         } else {
             bgBrush = palette.button().color();
             penBrush =
                 hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
+            // Ankh : au survol, Windows 11 éclaircit le bouton
+            // (ControlFillColorSecondary) au lieu de l'entourer d'accent
+            if (hovered && enabled) {
+                bgBrush = KColorUtils::mix(palette.button().color(), palette.buttonText().color(), 0.05);
+            }
         }
     }
 
-    if ((hovered || visualFocus || down) && enabled) {
+    // Ankh : contour d'accent pour le focus au clavier, et pour le survol et
+    // l'appui des boutons plats seulement ; Windows 11 n'entoure pas les autres
+    if (enabled && (visualFocus || (flat && (hovered || down)))) {
         penBrush = highlightColor;
     }
 
@@ -839,34 +856,23 @@ void Helper::renderCheckBoxBackground(QPainter *painter,
     // setup painter
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    // copy rect
-    QRectF frameRect(rect);
-    frameRect.adjust(2, 2, -2, -2);
-    frameRect = strokedRect(frameRect);
-
-    auto transparent = neutalHighlight ? neutralText(palette) : palette.highlight().color();
-    transparent.setAlphaF(highlightBackgroundAlpha);
-
-    QBrush penBrush;
-    if (neutalHighlight) {
-        penBrush = neutralText(palette);
-    } else if (state == CheckOn || state == CheckPartial) {
-        penBrush = palette.highlight().color();
-    } else {
-        penBrush = separatorColor(palette);
-    }
-    painter->setPen(QPen(penBrush, PenWidth::Frame));
-
+    // Ankh : comme une case de Windows 11 (CommonStyles/CheckBox_themeresources.xaml
+    // de WinUI) : 20 visibles ; vide, un fond discret et un bord marqué ;
+    // cochée, remplie de la couleur d'accent
+    QRectF frameRect(strokedRect(rect));
     const auto radius = Metrics::CheckBox_Radius;
+    const QColor accent(neutalHighlight ? neutralText(palette) : palette.highlight().color());
 
-    painter->setBrush(palette.button().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100));
+    painter->setPen(QPen(alphaColor(palette.windowText().color(), 0.5), PenWidth::Frame));
+    painter->setBrush(palette.base().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100));
     painter->drawRoundedRect(frameRect, radius, radius);
 
     if (state == CheckOff) {
         return;
     }
 
-    painter->setBrush(transparent);
+    painter->setPen(QPen(accent, PenWidth::Frame));
+    painter->setBrush(sunken ? KColorUtils::mix(accent, palette.base().color(), 0.2) : accent);
     if (state == CheckAnimated) {
         painter->setOpacity(animation);
     }
@@ -890,10 +896,7 @@ void Helper::renderCheckBox(QPainter *painter,
     // setup painter
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    // copy rect and radius
-    QRectF frameRect(rect);
-    frameRect.adjust(2, 2, -2, -2);
-
+    // Ankh : au survol, Windows 11 éclaircit la case au lieu de l'entourer
     if (mouseOver) {
         painter->save();
 
@@ -901,13 +904,16 @@ void Helper::renderCheckBox(QPainter *painter,
             painter->setOpacity(hoverAnimation);
         }
 
-        painter->setPen(QPen(neutalHighlight ? neutralText(palette).lighter() : focusColor(palette), PenWidth::Frame));
-        painter->setBrush(Qt::NoBrush);
-
-        painter->drawRoundedRect(frameRect.adjusted(0.5, 0.5, -0.5, -0.5), Metrics::CheckBox_Radius, Metrics::CheckBox_Radius);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(alphaColor(palette.windowText().color(), 0.08));
+        painter->drawRoundedRect(strokedRect(rect), Metrics::CheckBox_Radius, Metrics::CheckBox_Radius);
 
         painter->restore();
     }
+
+    // la coche garde le dessin de Breeze, centrée dans la case de 20
+    QRectF frameRect(rect);
+    frameRect.adjust(2, 2, -2, -2);
 
     // check
     auto leftPoint = frameRect.center();
@@ -935,7 +941,9 @@ void Helper::renderCheckBox(QPainter *painter,
     painter->setPen(Qt::transparent);
     painter->setBrush(Qt::transparent);
 
-    auto checkPen = QPen(palette.text(), PenWidth::Frame * 2);
+    // Ankh : coche de la couleur du texte sur l'accent (TextOnAccentFillColorPrimary)
+    const QBrush glyph(neutalHighlight ? palette.text() : palette.highlightedText());
+    auto checkPen = QPen(glyph, PenWidth::Frame * 2);
     checkPen.setJoinStyle(Qt::MiterJoin);
 
     switch (state) {
@@ -946,7 +954,7 @@ void Helper::renderCheckBox(QPainter *painter,
         painter->drawPath(path);
         break;
     case CheckPartial:
-        painter->setBrush(palette.text());
+        painter->setBrush(glyph);
         painter->drawRect(leftDot);
         painter->drawRect(centerDot);
         painter->drawRect(rightDot);
@@ -991,32 +999,23 @@ void Helper::renderRadioButtonBackground(QPainter *painter,
     // setup painter
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    // copy rect
+    // Ankh : comme un bouton radio de Windows 11 (CommonStyles/RadioButton_themeresources.xaml
+    // de WinUI) : rond de 20 ; vide, un fond discret et un bord marqué ;
+    // choisi, rempli de la couleur d'accent
     QRectF frameRect(rect);
-    frameRect.adjust(2, 2, -2, -2);
     frameRect.adjust(0.5, 0.5, -0.5, -0.5);
+    const QColor accent(neutalHighlight ? neutralText(palette) : palette.highlight().color());
 
-    auto transparent = neutalHighlight ? neutralText(palette) : palette.highlight().color();
-    transparent.setAlphaF(highlightBackgroundAlpha);
-
-    QBrush penBrush;
-    if (neutalHighlight) {
-        penBrush = neutralText(palette);
-    } else if (state == RadioOn) {
-        penBrush = palette.highlight().color();
-    } else {
-        penBrush = separatorColor(palette);
-    }
-    painter->setPen(QPen(penBrush, PenWidth::Frame));
-
-    painter->setBrush(palette.button().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100));
+    painter->setPen(QPen(alphaColor(palette.windowText().color(), 0.5), PenWidth::Frame));
+    painter->setBrush(palette.base().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100));
     painter->drawEllipse(frameRect);
 
     if (state == RadioOff) {
         return;
     }
 
-    painter->setBrush(transparent);
+    painter->setPen(QPen(accent, PenWidth::Frame));
+    painter->setBrush(accent);
     if (state == RadioAnimated) {
         painter->setOpacity(animation);
     }
@@ -1034,32 +1033,31 @@ void Helper::renderRadioButton(QPainter *painter,
                                qreal animation,
                                qreal animationHover) const
 {
-    Q_UNUSED(sunken)
-
     // copy rect
     QRectF frameRect(rect);
-    frameRect.adjust(1, 1, -1, -1);
 
-    if (mouseOver) {
+    // Ankh : au survol, Windows 11 éclaircit le rond vide au lieu de l'entourer
+    if (mouseOver && state == RadioOff) {
         painter->save();
 
         if (animationHover != AnimationData::OpacityInvalid) {
             painter->setOpacity(animationHover);
         }
 
-        painter->setPen(QPen(neutralHighlight ? neutralText(palette).lighter() : focusColor(palette), PenWidth::Frame));
-        painter->setBrush(Qt::NoBrush);
-
-        const QRectF contentRect(frameRect.adjusted(1, 1, -1, -1).adjusted(0.5, 0.5, -0.5, -0.5));
-        painter->drawEllipse(contentRect);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(alphaColor(palette.windowText().color(), 0.08));
+        painter->drawEllipse(frameRect.adjusted(0.5, 0.5, -0.5, -0.5));
 
         painter->restore();
     }
 
-    painter->setBrush(palette.text());
+    // Ankh : rond central de la couleur du texte sur l'accent, de 12 ; 14 au
+    // survol et 10 à l'appui, comme Windows 11
+    painter->setBrush(neutralHighlight ? palette.text() : palette.highlightedText());
     painter->setPen(Qt::NoPen);
 
-    const int radius = (std::min(frameRect.width(), frameRect.height()) - 12) / 2;
+    const qreal glyph = sunken ? Metrics::RadioButton_GlyphSize - 2 : mouseOver ? Metrics::RadioButton_GlyphSize + 2 : Metrics::RadioButton_GlyphSize;
+    const qreal radius = glyph / 2;
     const QPointF center = frameRect.center();
 
     // mark
@@ -1166,7 +1164,14 @@ QRectF Helper::pathForSliderHandleFocusFrame(QPainterPath &focusFramePath, const
 }
 
 //______________________________________________________________________________
-void Helper::renderSliderHandle(QPainter *painter, const QRectF &rect, const QColor &color, const QColor &outline, const QColor &shadow, bool sunken) const
+void Helper::renderSliderHandle(QPainter *painter,
+                                const QRectF &rect,
+                                const QColor &color,
+                                const QColor &outline,
+                                const QColor &shadow,
+                                bool sunken,
+                                const QColor &inner,
+                                qreal innerSize) const
 {
     // setup painter
     painter->setRenderHint(QPainter::Antialiasing, true);
@@ -1198,6 +1203,13 @@ void Helper::renderSliderHandle(QPainter *painter, const QRectF &rect, const QCo
 
     // render
     painter->drawEllipse(frameRect);
+
+    // Ankh : point de la couleur d'accent au centre, comme Windows 11
+    if (inner.isValid()) {
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(inner);
+        painter->drawEllipse(rect.center(), innerSize / 2, innerSize / 2);
+    }
 }
 
 //______________________________________________________________________________
