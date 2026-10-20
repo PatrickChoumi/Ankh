@@ -37,6 +37,9 @@ for police in Selawik 'JetBrains Mono' Inter; do
         echo "Police ${police} : installée"
     else
         echec "police ${police} absente (fontconfig propose « ${trouvee} »)"
+        # Diagnostic : fichiers connus de fontconfig, et validité de ses caches
+        fc-list : family file | grep -i -- "${police}" || echo "(fc-list ne connaît pas ${police})"
+        FC_DEBUG=16 fc-match "${police}" 2>&1 | grep -E 'FcCacheTimeValid dir "/usr/share/fonts(/selawik)?"' || echo "(aucun cache lu pour /usr/share/fonts)"
     fi
 done
 attendu "Police de l'interface" 'Selawik,10.5,-1,5,50,0,0,0,0,0' --group General --key font
@@ -59,13 +62,14 @@ fi
 attendu "Sous-pixels pour X11" none --group General --key XftSubPixel
 attendu "Facteur des animations" 0.8333333 --group KDE --key AnimationDurationFactor
 # D-054 : accent pris du fond d'écran ; chaque fond d'Ankh désigne le violet
-# des jeux de couleurs d'Ankh (focus des listes : clair, puis sombre)
+# des jeux de couleurs d'Ankh (focus des listes : clair, puis sombre). Les
+# fonds de KDE présents dans l'image (Altai, Mountain…) gardent leur couleur.
 attendu "Accent depuis le fond d'écran" true --group General --key accentColorFromWallpaper
 violets="$(for jeu in AnkhClair Ankh; do
     reglage --file "/usr/share/color-schemes/${jeu}.colors" --group Colors:View --key DecorationFocus
 done | python3 -c 'import sys; print(" ".join("#%02x%02x%02x" % tuple(map(int, l.split(","))) for l in sys.stdin.read().split()))')"
 fonds=0
-for fiche in /usr/share/wallpapers/*/metadata.json; do
+for fiche in /usr/share/wallpapers/Ankh/metadata.json /usr/share/wallpapers/Ankh-*/metadata.json; do
     accent="$(python3 -c 'import json, sys
 a = json.load(open(sys.argv[1])).get("X-KDE-PlasmaImageWallpaper-AccentColor", {})
 print(a.get("Light", "absent"), a.get("Dark", "absent"))' "${fiche}")"

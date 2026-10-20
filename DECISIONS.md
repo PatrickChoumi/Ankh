@@ -1902,7 +1902,7 @@
 - **Décision** :
   - l'accent suit le fond d'écran, par défaut, pour chaque compte (`accentColorFromWallpaper=true` dans `/etc/xdg/kdeglobals`). Une couleur fixe reste possible dans « Couleurs » ;
   - chaque fond d'Ankh désigne le violet d'Ankh, celui des jeux de couleurs : `#7c3aed` en clair, `#a78bfa` en sombre. Ils sont tous violets ; la couleur que Plasma en tirerait seul serait plus terne (pour Ankh Signal, Claude estime `#b7a8de` en clair et `#412f76` en sombre, avec une méthode proche, pas celle de Plasma) ;
-  - avec une autre image, une photo par exemple, l'accent prend sa couleur dominante.
+  - avec une autre image, une photo par exemple, l'accent prend sa couleur dominante. Les fonds de KDE présents dans l'image (Altai, Mountain…) donnent la leur : leur couleur dominante, ou celle qu'ils désignent (Mountain : `#3d818d` en clair, `#018786` en sombre, vu dans l'image le 2026-10-16).
 - **Raisons** : c'est ma demande ; c'est le réglage de KDE, sans code d'Ankh à maintenir ; avec les fonds d'Ankh, le violet d'Ankh exact.
 - **Conséquences** :
   - les sélections sont recalculées par Plasma : en sombre, `#7c6aba` (le violet du logo à 70 % sur le fond des listes) au lieu de `#8455f0` ; en clair, `#a375f2` avec un texte noir (le blanc n'a qu'un contraste de 3,25), au lieu de `#7c3aed` avec un texte blanc. Calculé par Claude avec les formules de KDE ; à voir sur les captures (À VALIDER) ;

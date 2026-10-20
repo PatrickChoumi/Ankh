@@ -540,6 +540,17 @@ for graisse in Light Regular Bold; do
         exit 1
     fi
 done
+# Le cache de fontconfig du système, refait par dnf juste avant (polices
+# Inter et JetBrains Mono), ne connaît pas Selawik. Dans l'image construite
+# le 2026-10-16, fontconfig ne la trouvait pas, alors que ses fichiers y
+# étaient (Test 14) : le cache est refait, et Selawik doit être trouvée par
+# son nom.
+fc-cache --system-only --really-force
+famille="$(fc-match -f '%{family[0]}' Selawik)"
+if [[ "${famille}" != Selawik ]]; then
+    echo "fontconfig ne trouve pas Selawik (il propose « ${famille} »)" >&2
+    exit 1
+fi
 # - Rendu des polices en niveaux de gris, contours légèrement ajustés
 #   (hintslight), comme AnduinOS et les applications de Windows 11. Il est
 #   décidé par fontconfig (/etc/fonts/conf.d/29-ankh-rendu.conf, copié plus
