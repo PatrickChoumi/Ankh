@@ -115,6 +115,21 @@ for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
         --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle
 done
 attendu "Opacité des menus du style d'Ankh" 85 --file ankhrc --group Style --key MenuOpacity
+# Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
+# nouveaux comptes et dans les réglages de GNOME lus sous Wayland
+for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do
+    [[ -f "/usr/share/themes/Fluent-Ankh/${feuille}" ]] || echec "thème GTK Fluent-Ankh : ${feuille} absente"
+done
+grep -qi '#7c3aed' /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk.css || echec "thème GTK clair : violet d'Ankh absent"
+grep -qi '#a78bfa' /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk-dark.css || echec "thème GTK sombre : violet d'Ankh absent"
+attendu "Thème GTK 3 des nouveaux comptes" Fluent-Ankh --file /etc/skel/.config/gtk-3.0/settings.ini --group Settings --key gtk-theme-name
+attendu "Thème GTK 4 des nouveaux comptes" Fluent-Ankh --file /etc/skel/.config/gtk-4.0/settings.ini --group Settings --key gtk-theme-name
+theme_gtk="$(GSETTINGS_BACKEND=memory gsettings get org.gnome.desktop.interface gtk-theme)"
+if [[ "${theme_gtk}" == "'Fluent-Ankh'" ]]; then
+    echo "Thème GTK dans les réglages de GNOME : ${theme_gtk}"
+else
+    echec "thème GTK dans les réglages de GNOME : ${theme_gtk}"
+fi
 attendu "Taille des curseurs" 24 --file kcminputrc --group Mouse --key cursorSize
 for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
     attendu "Curseurs de $(basename "$(dirname "$(dirname "${defauts}")")")" Ankh-curseurs \

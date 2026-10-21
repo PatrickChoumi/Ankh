@@ -12,10 +12,13 @@
 # - la décoration des fenêtres d'Ankh (lot 2), dérivée de celle de Breeze,
 #   dont les sources sont dans le dépôt d'Ankh (build_files/decoration) ;
 # - le style des contrôles d'Ankh (lot 3), dérivé de celui de Breeze, dont
-#   les sources sont dans le dépôt d'Ankh (build_files/style).
+#   les sources sont dans le dépôt d'Ankh (build_files/style) ;
+# - le thème GTK Fluent (lot 3, mon choix du 2026-10-15, confirmé le
+#   2026-10-21), au violet d'Ankh (GPL-3.0,
+#   https://github.com/vinceliuice/Fluent-gtk-theme, celui d'AnduinOS).
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
-# build.sh : polices/selawik, icones/Ankh-curseurs, decoration et style.
+# build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style et themes.
 set -euo pipefail
 
 sortie=${1:-/sortie}
@@ -26,6 +29,12 @@ readonly SELAWIK_DEPOT=https://github.com/microsoft/Selawik
 readonly SELAWIK_COMMIT=89362e84731d1f5777fa078fd4d5ebbd339e4378 # 2023-06-05, version 1.01 des sources
 readonly FLUENT_DEPOT=https://github.com/vinceliuice/Fluent-icon-theme
 readonly FLUENT_COMMIT=c8a244f571ef8fb47812bdc9dbce76546cedce69 # 2026-08-31
+readonly FLUENT_GTK_DEPOT=https://github.com/vinceliuice/Fluent-gtk-theme
+readonly FLUENT_GTK_COMMIT=7a49a464b0188c340101c52965c18190b1c694cf # 2026-08-18
+# Violets du thème « purple » de Fluent (Material) -> violets d'Ankh : accent
+# en clair (#7c3aed) et en sombre (#a78bfa, D-037), et les deux teintes des
+# liens visités, de la même famille (#6d28d9 et #c4b5fd)
+readonly VIOLETS_GTK=('AB47BC:7C3AED' 'BA68C8:A78BFA' '9C27B0:6D28D9' 'CE93D8:C4B5FD')
 # Bleu d'accent des curseurs Fluent (#0078d4, celui de Windows, et son reflet
 # #23e6fa) -> violet d'Ankh (sélection #8455f0 et violet du logo #a78bfa, D-037)
 readonly COULEURS=('0078d4:8455f0' '23e6fa:a78bfa')
@@ -133,3 +142,82 @@ install -d -m 0755 "${sortie}/style"
 install -m 0755 "${travail}/style/bin/ankh6.so" "${sortie}/style/"
 install -m 0644 "${sources}/ankh.themerc" "${sortie}/style/"
 echo "Compilé avec Qt $(rpm -q --qf '%{VERSION}-%{RELEASE}' qt6-qtbase-devel) et frameworkintegration $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-frameworkintegration-devel) : $(ls -l "${sortie}/style")"
+
+echo "== Thème GTK Fluent, au violet d'Ankh"
+recuperer "${FLUENT_GTK_DEPOT}" "${FLUENT_GTK_COMMIT}" "${travail}/fluent-gtk" src
+fluent_gtk="${travail}/fluent-gtk"
+# Fichiers du violet : la palette des feuilles de style, et les dessins des
+# cases, boutons radio et curseurs de GTK 3 et 4 (assets-purple.svg) et de
+# GTK 2 (gtkrc et assets-folder)
+fichiers_violets=(
+    "${fluent_gtk}/src/_sass/_color-palette.scss"
+    "${fluent_gtk}/src/gtk/assets-purple.svg"
+    "${fluent_gtk}/src/gtk-2.0/gtkrc-purple"
+    "${fluent_gtk}/src/gtk-2.0/gtkrc-purple-Dark"
+    "${fluent_gtk}/src/gtk-2.0/assets-folder/assets-purple.svg"
+    "${fluent_gtk}/src/gtk-2.0/assets-folder/assets-purple-Dark.svg"
+)
+for couple in "${VIOLETS_GTK[@]}"; do
+    avant="${couple%%:*}"
+    apres="${couple##*:}"
+    # Chaque violet doit encore exister dans les sources : sinon, leur dessin
+    # a changé et le violet d'Ankh ne serait pas appliqué partout.
+    if ! grep -qi "#${avant}" "${fichiers_violets[@]}"; then
+        echo "Fluent GTK : #${avant} introuvable dans ses sources" >&2
+        exit 1
+    fi
+    sed -i "s/#${avant}/#${apres}/Ig" "${fichiers_violets[@]}"
+done
+# Images des contrôles, redessinées depuis les dessins recolorés, à 1× et 2×,
+# comme render-assets.sh de Fluent (rsvg-convert au lieu d'Inkscape)
+redessiner() { # $1 : dossier des images, $2 : dessin, $3 : liste des images
+    rm -rf "$1"
+    mkdir -p "$1"
+    while read -r image; do
+        [[ -n "${image}" ]] || continue
+        rsvg-convert --export-id="${image}" -o "$1/${image}.png" "$2"
+        rsvg-convert --export-id="${image}" --zoom=2 -o "$1/${image}@2.png" "$2"
+    done < "$3"
+}
+redessiner "${fluent_gtk}/src/gtk/assets-purple" "${fluent_gtk}/src/gtk/assets-purple.svg" "${fluent_gtk}/src/gtk/assets.txt"
+for variante in assets-purple assets-purple-Dark; do
+    redessiner "${fluent_gtk}/src/gtk-2.0/assets-folder/${variante}" "${fluent_gtk}/src/gtk-2.0/assets-folder/${variante}.svg" \
+        "${fluent_gtk}/src/gtk-2.0/assets-folder/assets.txt"
+done
+# Variante d'AnduinOS : fenêtres arrondies, sans bord (« round noborder »),
+# taille normale. Un seul thème, « Fluent-Ankh » : la variante claire, dont
+# la feuille sombre (gtk-dark.css) est celle de la variante sombre, octet
+# pour octet (vérifié le 2026-10-21). GTK prend la feuille sombre quand KDE
+# demande le sombre (gtk-application-prefer-dark-theme, écrit à chaque
+# session par kded/gtkconfig.cpp de kde-gtk-config) : le thème suit le clair
+# et le sombre d'Ankh.
+themes="${travail}/themes"
+mkdir -p "${themes}"
+(cd "${fluent_gtk}" && ./install.sh --dest "${themes}" --name Fluent --theme purple --color light --size standard --tweaks round noborder)
+theme="${sortie}/themes/Fluent-Ankh"
+install -d -m 0755 "${theme}"
+# Seulement ce qui sert à KDE : GTK 2, 3 et 4 (pas GNOME Shell, Cinnamon…)
+cp -r "${themes}/Fluent-round-purple-Light/"{gtk-2.0,gtk-3.0,gtk-4.0} "${theme}/"
+install -m 0644 "${fluent_gtk}/COPYING" "${theme}/COPYING"
+cat > "${theme}/index.theme" << 'THEME'
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=Fluent-Ankh
+Comment=Thème GTK Fluent (vinceliuice/Fluent-gtk-theme, GPL-3.0), au violet d'Ankh (D-052)
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=Fluent-Ankh
+THEME
+# Plus aucun violet de Fluent, sauf dans la palette nommée que GTK propose
+# aux applications (« @define-color GRAPE_500 #9C27B0 »…), qui n'est pas
+# l'accent du thème
+for couple in "${VIOLETS_GTK[@]}"; do
+    if grep -rhi "#${couple%%:*}" "${theme}" | grep -vE '^@define-color [A-Z0-9_]+ #' > /dev/null; then
+        echo "Fluent-Ankh : le violet #${couple%%:*} de Fluent est resté" >&2
+        exit 1
+    fi
+done
+for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do
+    echo "Fluent-Ankh, ${feuille} : $(grep -o -i '#7c3aed\|#a78bfa' "${theme}/${feuille}" | sort | uniq -c | tr '\n' ' ')"
+done

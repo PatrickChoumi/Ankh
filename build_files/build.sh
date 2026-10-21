@@ -750,6 +750,35 @@ for dossier in "${themes[@]}"; do
     fi
 done
 
+# D-052, lot 3 : thème GTK Fluent au violet d'Ankh (mon choix du 2026-10-15,
+# confirmé le 2026-10-21), construit dans l'étape « outils ». Clair, avec sa
+# feuille sombre, prise quand KDE demande le sombre.
+test ! -e /usr/share/themes/Fluent-Ankh
+cp -r /outils/themes/Fluent-Ankh /usr/share/themes/Fluent-Ankh
+chmod -R u=rwX,go=rX /usr/share/themes/Fluent-Ankh
+# Thème des nouveaux comptes. KDE ne l'écrit qu'une fois, à la première
+# session, et seulement s'il est vide (Breeze sinon : kconf_update/gtktheme.cpp
+# de kde-gtk-config) ; il ne le change ensuite qu'à un choix fait dans les
+# réglages. Sous Wayland, GTK 3 le lit aussi dans les réglages de GNOME
+# (org.gnome.desktop.interface gtk-theme), dont la valeur par défaut devient
+# celle d'Ankh.
+for version in 3.0 4.0; do
+    install -d -m 0755 "/etc/skel/.config/gtk-${version}"
+    printf '[Settings]\ngtk-theme-name=Fluent-Ankh\n' > "/etc/skel/.config/gtk-${version}/settings.ini"
+    chmod 0644 "/etc/skel/.config/gtk-${version}/settings.ini"
+done
+printf 'gtk-theme-name="Fluent-Ankh"\n' > /etc/skel/.gtkrc-2.0
+chmod 0644 /etc/skel/.gtkrc-2.0
+test -f /usr/share/glib-2.0/schemas/org.gnome.desktop.interface.gschema.xml
+printf "[org.gnome.desktop.interface]\ngtk-theme='Fluent-Ankh'\n" > /usr/share/glib-2.0/schemas/90_ankh.gschema.override
+glib-compile-schemas --strict /usr/share/glib-2.0/schemas
+theme_gtk="$(GSETTINGS_BACKEND=memory gsettings get org.gnome.desktop.interface gtk-theme)"
+if [[ "${theme_gtk}" != "'Fluent-Ankh'" ]]; then
+    echo "Thème GTK par défaut : ${theme_gtk} au lieu de 'Fluent-Ankh'" >&2
+    exit 1
+fi
+echo "Thème GTK par défaut : ${theme_gtk}"
+
 # Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
 # d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup).
 # Le fond d'Ankh y est mis, aux noms attendus
