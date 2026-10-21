@@ -734,11 +734,14 @@ plugins_styles=/usr/lib64/qt6/plugins/styles
 test -f "${plugins_styles}/breeze6.so"
 install -m 0755 /outils/style/ankh6.so "${plugins_styles}/ankh6.so"
 install -m 0644 /outils/style/ankh.themerc /usr/share/kstyle/themes/ankh.themerc
-if ldd -r "${plugins_styles}/ankh6.so" 2>&1 | grep -E 'not found|undefined symbol'; then
+# Comme la décoration : bibliothèques et symboles présents, ldd réussi
+if ! liens="$(ldd -r "${plugins_styles}/ankh6.so" 2>&1)" \
+    || grep -E 'not found|undefined symbol' <<< "${liens}"; then
+    printf '%s\n' "${liens}" >&2
     echo "Le style d'Ankh ne trouve pas ses bibliothèques dans l'image" >&2
     exit 1
 fi
-echo "Style d'Ankh : $(ldd "${plugins_styles}/ankh6.so" | grep -c '=>') bibliothèques trouvées"
+echo "Style d'Ankh : $(grep -c '=>' <<< "${liens}") bibliothèques trouvées"
 # Style des applications (widgetStyle, kconfigwidgets/src/kstylemanager.cpp de
 # KDE), aussi dans chaque thème global, dont les réglages sont recopiés à
 # chaque session avant /etc/xdg
@@ -752,6 +755,14 @@ for dossier in "${themes[@]}"; do
         echo "Style d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucun} »)"
     fi
 done
+
+# D-052, lot 3 : les contrôles écrits en QML dans le style QtQuick de KDE
+# (org.kde.desktop, qqc2-desktop-style), aux mesures de Windows 11 :
+# interrupteur de 40×20, case de 32, élément de liste de 40, infobulle de
+# 12 px, bouton mis en avant rempli d'accent. Le script vérifie chaque texte
+# qu'il remplace et échoue si KDE l'a changé (build_files/qqc2/adapter.py).
+python3 /ctx/qqc2/adapter.py /usr/lib64/qt6/qml/org/kde/desktop /ctx/qqc2/SwitchIndicator.qml
+echo "Style QtQuick de KDE adapté : kf6-qqc2-desktop-style $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-qqc2-desktop-style)"
 
 # D-052, lot 3 : thème GTK Fluent au violet d'Ankh (mon choix du 2026-10-15,
 # confirmé le 2026-10-21), construit dans l'étape « outils ». Clair, avec sa

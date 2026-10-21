@@ -303,7 +303,7 @@ source = "WinUI CommonStyles/Slider_themeresources.xaml, SliderHorizontalThumbWi
 
 [[mesure]]
 id = "controle.progression.hauteur"
-libelle = "Hauteur d'une barre de progression"
+libelle = "Épaisseur de la barre de progression dessinée (sans les marges de 8 px que KDE met au-dessus et au-dessous)"
 cible = 3
 tolerance = 0
 unite = "px"

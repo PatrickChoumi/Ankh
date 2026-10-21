@@ -115,6 +115,20 @@ for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
         --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle
 done
 attendu "Opacité des menus du style d'Ankh" 85 --file ankhrc --group Style --key MenuOpacity
+# Style QtQuick de KDE adapté (build_files/qqc2/adapter.py) : fichiers lus sur
+# le disque et non dans le greffon compilé, et chaque adaptation présente
+qqc2=/usr/lib64/qt6/qml/org/kde/desktop
+if grep -n '^prefer ' "${qqc2}/qmldir" "${qqc2}/private/qmldir"; then
+    echec "style QtQuick : la copie compilée passe encore avant les fichiers adaptés"
+fi
+grep -q "Interrupteur d'Ankh" "${qqc2}/private/SwitchIndicator.qml" || echec "style QtQuick : interrupteur de KDE, et non celui d'Ankh"
+for fichier in CheckBox RadioButton Switch; do
+    grep -q 'implicitIndicatorHeight - topPadding - contentHeight' "${qqc2}/${fichier}.qml" \
+        || echec "style QtQuick : hauteur de ${fichier} non adaptée"
+done
+grep -q 'ListViewItemMinHeight' "${qqc2}/ItemDelegate.qml" || echec "style QtQuick : élément de liste de moins de 40 px"
+grep -q 'font: Kirigami.Theme.smallFont' "${qqc2}/ToolTip.qml" || echec "style QtQuick : infobulle en police normale"
+grep -q '__ankhAccent' "${qqc2}/Button.qml" || echec "style QtQuick : bouton mis en avant sans accent"
 # Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
 # nouveaux comptes et dans les réglages de GNOME lus sous Wayland
 for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do

@@ -70,7 +70,9 @@ Item {
         signaler("controle.interrupteur.largeur", () => interrupteur.indicator.width);
         signaler("controle.interrupteur.hauteur", () => interrupteur.indicator.height);
         signaler("controle.curseur.poignee", () => curseur.handle.width);
-        signaler("controle.progression.hauteur", () => progression.implicitHeight);
+        // La barre dessinée par le style : le contrôle de KDE ajoute 8 px de
+        // marge au-dessus et au-dessous (topInset, bottomInset)
+        signaler("controle.progression.hauteur", () => progression.implicitBackgroundHeight);
         signaler("controle.defilement.largeur", () => defilement.implicitWidth);
         signaler("controle.liste.hauteur", () => element.implicitHeight);
         signaler("controle.menu.element.hauteur", () => elementMenu.implicitHeight);
