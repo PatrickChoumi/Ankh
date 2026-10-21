@@ -692,12 +692,15 @@ plugins_decoration=/usr/lib64/qt6/plugins/org.kde.kdecoration3
 test -f "${plugins_decoration}/org.kde.breeze.so"
 install -m 0755 /outils/decoration/org.ankh.decoration.so "${plugins_decoration}/org.ankh.decoration.so"
 # Compilée avec les en-têtes du moment : toutes ses bibliothèques, et chacun
-# de leurs symboles, doivent exister dans l'image
-if ldd -r "${plugins_decoration}/org.ankh.decoration.so" 2>&1 | grep -E 'not found|undefined symbol'; then
+# de leurs symboles, doivent exister dans l'image. Un échec de ldd lui-même
+# (fichier illisible ou pas une bibliothèque) arrête aussi la construction.
+if ! liens="$(ldd -r "${plugins_decoration}/org.ankh.decoration.so" 2>&1)" \
+    || grep -E 'not found|undefined symbol' <<< "${liens}"; then
+    printf '%s\n' "${liens}" >&2
     echo "La décoration d'Ankh ne trouve pas ses bibliothèques dans l'image" >&2
     exit 1
 fi
-echo "Décoration d'Ankh : $(ldd "${plugins_decoration}/org.ankh.decoration.so" | grep -c '=>') bibliothèques trouvées ; kdecoration $(rpm -q --qf '%{VERSION}-%{RELEASE}' kdecoration)"
+echo "Décoration d'Ankh : $(grep -c '=>' <<< "${liens}") bibliothèques trouvées ; kdecoration $(rpm -q --qf '%{VERSION}-%{RELEASE}' kdecoration)"
 # Réglages de KWin (src/kcms/decoration/kwindecorationsettings.kcfg) : la
 # décoration d'Ankh, son icône à gauche, réduire, agrandir et fermer à
 # droite, sans bords (elle n'en dessine aucun)
