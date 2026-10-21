@@ -1837,6 +1837,14 @@
   - **aperçu hors écran** (outil d'aperçu des décorations de KWin, 2026-10-16) : la croix de Fermer paraissait plus pâle que les autres symboles. Qt répartit une diagonale de 1 px sur deux pixels à moitié allumés ; à 1,25 px, chaque rangée a un pixel plein (essai avec QPainter). Corrigé ;
   - **banc** : `lots_termines = [1, 2]` : ses 11 mesures des fenêtres deviennent obligatoires en VM (barre de titre, bords, rayon des coins, alignement du titre, boutons, taille et couleur de Fermer). Le banc lit l'alignement du titre selon la décoration ;
   - **tests** : Test 14 (décoration présente, ses bibliothèques trouvées, choisie par défaut et dans chaque thème global, boutons) ; en VM, décoration lue dans la session.
+  - **relecture du code**, le 2026-10-21, avec les sources de KDecoration3 et de KWin : huit points, corrigés :
+    - les 4 px du haut, qui servent à redimensionner, passaient sous les boutons : les boutons commencent sous cette bande, et leur fond la couvre pour garder une barre de 32 px ;
+    - une fenêtre agrandie n'a plus d'ombre (elle débordait sur l'écran voisin) et sa barre devient opaque ;
+    - un jeu de couleurs qui prévoit un texte pour les fenêtres inactives le voit appliqué tel quel, sans l'atténuation de 50 % ;
+    - le groupe de boutons de droite reste collé au bord quand les boutons changent dans les réglages, ou quand un bouton apparaît ou disparaît (Agrandir d'une fenêtre de taille fixe), et quand la hauteur de la barre change ;
+    - symboles, rayon et marges d'ombre posés sur la grille des pixels, pour des traits nets à 125 et 150 % ;
+    - un échec de ldd lui-même arrête la construction (relevé par la relecture du lot 3).
+    Vu sur l'aperçu hors écran : barre de 32 px, symboles nets, en sombre et en clair.
 - **Modifiée par D-054 (2026-10-16)** : l'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh. Les curseurs gardent leur anneau violet (images figées). Pour les icônes Fluent et le thème GTK (lot 9), suivre l'accent comme le reste : à étudier au lot 9.
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)
