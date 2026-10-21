@@ -23,11 +23,14 @@
 
 #include <KColorUtils>
 #include <KDecoration3/DecoratedWindow>
+#include <KDecoration3/ScaleHelpers>
 #include <KIconLoader>
 
 #include <QPainter>
 #include <QPainterPath>
 #include <QVariantAnimation>
+
+#include <algorithm>
 
 namespace Ankh
 {
@@ -101,7 +104,8 @@ Button *Button::create(DecorationButtonType type, KDecoration3::Decoration *deco
 QSizeF Button::preferredSize() const
 {
     auto d = qobject_cast<Decoration *>(decoration());
-    const qreal hauteur = (d && d->borderTop() > 0) ? d->borderTop() : Metrique::BarreDeTitre;
+    // Sous la bande du haut qui sert à redimensionner (Decoration::topResizeMargin)
+    const qreal hauteur = (d && d->borderTop() > 0) ? d->borderTop() - d->topResizeMargin() : Metrique::BarreDeTitre;
     switch (type()) {
     case DecorationButtonType::Menu:
         // L'icône à 16 px du bord, et la moitié de l'espace avant le titre :
@@ -168,8 +172,9 @@ QColor Button::symbolColor() const
         }
         couleur = KColorUtils::mix(couleur, blanc, m_hover);
     }
-    // Fenêtre inactive : symboles atténués, sauf au survol
-    if (!d->window()->isActive()) {
+    // Fenêtre inactive : symboles atténués, sauf au survol (si son jeu de
+    // couleurs ne lui donne pas un texte à elle : Decoration::fadesInactive)
+    if (d->fadesInactive()) {
         couleur.setAlphaF(couleur.alphaF() * (Metrique::SymboleInactif + (1 - Metrique::SymboleInactif) * m_hover));
     }
     return couleur;
@@ -196,15 +201,23 @@ void Button::paintBackground(QPainter *painter) const
 {
     const QColor fond = backgroundColor();
     if (fond.isValid() && fond.alpha() > 0) {
-        painter->fillRect(geometry(), fond);
+        painter->fillRect(zone(), fond);
     }
+}
+
+QRectF Button::zone() const
+{
+    // Le bouton et la bande du haut au-dessus de lui : son fond et son symbole
+    // occupent toute la hauteur de la barre, comme dans Windows 11
+    auto d = qobject_cast<Decoration *>(decoration());
+    return d ? geometry().adjusted(0, -d->topResizeMargin(), 0, 0) : geometry();
 }
 
 void Button::paintIcon(QPainter *painter) const
 {
     auto d = qobject_cast<Decoration *>(decoration());
     const auto w = decoration()->window();
-    const QRectF g = geometry();
+    const QRectF g = zone();
     const QRectF icone(g.left() + Metrique::IconeBord, g.center().y() - Metrique::Icone / 2, Metrique::Icone, Metrique::Icone);
     if (d) {
         painter->setOpacity(d->contentOpacity());
@@ -232,11 +245,21 @@ void Button::paintSymbol(QPainter *painter) const
     }
     painter->setRenderHint(QPainter::Antialiasing);
 
-    // Carré de 10×10 au centre du bouton, sur la grille des pixels
-    const QRectF g = geometry();
-    const QPointF o(qRound(g.center().x() - Metrique::Symbole / 2), qRound(g.center().y() - Metrique::Symbole / 2));
+    // Carré de 10×10 au centre du bouton, sur la grille des pixels de l'écran
+    // (à 125 ou 150 %, un pixel logique n'en est pas un)
+    const qreal echelle = decoration()->window()->scale();
+    const QRectF g = zone();
+    const QPointF o(KDecoration3::snapToPixelGrid(g.center().x() - Metrique::Symbole / 2, echelle),
+                    KDecoration3::snapToPixelGrid(g.center().y() - Metrique::Symbole / 2, echelle));
+    // Trait d'un pixel de l'écran au moins, posé au milieu des pixels : net à
+    // toutes les échelles (à 100 %, un trait de 1 sur les demi-pixels)
+    const qreal trait = std::max(KDecoration3::pixelSize(echelle), KDecoration3::snapToPixelGrid(1.0, echelle));
+    const qreal demi = trait / 2;
+    const auto px = [echelle](qreal valeur) {
+        return KDecoration3::snapToPixelGrid(valeur, echelle);
+    };
     QPen pen(couleur);
-    pen.setWidthF(1.0);
+    pen.setWidthF(trait);
     pen.setCapStyle(Qt::FlatCap);
     pen.setJoinStyle(Qt::MiterJoin);
     painter->setPen(pen);
@@ -244,32 +267,34 @@ void Button::paintSymbol(QPainter *painter) const
 
     switch (type()) {
     case DecorationButtonType::Minimize:
-        painter->drawLine(QPointF(o.x(), o.y() + 5.5), QPointF(o.x() + 10, o.y() + 5.5));
+        painter->drawLine(QPointF(o.x(), o.y() + px(5) + demi), QPointF(o.x() + px(10), o.y() + px(5) + demi));
         return;
     case DecorationButtonType::Maximize:
         if (isChecked()) {
             // Restaurer : un carré, et le coin d'un second derrière lui
-            painter->drawRoundedRect(QRectF(o.x() + 0.5, o.y() + 2.5, 7, 7), 1, 1);
+            painter->drawRoundedRect(QRectF(o.x() + demi, o.y() + px(2) + demi, px(8) - trait, px(8) - trait), 1, 1);
             QPainterPath derriere;
-            derriere.moveTo(o.x() + 2.5, o.y() + 0.5);
-            derriere.lineTo(o.x() + 8.5, o.y() + 0.5);
-            derriere.quadTo(o.x() + 9.5, o.y() + 0.5, o.x() + 9.5, o.y() + 1.5);
-            derriere.lineTo(o.x() + 9.5, o.y() + 7.5);
+            derriere.moveTo(o.x() + px(2) + demi, o.y() + demi);
+            derriere.lineTo(o.x() + px(9) - demi, o.y() + demi);
+            derriere.quadTo(o.x() + px(10) - demi, o.y() + demi, o.x() + px(10) - demi, o.y() + px(1) + demi);
+            derriere.lineTo(o.x() + px(10) - demi, o.y() + px(8) - demi);
             painter->drawPath(derriere);
         } else {
-            painter->drawRoundedRect(QRectF(o.x() + 0.5, o.y() + 0.5, 9, 9), 1, 1);
+            painter->drawRoundedRect(QRectF(o.x() + demi, o.y() + demi, px(10) - trait, px(10) - trait), 1, 1);
         }
         return;
-    case DecorationButtonType::Close:
+    case DecorationButtonType::Close: {
         // Une diagonale de 1 px, Qt la répartit sur deux pixels à moitié
         // allumés : la croix paraissait plus pâle que les autres symboles.
         // À 1,25 px, chaque rangée a un pixel plein, comme les traits droits
         // (essai avec QPainter, 2026-10-16) ; la croix garde ses 10×10.
-        pen.setWidthF(1.25);
+        pen.setWidthF(trait * 1.25);
         painter->setPen(pen);
-        painter->drawLine(QPointF(o.x() + 0.25, o.y() + 0.25), QPointF(o.x() + 9.75, o.y() + 9.75));
-        painter->drawLine(QPointF(o.x() + 9.75, o.y() + 0.25), QPointF(o.x() + 0.25, o.y() + 9.75));
+        const qreal bout = trait / 4;
+        painter->drawLine(QPointF(o.x() + bout, o.y() + bout), QPointF(o.x() + px(10) - bout, o.y() + px(10) - bout));
+        painter->drawLine(QPointF(o.x() + px(10) - bout, o.y() + bout), QPointF(o.x() + bout, o.y() + px(10) - bout));
         return;
+    }
     default:
         break;
     }

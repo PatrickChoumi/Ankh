@@ -37,6 +37,7 @@
 #include <QDBusConnection>
 #include <QFontMetricsF>
 #include <QPainter>
+#include <QTimer>
 #include <QtMath>
 
 K_PLUGIN_FACTORY_WITH_JSON(AnkhDecorationFactory, "ankh.json", registerPlugin<Ankh::Decoration>(); registerPlugin<Ankh::Button>();)
@@ -77,14 +78,27 @@ QColor Decoration::titleBarColor() const
 
 QColor Decoration::textColor() const
 {
-    // Le texte de la fenêtre active : celui d'une fenêtre inactive est le
-    // même, à moitié transparent (contentOpacity)
-    return window()->color(ColorGroup::Active, ColorRole::Foreground);
+    return window()->color(window()->isActive() ? ColorGroup::Active : ColorGroup::Inactive, ColorRole::Foreground);
+}
+
+bool Decoration::fadesInactive() const
+{
+    // Windows 11 atténue l'icône et le titre d'une fenêtre inactive
+    // (TitleBarDeactivatedOpacity). Si le jeu de couleurs prévoit déjà un
+    // texte pour les fenêtres inactives (barre de titre teintée d'accent, par
+    // exemple), il est pris tel quel : l'atténuer le rendrait illisible.
+    return !window()->isActive()
+        && window()->color(ColorGroup::Active, ColorRole::Foreground) == window()->color(ColorGroup::Inactive, ColorRole::Foreground);
 }
 
 qreal Decoration::contentOpacity() const
 {
-    return window()->isActive() ? 1.0 : Metrique::OpaciteInactive;
+    return fadesInactive() ? Metrique::OpaciteInactive : 1.0;
+}
+
+qreal Decoration::topResizeMargin() const
+{
+    return isTopEdge() ? 0 : KDecoration3::snapToPixelGrid(Metrique::MargeHaut, window()->scale());
 }
 
 bool Decoration::isDark() const
@@ -111,13 +125,15 @@ QPainterPath Decoration::titleBarShape() const
 {
     QPainterPath forme;
     const QRectF barre(QPointF(0, 0), QSizeF(size().width(), borderTop()));
+    // Même rayon que le contour et le bas de la fenêtre, sur la grille des pixels
+    const qreal rayon = KDecoration3::snapToPixelGrid(Metrique::Rayon, window()->scale());
     if (!hasRoundedCorners()) {
         forme.addRect(barre);
     } else if (window()->isShaded()) {
-        forme.addRoundedRect(barre, Metrique::Rayon, Metrique::Rayon);
+        forme.addRoundedRect(barre, rayon, rayon);
     } else {
         // Coins arrondis en haut seulement
-        forme.addRoundedRect(barre.adjusted(0, 0, 0, Metrique::Rayon), Metrique::Rayon, Metrique::Rayon);
+        forme.addRoundedRect(barre.adjusted(0, 0, 0, rayon), rayon, rayon);
         forme = forme.intersected([&barre] {
             QPainterPath p;
             p.addRect(barre);
@@ -141,8 +157,6 @@ bool Decoration::init()
     auto s = settings();
     connect(s.get(), &KDecoration3::DecorationSettings::reconfigured, this, &Decoration::reconfigure);
     connect(s.get(), &KDecoration3::DecorationSettings::fontChanged, this, &Decoration::recalculateBorders);
-    connect(s.get(), &KDecoration3::DecorationSettings::decorationButtonsLeftChanged, this, &Decoration::updateButtonsGeometry);
-    connect(s.get(), &KDecoration3::DecorationSettings::decorationButtonsRightChanged, this, &Decoration::updateButtonsGeometry);
 
     const auto w = window();
     connect(w, &KDecoration3::DecoratedWindow::activeChanged, this, [this]() {
@@ -169,13 +183,30 @@ bool Decoration::init()
     connect(w, &KDecoration3::DecoratedWindow::maximizedHorizontallyChanged, this, geometrie);
     connect(w, &KDecoration3::DecoratedWindow::maximizedVerticallyChanged, this, geometrie);
     connect(w, &KDecoration3::DecoratedWindow::shadedChanged, this, geometrie);
+    // Agrandie : pas d'ombre, barre de titre opaque (comme Windows 11 et Breeze)
+    connect(w, &KDecoration3::DecoratedWindow::maximizedChanged, this, [this]() {
+        setOpaque(isMaximized());
+        updateShadow();
+    });
     connect(w, &KDecoration3::DecoratedWindow::widthChanged, this, &Decoration::updateTitleBar);
     connect(w, &KDecoration3::DecoratedWindow::widthChanged, this, &Decoration::updateButtonsGeometry);
     connect(w, &KDecoration3::DecoratedWindow::nextScaleChanged, this, &Decoration::recalculateBorders);
+    // Nouvelle hauteur de la barre (police, échelle) : la barre et les boutons
+    // la suivent quand elle s'applique
     connect(this, &KDecoration3::Decoration::bordersChanged, this, &Decoration::updateTitleBar);
+    connect(this, &KDecoration3::Decoration::bordersChanged, this, &Decoration::updateButtonsGeometry);
 
     m_leftButtons = new KDecoration3::DecorationButtonGroup(KDecoration3::DecorationButtonGroup::Position::Left, this, &Button::create);
     m_rightButtons = new KDecoration3::DecorationButtonGroup(KDecoration3::DecorationButtonGroup::Position::Right, this, &Button::create);
+    // Boutons choisis dans les réglages : les groupes les recréent, puis leur
+    // place est recalculée (une fois les nouveaux boutons créés, comme Breeze)
+    connect(s.get(), &KDecoration3::DecorationSettings::decorationButtonsLeftChanged, this, &Decoration::updateButtonsGeometryDelayed);
+    connect(s.get(), &KDecoration3::DecorationSettings::decorationButtonsRightChanged, this, &Decoration::updateButtonsGeometryDelayed);
+    // Un bouton qui apparaît ou disparaît (Agrandir d'une fenêtre de taille
+    // fixe…) change la largeur d'un groupe : celui de droite reste collé au bord
+    connect(m_leftButtons, &KDecoration3::DecorationButtonGroup::geometryChanged, this, &Decoration::updateButtonsGeometryDelayed);
+    connect(m_rightButtons, &KDecoration3::DecorationButtonGroup::geometryChanged, this, &Decoration::updateButtonsGeometryDelayed);
+    setOpaque(isMaximized());
 
     reconfigure();
     updateTitleBar();
@@ -236,7 +267,7 @@ void Decoration::updateTitleBar()
 {
     // Les 4 px du haut restent pour redimensionner par le bord supérieur,
     // sauf contre le haut de l'écran
-    const qreal marge = isTopEdge() ? 0 : KDecoration3::snapToPixelGrid(4, window()->scale());
+    const qreal marge = topResizeMargin();
     setTitleBar(QRectF(0, marge, size().width(), borderTop() - marge));
 }
 
@@ -250,12 +281,19 @@ void Decoration::updateButtonsGeometry()
         auto b = static_cast<Button *>(bouton);
         b->setGeometry(QRectF(QPointF(0, 0), b->preferredSize()));
     }
-    // Boutons collés les uns aux autres et aux bords de la fenêtre
+    // Boutons collés les uns aux autres et aux bords de la fenêtre, sous la
+    // bande qui sert à redimensionner
+    const qreal marge = topResizeMargin();
     m_leftButtons->setSpacing(0);
-    m_leftButtons->setPos(QPointF(0, 0));
+    m_leftButtons->setPos(QPointF(0, marge));
     m_rightButtons->setSpacing(0);
-    m_rightButtons->setPos(QPointF(size().width() - m_rightButtons->geometry().width(), 0));
+    m_rightButtons->setPos(QPointF(size().width() - m_rightButtons->geometry().width(), marge));
     update();
+}
+
+void Decoration::updateButtonsGeometryDelayed()
+{
+    QTimer::singleShot(0, this, &Decoration::updateButtonsGeometry);
 }
 
 //________________________________________________________________
@@ -309,6 +347,12 @@ void Decoration::paintTitleBar(QPainter *painter, const QRectF &repaintRegion)
 //________________________________________________________________
 void Decoration::updateShadow()
 {
+    // Agrandie, la fenêtre n'a pas d'ombre, comme dans Windows 11 : elle
+    // déborderait sur un écran voisin
+    if (isMaximized()) {
+        setShadow(nullptr);
+        return;
+    }
     const bool sombre = isDark();
     const bool active = window()->isActive();
     auto &ombre = g_ombres[sombre][active];
@@ -347,10 +391,11 @@ std::shared_ptr<KDecoration3::DecorationShadow> Decoration::createShadow(bool ac
     const QRectF dehors = texture.rect();
     QRectF rectBoite(QPoint(0, 0), boite);
     rectBoite.moveCenter(dehors.center());
-    const QMarginsF marges(rectBoite.left() - dehors.left() - Metrique::OmbreRecouvrement - decalage.x(),
-                           rectBoite.top() - dehors.top() - Metrique::OmbreRecouvrement - decalage.y(),
-                           dehors.right() - rectBoite.right() - Metrique::OmbreRecouvrement + decalage.x(),
-                           dehors.bottom() - rectBoite.bottom() - Metrique::OmbreRecouvrement + decalage.y());
+    // Marges entières : une demi-unité ferait une ligne floue au bord de l'ombre
+    const QMarginsF marges(qRound(rectBoite.left() - dehors.left() - Metrique::OmbreRecouvrement - decalage.x()),
+                           qRound(rectBoite.top() - dehors.top() - Metrique::OmbreRecouvrement - decalage.y()),
+                           qRound(dehors.right() - rectBoite.right() - Metrique::OmbreRecouvrement + decalage.x()),
+                           qRound(dehors.bottom() - rectBoite.bottom() - Metrique::OmbreRecouvrement + decalage.y()));
     QRectF dedans = dehors - marges;
     dedans.adjust(2, 2, -2, -2);
     painter.setPen(Qt::NoPen);

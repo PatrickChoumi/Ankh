@@ -48,6 +48,9 @@ static constexpr qreal Rayon = 8;
 
 // Marge invisible pour redimensionner, autour d'une fenêtre sans bord
 static constexpr qreal BordInvisible = 8;
+// En haut, les 4 premiers px de la barre de titre servent à redimensionner,
+// boutons compris : ceux-ci commencent dessous, leur fond garde ses 32 px
+static constexpr qreal MargeHaut = 4;
 
 // Survol et appui des boutons (SubtleFillColorSecondary et
 // SubtleFillColorTertiary), en sombre et en clair

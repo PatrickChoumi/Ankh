@@ -41,10 +41,16 @@ public:
 
     //* Fond de la barre de titre
     QColor titleBarColor() const;
-    //* Texte de la barre de titre, plein
+    //* Texte de la barre de titre, de la fenêtre active ou inactive
     QColor textColor() const;
-    //* Titre et icône : à moitié transparents quand la fenêtre est inactive
+    //* Une fenêtre inactive est atténuée : son jeu de couleurs ne lui donne pas
+    //* de texte à elle (sinon, ce texte est pris tel quel)
+    bool fadesInactive() const;
+    //* Titre et icône : à moitié transparents quand la fenêtre est atténuée
     qreal contentOpacity() const;
+    //* Hauteur de la bande du haut qui sert à redimensionner (0 contre le haut
+    //* de l'écran)
+    qreal topResizeMargin() const;
     //* Barre de titre sombre (survol et ombre de Windows en sombre)
     bool isDark() const;
     //* Durée du survol des boutons, en ms (0 : sans animation)
@@ -66,6 +72,7 @@ private Q_SLOTS:
     void recalculateBorders();
     void updateTitleBar();
     void updateButtonsGeometry();
+    void updateButtonsGeometryDelayed();
     void updateShadow();
 
 private:
