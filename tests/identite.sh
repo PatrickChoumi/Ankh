@@ -101,6 +101,20 @@ for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
     attendu "Décoration de $(basename "$(dirname "$(dirname "${defauts}")")")" org.ankh.decoration \
         --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library
 done
+# D-052, lot 3 : style des contrôles d'Ankh, ses bibliothèques trouvées, chargé
+# sous son nom, choisi par défaut et dans chaque thème global
+style=/usr/lib64/qt6/plugins/styles/ankh6.so
+[[ -f "${style}" ]] || echec "style d'Ankh absent"
+if ldd -r "${style}" 2>&1 | grep -E 'not found|undefined symbol'; then
+    echec "le style d'Ankh ne trouve pas ses bibliothèques"
+fi
+attendu "Fiche du style d'Ankh" Ankh --file /usr/share/kstyle/themes/ankh.themerc --group KDE --key WidgetStyle
+attendu "Style des applications" Ankh --group KDE --key widgetStyle
+for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
+    attendu "Style de $(basename "$(dirname "$(dirname "${defauts}")")")" Ankh \
+        --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle
+done
+attendu "Opacité des menus du style d'Ankh" 85 --file ankhrc --group Style --key MenuOpacity
 attendu "Taille des curseurs" 24 --file kcminputrc --group Mouse --key cursorSize
 for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
     attendu "Curseurs de $(basename "$(dirname "$(dirname "${defauts}")")")" Ankh-curseurs \

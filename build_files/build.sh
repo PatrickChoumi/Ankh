@@ -722,6 +722,34 @@ for dossier in "${themes[@]}"; do
     fi
 done
 
+# D-052, lot 3 : style des contrôles d'Ankh, aux mesures et au dessin des
+# contrôles de Windows 11 (coins de 4, hauteur de 32, cases et boutons radio
+# remplis de la couleur d'accent, bouton principal d'accent…). Dérivé de
+# celui de Breeze, ses sources sont dans build_files/style ; compilé dans
+# l'étape « outils » du Containerfile (build_files/outils.sh).
+plugins_styles=/usr/lib64/qt6/plugins/styles
+test -f "${plugins_styles}/breeze6.so"
+install -m 0755 /outils/style/ankh6.so "${plugins_styles}/ankh6.so"
+install -m 0644 /outils/style/ankh.themerc /usr/share/kstyle/themes/ankh.themerc
+if ldd -r "${plugins_styles}/ankh6.so" 2>&1 | grep -E 'not found|undefined symbol'; then
+    echo "Le style d'Ankh ne trouve pas ses bibliothèques dans l'image" >&2
+    exit 1
+fi
+echo "Style d'Ankh : $(ldd "${plugins_styles}/ankh6.so" | grep -c '=>') bibliothèques trouvées"
+# Style des applications (widgetStyle, kconfigwidgets/src/kstylemanager.cpp de
+# KDE), aussi dans chaque thème global, dont les réglages sont recopiés à
+# chaque session avant /etc/xdg
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key widgetStyle Ankh
+for dossier in "${themes[@]}"; do
+    defauts="${dossier}/contents/defaults"
+    if [[ -e "${defauts}" ]]; then
+        avant="$(kreadconfig6 --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle)"
+        kwriteconfig6 --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle Ankh
+        chmod 0644 "${defauts}"
+        echo "Style d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucun} »)"
+    fi
+done
+
 # Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
 # d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup).
 # Le fond d'Ankh y est mis, aux noms attendus
@@ -769,6 +797,14 @@ fi
 kwriteconfig6 --file /etc/xdg/breezerc --group Style --key MenuOpacity 85
 kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowSize ShadowVeryLarge
 kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowStrength 160
+# Le style d'Ankh (D-052, lot 3) lit les mêmes réglages dans ankhrc
+if [[ -e /etc/xdg/ankhrc ]]; then
+    echo "/etc/xdg/ankhrc existe déjà dans la base : réglage à fusionner à la main" >&2
+    exit 1
+fi
+kwriteconfig6 --file /etc/xdg/ankhrc --group Style --key MenuOpacity 85
+kwriteconfig6 --file /etc/xdg/ankhrc --group Common --key ShadowSize ShadowVeryLarge
+kwriteconfig6 --file /etc/xdg/ankhrc --group Common --key ShadowStrength 160
 # Konsole s'ouvre avec le profil Ankh. /etc/xdg/konsolerc vient du paquet
 # konsole-part de Fedora (barre de menus masquée, historique) : il est gardé,
 # le profil par défaut y est seulement ajouté, s'il n'en fixe pas déjà un.
@@ -784,7 +820,7 @@ fi
 kwriteconfig6 --file /etc/xdg/konsolerc --group 'Desktop Entry' --key DefaultProfile Ankh.profile
 # Lisibles par tous les comptes : KConfig peut créer ses fichiers pour leur
 # seul propriétaire (root ici).
-chmod 0644 /etc/xdg/kdeglobals /etc/xdg/breezerc /etc/xdg/konsolerc "${sombre}/contents/defaults"
+chmod 0644 /etc/xdg/kdeglobals /etc/xdg/breezerc /etc/xdg/ankhrc /etc/xdg/konsolerc "${sombre}/contents/defaults"
 
 # Le premier terminal n'affiche plus le message de Fedora qui conseille Toolbx
 # et DNF (contraire à D-009 et D-036). /etc/profile.d/toolbox.sh (paquet
