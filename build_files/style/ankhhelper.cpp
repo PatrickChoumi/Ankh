@@ -31,6 +31,7 @@
 
 #include <QDialog>
 #include <algorithm>
+#include <utility>
 
 namespace Ankh
 {
@@ -39,7 +40,18 @@ static const qreal arrowShade = 0.15;
 
 static const qreal highlightBackgroundAlpha = Metrics::Blend_Value;
 
-static const auto radioCheckSunkenDarkeningFactor = 110;
+// Ankh : fond d'une case ou d'un bouton radio vides, un voile posé sur ce qui
+// est derrière, comme Windows 11 (ControlAltFillColorSecondary, Quarternary à
+// l'appui). Un voile reste pareil dans les fenêtres classiques et en QtQuick,
+// dont la palette donne à Base la couleur des boutons.
+static QColor emptyIndicatorFill(const QPalette &palette, bool sunken)
+{
+    const bool dark = KColorUtils::luma(palette.color(QPalette::WindowText)) > 0.5;
+    if (sunken) {
+        return dark ? QColor(255, 255, 255, 0x12) : QColor(0, 0, 0, 0x18);
+    }
+    return dark ? QColor(0, 0, 0, 0x19) : QColor(0, 0, 0, 0x06);
+}
 
 PaletteChangedEventFilter::PaletteChangedEventFilter(Helper *helper)
     : QObject(helper)
@@ -671,74 +683,89 @@ void Helper::renderButtonFrame(QPainter *painter,
     QRectF frameRect = strokedRect(shadowedRect);
     // setting color group to work around KColorScheme feature
     const QColor &highlightColor = palette.color(!enabled ? QPalette::Disabled : QPalette::Active, QPalette::Highlight);
-    QBrush bgBrush;
-    QBrush penBrush;
 
-    // Colors
-    if (flat) {
-        if (down && enabled) {
-            bgBrush = alphaColor(highlightColor, highlightBackgroundAlpha);
-        } else if (checked) {
-            bgBrush = hasNeutralHighlight ? alphaColor(neutralText(palette), highlightBackgroundAlpha) : alphaColor(palette.buttonText().color(), 0.125);
-            penBrush =
-                hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
-        } else if (isActiveWindow && defaultButton) {
-            bgBrush = alphaColor(highlightColor, 0.125);
-            penBrush = KColorUtils::mix(highlightColor, KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias()), 0.5);
+    // Ankh : couleurs du fond et du contour pour un état donné. Les
+    // animations passent d'un état à l'autre avec ces mêmes couleurs : un
+    // mélange vers d'autres teintes ferait clignoter le bouton à la fin de
+    // l'animation.
+    const auto couleurs = [&](bool hovered, bool down, bool visualFocus) {
+        QBrush bgBrush;
+        QBrush penBrush;
+        if (flat) {
+            if (down && enabled) {
+                bgBrush = alphaColor(highlightColor, highlightBackgroundAlpha);
+            } else if (checked) {
+                bgBrush = hasNeutralHighlight ? alphaColor(neutralText(palette), highlightBackgroundAlpha) : alphaColor(palette.buttonText().color(), 0.125);
+                penBrush =
+                    hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
+            } else if (isActiveWindow && defaultButton) {
+                bgBrush = alphaColor(highlightColor, 0.125);
+                penBrush = KColorUtils::mix(highlightColor, KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias()), 0.5);
+            } else {
+                bgBrush = alphaColor(highlightColor, 0);
+                penBrush = hasNeutralHighlight ? neutralText(palette) : bgBrush;
+            }
         } else {
-            bgBrush = alphaColor(highlightColor, 0);
-            penBrush = hasNeutralHighlight ? neutralText(palette) : bgBrush;
-        }
-    } else {
-        if (down && enabled && defaultButton) {
-            // Ankh : bouton principal enfoncé (AccentFillColorTertiary)
-            bgBrush = KColorUtils::mix(highlightColor, palette.window().color(), 0.2);
-            penBrush = highlightColor;
-        } else if (down && enabled) {
-            // Ankh : à l'appui, Windows 11 assombrit le bouton
-            // (ControlFillColorTertiary) au lieu de le teinter d'accent
-            bgBrush = KColorUtils::mix(palette.button().color(), palette.window().color(), 0.6);
-            penBrush = KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
-        } else if (checked) {
-            bgBrush = hasNeutralHighlight ? KColorUtils::mix(palette.button().color(), neutralText(palette), Metrics::Blend_Value)
-                                          : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), 0.125);
-            penBrush =
-                hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
-        } else if (defaultButton && enabled) {
-            // Ankh : bouton principal rempli de la couleur d'accent
-            // (AccentButtonStyle de Windows 11), un peu plus clair au survol
-            // (AccentFillColorSecondary)
-            bgBrush = hovered ? KColorUtils::mix(highlightColor, palette.highlightedText().color(), 0.1) : highlightColor;
-            penBrush = highlightColor;
-        } else {
-            bgBrush = palette.button().color();
-            penBrush =
-                hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
-            // Ankh : au survol, Windows 11 éclaircit le bouton
-            // (ControlFillColorSecondary) au lieu de l'entourer d'accent
-            if (hovered && enabled) {
-                bgBrush = KColorUtils::mix(palette.button().color(), palette.buttonText().color(), 0.05);
+            // Survol et appui : Windows 11 change le fond au lieu d'entourer
+            // le bouton d'accent. Ses calques (ControlFillColorDefault,
+            // Secondary et Tertiary) posés sur le fond de la fenêtre donnent :
+            // en sombre, un survol plus clair et un appui plus sombre que le
+            // bouton ; en clair, un survol plus proche de la fenêtre et un
+            // appui plus proche encore.
+            const bool sombre = KColorUtils::luma(palette.button().color()) < 0.5;
+            const QColor survol = sombre ? KColorUtils::mix(palette.button().color(), palette.buttonText().color(), 0.05)
+                                         : KColorUtils::mix(palette.button().color(), palette.window().color(), 0.6);
+            const QColor appui = KColorUtils::mix(palette.button().color(), palette.window().color(), sombre ? 0.5 : 0.8);
+            if (down && enabled && defaultButton) {
+                // Ankh : bouton principal enfoncé (AccentFillColorTertiary)
+                bgBrush = KColorUtils::mix(highlightColor, palette.window().color(), 0.2);
+                penBrush = highlightColor;
+            } else if (down && enabled) {
+                bgBrush = appui;
+                penBrush = KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
+            } else if (checked) {
+                bgBrush = hasNeutralHighlight ? KColorUtils::mix(palette.button().color(), neutralText(palette), Metrics::Blend_Value)
+                                              : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), 0.125);
+                penBrush =
+                    hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
+            } else if (defaultButton && enabled) {
+                // Ankh : bouton principal rempli de la couleur d'accent
+                // (AccentButtonStyle de Windows 11), un peu plus clair au survol
+                // (AccentFillColorSecondary)
+                bgBrush = hovered ? KColorUtils::mix(highlightColor, palette.highlightedText().color(), 0.1) : highlightColor;
+                penBrush = highlightColor;
+            } else {
+                bgBrush = hovered && enabled ? survol : palette.button().color();
+                penBrush =
+                    hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
             }
         }
-    }
 
-    // Ankh : contour d'accent pour le focus au clavier, et pour le survol et
-    // l'appui des boutons plats seulement ; Windows 11 n'entoure pas les autres
-    if (enabled && (visualFocus || (flat && (hovered || down)))) {
-        penBrush = highlightColor;
-    }
+        // Ankh : contour d'accent pour le focus au clavier, et pour le survol
+        // et l'appui des boutons plats seulement ; Windows 11 n'entoure pas
+        // les autres
+        if (enabled && (visualFocus || (flat && (hovered || down)))) {
+            penBrush = highlightColor;
+        }
+        return std::make_pair(bgBrush, penBrush);
+    };
 
-    // Animations
+    auto [bgBrush, penBrush] = couleurs(hovered, down, visualFocus);
+
+    // Animations : l'appui (bgAnimation) va du fond au repos au fond enfoncé ;
+    // le survol, le focus et l'appui (penAnimation) vont du contour au repos
+    // au contour de l'état atteint. Quand la souris vient de partir, l'état
+    // quitté est le survol.
     if (bgAnimation != AnimationData::OpacityInvalid && enabled) {
-        QColor color1 = bgBrush.color();
-        QColor color2 =
-            flat ? alphaColor(highlightColor, highlightBackgroundAlpha) : KColorUtils::mix(palette.button().color(), highlightColor, Metrics::Blend_Value);
-        bgBrush = KColorUtils::mix(color1, color2, bgAnimation);
+        const QColor repos = couleurs(hovered, false, visualFocus).first.color();
+        const QColor enfonce = couleurs(hovered, true, visualFocus).first.color();
+        bgBrush = KColorUtils::mix(repos, enfonce, bgAnimation);
     }
     if (penAnimation != AnimationData::OpacityInvalid && enabled) {
-        QColor color1 = penBrush.color();
-        QColor color2 = highlightColor;
-        penBrush = KColorUtils::mix(color1, color2, penAnimation);
+        const bool actif = hovered || down || visualFocus;
+        const QColor repos = couleurs(false, false, false).second.color();
+        const QColor atteint = couleurs(actif ? hovered : true, down, visualFocus).second.color();
+        penBrush = KColorUtils::mix(repos, atteint, penAnimation);
     }
 
     const qreal roundRadius = std::max(rect.width(), rect.height()) / 2;
@@ -864,15 +891,16 @@ void Helper::renderCheckBoxBackground(QPainter *painter,
     const QColor accent(neutalHighlight ? neutralText(palette) : palette.highlight().color());
 
     painter->setPen(QPen(alphaColor(palette.windowText().color(), 0.5), PenWidth::Frame));
-    painter->setBrush(palette.base().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100));
+    painter->setBrush(emptyIndicatorFill(palette, sunken));
     painter->drawRoundedRect(frameRect, radius, radius);
 
     if (state == CheckOff) {
         return;
     }
 
+    // Cochée et enfoncée : l'accent à 80 % (AccentFillColorTertiary)
     painter->setPen(QPen(accent, PenWidth::Frame));
-    painter->setBrush(sunken ? KColorUtils::mix(accent, palette.base().color(), 0.2) : accent);
+    painter->setBrush(sunken ? alphaColor(accent, 0.8) : accent);
     if (state == CheckAnimated) {
         painter->setOpacity(animation);
     }
@@ -1007,7 +1035,7 @@ void Helper::renderRadioButtonBackground(QPainter *painter,
     const QColor accent(neutalHighlight ? neutralText(palette) : palette.highlight().color());
 
     painter->setPen(QPen(alphaColor(palette.windowText().color(), 0.5), PenWidth::Frame));
-    painter->setBrush(palette.base().color().darker(sunken ? radioCheckSunkenDarkeningFactor : 100));
+    painter->setBrush(emptyIndicatorFill(palette, sunken));
     painter->drawEllipse(frameRect);
 
     if (state == RadioOff) {

@@ -2003,8 +2003,9 @@ bool Style::eventFilterCommandLinkButton(QCommandLinkButton *button, QEvent *eve
         // frame
         drawControl(QStyle::CE_PushButton, &option, &painter, button);
 
-        // offset
-        const int margin(Metrics::Button_MarginWidth + Metrics::Frame_FrameWidth);
+        // offset : Qt calcule lui-même la taille d'un QCommandLinkButton, avec
+        // les marges de Breeze (Button_MarginWidth y valait 6)
+        const int margin(Metrics::ToolButton_MarginWidth + Metrics::Frame_FrameWidth);
         QPoint offset(margin, margin);
 
         // state
@@ -3301,7 +3302,27 @@ QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, SubControl 
 }
 
 //______________________________________________________________
-QSize Style::checkBoxSizeFromContents(const QStyleOption *option, const QSize &contentsSize, const QWidget *) const
+namespace
+{
+// Ankh : une vraie case à cocher ou un vrai bouton radio, dans une fenêtre
+// classique (QWidget) ou dans une application QML (CheckBox et RadioButton de
+// QtQuick.Controls, dessinés par qqc2-desktop-style). L'indicateur des
+// éléments de menu et des délégués de liste passe aussi par CT_CheckBox, sans
+// texte : il ne doit pas grandir, sinon chaque élément de menu s'épaissit.
+bool isStandaloneCheckBox(const QStyleOption *option, const QWidget *widget)
+{
+    if (widget) {
+        return true;
+    }
+    if (!option || !option->styleObject) {
+        return false;
+    }
+    const auto control = option->styleObject->property("control").value<QObject *>();
+    return control && (control->inherits("QQuickCheckBox") || control->inherits("QQuickRadioButton"));
+}
+}
+
+QSize Style::checkBoxSizeFromContents(const QStyleOption *option, const QSize &contentsSize, const QWidget *widget) const
 {
     // get contents size
     QSize size(contentsSize);
@@ -3314,7 +3335,9 @@ QSize Style::checkBoxSizeFromContents(const QStyleOption *option, const QSize &c
 
     // Ankh : une case et son texte occupent 32 de haut, comme dans Windows 11
     // (CheckBoxHeight)
-    size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
+    if (isStandaloneCheckBox(option, widget)) {
+        size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
+    }
 
     // Add space for the indicator
     size.rwidth() += Metrics::CheckBox_Size;
@@ -3610,10 +3633,16 @@ QSize Style::toolButtonSizeFromContents(const QStyleOption *option, const QSize 
         size.rwidth() += Metrics::MenuButton_IndicatorWidth;
     }
 
-    const int marginWidth(autoRaise ? Metrics::ToolButton_MarginWidth : Metrics::Button_MarginWidth + Metrics::Frame_FrameWidth);
+    if (autoRaise) {
+        return expandSize(size, Metrics::ToolButton_MarginWidth);
+    }
 
-    size = expandSize(size, marginWidth);
-
+    // Ankh : un bouton d'outil avec cadre a la hauteur d'un bouton de
+    // Windows 11 (32), comme les champs à côté de lui : marges verticales
+    // d'un bouton, et marges horizontales de Breeze (Button_MarginWidth y
+    // valait 6), pour qu'une icône seule donne un bouton carré de 32
+    size = expandSize(size, Metrics::ToolButton_MarginWidth + Metrics::Frame_FrameWidth, Metrics::Button_MarginHeight + Metrics::Frame_FrameWidth);
+    size.setHeight(qMax(size.height(), int(Metrics::Control_MinHeight)));
     return size;
 }
 
@@ -5358,7 +5387,7 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
 
     // copy rect and palette
     const auto &rect(option->rect);
-    const auto &palette(option->palette);
+    auto palette(option->palette);
 
     // state
     const State &state(option->state);
@@ -5367,6 +5396,19 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
     const bool mouseOver(enabled && (option->state & State_MouseOver));
     const bool hasFocus(enabled && !mouseOver && (option->state & State_HasFocus));
     const bool flat(buttonOption->features & QStyleOptionButton::Flat);
+
+    // Ankh : le bouton principal est rempli de la couleur d'accent de la
+    // fenêtre active, comme AccentButtonStyle de Windows 11. Texte, flèche et
+    // icônes monochromes (ColorScheme-Text) prennent tous la couleur prévue
+    // sur cet accent, même quand la fenêtre est inactive : le texte inactif du
+    // jeu de couleurs serait illisible sur l'accent.
+    const bool accentButton(!flat && enabled && (buttonOption->features & QStyleOptionButton::DefaultButton));
+    if (accentButton) {
+        const QColor onAccent(palette.color(QPalette::Active, QPalette::HighlightedText));
+        for (const auto role : {QPalette::HighlightedText, QPalette::WindowText, QPalette::ButtonText, QPalette::Text}) {
+            palette.setColor(role, onAccent);
+        }
+    }
 
     // content
     const bool hasText(!buttonOption->text.isEmpty());
@@ -5384,9 +5426,7 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
             textRole = QPalette::WindowText;
         }
 
-    } else if (enabled && (buttonOption->features & QStyleOptionButton::DefaultButton)) {
-        // Ankh : le bouton principal est rempli de la couleur d'accent, comme
-        // AccentButtonStyle de Windows 11 ; texte de la couleur prévue sur l'accent
+    } else if (accentButton) {
         textRole = QPalette::HighlightedText;
     } else {
         textRole = QPalette::ButtonText;
@@ -5465,7 +5505,7 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
         }
 
         const qreal dpr = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
-        const auto pixmap = _helper->coloredIcon(buttonOption->icon, buttonOption->palette, iconSize, dpr, iconMode, iconState);
+        const auto pixmap = _helper->coloredIcon(buttonOption->icon, palette, iconSize, dpr, iconMode, iconState);
         drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
     }
 
@@ -5489,8 +5529,9 @@ bool Style::drawIconButtonControl(const QStyleOption *option, QPainter *painter,
     overlayOption.iconSize = QSize(buttonIconSize, buttonIconSize);
 
     // Basically pushButtonSizeFromContents.
+    // Ankh : bouton d'icône carré de 32, comme un bouton d'outil
     QSize overlaySize = overlayOption.iconSize;
-    overlaySize = expandSize(overlaySize, Metrics::Button_MarginWidth);
+    overlaySize = expandSize(overlaySize, Metrics::ToolButton_MarginWidth);
     overlaySize = expandSize(overlaySize, Metrics::Frame_FrameWidth);
 
     // Fit the overlay button and be able to see at least some part of the icon.
@@ -6696,9 +6737,12 @@ bool Style::drawFocusFrame(const QStyleOption *option, QPainter *painter, const 
         opt.text = checkBox->text();
         opt.icon = checkBox->icon();
         opt.iconSize = checkBox->iconSize();
+        // Ankh : la case remplit son indicateur de 20 px (Breeze y dessinait
+        // une case de 16) : l'anneau l'entoure au lieu de la recouvrir
         innerRect = subElementRect(SE_CheckBoxIndicator, &opt, checkBox);
-        innerRect.adjust(2, 2, -2, -2);
         innerRect.translate(hmargin, vmargin);
+        innerRadius = Metrics::CheckBox_Radius;
+        outerRadius = innerRadius + vmargin;
         focusFramePath.addRoundedRect(innerRect, innerRadius, innerRadius);
         outerRect = innerRect.adjusted(-hmargin, -vmargin, hmargin, vmargin);
         focusFramePath.addRoundedRect(outerRect, outerRadius, outerRadius);
@@ -6717,7 +6761,6 @@ bool Style::drawFocusFrame(const QStyleOption *option, QPainter *painter, const 
         opt.icon = radioButton->icon();
         opt.iconSize = radioButton->iconSize();
         innerRect = subElementRect(SE_RadioButtonIndicator, &opt, radioButton);
-        innerRect.adjust(2, 2, -2, -2);
         innerRect.translate(hmargin, vmargin);
         innerRadius = innerRect.height() / 2.0;
         focusFramePath.addRoundedRect(innerRect, innerRadius, innerRadius);
@@ -6793,9 +6836,10 @@ bool Style::drawFocusFrame(const QStyleOption *option, QPainter *painter, const 
             opt.subControls |= QStyle::SC_GroupBoxLabel;
         }
         innerRect = subControlRect(CC_GroupBox, &opt, SC_GroupBoxCheckBox, groupBox);
-        innerRect.adjust(2, 2, -2, -2);
         innerRect.translate(hmargin, vmargin);
         innerRect = visualRect(option, innerRect);
+        innerRadius = Metrics::CheckBox_Radius;
+        outerRadius = innerRadius + vmargin;
         focusFramePath.addRoundedRect(innerRect, innerRadius, innerRadius);
         outerRect = innerRect.adjusted(-hmargin, -vmargin, hmargin, vmargin);
         focusFramePath.addRoundedRect(outerRect, outerRadius, outerRadius);
@@ -8157,7 +8201,8 @@ bool Style::drawSliderComplexControl(const QStyleOptionComplex *option, QPainter
         const auto &bouton = palette.color(QPalette::Button);
         const bool sombre(KColorUtils::luma(bouton) < 0.5);
         const auto background(sombre ? KColorUtils::mix(bouton, palette.color(QPalette::ButtonText), 0.12) : palette.color(QPalette::Base));
-        auto outline(_helper->sliderOutlineColor(palette, false, hasFocus, opacity, mode));
+        // Le survol n'anime que le point : le contour ne suit que le focus
+        auto outline(_helper->sliderOutlineColor(palette, false, hasFocus, opacity, mode == AnimationHover ? AnimationNone : mode));
         if (hasFocus && hasHighlightNeutral(widget, option, false, hasFocus)) {
             outline = _helper->neutralText(palette).lighter(150);
         }
