@@ -34,6 +34,8 @@ public:
     void paint(QPainter *painter, const QRectF &repaintRegion) override;
 
     QSizeF preferredSize() const;
+    //* Le bouton et la bande du haut au-dessus de lui
+    QRectF zone() const;
 
 private Q_SLOTS:
     void updateAnimationState(bool hovered);
