@@ -769,6 +769,28 @@ done
 python3 /ctx/qqc2/adapter.py /usr/lib64/qt6/qml/org/kde/desktop /ctx/qqc2/SwitchIndicator.qml
 echo "Style QtQuick de KDE adapté : kf6-qqc2-desktop-style $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-qqc2-desktop-style)"
 
+# D-052, lot 4 : style Plasma « Ankh » (volets et menus aux coins de 8, barre
+# translucide, boutons de la barre des tâches et infobulles de Windows 11).
+# Ses SVG sont écrits ici depuis ceux de Breeze installés dans l'image, dont
+# ils gardent les ombres (build_files/plasma/style-ankh.py) ; le reste vient
+# de Breeze (FallbackTheme). Choisi par défaut, et dans chaque thème global,
+# dont les réglages passent avant /etc/xdg quand on en applique un.
+style_plasma=/usr/share/plasma/desktoptheme/ankh
+test -f "${style_plasma}/metadata.json"
+test -f /usr/share/plasma/desktoptheme/default/dialogs/background.svgz
+python3 /ctx/plasma/style-ankh.py /usr/share/plasma/desktoptheme/default "${style_plasma}"
+chmod -R u=rwX,go=rX "${style_plasma}"
+kwriteconfig6 --file /etc/xdg/plasmarc --group Theme --key name ankh
+for dossier in "${themes[@]}"; do
+    defauts="${dossier}/contents/defaults"
+    if [[ -e "${defauts}" ]]; then
+        avant="$(kreadconfig6 --file "${defauts}" --group plasmarc --group Theme --key name)"
+        kwriteconfig6 --file "${defauts}" --group plasmarc --group Theme --key name ankh
+        chmod 0644 "${defauts}"
+        echo "Style Plasma d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucun} »)"
+    fi
+done
+
 # D-052, lot 3 : thème GTK Fluent au violet d'Ankh (mon choix du 2026-10-15,
 # confirmé le 2026-10-21), construit dans l'étape « outils ». Clair, avec sa
 # feuille sombre, prise quand KDE demande le sombre.

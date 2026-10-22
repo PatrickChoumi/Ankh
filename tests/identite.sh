@@ -185,6 +185,21 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
 done
 echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
 attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
+# Style Plasma d'Ankh (D-052, lot 4) : ses SVG, lisibles, choisi par défaut et
+# dans chaque thème global
+for svg in dialogs/background translucent/dialogs/background widgets/tooltip widgets/panel-background widgets/tasks; do
+    fichier="/usr/share/plasma/desktoptheme/ankh/${svg}.svg"
+    if [[ ! -s "${fichier}" ]] || ! python3 -I -c 'import sys, xml.etree.ElementTree as ET; ET.parse(sys.argv[1])' "${fichier}"; then
+        echec "style Plasma d'Ankh : ${svg} absent ou illisible"
+    fi
+done
+grep -q 'id="focus-bottom"' /usr/share/plasma/desktoptheme/ankh/widgets/tasks.svg || echec "style Plasma d'Ankh : bouton de l'application active absent"
+grep -q 'id="shadow-top"' /usr/share/plasma/desktoptheme/ankh/dialogs/background.svg || echec "style Plasma d'Ankh : ombre des volets absente"
+attendu "Style Plasma" ankh --file plasmarc --group Theme --key name
+for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
+    attendu "Style Plasma de $(basename "$(dirname "$(dirname "${defauts}")")")" ankh \
+        --file "${defauts}" --group plasmarc --group Theme --key name
+done
 ((barres >= 6)) || echec "barre d'Ankh dans ${barres} thème(s) global(aux) seulement (6 attendus : 3 de Fedora, 3 de KDE)"
 for theme in fedora fedoradark fedoralight; do
     dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop"
