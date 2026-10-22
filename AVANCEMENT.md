@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-22** (chantier Interface : lot 1 et D-054 vérifiés en VM, PR #19 verte ; lot 2, les fenêtres, et lot 3, les contrôles, vérifiés en VM puis corrigés ; lot 4, la barre et le style Plasma, écrit).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-22** (chantier Interface : lot 1 fusionné, PR #19 ; lots 2, 3 et 4 vérifiés en VM, toutes leurs mesures conformes ; mes choix pour le Démarrer et les volets flottants ; lot 5 commencé).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -13,7 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
-| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lot 0 fusionné ; lot 1 vert (PR #19) ; lots 2 et 3 vérifiés en VM ; lot 4 écrit |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0 et 1 fusionnés ; lots 2, 3 et 4 verts en VM, leurs PR à ouvrir ; lot 5 commencé |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -336,10 +336,12 @@
 - **Inspiration AnduinOS** (2026-10-15, D-052) : distribution Ubuntu qui ressemble à Windows 11 ; ses sources lues par Claude. Elle confirme nos choix (icônes Fluent, barre de 48 px, Démarrer de Windows 11) et donne ses valeurs pour la barre. Mes choix : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
 - **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés et vérifiés au second passage ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701)) ; le rayon du menu reste à vérifier.
 - **Accent qui suit le fond d'écran** (2026-10-16, D-054, ma demande) : ce n'était pas prévu (D-037 fixait le violet). Plasma 6.7 sait le faire ; Ankh l'active par défaut, et ses fonds désignent le violet d'Ankh. Vérifié en VM avec le lot 1 : orange avec un fond orange, violet avec ceux d'Ankh.
-- **Lot 1, les fondations** (PR [#19](https://github.com/PatrickChoumi/Ankh/pull/19), verte le 2026-10-21) : police Selawik (14 et 12 px), rendu en niveaux de gris, couleurs par couches, animations de Windows 11, curseurs Fluent blancs à l'anneau violet. Premier passage : fontconfig ne trouvait pas Selawik ; corrigé et vérifié en VM.
-- **Lot 2, les fenêtres** (2026-10-16 → 2026-10-22, branche `claude/lot-2-fenetres`) : décoration « Ankh », dérivée de Breeze : barre de 32 px, titre à gauche, boutons de 46×32, Fermer rouge au survol, coins de 8, ombre de Windows. Relecture du code (huit points corrigés : bande de redimensionnement sous les boutons, fenêtre agrandie sans ombre, traits nets à 125 et 150 %…). En VM (run du 2026-10-21) : 9 mesures sur 11 conformes ; Fermer rouge sur 28 px au lieu de 32, et rayon des coins non mesuré (la galerie du banc gênait). Les deux sont corrigés, à revérifier.
-- **Lot 3, les contrôles** (2026-10-21, branche `claude/lot-3-controles`) : style Qt « Ankh », dérivé de Breeze, aux mesures et au dessin de Windows 11 (contrôles de 32, coins de 4, cases et boutons radio d'accent, bouton principal d'accent, barre de défilement de 12) ; contrôles QtQuick des applications de KDE adaptés (interrupteur de 40×20, éléments de liste de 40, infobulles de 12) ; thème GTK Fluent au violet d'Ankh. Relecture du code : neuf points, sept corrigés. En VM (run du 2026-10-21) : **toutes les mesures du lot conformes** ; elles deviennent obligatoires.
-- **Lot 4, le shell** (commencé le 2026-10-22, branche `claude/lot-4-shell`) : barre collée de 48 px sur toute la largeur, date sous l'heure, notifications en bas à droite ; style Plasma « Ankh » : volets et menus aux coins de 8, infobulles aux coins de 4, barre translucide à 60 % avec un trait en haut, boutons de la barre des tâches de Windows 11 (carré de 40, trait d'accent de 16×3 sous l'application active, tiret sous les autres, icônes de 24). Vérifié hors écran ; CI et VM en cours.
+- **Lot 1, les fondations** (fusionné le 2026-10-22, PR [#19](https://github.com/PatrickChoumi/Ankh/pull/19)) : police Selawik (14 et 12 px), rendu en niveaux de gris, couleurs par couches, animations de Windows 11, curseurs Fluent blancs à l'anneau violet. Premier passage : fontconfig ne trouvait pas Selawik ; corrigé et vérifié en VM.
+- **Lot 2, les fenêtres** (2026-10-16 → 2026-10-22, branche `claude/lot-2-fenetres`) : décoration « Ankh », dérivée de Breeze : barre de 32 px, titre à gauche, boutons de 46×32, Fermer rouge au survol, coins de 8, ombre de Windows. Relecture du code (huit points corrigés : bande de redimensionnement sous les boutons, fenêtre agrandie sans ombre, traits nets à 125 et 150 %…). Premier passage en VM : 9 mesures sur 11 ; les deux défauts corrigés, puis **vérifié en VM le 2026-10-22 : les 11 mesures conformes** (Fermer de 46×32, coins de 8,2 px).
+- **Lot 3, les contrôles** (2026-10-21 → 2026-10-22, branche `claude/lot-3-controles`) : style Qt « Ankh », dérivé de Breeze, aux mesures et au dessin de Windows 11 (contrôles de 32, coins de 4, cases et boutons radio d'accent, bouton principal d'accent, barre de défilement de 12) ; contrôles QtQuick des applications de KDE adaptés (interrupteur de 40×20, éléments de liste de 40, infobulles de 12) ; thème GTK Fluent au violet d'Ankh. Relecture du code : neuf points, sept corrigés. **Vérifié en VM deux fois : toutes ses mesures conformes**, devenues obligatoires.
+- **Lot 4, le shell** (2026-10-22, branche `claude/lot-4-shell`) : barre collée de 48 px sur toute la largeur, date sous l'heure, notifications en bas à droite, fine bande « Afficher le bureau » ; style Plasma « Ankh » : volets et menus aux coins de 8, infobulles aux coins de 4, barre translucide à 60 % avec un trait en haut, boutons de la barre des tâches de Windows 11 (carré de 40, trait d'accent de 16×3 sous l'application active, tiret sous les autres, icônes de 24) ; volets flottants à 12 px de la barre et des bords (mon choix du 2026-10-22). **Vérifié en VM le 2026-10-22 : 37 mesures conformes, aucun écart** ; ses mesures deviennent obligatoires.
+- **Mes choix du 2026-10-22** (D-052) : le Démarrer classique de Windows 11 plutôt que celui de fin 2025 ; les volets flottants.
+- **Lot 5, le Démarrer d'Ankh** (commencé le 2026-10-22) : recherche faite (le module des menus de KDE se charge depuis un paquet QML ; mesures relevées sur des images officielles de Microsoft : volet de 640×726, cellules de 96×84, icônes de 32) ; écriture en cours.
 
 ---
 
@@ -357,12 +359,12 @@
 Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
 
 0. **Banc de mesure** (fusionné le 2026-10-15, PR [#17](https://github.com/PatrickChoumi/Ankh/pull/17) ; rayon du menu corrigé ensuite, à vérifier en VM) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
-1. Fondations, avec l'accent qui suit le fond d'écran (D-054) : **PR [#19](https://github.com/PatrickChoumi/Ankh/pull/19) verte et fusionnable**, en attente de mon accord.
-2. Fenêtres : décoration « Ankh ». Deux mesures corrigées après le passage en VM du 2026-10-21 ; CI et VM relancées. Sa PR suivra la fusion du lot 1.
-3. Contrôles : style Qt, contrôles QtQuick, thème GTK. Toutes ses mesures conformes en VM. Sa PR suivra celle du lot 2.
-4. Shell : barre collée de 48 px, horloge, notifications, style Plasma « Ankh ». CI et VM en cours. Reste aussi : la zone de notification (icônes de 16) et la météo à gauche de la barre (idée d'AnduinOS).
+1. Fondations, avec l'accent qui suit le fond d'écran (D-054) : **fusionné** le 2026-10-22 (PR [#19](https://github.com/PatrickChoumi/Ankh/pull/19)).
+2. Fenêtres : décoration « Ankh ». Verte en VM ; sa PR attend mon accord.
+3. Contrôles : style Qt, contrôles QtQuick, thème GTK. Vert en VM ; sa PR suivra celle du lot 2.
+4. Shell : barre, style Plasma, volets flottants. Vert en VM ; sa PR suivra celle du lot 3. Limites : icônes de la zone de notification à 22 px (16 dans Windows 11), fixé dans le code de Plasma ; la météo à gauche de la barre (idée d'AnduinOS) reste à faire.
    - Les applications GTK en Flatpak ne voient pas le thème Fluent d'Ankh : à traiter avec le lot 8 (applications).
-5. Démarrer d'Ankh.
+5. Démarrer d'Ankh : le Démarrer classique de Windows 11 (mon choix du 2026-10-22). En cours.
 6. Paramètres rapides, calendrier, notifications.
 7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons.
 8. Applications : Dolphin, réglages, Discover, Konsole, Chrome, VS Code, GTK, libadwaita, Electron ; plus de fenêtre de KDE Wallet.
@@ -432,7 +434,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 
 ## Ce que je dois faire
 
-1. **PR [#19](https://github.com/PatrickChoumi/Ankh/pull/19) (lot 1 et D-054)** : verte et fusionnable ; la fusionner si les captures me conviennent. Les PR des lots 2 et 3 suivront, une à la fois.
+1. **PR des lots 2, 3 et 4** : tous verts en VM ; donner mon accord pour ouvrir la PR du lot 2, puis les suivantes une à la fois, et les fusionner si les captures me conviennent.
 2. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
 3. **Regarder les captures des sept autres applications Gaming**, envoyées le 2026-10-14, et dire à Claude ce qui ne va pas (D-050). Les PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) et [#16](https://github.com/PatrickChoumi/Ankh/pull/16) sont fusionnées.
 4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.

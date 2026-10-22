@@ -22,7 +22,7 @@
 # Une mesure devient obligatoire quand son lot figure dans lots_termines :
 # un écart fait alors échouer le test en VM. Chaque PR de lot ajoute son
 # numéro ici, avec les mesures qu'elle atteint.
-lots_termines = [1, 2, 3]
+lots_termines = [1, 2, 3, 4]
 
 # --- Lot 1 : fondations ---------------------------------------------------
 
