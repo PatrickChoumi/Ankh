@@ -404,6 +404,15 @@ lot = 4
 source = "WinUI CommonStyles/CornerRadius_themeresources.xaml, OverlayCornerRadius"
 
 [[mesure]]
+id = "volet.ecart_barre"
+libelle = "Écart entre le menu et la barre des tâches"
+cible = 12
+tolerance = 0
+unite = "px"
+lot = 4
+source = "Mesuré sur des images officielles de Microsoft (Démarrer de Windows 11, recherche du lot 5, 2026-10-22, À VALIDER à 100 %) ; mon choix du 2026-10-22 : volets flottants"
+
+[[mesure]]
 id = "notifications.position"
 libelle = "Place des notifications"
 cible = "BottomRight"

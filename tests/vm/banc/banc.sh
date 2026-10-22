@@ -460,9 +460,19 @@ banc_pixels() {
         fi
     done
     image=$(banc_image volet)
+    local haut_barre=""
+    while read -r classe type vx vy vw vh; do
+        if [[ $classe == *plasmashell && $type == barre ]]; then
+            haut_barre=$vy
+        fi
+    done <<< "$volets"
     while read -r classe type vx vy vw vh; do
         if [[ $classe == *plasmashell && $type == autre && ${vh:-0} -gt 200 ]]; then
             banc_noter volet.rayon "$(banc_mesurer coin "$image" "$vx" "$vy" "$vw" "$vh")"
+            # Écart entre le bas du menu et le haut de la barre
+            if [[ -n $haut_barre ]]; then
+                banc_noter volet.ecart_barre $((haut_barre - vy - vh))
+            fi
             break
         fi
     done <<< "$volets"

@@ -187,6 +187,9 @@ done
 echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
 attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
 [[ -f /usr/share/plasma/plasmoids/org.ankh.bureau/contents/ui/main.qml ]] || echec "bande « Afficher le bureau » d'Ankh absente"
+grep -q 'margin: Plasmoid.location === PlasmaCore.Types.Floating ? 0 : 12' \
+    /usr/share/plasma/shells/org.kde.plasma.desktop/contents/applet/CompactApplet.qml \
+    || echec "volets de la barre collés à la barre, et non à 12 px"
 # Style Plasma d'Ankh (D-052, lot 4) : ses SVG, lisibles, choisi par défaut et
 # dans chaque thème global
 for svg in dialogs/background translucent/dialogs/background solid/dialogs/background widgets/tooltip \

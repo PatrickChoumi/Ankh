@@ -791,6 +791,12 @@ for dossier in "${themes[@]}"; do
     fi
 done
 
+# D-052, lot 4 : volets de la barre flottants, à 12 px de la barre, avec leurs
+# quatre coins (mon choix du 2026-10-22, build_files/plasma/adapter-plasma.py)
+coque=/usr/share/plasma/shells/org.kde.plasma.desktop
+python3 /ctx/plasma/adapter-plasma.py "${coque}"
+echo "Coque de Plasma adaptée : plasma-desktop $(rpm -q --qf '%{VERSION}-%{RELEASE}' plasma-desktop)"
+
 # D-052, lot 3 : thème GTK Fluent au violet d'Ankh (mon choix du 2026-10-15,
 # confirmé le 2026-10-21), construit dans l'étape « outils ». Clair, avec sa
 # feuille sombre, prise quand KDE demande le sombre.
