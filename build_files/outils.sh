@@ -16,6 +16,9 @@
 # - le thème GTK Fluent (lot 3, mon choix du 2026-10-15, confirmé le
 #   2026-10-21), au violet d'Ankh (GPL-3.0,
 #   https://github.com/vinceliuice/Fluent-gtk-theme, celui d'AnduinOS).
+# Avant tout, le Démarrer d'Ankh (lot 5), paquet QML dérivé de Kickoff, est
+# vérifié sur le Plasma de cette image de base (build_files/plasma/verifier-demarrer.sh :
+# version de Plasma, qmllint, sonde hors écran) ; rien n'en sort dans /sortie.
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
 # build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style et themes.
@@ -57,6 +60,9 @@ recuperer() { # $1 : dépôt, $2 : commit, $3 : dossier de travail, puis les dos
     fi
     echo "${depot} : ${commit}"
 }
+
+echo "== Démarrer d'Ankh : vérifications"
+"$(dirname "$(readlink -f "$0")")/plasma/verifier-demarrer.sh"
 
 echo "== Police Selawik"
 recuperer "${SELAWIK_DEPOT}" "${SELAWIK_COMMIT}" "${travail}/selawik" "Source files/UFO"
