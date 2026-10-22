@@ -93,12 +93,22 @@ banc_dolphin() {
         launch_in_session "$banc_compte" dolphin "/home/$banc_compte"
         sleep 10
     fi
+    # Dolphin seule devant le fond noir : les autres fenêtres sont réduites
+    # (la galerie, ouverte juste au-dessus de Dolphin, empêchait de trouver
+    # son bord haut, et donc le rayon de ses coins : runs 39424185717 et
+    # 39575978529). banc_bureau non les rend ensuite.
     banc_kwin ankh-banc-placer ANKH-BANC-PLACEE "for (const w of workspace.windowList()) {
-    if (w.normalWindow && String(w.desktopFileName) === 'org.kde.dolphin') {
+    if (!w.normalWindow) {
+        continue;
+    }
+    if (String(w.desktopFileName) === 'org.kde.dolphin') {
+        w.minimized = false;
         w.setMaximize(false, false);
         w.frameGeometry = {x: $1, y: $2, width: $3, height: $4};
         workspace.activeWindow = w;
         console.warn('ANKH-BANC-PLACEE ' + w.caption);
+    } else {
+        w.minimized = true;
     }
 }"
     sleep 3
@@ -124,6 +134,7 @@ console.warn('ANKH-BANC-BUREAU $1');" > /dev/null
 banc_galerie_devant() {
     banc_kwin ankh-banc-galerie ANKH-BANC-GALERIE "for (const w of workspace.windowList()) {
     if (w.normalWindow && String(w.resourceClass).includes('plasmawindowed')) {
+        w.minimized = false;
         workspace.activeWindow = w;
         const c = w.clientGeometry;
         console.warn('ANKH-BANC-GALERIE ' + [c.x, c.y, c.width, c.height].map(Math.round).join(' '));
