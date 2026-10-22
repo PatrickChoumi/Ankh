@@ -212,7 +212,7 @@ def volet(rayon, opacite, marge, y0):
     return planche
 
 
-def barre():
+def barre(opacite):
     """Barre des tâches : translucide, un trait de 1 px en haut, coins de 8
     si elle flotte (collée, Plasma n'en dessine que le bord haut)."""
     planche = Planche()
@@ -220,7 +220,7 @@ def barre():
     L = H = 2 * c + 4
     fond = arrondi(0, 0, L, H, c)
     trait = [decouper(arrondi(0, 0, L, H, c), 0, 0, L, 1)]
-    planche.cadre("", c, c, c, c, [([fond], "Background", 0.6), (trait, "Text", 0.08)])
+    planche.cadre("", c, c, c, c, [([fond], "Background", opacite), (trait, "Text", 0.08)])
     planche.cadre("mask", c, c, c, c, [([fond], None, 1)])
     planche.marges("", 4, 4, 4, 4)
     planche.marges("thick", 8, 8, 8, 8, nom="hint")
@@ -281,15 +281,21 @@ def ecrire(chemin, texte):
 
 
 def main(breeze, sortie):
+    # Variantes : translucent/ quand le flou est actif ; solid/ pour les
+    # volets qui demandent un fond plein (Dialog::SolidBackground de libplasma)
     for nom, rayon, opacite in (("dialogs/background", 8, 0.95),
                                 ("translucent/dialogs/background", 8, 0.85),
-                                ("widgets/tooltip", 4, 0.95)):
+                                ("solid/dialogs/background", 8, 1),
+                                ("widgets/tooltip", 4, 0.95),
+                                ("solid/widgets/tooltip", 4, 1)):
         defs, ombres, largeur, hauteur = ombres_de_breeze(breeze / (nom + ".svgz"))
         planche = volet(rayon, opacite, 4, hauteur + 8)
         ecrire(sortie / (nom + ".svg"), planche.texte(defs, ombres, largeur))
         print(f"Style Plasma d'Ankh : {nom} (coins de {rayon}, fond à {opacite:g}, ombres de Breeze)")
-    ecrire(sortie / "widgets/panel-background.svg", barre().texte())
-    print("Style Plasma d'Ankh : widgets/panel-background (fond à 0,6, trait de 1 px en haut, sans ombre)")
+    ecrire(sortie / "widgets/panel-background.svg", barre(0.6).texte())
+    # Barre opaque (réglage « opaque » de la barre)
+    ecrire(sortie / "solid/widgets/panel-background.svg", barre(1).texte())
+    print("Style Plasma d'Ankh : widgets/panel-background (fond à 0,6, opaque dans solid/, trait de 1 px en haut, sans ombre)")
     ecrire(sortie / "widgets/tasks.svg", taches().texte())
     print("Style Plasma d'Ankh : widgets/tasks (carré de 40, trait d'accent de 16×3, tiret de 6×3, icônes de 24)")
 

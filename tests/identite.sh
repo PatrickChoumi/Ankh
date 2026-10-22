@@ -187,7 +187,8 @@ echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
 attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
 # Style Plasma d'Ankh (D-052, lot 4) : ses SVG, lisibles, choisi par défaut et
 # dans chaque thème global
-for svg in dialogs/background translucent/dialogs/background widgets/tooltip widgets/panel-background widgets/tasks; do
+for svg in dialogs/background translucent/dialogs/background solid/dialogs/background widgets/tooltip \
+    solid/widgets/tooltip widgets/panel-background solid/widgets/panel-background widgets/tasks; do
     fichier="/usr/share/plasma/desktoptheme/ankh/${svg}.svg"
     if [[ ! -s "${fichier}" ]] || ! python3 -I -c 'import sys, xml.etree.ElementTree as ET; ET.parse(sys.argv[1])' "${fichier}"; then
         echec "style Plasma d'Ankh : ${svg} absent ou illisible"
