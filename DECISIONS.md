@@ -1885,6 +1885,30 @@
 - **Questions et mes réponses (2026-10-22)**, après la recherche du lot 5 (rapport de Claude : le module privé `org.kde.plasma.private.kicker` se charge depuis un paquet QML ; mesures du Démarrer relevées au pixel sur des images officielles de Microsoft) :
   1. **Démarrer** : « Celui de D-052 (Recommandé) » : le Démarrer de Windows 11 tel qu'il était jusqu'en 2025 (épingles en grille, bouton « Toutes les applications », « Recommandé », compte et alimentation en bas), entièrement mesuré (volet de 640×726, cellules de 96×84, icônes de 32, coins de 8). Plutôt que le nouveau Démarrer livré depuis fin 2025 (une seule page qui défile, 8 colonnes, mesuré sur une seule maquette de Microsoft).
   2. **Volets de la barre** : « Oui, volets flottants (Recommandé) » : le Démarrer, l'horloge, la zone de notification et les autres volets flottent à 12 px de la barre avec leurs quatre coins, comme Windows 11, au prix d'un fichier de Plasma modifié dans l'image. Plutôt que des volets collés à la barre, sans coins de ce côté.
+- **Lot 6, paramètres rapides, notifications et calendrier : recherche (2026-10-22)**, dans le code de Plasma 6.7.5 : plasma-nm `v6.7.5` (`af9d0f5`), plasma-pa (`b763114`), bluedevil (`7abbf39`), powerdevil (`5627bac`) ; plasma-workspace `Plasma/6.7` (`60a25d0`) :
+  - les applets de Plasma pour le réseau, le son, le Bluetooth, la batterie, la luminosité, l'horloge et les notifications sont compilées (`plasma_add_applet` avec `QML_SOURCES`). On ne peut pas modifier leur QML dans l'image, comme on l'a fait pour `CompactApplet.qml` ;
+  - leurs modules QML, eux, sont installés à part. Un paquet QML d'Ankh peut s'en servir, comme le Démarrer se sert du module de Kicker :
+    - `org.kde.plasma.networkmanagement` : Wi-Fi, mode avion, liste des réseaux ;
+    - `org.kde.plasma.private.volume` : volume, silence, sortie son ;
+    - `org.kde.bluezqt` et `org.kde.plasma.private.bluetooth` : Bluetooth allumé ou éteint, appareils ;
+    - `org.kde.plasma.private.brightnesscontrolplugin` : luminosité, éclairage nocturne, mode sombre ;
+    - `org.kde.plasma.private.batterymonitor` : batterie, profil d'énergie ;
+    - `org.kde.notificationmanager` : historique des notifications, Ne pas déranger ;
+    - `org.kde.plasma.workspace.calendar` : calendrier ;
+    - `org.kde.plasma.private.mpris` : lecteur multimédia ;
+  - les icônes d'une applet d'Ankh peuvent faire 16 px, comme sous Windows 11. Celles de la zone de notification restent plafonnées à 22 px (limite du lot 4) ;
+  - les bulles de notification restent celles de Plasma. Les modules privés peuvent changer d'une version de Plasma à l'autre : la construction et le test en VM le montrent avant que je reçoive la mise à jour (D-052, limites acceptées).
+- **Questions et mes réponses (2026-10-22)**, après cette recherche :
+  1. **Bouton de la barre** : « Un seul bouton (Recommandé) ». Comme Windows 11, un bouton avec les icônes Wi-Fi, son et batterie à 16 px, qui ouvre les paramètres rapides. Les icônes de Plasma correspondantes sortent de la zone de notification. Plutôt que les icônes séparées de Plasma (22 px), chacune avec son volet.
+  2. **Volet** : « Windows 11 + mode sombre » :
+     - les tuiles de Windows 11 (Wi-Fi, Bluetooth, mode avion, économie d'énergie, éclairage nocturne, Ne pas déranger), plus une tuile qui bascule tout Ankh entre le thème sombre et le thème clair ;
+     - curseurs de luminosité et de volume ;
+     - les flèches ouvrent la liste des réseaux, des appareils et des sorties son ;
+     - batterie et Paramètres en bas.
+     Plutôt que les seules tuiles de Windows 11, ou un volet minimal.
+  3. **Horloge** : « Notifications + calendrier (Recommandé) ». Comme Windows 11, un clic sur l'heure ouvre les notifications en haut et le calendrier en bas. La cloche de Plasma sort de la zone de notification. Plutôt que le calendrier de Plasma seul, avec la cloche dans la zone de notification.
+  4. **Lecteur multimédia** : « Oui (Recommandé) ». Une carte avec la musique ou la vidéo en cours, au-dessus des paramètres rapides, seulement quand quelque chose joue.
+- **Lot 6, découpage** : 6a, le bouton et le volet des paramètres rapides (applet `org.ankh.reglages`) ; 6b, l'horloge d'Ankh avec les notifications et le calendrier. Chacun a sa PR, ses captures et ses mesures.
 - **Modifiée par D-054 (2026-10-16)** : l'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh. Les curseurs gardent leur anneau violet (images figées). Pour les icônes Fluent (lot 9) et le thème GTK (lot 3 ; « lot 9 » écrit ici par erreur à l'origine), suivre l'accent comme le reste : à étudier. Pour le thème GTK, réponse le 2026-10-21 : il garde le violet d'Ankh (voir le lot 3).
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)
