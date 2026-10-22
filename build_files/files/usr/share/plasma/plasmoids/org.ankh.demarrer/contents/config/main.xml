@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SPDX-FileCopyrightText: 2011 Martin Gräßlin <mgraesslin@kde.org>
+    SPDX-FileCopyrightText: 2021 Mikel Johnson <mikel5764@gmail.com>
+    SPDX-FileCopyrightText: 2026 Ankh
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    Réglages du Démarrer d'Ankh (D-052, lot 5), adaptés de ceux de Kickoff
+    (applets/kickoff/main.xml de plasma-desktop 6.7.5) : seuls restent ceux
+    dont le Démarrer se sert ; les options d'affichage de Kickoff sont
+    retirées, la disposition étant celle de Windows 11.
+-->
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+    http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+    <kcfgfile name=""/>
+    <group name="General">
+        <entry name="icon" type="String">
+            <label>Icône du bouton dans la barre</label>
+            <default>ankh-logo</default>
+        </entry>
+        <entry name="favorites" type="StringList">
+            <label>Anciens favoris, repris une seule fois dans les épingles (portOldFavorites). Ceux d'Ankh viennent de kicker-extra-favoritesrc (IgnoreDefaults), écrit par build.sh.</label>
+            <default>preferred://browser,systemsettings.desktop,org.kde.dolphin.desktop,org.kde.discover.desktop</default>
+        </entry>
+        <entry name="favoritesPortedToKAstats" type="Bool">
+            <label>Épingles déjà reprises dans la base de KActivities</label>
+            <default>false</default>
+        </entry>
+        <entry name="alphaSort" type="Bool">
+            <label>Applications triées par ordre alphabétique</label>
+            <default>true</default>
+        </entry>
+        <entry name="pin" type="Bool">
+            <label>Le volet reste ouvert quand une autre fenêtre est activée</label>
+            <default>false</default>
+        </entry>
+    </group>
+</kcfg>

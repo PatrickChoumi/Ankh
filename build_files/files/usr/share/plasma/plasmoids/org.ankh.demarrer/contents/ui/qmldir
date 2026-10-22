@@ -1,0 +1,22 @@
+# Types du Démarrer d'Ankh (D-052, lot 5). Les singletons doivent être
+# déclarés ici : sans ce fichier, chaque valeur de Mesures vaudrait
+# undefined, avec un simple avertissement (recherche du lot 5, § 2). Chaque type du dossier
+# est listé ; qmllint vérifie à la construction qu'aucun ne manque.
+singleton Mesures Mesures.qml
+singleton ActionMenu ActionMenu.qml
+Bouton Bouton.qml
+ChampRecherche ChampRecherche.qml
+Demarrer Demarrer.qml
+Element Element.qml
+ElementEpingle ElementEpingle.qml
+ElementListe ElementListe.qml
+GrilleEpingles GrilleEpingles.qml
+GrilleLettres GrilleLettres.qml
+ListeApplications ListeApplications.qml
+Modeles Modeles.qml
+PageAccueil PageAccueil.qml
+PageToutes PageToutes.qml
+Pied Pied.qml
+Recommande Recommande.qml
+Survol Survol.qml
+Titre Titre.qml
