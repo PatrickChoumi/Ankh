@@ -517,9 +517,48 @@ rm -r /usr/share/wallpapers/F[0-9]*
 # couleurs « Ankh » et le profil Konsole sont copiés plus haut
 # (build_files/files).
 #
-# Polices de Fedora : Inter pour l'interface, JetBrains Mono pour le terminal
-# et le code.
+# Polices de Fedora : JetBrains Mono pour le terminal et le code, Inter pour
+# l'écran de connexion et l'écran de démarrage (D-043).
 dnf5 -y install rsms-inter-fonts jetbrains-mono-fonts
+
+# D-052, lot 1 : fondations de l'interface, aux mesures de Windows 11.
+# - Police Selawik, le sosie libre de Segoe UI (OFL 1.1), compilée depuis ses
+#   sources dans l'étape « outils » du Containerfile (build_files/outils.sh).
+#   Texte courant de 14 px et légendes de 12 px, comme Windows
+#   (BodyTextBlockFontSize et CaptionTextBlockFontSize de
+#   CommonStyles/TextBlock_themeresources.xaml, WinUI) : 10,5 et 9 points à
+#   96 points par pouce. Titre des fenêtres en légende (page
+#   basics/titlebar-design de Microsoft). Ses glyphes couvrent le français,
+#   sauf les espaces insécables (U+00A0, U+202F), prises dans une autre police
+#   par fontconfig.
+install -d -m 0755 /usr/share/fonts/selawik /usr/share/licenses/selawik
+install -m 0644 /outils/polices/selawik/Selawik-*.ttf /usr/share/fonts/selawik/
+install -m 0644 /outils/polices/selawik/OFL.txt /usr/share/licenses/selawik/OFL.txt
+for graisse in Light Regular Bold; do
+    if [[ "$(fc-scan --format '%{family[0]}:%{weight}' "/usr/share/fonts/selawik/Selawik-${graisse}.ttf")" != Selawik:* ]]; then
+        echo "Selawik ${graisse} : fichier de police illisible" >&2
+        exit 1
+    fi
+done
+# Le cache de fontconfig du système, refait par dnf juste avant (polices
+# Inter et JetBrains Mono), ne connaît pas Selawik. Dans l'image construite
+# le 2026-10-16, fontconfig ne la trouvait pas, alors que ses fichiers y
+# étaient (Test 14) : le cache est refait, et Selawik doit être trouvée par
+# son nom.
+fc-cache --system-only --really-force
+famille="$(fc-match -f '%{family[0]}' Selawik)"
+if [[ "${famille}" != Selawik ]]; then
+    echo "fontconfig ne trouve pas Selawik (il propose « ${famille} »)" >&2
+    exit 1
+fi
+# - Rendu des polices en niveaux de gris, contours légèrement ajustés
+#   (hintslight), comme AnduinOS et les applications de Windows 11. Il est
+#   décidé par fontconfig (/etc/fonts/conf.d/29-ankh-rendu.conf, copié plus
+#   bas) : Qt (QFontconfigDatabase) prend sinon la disposition des
+#   sous-pixels annoncée par l'écran, que KWin lit dans l'EDID. Le module
+#   des polices de KDE lit lui aussi fontconfig (kcms/fonts/kxftconfig.cpp
+#   de plasma-workspace) ; les réglages Xft de kdeglobals ne servent qu'aux
+#   applications X11. Vérifié après la copie, plus bas.
 
 # Thème global par défaut : « Ankh Sombre » (le thème sombre de Fedora, renommé
 # plus haut). À chaque ouverture de session, Plasma applique les réglages par
@@ -538,13 +577,36 @@ kwriteconfig6 --file "${sombre}/contents/defaults" --group kdeglobals --group Ge
 # (XDG_CONFIG_DIRS=/etc/xdg:/usr/share/kde-settings/kde-profile/default/xdg,
 # plasma-workspace/env/env.sh du paquet kde-settings-plasma).
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage org.fedoraproject.fedoradark.desktop
-# Polices, au format des réglages de Fedora (kde-profile/default/xdg/kdeglobals).
-kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key font 'Inter,10,-1,5,50,0,0,0,0,0'
-kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key menuFont 'Inter,10,-1,5,50,0,0,0,0,0'
-kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key toolBarFont 'Inter,10,-1,5,50,0,0,0,0,0'
-kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key smallestReadableFont 'Inter,8,-1,5,50,0,0,0,0,0'
+# Polices, au format des réglages de Fedora (kde-profile/default/xdg/kdeglobals) :
+# Selawik à 14 px (10,5 points) et 12 px (9 points), D-052 lot 1.
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key font 'Selawik,10.5,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key menuFont 'Selawik,10.5,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key toolBarFont 'Selawik,10.5,-1,5,50,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key smallestReadableFont 'Selawik,9,-1,5,50,0,0,0,0,0'
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key fixed 'JetBrains Mono,10,-1,5,50,0,0,0,0,0'
-kwriteconfig6 --file /etc/xdg/kdeglobals --group WM --key activeFont 'Inter,10,-1,5,63,0,0,0,0,0'
+kwriteconfig6 --file /etc/xdg/kdeglobals --group WM --key activeFont 'Selawik,9,-1,5,50,0,0,0,0,0'
+# Rendu des polices décidé par fontconfig (voir plus haut) : rgba 5 (aucun
+# sous-pixel), hintstyle 1 (léger)
+rendu="$(fc-match -f '%{rgba} %{hintstyle} %{antialias}' Selawik)"
+if [[ "${rendu}" != "5 1 True" ]]; then
+    echo "Rendu des polices inattendu : « ${rendu} » (rgba, hintstyle, antialias)" >&2
+    exit 1
+fi
+# Rendu des polices pour les applications X11 (voir plus haut)
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftAntialias true
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftHintStyle hintslight
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftSubPixel none
+# D-052, lot 1 : durées des animations de Windows 11 (83, 167, 250 et 333 ms,
+# page signature-experiences/motion de Microsoft). Celles de KDE (Kirigami :
+# 50, 100, 200 et 400 ms ; effets de KWin) sont multipliées par ce facteur :
+# 5/6 donne 42, 83, 167 et 333 ms.
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key AnimationDurationFactor 0.8333333
+# D-054 : la couleur d'accent suit le fond d'écran, comme « Automatique » dans
+# Windows 11 (accentColorFromWallpaper, faux par défaut :
+# kcms/colors/colorssettings.kcfg de plasma-workspace). Les fonds d'Ankh
+# désignent le violet d'Ankh dans leur metadata.json ; pour une autre image,
+# Plasma prend sa couleur dominante.
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key accentColorFromWallpaper true
 
 # Barre flottante en bas, menu et applications au centre (build_files/plasma/ankh-barre.js),
 # et écran de chargement de la session d'Ankh (build_files/plasma/ankh-splash.qml),
@@ -595,6 +657,30 @@ if [[ "${couleurs}" != BreezeDark ]]; then
 fi
 kwriteconfig6 --file "${brise_sombre}" --group kdeglobals --group General --key ColorScheme Ankh
 chmod 0644 "${brise_sombre}"
+
+# D-052, lot 1 : curseurs blancs d'Ankh, à la taille de Plasma (24) : les
+# curseurs Fluent blancs, à l'anneau d'attente violet, compilés dans l'étape
+# « outils » du Containerfile (build_files/outils.sh). Chaque thème global
+# désigne son curseur (kcminputrc, groupe Mouse, dans contents/defaults),
+# que Plasma recopie à chaque session dans ~/.config/kdedefaults, avant
+# /etc/xdg : le curseur d'Ankh y est donc écrit aussi.
+cp -a --no-preserve=ownership /outils/icones/Ankh-curseurs /usr/share/icons/Ankh-curseurs
+for curseur in default left_ptr pointer text wait progress; do
+    if [[ ! -e "/usr/share/icons/Ankh-curseurs/cursors/${curseur}" ]]; then
+        echo "Curseur « ${curseur} » absent des curseurs d'Ankh" >&2
+        exit 1
+    fi
+done
+kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Ankh-curseurs
+kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 24
+for dossier in "${themes[@]}"; do
+    if [[ -e "${dossier}/contents/defaults" ]]; then
+        avant="$(kreadconfig6 --file "${dossier}/contents/defaults" --group kcminputrc --group Mouse --key cursorTheme)"
+        kwriteconfig6 --file "${dossier}/contents/defaults" --group kcminputrc --group Mouse --key cursorTheme Ankh-curseurs
+        chmod 0644 "${dossier}/contents/defaults"
+        echo "Curseur d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucun} »)"
+    fi
+done
 
 # Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
 # d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup).
@@ -820,7 +906,7 @@ cat > /usr/lib/sddm/sddm.conf.d/ankh.conf << 'CONF'
 # Écran de connexion d'Ankh (D-043)
 [Theme]
 Current=ankh
-CursorTheme=breeze_cursors
+CursorTheme=Ankh-curseurs
 Font=Inter,10,-1,5,50,0,0,0,0,0
 CONF
 chmod 0644 /usr/lib/sddm/sddm.conf.d/ankh.conf

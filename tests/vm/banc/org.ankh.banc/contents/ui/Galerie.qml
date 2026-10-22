@@ -53,7 +53,9 @@ Item {
     }
 
     function mesurer(): void {
-        signaler("police.famille", () => Kirigami.Theme.defaultFont.family);
+        // Police vraiment affichée (fontInfo), et non celle demandée : une
+        // police absente serait remplacée sans bruit
+        signaler("police.famille", () => texteCorps.fontInfo.family);
         signaler("police.corps.px", () => enPixels(Kirigami.Theme.defaultFont));
         signaler("police.legende.px", () => enPixels(Kirigami.Theme.smallFont));
         signaler("police.corps.interligne", () => corps.height);
@@ -83,6 +85,13 @@ Item {
     FontMetrics {
         id: corps
         font: Kirigami.Theme.defaultFont
+    }
+
+    Text {
+        id: texteCorps
+        visible: false
+        font: Kirigami.Theme.defaultFont
+        text: "Ankh"
     }
 
     RowLayout {

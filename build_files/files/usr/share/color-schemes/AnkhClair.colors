@@ -4,6 +4,11 @@
 # LGPL-2.0-or-later) : mêmes rôles, couleurs d'Ankh.
 #   Fonds : gris très clair, légèrement bleuté (#f3f4f6), blanc pour les
 #   contenus.
+# D-052, lot 1 : fonds rangés par couches comme ceux de Windows 11, en clair
+# (Common_themeresources_any.xaml de WinUI) : fenêtre (Mica, #F3F3F3) et
+# barre de titre continue #f3f4f6 ; contenu blanc ; carte et contrôle
+# (#B3FFFFFF sur la fenêtre, #FBFBFB) #fbfbfc ; volet passager et infobulle
+# (#F9F9F9) #f9f9fa.
 #   Texte : graphite #1f2328 ; texte secondaire #656d76 (contraste 4,8 sur
 #   le fond des fenêtres).
 #   Accent : violet foncé du logo sur fond clair (#7c3aed) pour les
@@ -34,7 +39,7 @@ IntensityEffect=0
 
 [Colors:Button]
 BackgroundAlternate=221,214,254
-BackgroundNormal=252,252,253
+BackgroundNormal=251,251,252
 DecorationFocus=124,58,237
 DecorationHover=124,58,237
 ForegroundActive=124,58,237
@@ -61,8 +66,8 @@ ForegroundPositive=63,185,80
 ForegroundVisited=196,181,253
 
 [Colors:Header]
-BackgroundAlternate=243,244,246
-BackgroundNormal=232,234,238
+BackgroundAlternate=232,234,238
+BackgroundNormal=243,244,246
 DecorationFocus=124,58,237
 DecorationHover=124,58,237
 ForegroundActive=124,58,237
@@ -104,7 +109,7 @@ ForegroundVisited=237,233,254
 
 [Colors:Tooltip]
 BackgroundAlternate=243,244,246
-BackgroundNormal=250,250,251
+BackgroundNormal=249,249,250
 DecorationFocus=124,58,237
 DecorationHover=124,58,237
 ForegroundActive=124,58,237
@@ -131,7 +136,7 @@ ForegroundPositive=26,127,55
 ForegroundVisited=130,80,223
 
 [Colors:Window]
-BackgroundAlternate=232,234,238
+BackgroundAlternate=251,251,252
 BackgroundNormal=243,244,246
 DecorationFocus=124,58,237
 DecorationHover=124,58,237
@@ -153,8 +158,8 @@ shadeSortColumn=true
 contrast=4
 
 [WM]
-activeBackground=232,234,238
-activeBlend=232,234,238
+activeBackground=243,244,246
+activeBlend=243,244,246
 activeForeground=31,35,40
 inactiveBackground=243,244,246
 inactiveBlend=243,244,246

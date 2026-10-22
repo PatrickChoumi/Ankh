@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-16** (PR #16 et #17 fusionnées ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, fusionné ; suite Craft d'ArtCraft à la place d'OnlyOffice décidée et mise en œuvre sur la branche, CI et VM vertes, D-053).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-21** (PR #16, #17 et #18 fusionnées ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, fusionné ; suite Craft d'ArtCraft à la place d'OnlyOffice fusionnée, D-053 ; accent qui suit le fond d'écran, D-054).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -13,7 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
-| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lot 0 sur 10 en cours |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lot 0 fusionné ; lot 1 vérifié en VM, PR ouverte ; lots 2 et 3 écrits |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -335,6 +335,7 @@
   - icônes : Breeze, Fluent, Papirus, dans un explorateur, Démarrer et la barre des tâches.
 - **Inspiration AnduinOS** (2026-10-15, D-052) : distribution Ubuntu qui ressemble à Windows 11 ; ses sources lues par Claude. Elle confirme nos choix (icônes Fluent, barre de 48 px, Démarrer de Windows 11) et donne ses valeurs pour la barre. Mes choix : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
 - **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés et vérifiés au second passage ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701)) ; le rayon du menu reste à vérifier.
+- **Accent qui suit le fond d'écran** (2026-10-16, D-054, ma demande) : ce n'était pas prévu (D-037 fixait le violet). Plasma 6.7 sait le faire ; Ankh l'active par défaut, et ses fonds désignent le violet d'Ankh. Vérifié en VM le 2026-10-20.
 
 ---
 
@@ -352,7 +353,8 @@
 Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du banc :
 
 0. **Banc de mesure** (fusionné le 2026-10-15, PR [#17](https://github.com/PatrickChoumi/Ankh/pull/17) ; rayon du menu corrigé ensuite, à vérifier en VM) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
-1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc.
+1. Fondations : police, tailles, couleurs par couches, rendu des polices, animations, curseur blanc. Vérifié par la CI et en VM le 2026-10-20 (Selawik affichée, curseurs, animations à 5/6), après un correctif : fontconfig ne trouvait pas Selawik dans l'image. PR à ouvrir le 2026-10-21, avec mon accord.
+   - Accent qui suit le fond d'écran (D-054, ma demande du 2026-10-16), ajouté au lot 1 : le violet d'Ankh avec les fonds d'Ankh, la couleur de l'image avec une autre. Vérifié en VM (fond orange : accent orange).
 2. Fenêtres : décoration « Ankh » (barre de 32, boutons de 46×32, coins de 8, ombres).
 3. Contrôles : style Qt « Ankh », aussi pour les applications QML ; thème GTK.
 4. Shell : style Plasma « Ankh », barre collée de 48 px, horloge, notifications.
@@ -363,11 +365,11 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
 
-### Suite Craft d'ArtCraft (D-053, mise en œuvre sur la branche)
+### Suite Craft d'ArtCraft (D-053, fusionnée le 2026-10-16)
 
 - Fait le 2026-10-15 : construction et Tests 12, 15 et 17 verts ; en VM, les dix applications préparées au premier clic et ouvertes. « Update Issue » de Discover après l'installation : défaut connu de fwupd (D-028), pas de la suite.
 - Fait le 2026-10-15 : correctifs du premier passage vérifiés en VM ([run 38745557276](https://github.com/PatrickChoumi/Ankh/actions/runs/38745557276)) : la notification reste à l'écran, l'option inconnue est ignorée après un retour arrière ; les quatre étapes réussissent.
-- PR [#18](https://github.com/PatrickChoumi/Ankh/pull/18) ouverte le 2026-10-16, avec mon accord : la mener au vert, puis la fusionner.
+- Fusionnée le 2026-10-16 (PR [#18](https://github.com/PatrickChoumi/Ankh/pull/18)), CI et VM vertes.
 
 ### Reste de la phase 3, sans la bloquer
 
