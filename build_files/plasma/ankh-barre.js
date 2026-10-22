@@ -56,7 +56,8 @@ panel.addWidget("org.kde.plasma.systemtray")
 var horloge = panel.addWidget("org.kde.plasma.digitalclock")
 horloge.currentConfigGroup = ["Appearance"]
 horloge.writeConfig("dateDisplayFormat", 2)
-panel.addWidget("org.kde.plasma.showdesktop")
+// Fine bande « Afficher le bureau », comme Windows 11 (D-052, lot 4)
+panel.addWidget("org.ankh.bureau")
 
 // Fond d'écran : comme le thème global de Fedora, le module d'images.
 var desktopsArray = desktopsForActivity(currentActivity());

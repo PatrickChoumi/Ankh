@@ -169,7 +169,8 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
     if [[ -e "${barre}" ]]; then
         if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = false' "${barre}" \
             && grep -q '^panel.height = 48$' "${barre}" && grep -q '^panel.opacity = "translucent"' "${barre}" \
-            && grep -q '^horloge.writeConfig("dateDisplayFormat", 2)' "${barre}"; then
+            && grep -q '^horloge.writeConfig("dateDisplayFormat", 2)' "${barre}" \
+            && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}"; then
             barres=$((barres + 1))
         else
             echec "barre de ${theme} : pas celle d'Ankh"
@@ -185,6 +186,7 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
 done
 echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
 attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
+[[ -f /usr/share/plasma/plasmoids/org.ankh.bureau/contents/ui/main.qml ]] || echec "bande « Afficher le bureau » d'Ankh absente"
 # Style Plasma d'Ankh (D-052, lot 4) : ses SVG, lisibles, choisi par défaut et
 # dans chaque thème global
 for svg in dialogs/background translucent/dialogs/background solid/dialogs/background widgets/tooltip \

@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "Windows and Tasks",
+        "Description": "Fine bande au bout de la barre : un clic réduit toutes les fenêtres, un second les rend, comme dans Windows 11 (D-052, lot 4).",
+        "Icon": "user-desktop",
+        "Id": "org.ankh.bureau",
+        "License": "GPL-2.0-or-later",
+        "Name": "Afficher le bureau (Ankh)",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
