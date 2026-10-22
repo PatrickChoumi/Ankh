@@ -90,19 +90,29 @@ PlasmoidItem {
         onFermer: racine.expanded = false
     }
 
-    // Bouton Démarrer de la barre (lot 4) : logo de 24, carré de 40 × 40
-    // aux coins de 4 au survol, dans une place de 48 comme les boutons de la
-    // barre des tâches (valeurs estimées, À VALIDER). Il s'ouvre aussi quand
-    // on y glisse un fichier, comme celui de Kickoff.
+    // Le bouton prend toute l'épaisseur de la barre, sans ses marges, comme
+    // les boutons de la barre des tâches (constraintHints d'applets/taskmanager)
+    Plasmoid.constraintHints: Plasmoid.CanFillArea
+
+    // Bouton Démarrer de la barre, dessiné comme les boutons des applications
+    // (lot 4, style Plasma d'Ankh, widgets/tasks) : bouton de 56 × 48 (la
+    // barre plus les marges de côté du dessin, preferredMaxWidth de
+    // code/LayoutMetrics.js d'applets/taskmanager), logo de 32 placé comme
+    // leurs icônes (haut à 7), et le même rectangle de 48 × 44 aux coins de 4
+    // (préfixe « hover » : le rectangle seul, sans trait d'accent) au survol
+    // et quand le volet est ouvert. Il s'ouvre aussi quand on y glisse un
+    // fichier, comme celui de Kickoff.
     compactRepresentation: MouseArea {
         id: bouton
 
         property bool etaitOuvert: false
 
-        Layout.minimumWidth: racine.vertical ? -1 : 48
-        Layout.preferredWidth: racine.vertical ? -1 : 48
-        Layout.minimumHeight: racine.vertical ? 48 : -1
-        Layout.preferredHeight: racine.vertical ? 48 : -1
+        Layout.minimumWidth: racine.vertical ? -1 : height + cadreBouton.margins.left + cadreBouton.margins.right
+        Layout.preferredWidth: Layout.minimumWidth
+        Layout.maximumWidth: Layout.minimumWidth
+        Layout.minimumHeight: racine.vertical ? width + cadreBouton.margins.top + cadreBouton.margins.bottom : -1
+        Layout.preferredHeight: Layout.minimumHeight
+        Layout.maximumHeight: Layout.minimumHeight
         hoverEnabled: true
         Accessible.name: Plasmoid.title
         Accessible.role: Accessible.Button
@@ -126,18 +136,32 @@ PlasmoidItem {
             onTriggered: racine.expanded = true
         }
 
-        Survol {
-            anchors.centerIn: parent
-            width: 40
-            height: 40
-            survole: bouton.containsMouse || depot.containsDrag
-            appuye: bouton.pressed
-            selectionne: racine.expanded
+        // Toujours là pour ses marges, visible seulement au survol et volet
+        // ouvert ; un peu plus clair à l'appui
+        KSvg.FrameSvgItem {
+            id: cadreBouton
+            anchors.fill: parent
+            imagePath: "widgets/tasks"
+            prefix: "hover"
+            opacity: bouton.containsMouse || depot.containsDrag || racine.expanded ? (bouton.pressed ? 0.67 : 1) : 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Kirigami.Units.shortDuration
+                    easing.type: Easing.OutCubic
+                }
+            }
         }
+        // Logo de la taille des icônes des applications : la barre moins les
+        // marges du haut et du bas du dessin (iconBox de Task.qml)
         Kirigami.Icon {
-            anchors.centerIn: parent
-            width: 24
-            height: 24
+            readonly property real taille: racine.vertical
+                ? bouton.width - cadreBouton.margins.left - cadreBouton.margins.right
+                : bouton.height - cadreBouton.margins.top - cadreBouton.margins.bottom
+            x: racine.vertical ? cadreBouton.margins.left : Math.round((bouton.width - taille) / 2)
+            y: racine.vertical ? Math.round((bouton.height - taille) / 2) : cadreBouton.margins.top
+            width: taille
+            height: taille
             source: Plasmoid.icon
             active: bouton.containsMouse || depot.containsDrag
         }
