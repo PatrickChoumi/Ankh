@@ -418,3 +418,44 @@ libelle = "Place des notifications"
 cible = "BottomRight"
 lot = 4
 source = "Windows 11 : en bas à droite (D-052)"
+
+# --- Lot 5 : Démarrer -----------------------------------------------------
+# Le Démarrer « classique » de Windows 11 (mon choix du 2026-10-22). Microsoft
+# ne publie aucune mesure de Démarrer : elles sont relevées au pixel sur des
+# images officielles de Microsoft (recherche du lot 5, 2026-10-22, § 3) :
+# Start.png du blog Windows Insider (2021-06, à 200 %) et Start-Resize.png
+# (2021-12). Le banc les lit dans la géométrie que KWin donne au volet ouvert
+# par activateLauncherMenu.
+
+[[mesure]]
+id = "demarrer.largeur"
+libelle = "Largeur du Démarrer (volet visible)"
+cible = 640
+tolerance = 2
+unite = "px"
+lot = 5
+source = "Images officielles de Microsoft : 1280 px à 200 % (Start.png), 638 sur Start-Resize.png ; 32 + 6 × 96 + 32"
+
+[[mesure]]
+id = "demarrer.hauteur"
+libelle = "Hauteur du Démarrer (volet visible)"
+cible = 726
+tolerance = 2
+unite = "px"
+lot = 5
+source = "Images officielles de Microsoft : 662 sans champ de recherche (1324 px à 200 %, Start.png), + 64 de bande de recherche ; 725 sur Start-Resize.png"
+
+[[mesure]]
+id = "demarrer.decalage_centre"
+libelle = "Écart entre le centre du Démarrer et celui de l'écran"
+unite = "px"
+lot = 5
+source = "Relevé : Windows 11 centre le Démarrer sur l'écran ; Plasma centre le volet sur son bouton (transientplacementhint.cpp de libplasma 6.7)"
+
+[[mesure]]
+id = "demarrer.erreurs_qml"
+libelle = "Avertissements QML du Démarrer dans le journal de la session"
+cible = 0
+tolerance = 0
+lot = 5
+source = "Recherche du lot 5, § 4 : une erreur QML ne fait pas tomber Plasma, le menu s'afficherait à moitié"
