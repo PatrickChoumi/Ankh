@@ -437,6 +437,18 @@ banc_pixels() {
     banc_noter barre.marge_bas "$espace"
     banc_noter barre.hauteur_visible "$hauteur"
     banc_noter couleur.barre "$couleur"
+    # Bouton de l'application active (Dolphin) : trait d'accent et rectangle
+    local trait_l trait_e boite_l boite_h icone_l icone_h
+    read -r trait_l trait_e boite_l boite_h icone_l icone_h <<< "$(banc_mesurer tache "$image" 48)"
+    banc_noter barre.tache.trait.longueur "$trait_l"
+    banc_noter barre.tache.trait.epaisseur "$trait_e"
+    banc_noter barre.tache.rectangle.largeur "$boite_l"
+    banc_noter barre.tache.rectangle.hauteur "$boite_h"
+    if [[ $icone_l == "?" ]]; then
+        banc_noter barre.tache.icone.dessin "?"
+    else
+        banc_noter barre.tache.icone.dessin "${icone_l}×${icone_h}"
+    fi
     # Volet du menu : la fenêtre de plasmashell qui n'est ni la barre ni le
     # bureau. Les fenêtres sont d'abord réduites : le menu doit se détacher
     # sur le fond noir (Dolphin, derrière lui, faussait son bord haut : run

@@ -15,6 +15,13 @@ Usage :
                                            rectangle donné
   mesurer.py barre IMAGE X                 barre des tâches, sur la colonne X :
                                            espace en dessous, hauteur, couleur
+  mesurer.py tache IMAGE HAUTEUR            bouton de l'application active
+                                           dans la barre de HAUTEUR px, en
+                                           bas de l'image : longueur et
+                                           épaisseur du trait d'accent,
+                                           largeur et hauteur du rectangle,
+                                           largeur et hauteur du dessin de
+                                           l'icône
   mesurer.py couleur IMAGE X Y             couleur d'un pixel
   mesurer.py rapport JETONS MESURES SORTIE compare les mesures (lignes
                                            « id<TAB>valeur ») aux cibles de
@@ -156,6 +163,67 @@ def barre(image, x):
     return espace, hauteur, hexa(couleur)
 
 
+def tache(image, hauteur_barre):
+    """Bouton de l'application active dans la barre des tâches (D-052,
+    lot 4) : le trait d'accent sous l'icône, puis le rectangle qui
+    l'entoure. Le trait est la plus longue suite de pixels colorés (l'accent
+    d'Ankh, figé pendant les mesures) dans le bas de la barre, sous les
+    icônes ; le tiret des autres applications est gris. Le rectangle est
+    l'ensemble des pixels qui diffèrent de la barre, d'un seul tenant
+    autour du trait : son fond est léger (4,5 % de la couleur du texte),
+    mais la barre, sur fond noir, est unie."""
+    haut = image.hauteur - hauteur_barre
+    meilleur = None
+    for y in range(haut + 38, image.hauteur):
+        x = 0
+        while x < image.largeur:
+            p = image.px(x, y)
+            if max(p) - min(p) >= 40:
+                debut = x
+                while x < image.largeur and max(q := image.px(x, y)) - min(q) >= 40:
+                    x += 1
+                if meilleur is None or x - debut > meilleur[2]:
+                    meilleur = (debut, y, x - debut)
+            x += 1
+    if meilleur is None:
+        return None
+    debut, y_trait, longueur = meilleur
+    milieu = debut + longueur // 2
+    def colore(y):
+        return max(q := image.px(milieu, y)) - min(q) >= 40
+    y0 = y1 = y_trait
+    while y0 - 1 > haut and colore(y0 - 1):
+        y0 -= 1
+    while y1 + 1 < image.hauteur and colore(y1 + 1):
+        y1 += 1
+    epaisseur = y1 - y0 + 1
+    # Rectangle : remplissage à partir du trait, sous le trait de 1 px du
+    # haut de la barre. La couleur de la barre est la plus fréquente sur sa
+    # ligne du milieu.
+    comptes = {}
+    for x in range(image.largeur):
+        q = image.px(x, haut + hauteur_barre // 2)
+        comptes[q] = comptes.get(q, 0) + 1
+    fond = max(comptes, key=comptes.get)
+    vus = {(milieu, y_trait)}
+    pile = [(milieu, y_trait)]
+    while pile:
+        x, y = pile.pop()
+        for v in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if v not in vus and 0 <= v[0] < image.largeur and haut < v[1] < image.hauteur \
+                    and ecart(image.px(*v), fond) > 4:
+                vus.add(v)
+                pile.append(v)
+    xs = [x for x, _ in vus]
+    ys = [y for _, y in vus]
+    # Dessin de l'icône : les pixels nets du rectangle, au-dessus du trait
+    icone = [(x, y) for x, y in vus if y < y_trait - 1 and ecart(image.px(x, y), fond) > 40]
+    ix = [x for x, _ in icone] or [0]
+    iy = [y for _, y in icone] or [0]
+    return (longueur, epaisseur, max(xs) - min(xs) + 1, max(ys) - min(ys) + 1,
+            max(ix) - min(ix) + 1 if icone else 0, max(iy) - min(iy) + 1 if icone else 0)
+
+
 def nombre(texte):
     try:
         return float(texte)
@@ -263,6 +331,9 @@ def main(arguments):
         print("? ? ?" if z is None else "%d %d %s" % z)
     elif commande == "barre" and len(reste) == 2:
         print("%d %d %s" % barre(lire_ppm(reste[0]), int(reste[1])))
+    elif commande == "tache" and len(reste) == 2:
+        t = tache(lire_ppm(reste[0]), int(reste[1]))
+        print("? ? ? ? ? ?" if t is None else "%d %d %d %d %d %d" % t)
     elif commande == "couleur" and len(reste) == 3:
         print(hexa(lire_ppm(reste[0]).px(int(reste[1]), int(reste[2]))))
     elif commande == "rapport" and len(reste) == 3:

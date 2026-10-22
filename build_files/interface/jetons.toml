@@ -395,6 +395,48 @@ lot = 4
 source = "Windows 11 : heure et date sur deux lignes (D-052)"
 
 [[mesure]]
+id = "barre.tache.trait.longueur"
+libelle = "Trait d'accent sous l'application active : longueur"
+cible = 16
+tolerance = 1
+unite = "px"
+lot = 4
+source = "Observé sous Windows 11, sans source publiée (À VALIDER) ; D-052"
+
+[[mesure]]
+id = "barre.tache.trait.epaisseur"
+libelle = "Trait d'accent sous l'application active : épaisseur"
+cible = 3
+tolerance = 0
+unite = "px"
+lot = 4
+source = "Observé sous Windows 11, sans source publiée (À VALIDER) ; D-052"
+
+[[mesure]]
+id = "barre.tache.rectangle.largeur"
+libelle = "Rectangle de l'application active : largeur"
+cible = 48
+tolerance = 1
+unite = "px"
+lot = 4
+source = "Mon choix du 2026-10-22 : icônes de 32 px, comme avant le lot 4 ; rectangle à 8 px de l'icône (Windows 11 : environ 44×40 pour des icônes de 24, observé, À VALIDER)"
+
+[[mesure]]
+id = "barre.tache.rectangle.hauteur"
+libelle = "Rectangle de l'application active : hauteur"
+cible = 44
+tolerance = 1
+unite = "px"
+lot = 4
+source = "Comme barre.tache.rectangle.largeur"
+
+[[mesure]]
+id = "barre.tache.icone.dessin"
+libelle = "Dessin de l'icône de Dolphin dans la barre (largeur × hauteur ; icône de 32 réglée par le style)"
+lot = 4
+source = "Relevé seulement : le dessin d'une icône ne remplit pas son carré"
+
+[[mesure]]
 id = "volet.rayon"
 libelle = "Rayon des coins du menu de Plasma (volet)"
 cible = 8
