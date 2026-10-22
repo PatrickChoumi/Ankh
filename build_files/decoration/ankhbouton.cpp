@@ -44,13 +44,20 @@ Button::Button(DecorationButtonType type, Decoration *decoration, QObject *paren
     m_animation->setStartValue(0.0);
     m_animation->setEndValue(1.0);
     m_animation->setEasingCurve(QEasingCurve::InOutQuad);
+    // Le fond du bouton couvre aussi la bande de redimensionnement au-dessus
+    // de lui (zone()) : chaque repeinte la couvre, sinon le survol n'y serait
+    // pas dessiné (KDecoration3 ne repeint que la géométrie du bouton, et le
+    // banc a mesuré un Fermer rouge de 28 px de haut au lieu de 32)
     connect(m_animation, &QVariantAnimation::valueChanged, this, [this](const QVariant &value) {
         m_hover = value.toReal();
-        update();
+        update(zone());
     });
     connect(this, &KDecoration3::DecorationButton::hoveredChanged, this, &Button::updateAnimationState);
+    connect(this, &KDecoration3::DecorationButton::pressedChanged, this, [this]() {
+        update(zone());
+    });
     connect(decoration->window(), &KDecoration3::DecoratedWindow::activeChanged, this, [this]() {
-        update();
+        update(zone());
     });
 }
 
@@ -91,7 +98,7 @@ Button *Button::create(DecorationButtonType type, KDecoration3::Decoration *deco
         break;
     case DecorationButtonType::Menu:
         connect(w, &KDecoration3::DecoratedWindow::iconChanged, b, [b]() {
-            b->update();
+            b->update(b->zone());
         });
         break;
     default:
@@ -124,7 +131,7 @@ void Button::updateAnimationState(bool hovered)
     auto d = qobject_cast<Decoration *>(decoration());
     if (!d || d->hoverDuration() <= 0) {
         m_hover = hovered ? 1.0 : 0.0;
-        update();
+        update(zone());
         return;
     }
     m_animation->setDuration(d->hoverDuration());
