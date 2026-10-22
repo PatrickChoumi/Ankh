@@ -608,7 +608,12 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key AnimationDurationFact
 # Plasma prend sa couleur dominante.
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key accentColorFromWallpaper true
 
-# Barre flottante en bas, menu et applications au centre (build_files/plasma/ankh-barre.js),
+# D-052, lot 4 : notifications en bas à droite, au-dessus de la barre, comme
+# Windows 11 (PopupPosition, CloseToWidget par défaut :
+# libnotificationmanager/kcfg/notificationsettings.kcfg de plasma-workspace)
+kwriteconfig6 --file /etc/xdg/plasmanotifyrc --group Notifications --key PopupPosition BottomRight
+
+# Barre collée en bas, de 48 px, menu et applications au centre (build_files/plasma/ankh-barre.js),
 # et écran de chargement de la session d'Ankh (build_files/plasma/ankh-splash.qml),
 # dans tous les thèmes globaux : ceux de Fedora (renommés « Ankh ») et ceux de
 # KDE (Breeze). L'assistant de premier démarrage applique un thème Breeze si

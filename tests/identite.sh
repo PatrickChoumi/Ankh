@@ -158,16 +158,18 @@ nom="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["KPlugin
 attendu "Jeu de couleurs du thème global" Ankh --file "${sombre}/contents/defaults" --group kdeglobals --group General --key ColorScheme
 attendu "Jeu de couleurs Ankh présent" Ankh --file /usr/share/color-schemes/Ankh.colors --group General --key ColorScheme
 
-# Barre flottante (menu et applications centrés entre deux espaceurs) et écran
-# de chargement d'Ankh, dans tous les thèmes globaux qui en ont un : ceux de
+# Barre d'Ankh (D-052, lot 4 : collée, 48 px, translucide, menu et
+# applications centrés entre deux espaceurs, date sous l'heure) et écran de
+# chargement d'Ankh, dans tous les thèmes globaux qui en ont un : ceux de
 # Fedora renommés « Ankh » et ceux de KDE (Breeze)
 barres=0
 for dossier in /usr/share/plasma/look-and-feel/*/; do
     theme="$(basename "${dossier}")"
     barre="${dossier}contents/layouts/org.kde.plasma.desktop-layout.js"
     if [[ -e "${barre}" ]]; then
-        if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = true' "${barre}" \
-            && grep -q '^panel.opacity = "translucent"' "${barre}"; then
+        if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = false' "${barre}" \
+            && grep -q '^panel.height = 48$' "${barre}" && grep -q '^panel.opacity = "translucent"' "${barre}" \
+            && grep -q '^horloge.writeConfig("dateDisplayFormat", 2)' "${barre}"; then
             barres=$((barres + 1))
         else
             echec "barre de ${theme} : pas celle d'Ankh"
@@ -182,6 +184,7 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
     fi
 done
 echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
+attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
 ((barres >= 6)) || echec "barre d'Ankh dans ${barres} thème(s) global(aux) seulement (6 attendus : 3 de Fedora, 3 de KDE)"
 for theme in fedora fedoradark fedoralight; do
     dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop"

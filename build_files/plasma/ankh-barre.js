@@ -1,34 +1,21 @@
-// Barre d'Ankh (D-039) : flottante en bas, le menu et les applications au
-// centre comme sous Windows 11, la zone de notification et l'horloge à droite.
-// Adapté du modèle de KDE (layout-templates/org.kde.plasma.desktop.defaultPanel
-// de https://invent.kde.org/plasma/plasma-desktop) ; le sélecteur de bureaux
+// Barre d'Ankh : la barre des tâches de Windows 11 (D-052, lot 4), collée en
+// bas sur toute la largeur, le menu et les applications au centre, la zone de
+// notification et l'horloge à droite. Adapté du modèle de KDE
+// (layout-templates/org.kde.plasma.desktop.defaultPanel de
+// https://invent.kde.org/plasma/plasma-desktop) ; le sélecteur de bureaux
 // virtuels est retiré.
 var panel = new Panel
-var panelScreen = panel.screen
 
-// Un peu plus haute que celle de KDE (2,5 unités), arrondie au nombre pair
-// supérieur comme dans le modèle.
-panel.height = 2 * Math.ceil(gridUnit * 2.75 / 2)
-panel.floating = true
+// 48 px, collée au bord de l'écran, comme celle de Windows 11 (mon choix du
+// 2026-10-14) ; elle remplace la barre flottante de D-037 et D-039.
+panel.height = 48
+panel.floating = false
 // Toujours translucide et floutée (D-042), même quand une fenêtre est
 // agrandie : la barre est une couche de navigation qui flotte au-dessus du
 // contenu, comme le Dock de macOS (Liquid Glass) ou la barre des tâches de
 // Windows 11. Par défaut, Plasma la rend opaque dans ce cas (« adaptive »,
 // PanelView::OpacityMode de shell/panelview.h, plasma-workspace).
 panel.opacity = "translucent"
-
-// Barre limitée à la largeur d'un écran 21:9, comme dans le modèle.
-const maximumAspectRatio = 21/9;
-if (panel.formFactor === "horizontal") {
-    const geo = screenGeometry(panelScreen);
-    const maximumWidth = Math.ceil(geo.height * maximumAspectRatio);
-
-    if (geo.width > maximumWidth) {
-        panel.alignment = "center";
-        panel.minimumLength = maximumWidth;
-        panel.maximumLength = maximumWidth;
-    }
-}
 
 // Deux espaceurs extensibles centrent sur la barre ce qui est entre eux
 // (optimalSize de applets/panelspacer/main.qml, plasma-workspace).
@@ -64,7 +51,11 @@ if (langIds.indexOf(languageId) != -1) {
 }
 
 panel.addWidget("org.kde.plasma.systemtray")
-panel.addWidget("org.kde.plasma.digitalclock")
+// Heure, et date en dessous, comme Windows 11 (dateDisplayFormat : 2,
+// « BelowTime », applets/digital-clock/main.xml de plasma-workspace)
+var horloge = panel.addWidget("org.kde.plasma.digitalclock")
+horloge.currentConfigGroup = ["Appearance"]
+horloge.writeConfig("dateDisplayFormat", 2)
 panel.addWidget("org.kde.plasma.showdesktop")
 
 // Fond d'écran : comme le thème global de Fedora, le module d'images.
