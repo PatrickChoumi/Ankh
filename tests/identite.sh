@@ -172,6 +172,7 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
             && grep -q '^panel.height = 48$' "${barre}" && grep -q '^panel.opacity = "translucent"' "${barre}" \
             && grep -q '^horloge.writeConfig("dateDisplayFormat", 2)' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}" \
+            && grep -q '^taches.writeConfig("fill", false)' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
             && ! grep -q 'org.kde.plasma.kickoff' "${barre}"; then
             barres=$((barres + 1))
@@ -223,6 +224,16 @@ for svg in dialogs/background translucent/dialogs/background solid/dialogs/backg
     fi
 done
 grep -q 'id="focus-bottom"' /usr/share/plasma/desktoptheme/ankh/widgets/tasks.svg || echec "style Plasma d'Ankh : bouton de l'application active absent"
+# Icônes des applications de 32 px dans la barre de 48 (mon choix du
+# 2026-10-22) : Plasma leur donne la hauteur du bouton moins les marges du
+# haut et du bas de widgets/tasks (iconBox de Task.qml, plasma-desktop)
+icone_tache="$(python3 -I -c '
+import sys, xml.etree.ElementTree as ET
+racine = ET.parse(sys.argv[1]).getroot()
+hauteurs = {e.get("id"): float(e.get("height")) for e in racine.iter() if "hint" in e.get("id", "")}
+print(round(48 - hauteurs["normal-hint-top-margin"] - hauteurs["normal-hint-bottom-margin"]))
+' /usr/share/plasma/desktoptheme/ankh/widgets/tasks.svg)" || echec "style Plasma d'Ankh : marges des boutons de la barre illisibles"
+[[ ${icone_tache} == 32 ]] || echec "icônes des applications de ${icone_tache} px dans la barre, au lieu de 32"
 grep -q 'id="shadow-top"' /usr/share/plasma/desktoptheme/ankh/dialogs/background.svg || echec "style Plasma d'Ankh : ombre des volets absente"
 attendu "Style Plasma" ankh --file plasmarc --group Theme --key name
 for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do

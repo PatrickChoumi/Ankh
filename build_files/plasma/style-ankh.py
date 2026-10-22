@@ -13,10 +13,11 @@ tout le reste vient de Breeze (FallbackTheme, plasmarc) :
 - widgets/panel-background : la barre, translucide à 60 % (valeur
   d'AnduinOS, D-052), un trait de 1 px en haut, sans ombre (la barre de
   Windows 11 n'en a pas) ;
-- widgets/tasks : les boutons de la barre des tâches de Windows 11 : un
-  carré arrondi de 40×40 au survol et sous l'application active, un trait
-  d'accent de 16×3 sous elle, un tiret de 6×3 sous les autres applications
-  ouvertes, et des icônes de 24 px dans une barre de 48 (marges de 12).
+- widgets/tasks : les boutons de la barre des tâches, à la manière de
+  Windows 11 : un rectangle arrondi de 48×44 au survol et sous
+  l'application active, un trait d'accent de 16×3 sous elle, un tiret de
+  6×3 sous les autres applications ouvertes. Les icônes gardent 32 px,
+  leur taille d'avant le lot 4 (mon choix du 2026-10-22 ; Windows 11 : 24).
 
 Les ombres des volets et des infobulles sont celles de Breeze, recopiées
 depuis les SVG installés dans l'image : elles suivent ses versions.
@@ -227,34 +228,52 @@ def barre(opacite):
     return planche
 
 
+# Boutons de la barre des tâches. Plasma les fait aussi hauts que la barre
+# (48) et, quand la place ne manque pas, larges de 48 plus les marges de
+# gauche et de droite (preferredMaxWidth de code/LayoutMetrics.js,
+# applets/taskmanager de plasma-desktop) ; l'icône est carrée, haute de 48
+# moins les marges du haut et du bas (iconBox de Task.qml). Le lot 4 avait
+# des marges de 12 : icônes de 24, et des boutons de 72 où le trait
+# d'accent s'étirait à 39 px (capture du run 39761174583).
+TACHE_HAUTEUR = 48
+TACHE_MARGES = {"haut": 7, "bas": 9, "gauche": 4, "droite": 4}
+TACHE_ICONE = TACHE_HAUTEUR - TACHE_MARGES["haut"] - TACHE_MARGES["bas"]
+TACHE_LARGEUR = TACHE_HAUTEUR + TACHE_MARGES["gauche"] + TACHE_MARGES["droite"]
+
+
 def taches():
     """Boutons de la barre des tâches (applets/taskmanager de plasma-desktop :
     préfixes normal, focus, minimized, attention, progress, et leurs
     variantes « -hover » au survol ; launcher-hover pour une application
-    épinglée non ouverte)."""
+    épinglée non ouverte). Icône de 32 dans un bouton de 56×48 ; le
+    rectangle de 48×44 l'entoure de 8 px sur les côtés, et le trait passe
+    3 px sous elle (icône un pixel au-dessus du centre, pour lui laisser la
+    place)."""
     planche = Planche()
-    marge = 12   # icônes de 24 dans une barre de 48
-    retrait = 4  # carré de 40×40 dans un bouton de 48
-    r = 4        # ControlCornerRadius
-    trait = 3    # épaisseur du trait sous l'icône
+    retrait_x = 4  # rectangle de 48 de large dans un bouton de 56
+    retrait_y = 2  # et de 44 de haut dans une barre de 48
+    r = 4          # ControlCornerRadius
+    trait = 3      # épaisseur du trait sous l'icône
 
     def cadre(prefixe, fond, classe_fond, longueur_trait, classe_trait, opacite_trait):
-        # Bords : le carré arrondi tient dans les coins. Le trait est au
+        # Bords : le rectangle arrondi tient dans les coins. Le trait est au
         # milieu du bord bas : sa partie droite s'étire avec le bouton, et
         # ses bouts arrondis, fixes, sont dans les coins, 2 px avant leur
-        # bord. Dans un bouton de 48, il fait longueur_trait de bout en bout.
+        # bord. Dans un bouton de TACHE_LARGEUR, il fait longueur_trait de
+        # bout en bout ; s'il manque de place, Plasma rétrécit les boutons
+        # et le trait raccourcit d'autant.
         debord = 2
-        cote = (48 - longueur_trait) // 2 + debord if longueur_trait else retrait + r
-        haut, bas = retrait + r, retrait + r + 4
+        cote = (TACHE_LARGEUR - longueur_trait) // 2 + debord if longueur_trait else retrait_x + r
+        haut, bas = retrait_y + r, retrait_y + r + 4
         L, H = 2 * cote + 4, haut + bas + 4
         formes = []
         if fond:
-            formes.append(([arrondi(retrait, retrait, L - retrait, H - retrait, r)], classe_fond, fond))
+            formes.append(([arrondi(retrait_x, retrait_y, L - retrait_x, H - retrait_y, r)], classe_fond, fond))
         if longueur_trait:
-            y1 = H - retrait - 1
+            y1 = H - retrait_y - 1
             formes.append(([pastille(cote - debord, y1 - trait, L - cote + debord, y1)], classe_trait, opacite_trait))
         planche.cadre(prefixe, cote, haut, cote, bas, formes)
-        planche.marges(prefixe, marge, marge, marge, marge)
+        planche.marges(prefixe, TACHE_MARGES["haut"], TACHE_MARGES["bas"], TACHE_MARGES["gauche"], TACHE_MARGES["droite"])
 
     survol, actif, actif_survol = 0.06, 0.045, 0.08
     cadre("normal", 0, None, 6, "Text", 0.55)
@@ -267,9 +286,9 @@ def taches():
     cadre("attention-hover", 0.35, "NeutralText", 16, "NeutralText", 1)
     cadre("hover", survol, "Text", 0, None, 0)
     cadre("launcher-hover", survol, "Text", 0, None, 0)
-    # Progression : un trait d'accent sous le carré, que Plasma découvre de
-    # gauche à droite (TaskProgressOverlay.qml)
-    cadre("progress", 0, None, 40 - 2 * r, "Highlight", 1)
+    # Progression : un trait d'accent sous le rectangle, que Plasma découvre
+    # de gauche à droite (TaskProgressOverlay.qml)
+    cadre("progress", 0, None, TACHE_LARGEUR - 2 * retrait_x - 2 * r, "Highlight", 1)
     return planche
 
 
@@ -297,7 +316,8 @@ def main(breeze, sortie):
     ecrire(sortie / "solid/widgets/panel-background.svg", barre(1).texte())
     print("Style Plasma d'Ankh : widgets/panel-background (fond à 0,6, opaque dans solid/, trait de 1 px en haut, sans ombre)")
     ecrire(sortie / "widgets/tasks.svg", taches().texte())
-    print("Style Plasma d'Ankh : widgets/tasks (carré de 40, trait d'accent de 16×3, tiret de 6×3, icônes de 24)")
+    print(f"Style Plasma d'Ankh : widgets/tasks (boutons de {TACHE_LARGEUR}×{TACHE_HAUTEUR}, rectangle de 48×44, "
+          f"trait d'accent de 16×3, tiret de 6×3, icônes de {TACHE_ICONE})")
 
 
 if __name__ == "__main__":

@@ -41,6 +41,12 @@ epinglees.push("applications:org.kde.konsole.desktop", "applications:org.kde.dis
 var taches = panel.addWidget("org.kde.plasma.icontasks")
 taches.currentConfigGroup = ["General"]
 taches.writeConfig("launchers", epinglees)
+// La liste garde sa taille, au lieu de s'étirer entre les espaceurs : chaque
+// bouton fait alors 48 px plus ses marges du style (56), et le trait sous
+// l'application active garde ses 16 px. Étirée, la liste rétrécissait les
+// boutons selon la place (70 px au lieu de 72 au lot 4, run 39761174583).
+// Option « fill » d'applets/taskmanager/main.xml de plasma-desktop.
+taches.writeConfig("fill", false)
 panel.addWidget("org.kde.plasma.panelspacer")
 
 // Méthode de saisie pour les langues qui en ont besoin, comme dans le modèle.
