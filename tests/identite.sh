@@ -111,6 +111,13 @@ done
 grep -q '"KPackageStructure": "KWin/WindowSwitcher"' /usr/share/kwin-wayland/tabbox/org.ankh.alttab/metadata.json \
     || echec "Alt+Tab d'Ankh : metadata.json n'est pas celui d'un sélecteur de fenêtres"
 attendu "Sélecteur de fenêtres" org.ankh.alttab --file kwinrc --group TabBox --key LayoutName
+# D-052, lot 7c : écran de verrouillage au dessin de la connexion d'Ankh
+# (adapter-plasma.py), l'authentification de KDE intacte
+verrou=/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen
+[[ -f "${verrou}/HorlogeAnkh.qml" ]] || echec "écran de verrouillage : horloge d'Ankh absente"
+grep -q '^        HorlogeAnkh {$' "${verrou}/LockScreenUi.qml" || echec "écran de verrouillage : horloge de KDE"
+grep -q 'background.visible: false' "${verrou}/MainBlock.qml" || echec "écran de verrouillage : champ de mot de passe de KDE"
+grep -q 'authenticator.respond(password)' "${verrou}/LockScreenUi.qml" || echec "écran de verrouillage : réponse à l'authentification absente"
 attendu "Fenêtre choisie mise en avant" false --file kwinrc --group TabBox --key HighlightWindows
 # D-052, lot 3 : style des contrôles d'Ankh, ses bibliothèques trouvées, chargé
 # sous son nom, choisi par défaut et dans chaque thème global

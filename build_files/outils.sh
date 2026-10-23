@@ -23,7 +23,9 @@
 # (build_files/plasma/verifier-reglages.sh). Puis chaque applet d'Ankh est
 # lancée dans plasmawindowed, le vrai contexte de Plasma, sans avertissement
 # QML permis (build_files/plasma/verifier-applet-plasma.sh). Alt+Tab d'Ankh
-# (lot 7a) est vérifié par build_files/plasma/verifier-alttab.sh.
+# (lot 7a) est vérifié par build_files/plasma/verifier-alttab.sh, l'écran de
+# verrouillage d'Ankh (lot 7c) par build_files/plasma/verifier-verrouillage.sh
+# (kscreenlocker_greet en mode test).
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
 # build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style et themes.
@@ -72,6 +74,8 @@ echo "== Paramètres rapides d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-reglages.sh"
 echo "== Alt+Tab d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-alttab.sh"
+echo "== Écran de verrouillage d'Ankh : vérifications"
+"$(dirname "$(readlink -f "$0")")/plasma/verifier-verrouillage.sh"
 echo "== Applets d'Ankh dans plasmawindowed"
 for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages org.ankh.horloge; do
     "$(dirname "$(readlink -f "$0")")/plasma/verifier-applet-plasma.sh" "${applet}"

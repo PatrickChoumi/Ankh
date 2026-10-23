@@ -802,8 +802,11 @@ for dossier in "${themes[@]}"; do
 done
 
 # D-052, lot 4 : volets de la barre flottants, à 12 px de la barre, avec leurs
-# quatre coins (mon choix du 2026-10-22, build_files/plasma/adapter-plasma.py)
+# quatre coins (mon choix du 2026-10-22, build_files/plasma/adapter-plasma.py) ;
+# lot 7c : écran de verrouillage au dessin de la connexion d'Ankh (mon choix
+# du 2026-10-23), son horloge posée avec les fichiers de l'image
 coque=/usr/share/plasma/shells/org.kde.plasma.desktop
+test -f "${coque}/contents/lockscreen/HorlogeAnkh.qml"
 python3 /ctx/plasma/adapter-plasma.py "${coque}"
 echo "Coque de Plasma adaptée : plasma-desktop $(rpm -q --qf '%{VERSION}-%{RELEASE}' plasma-desktop)"
 
