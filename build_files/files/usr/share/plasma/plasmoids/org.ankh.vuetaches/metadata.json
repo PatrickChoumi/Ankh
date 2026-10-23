@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "Windows and Tasks",
+        "Description": "Le bouton « Vue des tâches » de Windows 11 : il ouvre la vue des tâches d'Ankh (D-052, lot 7b).",
+        "Icon": "window-duplicate",
+        "Id": "org.ankh.vuetaches",
+        "License": "GPL-2.0-or-later",
+        "Name": "Vue des tâches (Ankh)",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

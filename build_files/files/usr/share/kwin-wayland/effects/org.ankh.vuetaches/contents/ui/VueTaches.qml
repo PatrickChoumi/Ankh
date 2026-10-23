@@ -5,9 +5,10 @@
 */
 
 // Vue des tâches d'Ankh (D-052, lot 7b ; mon choix du 2026-10-23, « Comme
-// Windows 11 ») : Windows+Tab montre les fenêtres ouvertes en vignettes au
-// centre de l'écran, chaque rangée centrée, et les bureaux virtuels dans une
-// bande en bas, avec « Nouveau bureau ». Chaque fenêtre a son icône et son
+// Windows 11 ») : le bouton « Vue des tâches » de la barre montre les
+// fenêtres ouvertes en vignettes au centre de l'écran, chaque rangée
+// centrée, et les bureaux virtuels dans une bande en bas, avec « Nouveau
+// bureau ». Chaque fenêtre a son icône et son
 // titre au-dessus de sa vignette, comme dans Alt+Tab (lot 7a) : fond discret
 // au survol, croix de fermeture, contour de sélection de WinUI au clavier.
 // Survoler un bureau montre ses fenêtres ; le cliquer y passe.

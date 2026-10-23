@@ -111,19 +111,18 @@ done
 grep -q '"KPackageStructure": "KWin/WindowSwitcher"' /usr/share/kwin-wayland/tabbox/org.ankh.alttab/metadata.json \
     || echec "Alt+Tab d'Ankh : metadata.json n'est pas celui d'un sélecteur de fenêtres"
 attendu "Sélecteur de fenêtres" org.ankh.alttab --file kwinrc --group TabBox --key LayoutName
-# D-052, lot 7b : vue des tâches d'Ankh, effet de KWin allumé, et Windows+Tab
-# à elle pour chaque nouveau compte, Alt+Tab gardant Alt
+# D-052, lot 7b : vue des tâches d'Ankh, effet de KWin allumé, ouvert par le
+# bouton « Vue des tâches » de la barre ; les raccourcis de KDE ne changent pas
 for fichier in metadata.json contents/ui/main.qml contents/ui/VueTaches.qml; do
     [[ -f "/usr/share/kwin-wayland/effects/org.ankh.vuetaches/${fichier}" ]] || echec "vue des tâches d'Ankh : ${fichier} absent"
 done
 grep -q '"KPackageStructure": "KWin/Effect"' /usr/share/kwin-wayland/effects/org.ankh.vuetaches/metadata.json \
     || echec "vue des tâches d'Ankh : metadata.json n'est pas celui d'un effet de KWin"
 attendu "Vue des tâches allumée" true --file kwinrc --group Plugins --key org.ankh.vuetachesEnabled
-for ligne in 'AnkhVueTaches=Meta+Tab,none,Vue des tâches' \
-    'Walk Through Windows=Alt+Tab,Alt+Tab\tMeta+Tab,Walk Through Windows'; do
-    grep -qxF "${ligne}" /etc/skel/.config/kglobalshortcutsrc \
-        || echec "raccourcis des nouveaux comptes : « ${ligne} » absent de /etc/skel/.config/kglobalshortcutsrc"
-done
+[[ -f /usr/share/plasma/plasmoids/org.ankh.vuetaches/contents/ui/main.qml ]] \
+    || echec "bouton « Vue des tâches » d'Ankh absent"
+[[ ! -e /etc/skel/.config/kglobalshortcutsrc ]] \
+    || echec "raccourcis de KDE changés pour les nouveaux comptes (/etc/skel/.config/kglobalshortcutsrc)"
 # D-052, lot 7d : sons réduits, son de connexion
 attendu "Son de connexion" Sound --file plasma_workspace.notifyrc --group Event/startkde --key Action
 attendu "Son de la corbeille" None --file plasma_workspace.notifyrc --group "Event/Trash: emptied" --key Action
@@ -224,6 +223,7 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
             && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}" \
             && grep -q '^taches.writeConfig("fill", false)' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
+            && grep -q '^panel.addWidget("org.ankh.vuetaches")' "${barre}" \
             && ! grep -q 'org.kde.plasma.kickoff' "${barre}" \
             && grep -q '^var reglages = panel.addWidget("org.ankh.reglages")' "${barre}" \
             && ! grep -q 'globalShortcut' "${barre}" \

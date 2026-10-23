@@ -737,13 +737,11 @@ kwriteconfig6 --file /etc/xdg/kwinrc --group TabBox --key LayoutName org.ankh.al
 kwriteconfig6 --file /etc/xdg/kwinrc --group TabBox --key HighlightWindows --type bool false
 # D-052, lot 7b : vue des tâches d'Ankh (effet KWin/Effect écrit en QML, posé
 # dans /usr/share/kwin-wayland/effects), allumée ([Plugins],
-# src/effect/effectloader.cpp de KWin). Windows+Tab l'ouvre : KWin donne aussi
-# Meta+Tab à Alt+Tab (« Walk Through Windows », src/tabbox/tabbox.cpp), et
-# kglobalacceld 6.7 donne une touche partagée au premier enregistré, Alt+Tab.
-# Chaque nouveau compte reçoit donc un kglobalshortcutsrc (/etc/skel, fichiers
-# de build_files/files) où Alt+Tab garde Alt et la vue des tâches a Meta+Tab.
+# src/effect/effectloader.cpp de KWin). Le bouton « Vue des tâches » de la
+# barre l'ouvre ; les raccourcis de KDE ne changent pas (mon choix du
+# 2026-10-23).
 test -f /usr/share/kwin-wayland/effects/org.ankh.vuetaches/contents/ui/main.qml
-test -f /etc/skel/.config/kglobalshortcutsrc
+test -f /usr/share/plasma/plasmoids/org.ankh.vuetaches/contents/ui/main.qml
 kwriteconfig6 --file /etc/xdg/kwinrc --group Plugins --key org.ankh.vuetachesEnabled --type bool true
 chmod 0644 /etc/xdg/kwinrc
 

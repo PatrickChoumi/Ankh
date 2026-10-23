@@ -2,13 +2,12 @@
 # D-052, lot 7b : vérifications de la vue des tâches d'Ankh (effet KWin/Effect
 # écrit en QML, org.ankh.vuetaches) à la construction, dans l'étape « outils »
 # du Containerfile, sur le KWin et le Plasma de la même image de base. Une
-# erreur QML dans l'effet ne fait pas tomber KWin : Windows+Tab n'afficherait
-# rien, sans que rien n'échoue. La construction échoue donc :
+# erreur QML dans l'effet ne fait pas tomber KWin : le bouton « Vue des
+# tâches » n'afficherait rien, sans que rien n'échoue. La construction échoue
+# donc :
 # 1. si KWin n'est plus en version 6.7.5 : l'effet suit l'API des effets en
-#    QML de KWin (src/scripting, src/effect/quickeffect.cpp), et le
-#    raccourci Meta+Tab d'Alt+Tab (src/tabbox/tabbox.cpp), que
-#    /etc/skel/.config/kglobalshortcutsrc lui retire ; leurs changements sont
-#    à reporter d'abord (règle de D-052) ;
+#    QML de KWin (src/scripting, src/effect/quickeffect.cpp) ; ses changements
+#    sont à reporter d'abord (règle de D-052) ;
 # 2. si metadata.json ne décrit plus un effet en QML d'Id org.ankh.vuetaches ;
 # 3. si qmllint trouve un module, un type ou un import introuvable dans la vue
 #    (VueTaches.qml) ou le module commun d'Ankh. main.qml importe
@@ -33,8 +32,7 @@ version="$(rpm -q --qf '%{VERSION}' kwin)"
 if [[ "${version}" != "${KWIN_ATTENDU}" ]]; then
     echo "Vue des tâches d'Ankh : KWin est en version ${version}, et non ${KWIN_ATTENDU}." >&2
     echo "Le paquet build_files/files/usr/share/kwin-wayland/effects/org.ankh.vuetaches suit l'API des effets" >&2
-    echo "en QML de KWin (src/scripting, src/effect/quickeffect.cpp), et build_files/files/etc/skel/.config/kglobalshortcutsrc" >&2
-    echo "les raccourcis d'Alt+Tab (src/tabbox/tabbox.cpp). Reportez-y d'abord les changements de ${KWIN_ATTENDU}" >&2
+    echo "en QML de KWin (src/scripting, src/effect/quickeffect.cpp). Reportez-y d'abord les changements de ${KWIN_ATTENDU}" >&2
     echo "à ${version} (https://invent.kde.org/plasma/kwin), vérifiez-les en VM, puis changez KWIN_ATTENDU" >&2
     echo "dans build_files/plasma/verifier-vuetaches.sh (D-052, lot 7b)." >&2
     exit 1

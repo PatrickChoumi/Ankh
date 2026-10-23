@@ -204,13 +204,12 @@ banc_reglages() {
         banc_noter alttab.paquet "$valeur"
     fi
     # Vue des tâches d'Ankh (lot 7b) : effet allumé ([Plugins] de kwinrc,
-    # src/effect/effectloader.cpp de KWin) et sa touche (kglobalshortcutsrc :
-    # « touches actives, par défaut, nom »)
+    # src/effect/effectloader.cpp de KWin) et son bouton dans la barre
     if valeur=$(banc_reglage kwinrc Plugins org.ankh.vuetachesEnabled false); then
         banc_noter vuetaches.effet "$valeur"
     fi
-    if valeur=$(banc_reglage kglobalshortcutsrc kwin AnkhVueTaches none); then
-        banc_noter vuetaches.raccourci "${valeur%%,*}"
+    if valeur=$(banc_plasma 'print(panels()[0].widgets("org.ankh.vuetaches").length > 0 ? "oui" : "non");'); then
+        banc_noter vuetaches.bouton "$valeur"
     fi
     # PopupPosition (libnotificationmanager/kcfg/notificationsettings.kcfg de plasma-workspace)
     if valeur=$(banc_reglage plasmanotifyrc Notifications PopupPosition CloseToWidget); then
@@ -391,12 +390,14 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             sleep 2
             ;;
         vue-taches)
-            # Vue des tâches d'Ankh (lot 7b) : Windows+Tab, Échap la ferme
-            monitor 'sendkey meta_l-tab'
+            # Vue des tâches d'Ankh (lot 7b) : ouverte par son bouton de la
+            # barre (appelé sans touche, comme les volets) ; Échap la ferme
+            banc_essayer "vue des tâches" banc_ouvrir_applet org.ankh.vuetaches
             sleep 3
             screenshot "$nom"
             monitor 'sendkey esc'
             sleep 2
+            banc_essayer "raccourci de test retiré" banc_rendre_applet org.ankh.vuetaches
             ;;
         vue-ensemble)
             banc_essayer "vue d'ensemble" banc_session org.kde.kglobalaccel /component/kwin org.kde.kglobalaccel.Component invokeShortcut s Overview
@@ -646,9 +647,10 @@ banc_pixels() {
     monitor 'sendkey esc'
     sleep 2
     banc_essayer "raccourci de test retiré" banc_rendre_applet org.ankh.horloge
-    # Vue des tâches d'Ankh (lot 7b) : Windows+Tab l'ouvre-t-il ? KWin dit si
-    # l'effet est actif (isEffectActive, src/scripting/workspace_wrapper.h)
-    monitor 'sendkey meta_l-tab'
+    # Vue des tâches d'Ankh (lot 7b) : son bouton l'ouvre-t-il ? Le bouton est
+    # appelé sans touche, comme les volets ; KWin dit si l'effet est actif
+    # (isEffectActive, src/scripting/workspace_wrapper.h)
+    banc_essayer "vue des tâches" banc_ouvrir_applet org.ankh.vuetaches
     sleep 3
     if valeur=$(banc_kwin ankh-banc-vuetaches ANKH-BANC-VUE \
         'console.warn("ANKH-BANC-VUE " + (workspace.isEffectActive("org.ankh.vuetaches") ? "oui" : "non"));') \
@@ -659,6 +661,7 @@ banc_pixels() {
     fi
     monitor 'sendkey esc'
     sleep 2
+    banc_essayer "raccourci de test retiré" banc_rendre_applet org.ankh.vuetaches
     banc_bureau non
     # Contrôles de la zone noire de la galerie
     galerie=$(banc_galerie_devant)

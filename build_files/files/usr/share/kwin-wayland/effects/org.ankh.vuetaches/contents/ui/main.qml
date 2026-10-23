@@ -7,8 +7,8 @@
 
 // Vue des tâches d'Ankh (D-052, lot 7b) : le lien avec KWin. KWin charge ce
 // paquet comme un effet écrit en QML (KWin/Effect, « declarativescript »,
-// src/effect/effectloader.cpp de KWin 6.7) ; Windows+Tab l'ouvre et le
-// ferme. Sur chaque écran, il pose le fond d'écran flou du bureau en cours,
+// src/effect/effectloader.cpp de KWin 6.7) ; le bouton « Vue des tâches »
+// de la barre l'ouvre et le ferme. Sur chaque écran, il pose le fond d'écran flou du bureau en cours,
 // la vue des tâches (VueTaches.qml) et, par-dessus, la barre des tâches, qui
 // reste visible comme dans Windows 11. Le fond flou, les vignettes et la
 // barre sont faits comme dans la vue des fenêtres et la vue d'ensemble de
@@ -188,10 +188,13 @@ KWin.SceneEffect {
         }
     }
 
+    // Sans touche : Ankh garde les raccourcis de KDE (mon choix du
+    // 2026-10-23). Le bouton « Vue des tâches » de la barre
+    // (plasmoids/org.ankh.vuetaches) appelle cette action par son nom ; une
+    // touche peut lui être donnée dans les réglages des raccourcis.
     KWin.ShortcutHandler {
         name: "AnkhVueTaches"
         text: "Vue des tâches"
-        sequence: "Meta+Tab"
         onActivated: effet.visible = !effet.visible
     }
 }
