@@ -29,6 +29,8 @@
 #include <QTreeView>
 #include <QWindow>
 
+#include <cmath>
+
 #include <QDialog>
 #include <algorithm>
 #include <utility>
@@ -682,7 +684,8 @@ void Helper::renderButtonFrame(QPainter *painter,
     QRectF shadowedRect = this->shadowedRect(rect);
     QRectF frameRect = strokedRect(shadowedRect);
     // setting color group to work around KColorScheme feature
-    const QColor &highlightColor = palette.color(!enabled ? QPalette::Disabled : QPalette::Active, QPalette::Highlight);
+    // Ankh : l'accent exact, et non la sélection de KDE (accentColor)
+    const QColor highlightColor = accentColor(palette, !enabled ? QPalette::Disabled : QPalette::Active);
 
     // Ankh : couleurs du fond et du contour pour un état donné. Les
     // animations passent d'un état à l'autre avec ces mêmes couleurs : un
@@ -730,9 +733,9 @@ void Helper::renderButtonFrame(QPainter *painter,
                     hasNeutralHighlight ? neutralText(palette) : KColorUtils::mix(palette.button().color(), palette.buttonText().color(), frameIntensityBias());
             } else if (defaultButton && enabled) {
                 // Ankh : bouton principal rempli de la couleur d'accent
-                // (AccentButtonStyle de Windows 11), un peu plus clair au survol
-                // (AccentFillColorSecondary)
-                bgBrush = hovered ? KColorUtils::mix(highlightColor, palette.highlightedText().color(), 0.1) : highlightColor;
+                // (AccentButtonStyle de Windows 11) ; au survol, l'accent à 90 %
+                // sur la fenêtre (AccentFillColorSecondary)
+                bgBrush = hovered ? KColorUtils::mix(highlightColor, palette.window().color(), 0.1) : highlightColor;
                 penBrush = highlightColor;
             } else {
                 bgBrush = hovered && enabled ? survol : palette.button().color();
@@ -872,6 +875,20 @@ void Helper::renderSeparator(QPainter *painter, const QRectF &rect, const QColor
 }
 
 //______________________________________________________________________________
+//____________________________________________________________________
+QColor Helper::onAccentColor(const QColor &accent) const
+{
+    // Luminance relative du W3C (WCAG 2) : celle de KColorUtils::contrastRatio
+    // (luma de KHCY) donnerait du noir sur le violet foncé #7c3aed
+    const auto lineaire = [](qreal c) {
+        return c <= 0.04045 ? c / 12.92 : std::pow((c + 0.055) / 1.055, 2.4);
+    };
+    const qreal luminance = 0.2126 * lineaire(accent.redF()) + 0.7152 * lineaire(accent.greenF()) + 0.0722 * lineaire(accent.blueF());
+    // Contraste avec le blanc, (1 + 0,05) / (L + 0,05), et avec le noir, (L + 0,05) / 0,05
+    return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.05 ? QColor(Qt::white) : QColor(Qt::black);
+}
+
+//____________________________________________________________________
 void Helper::renderCheckBoxBackground(QPainter *painter,
                                       const QRectF &rect,
                                       const QPalette &palette,
@@ -888,7 +905,7 @@ void Helper::renderCheckBoxBackground(QPainter *painter,
     // cochée, remplie de la couleur d'accent
     QRectF frameRect(strokedRect(rect));
     const auto radius = Metrics::CheckBox_Radius;
-    const QColor accent(neutalHighlight ? neutralText(palette) : palette.highlight().color());
+    const QColor accent(neutalHighlight ? neutralText(palette) : accentColor(palette));
 
     painter->setPen(QPen(alphaColor(palette.windowText().color(), 0.5), PenWidth::Frame));
     painter->setBrush(emptyIndicatorFill(palette, sunken));
@@ -970,7 +987,7 @@ void Helper::renderCheckBox(QPainter *painter,
     painter->setBrush(Qt::transparent);
 
     // Ankh : coche de la couleur du texte sur l'accent (TextOnAccentFillColorPrimary)
-    const QBrush glyph(neutalHighlight ? palette.text() : palette.highlightedText());
+    const QBrush glyph(neutalHighlight ? palette.text() : QBrush(onAccentColor(accentColor(palette))));
     auto checkPen = QPen(glyph, PenWidth::Frame * 2);
     checkPen.setJoinStyle(Qt::MiterJoin);
 
@@ -1032,7 +1049,7 @@ void Helper::renderRadioButtonBackground(QPainter *painter,
     // choisi, rempli de la couleur d'accent
     QRectF frameRect(rect);
     frameRect.adjust(0.5, 0.5, -0.5, -0.5);
-    const QColor accent(neutalHighlight ? neutralText(palette) : palette.highlight().color());
+    const QColor accent(neutalHighlight ? neutralText(palette) : accentColor(palette));
 
     painter->setPen(QPen(alphaColor(palette.windowText().color(), 0.5), PenWidth::Frame));
     painter->setBrush(emptyIndicatorFill(palette, sunken));
@@ -1081,7 +1098,7 @@ void Helper::renderRadioButton(QPainter *painter,
 
     // Ankh : rond central de la couleur du texte sur l'accent, de 12 ; 14 au
     // survol et 10 à l'appui, comme Windows 11
-    painter->setBrush(neutralHighlight ? palette.text() : palette.highlightedText());
+    painter->setBrush(neutralHighlight ? palette.text() : QBrush(onAccentColor(accentColor(palette))));
     painter->setPen(Qt::NoPen);
 
     const qreal glyph = sunken ? Metrics::RadioButton_GlyphSize - 2 : mouseOver ? Metrics::RadioButton_GlyphSize + 2 : Metrics::RadioButton_GlyphSize;
