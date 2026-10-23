@@ -63,8 +63,12 @@ Item {
     readonly property int piedY: hautCurseurs + curseurs * 40 + (curseurs > 0 ? 14 : 0)
     readonly property int hauteurVisible: hauteurLecteur + piedY + 40
 
-    width: largeurVisible - margeGauche - margeDroite
-    height: hauteurVisible - margeHaut - margeBas
+    // Taille demandée à Plasma (Layout de main.qml) : calculée, et non lue sur
+    // width et height, que Plasma impose ensuite au volet
+    readonly property int largeurContenu: largeurVisible - margeGauche - margeDroite
+    readonly property int hauteurContenu: hauteurVisible - margeHaut - margeBas
+    width: largeurContenu
+    height: hauteurContenu
 
     Couleurs {
         id: couleurs

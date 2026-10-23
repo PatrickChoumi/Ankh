@@ -48,7 +48,9 @@ MouseArea {
         anchors.centerIn: parent
         spacing: 8
         Repeater {
-            model: [bouton.etat.iconeReseau, bouton.etat.iconeSon].concat(bouton.etat.batterieDisponible ? [bouton.etat.iconeBatterie] : [])
+            // L'état arrive juste après la création du bouton (main.qml)
+            model: !bouton.etat ? []
+                : [bouton.etat.iconeReseau, bouton.etat.iconeSon].concat(bouton.etat.batterieDisponible ? [bouton.etat.iconeBatterie] : [])
             delegate: Kirigami.Icon {
                 required property string modelData
                 width: 16
