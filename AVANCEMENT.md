@@ -370,7 +370,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
    - Les applications GTK en Flatpak ne voient pas le thème Fluent d'Ankh : à traiter avec le lot 8 (applications).
 5. Démarrer d'Ankh : le Démarrer classique de Windows 11 (mon choix du 2026-10-22). Vert en VM ; sa PR suivra celle du lot 4.
 6. Paramètres rapides (6a), puis horloge avec notifications et calendrier (6b) : écrits, vérifiés hors écran ; VM en cours pour 6a, à venir pour 6b.
-7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons. Mes choix du 2026-10-23 : Alt+Tab et vue des tâches comme Windows 11, verrouillage au dessin de la connexion d'Ankh, sons de KDE réduits. 7a (Alt+Tab) écrit et vérifié hors écran ; VM à venir.
+7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons. Mes choix du 2026-10-23 : Alt+Tab et vue des tâches comme Windows 11, verrouillage au dessin de la connexion d'Ankh, sons de KDE réduits. 7a (Alt+Tab), 7c (écran de verrouillage) et 7d (sons) écrits et vérifiés hors écran ; VM à venir. Reste 7b, la vue des tâches.
 8. Applications : Dolphin, réglages, Discover, Konsole, Chrome, VS Code, GTK, libadwaita, Electron ; plus de fenêtre de KDE Wallet.
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.

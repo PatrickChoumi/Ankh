@@ -723,6 +723,39 @@ test -f /usr/share/kwin-wayland/tabbox/org.ankh.alttab/contents/ui/main.qml
 kwriteconfig6 --file /etc/xdg/kwinrc --group TabBox --key LayoutName org.ankh.alttab
 kwriteconfig6 --file /etc/xdg/kwinrc --group TabBox --key HighlightWindows --type bool false
 chmod 0644 /etc/xdg/kwinrc
+
+# D-052, lot 7d : sons de KDE (thème Océan) réduits aux événements où
+# Windows 11 joue un son (mon choix du 2026-10-23) : connexion, branchement
+# d'un appareil, erreurs, minuteur, batterie faible. Les autres se taisent.
+# KNotifications lit /etc/xdg/<application>.notifyrc avant les valeurs de
+# KDE, et « None » coupe l'événement (src/knotifyconfig.cpp et
+# src/knotificationmanager.cpp de KNotifications 6) ; chaque événement doit
+# exister chez KDE, sinon le réglage serait sans effet : la construction
+# échoue.
+evenement_son() { # $1 : application, $2 : événement, $3 : actions
+    if ! grep -qxF "[Event/$2]" "/usr/share/knotifications6/$1.notifyrc"; then
+        echo "Sons d'Ankh : l'événement « $2 » n'existe plus dans $1.notifyrc" >&2
+        exit 1
+    fi
+    kwriteconfig6 --file "/etc/xdg/$1.notifyrc" --group "Event/$2" --key Action "$3"
+    chmod 0644 "/etc/xdg/$1.notifyrc"
+}
+# Connexion : le son d'ouverture de session (desktop-login), joué par
+# plasma-startup-sound (startkde/startup-sound de plasma-workspace) ; KDE ne
+# le joue pas par défaut
+evenement_son plasma_workspace startkde Sound
+# Coupés : corbeille vidée, avertissements, informations, questions, bip,
+# demande de mot de passe, chargeur branché ou débranché ; les fenêtres et
+# les bulles restent
+evenement_son plasma_workspace "Trash: emptied" None
+evenement_son plasma_workspace warning Popup
+evenement_son plasma_workspace messageInformation Taskbar
+evenement_son plasma_workspace messageWarning Taskbar
+evenement_son plasma_workspace messageQuestion Taskbar
+evenement_son plasma_workspace beep None
+evenement_son polkit-kde-authentication-agent-1 authenticate None
+evenement_son powerdevil pluggedin None
+evenement_son powerdevil unplugged None
 # Chaque thème global désigne aussi sa décoration (kwinrc, dans
 # contents/defaults), recopiée à chaque session avant /etc/xdg, comme le
 # curseur plus haut

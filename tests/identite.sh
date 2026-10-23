@@ -111,6 +111,11 @@ done
 grep -q '"KPackageStructure": "KWin/WindowSwitcher"' /usr/share/kwin-wayland/tabbox/org.ankh.alttab/metadata.json \
     || echec "Alt+Tab d'Ankh : metadata.json n'est pas celui d'un sélecteur de fenêtres"
 attendu "Sélecteur de fenêtres" org.ankh.alttab --file kwinrc --group TabBox --key LayoutName
+# D-052, lot 7d : sons réduits, son de connexion
+attendu "Son de connexion" Sound --file plasma_workspace.notifyrc --group Event/startkde --key Action
+attendu "Son de la corbeille" None --file plasma_workspace.notifyrc --group "Event/Trash: emptied" --key Action
+attendu "Son du chargeur branché" None --file powerdevil.notifyrc --group Event/pluggedin --key Action
+attendu "Son des avertissements" Popup --file plasma_workspace.notifyrc --group Event/warning --key Action
 # D-052, lot 7c : écran de verrouillage au dessin de la connexion d'Ankh
 # (adapter-plasma.py), l'authentification de KDE intacte
 verrou=/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen
