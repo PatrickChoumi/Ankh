@@ -16,8 +16,8 @@ dans l'image, à leur place :
 - les infobulles sont écrites en petite police (12 px,
   ToolTipContentThemeFontSize) ;
 - un bouton mis en avant (highlighted) est rempli de la couleur d'accent,
-  comme le bouton par défaut, et ses icônes prennent la couleur prévue sur
-  l'accent.
+  comme le bouton par défaut, et ses icônes sont blanches ou noires, les plus
+  contrastées sur l'accent exact (comme onAccentColor du style d'Ankh).
 
 Ces fichiers QML sont aussi compilés dans le greffon du module : la ligne
 « prefer » de leur qmldir fait charger cette copie compilée. Elle est
@@ -100,7 +100,15 @@ remplacer(
     "\n"
     "    // Ankh : bouton par défaut ou mis en avant, rempli de la couleur\n"
     "    // d'accent par le style (AccentButtonStyle de Windows 11, D-052, lot 3)\n"
-    "    readonly property bool __ankhAccent: (Accessible.defaultButton || highlighted) && !flat && enabled\n",
+    "    readonly property bool __ankhAccent: (Accessible.defaultButton || highlighted) && !flat && enabled\n"
+    "    // Ankh : blanc ou noir sur l'accent exact (focusColor), le plus\n"
+    "    // contrasté (luminance relative du W3C), comme le style d'Ankh\n"
+    "    readonly property color __ankhSurAccent: {\n"
+    "        const c = Kirigami.Theme.focusColor;\n"
+    "        const lineaire = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);\n"
+    "        const l = 0.2126 * lineaire(c.r) + 0.7152 * lineaire(c.g) + 0.0722 * lineaire(c.b);\n"
+    "        return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? \"#ffffff\" : \"#000000\";\n"
+    "    }\n",
 )
 remplacer(
     "Button.qml",
@@ -113,6 +121,6 @@ remplacer(
     "Button.qml",
     "            \"iconColor\": Qt.colorEqual(controlRoot.icon.color, \"transparent\") ? Kirigami.Theme.textColor : controlRoot.icon.color,\n",
     "            \"iconColor\": Qt.colorEqual(controlRoot.icon.color, \"transparent\")\n"
-    "                ? (controlRoot.__ankhAccent ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor)\n"
+    "                ? (controlRoot.__ankhAccent ? controlRoot.__ankhSurAccent : Kirigami.Theme.textColor)\n"
     "                : controlRoot.icon.color,\n",
 )

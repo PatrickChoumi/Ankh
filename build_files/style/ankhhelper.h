@@ -72,6 +72,29 @@ public:
         return _viewFocusBrush.brush(palette).color();
     }
 
+    //* Ankh : couleur d'accent des contrôles (AccentFillColorDefault de
+    // Windows 11) : l'accent exact du jeu de couleurs (DecorationFocus), et
+    // non la sélection de KDE (Highlight et Accent), qui le mêle à 70 % au
+    // fond des listes et le rend trop clair en thème clair (D-054)
+    QColor accentColor(const QPalette &palette) const
+    {
+        return focusColor(palette);
+    }
+
+    //* Ankh : accent d'un groupe de couleurs donné (fenêtre active ou non)
+    QColor accentColor(const QPalette &palette, QPalette::ColorGroup group) const
+    {
+        QPalette copy(palette);
+        copy.setCurrentColorGroup(group);
+        return focusColor(copy);
+    }
+
+    //* Ankh : texte et symboles posés sur l'accent (TextOnAccentFillColorPrimary
+    // de Windows 11) : blanc ou noir, le plus contrasté. Avec les fonds d'Ankh,
+    // blanc sur le violet foncé du thème clair, noir sur le violet clair du
+    // thème sombre, comme le blanc et le noir de Windows 11.
+    QColor onAccentColor(const QColor &accent) const;
+
     //* negative text color (used for close button)
     QColor negativeText(const QPalette &palette) const
     {
