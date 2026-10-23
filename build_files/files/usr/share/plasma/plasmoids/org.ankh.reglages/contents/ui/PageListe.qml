@@ -12,7 +12,6 @@
 // même hauteur : le volet ne change pas de taille.
 
 import QtQuick
-import QtQuick.Controls as QQC2
 
 import org.kde.kirigami as Kirigami
 

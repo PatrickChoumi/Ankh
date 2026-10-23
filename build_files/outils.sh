@@ -19,6 +19,8 @@
 # Avant tout, le Démarrer d'Ankh (lot 5), paquet QML dérivé de Kickoff, est
 # vérifié sur le Plasma de cette image de base (build_files/plasma/verifier-demarrer.sh :
 # version de Plasma, qmllint, sonde hors écran) ; rien n'en sort dans /sortie.
+# Les paramètres rapides d'Ankh (lot 6a) le sont de même
+# (build_files/plasma/verifier-reglages.sh).
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
 # build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style et themes.
@@ -63,6 +65,8 @@ recuperer() { # $1 : dépôt, $2 : commit, $3 : dossier de travail, puis les dos
 
 echo "== Démarrer d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-demarrer.sh"
+echo "== Paramètres rapides d'Ankh : vérifications"
+"$(dirname "$(readlink -f "$0")")/plasma/verifier-reglages.sh"
 
 echo "== Police Selawik"
 recuperer "${SELAWIK_DEPOT}" "${SELAWIK_COMMIT}" "${travail}/selawik" "Source files/UFO"

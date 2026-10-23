@@ -313,6 +313,14 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             sleep 1
             screenshot "$nom"
             ;;
+        parametres-rapides)
+            # Paramètres rapides d'Ankh (D-052, lot 6a) : Windows+A
+            monitor 'sendkey meta_l-a'
+            sleep 3
+            screenshot "$nom"
+            monitor 'sendkey esc'
+            sleep 1
+            ;;
         calendrier)
             # Horloge : à droite de la barre, avant « Afficher le bureau »
             souris clic 1200 $((800 - barre / 2))
@@ -514,6 +522,34 @@ banc_pixels() {
     fi
     monitor 'sendkey esc'
     sleep 2
+    # Paramètres rapides d'Ankh (lot 6a) : Windows+A, puis la fenêtre de
+    # plasmashell qui n'est ni la barre ni le bureau, comme pour le menu
+    monitor 'sendkey meta_l-a'
+    for essai in 1 2 3; do
+        sleep 3
+        volets=$(banc_kwin ankh-banc-reglages ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
+    const f = w.frameGeometry;
+    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.normalWindow ? 'fenetre' : 'autre'));
+    console.warn('ANKH-BANC-VOLET ' + w.resourceClass + ' ' + type + ' ' + [f.x, f.y, f.width, f.height].map(Math.round).join(' '));
+}")
+        if grep -q 'plasmashell autre' <<< "$volets"; then
+            break
+        fi
+    done
+    echo "Fenêtres vues par KWin, paramètres rapides ouverts :"
+    echo "$volets"
+    while read -r classe type vx vy vw vh; do
+        if [[ $classe == *plasmashell && $type == autre && ${vh:-0} -gt 100 ]]; then
+            banc_noter reglages.largeur "$vw"
+            banc_noter reglages.bord_droit $((1280 - vx - vw))
+            if [[ -n $haut_barre ]]; then
+                banc_noter reglages.ecart_barre $((haut_barre - vy - vh))
+            fi
+            break
+        fi
+    done <<< "$volets"
+    monitor 'sendkey esc'
+    sleep 2
     banc_bureau non
     # Contrôles de la zone noire de la galerie
     galerie=$(banc_galerie_devant)
@@ -556,7 +592,7 @@ check_interface() {
     banc_galerie
     banc_dolphin 200 120 880 520
     for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages konsole galerie \
-        notification volume calendrier infobulle alt-tab vue-ensemble recherche deconnexion; do
+        notification volume parametres-rapides calendrier infobulle alt-tab vue-ensemble recherche deconnexion; do
         banc_surface ui-sombre-100 "$surface" "$barre"
     done
     banc_pixels
@@ -564,7 +600,8 @@ check_interface() {
     banc_essayer "thème clair" in_session "$banc_compte" plasma-apply-lookandfeel -a org.fedoraproject.fedoralight.desktop
     sleep 10
     banc_dolphin 200 120 880 520
-    for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages galerie notification; do
+    for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages galerie notification \
+        parametres-rapides; do
         banc_surface ui-clair-100 "$surface" "$barre"
     done
     banc_essayer "thème sombre" in_session "$banc_compte" plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop

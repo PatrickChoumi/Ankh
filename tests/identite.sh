@@ -178,7 +178,10 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
             && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}" \
             && grep -q '^taches.writeConfig("fill", false)' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
-            && ! grep -q 'org.kde.plasma.kickoff' "${barre}"; then
+            && ! grep -q 'org.kde.plasma.kickoff' "${barre}" \
+            && grep -q '^var reglages = panel.addWidget("org.ankh.reglages")' "${barre}" \
+            && grep -q '^reglages.globalShortcut = "Meta+A"' "${barre}" \
+            && grep -q '"org.kde.plasma.networkmanagement", "org.kde.plasma.volume"' "${barre}"; then
             barres=$((barres + 1))
         else
             echec "barre de ${theme} : pas celle d'Ankh"
@@ -195,6 +198,12 @@ done
 echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
 attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
 [[ -f /usr/share/plasma/plasmoids/org.ankh.bureau/contents/ui/main.qml ]] || echec "bande « Afficher le bureau » d'Ankh absente"
+# Paramètres rapides d'Ankh (D-052, lot 6a)
+for fichier in metadata.json contents/ui/main.qml contents/ui/Etat.qml contents/ui/Son.qml contents/ui/Volet.qml; do
+    [[ -f "/usr/share/plasma/plasmoids/org.ankh.reglages/${fichier}" ]] || echec "paramètres rapides d'Ankh : ${fichier} absent"
+done
+grep -q '"Id": "org.ankh.reglages"' /usr/share/plasma/plasmoids/org.ankh.reglages/metadata.json \
+    || echec "paramètres rapides d'Ankh : identifiant de l'applet"
 # Démarrer d'Ankh (D-052, lot 5) : paquet QML dérivé de Kickoff, ouvert par
 # la touche Méta (X-Plasma-Provides), avec ses singletons déclarés (qmldir).
 # Ses imports, ses types et les modèles de Kicker sont vérifiés à la

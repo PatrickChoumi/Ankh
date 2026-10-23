@@ -501,3 +501,32 @@ cible = 0
 tolerance = 0
 lot = 5
 source = "Recherche du lot 5, § 4 : une erreur QML ne fait pas tomber Plasma, le menu s'afficherait à moitié"
+
+# --- Lot 6a : paramètres rapides ------------------------------------------
+
+[[mesure]]
+id = "reglages.largeur"
+libelle = "Largeur du volet des paramètres rapides"
+cible = 372
+tolerance = 2
+unite = "px"
+lot = 6
+source = "Mesurée sur une image officielle de Microsoft (billet Windows Insider de la build 25967, quick-settings-pagination2.png, à 150 %, recherche du lot 6, À VALIDER à 100 %)"
+
+[[mesure]]
+id = "reglages.ecart_barre"
+libelle = "Écart entre les paramètres rapides et la barre"
+cible = 12
+tolerance = 0
+unite = "px"
+lot = 6
+source = "Comme volet.ecart_barre : volets flottants (mon choix du 2026-10-22)"
+
+[[mesure]]
+id = "reglages.bord_droit"
+libelle = "Écart entre les paramètres rapides et le bord droit de l'écran"
+cible = 12
+tolerance = 0
+unite = "px"
+lot = 6
+source = "Volets flottants à 12 px des bords (lot 4, mon choix du 2026-10-22)"

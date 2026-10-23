@@ -14,7 +14,8 @@
 // comme dans leurs applets (compilées, donc non modifiables) :
 // - réseau : org.kde.plasma.networkmanagement (plasma-nm, applet/main.qml) ;
 // - Bluetooth : org.kde.bluezqt (bluedevil, src/applet/qml/main.qml) ;
-// - son : org.kde.plasma.private.volume (plasma-pa, applet/main.qml) ;
+// - son : org.kde.plasma.private.volume (plasma-pa, applet/main.qml), dans
+//   Son.qml ;
 // - luminosité, éclairage nocturne, mode sombre :
 //   org.kde.plasma.private.brightnesscontrolplugin (powerdevil,
 //   applets/brightness) ;
@@ -35,7 +36,6 @@ import org.kde.plasma.private.battery as Batterie
 import org.kde.plasma.private.batterymonitor as Energie
 import org.kde.plasma.private.brightnesscontrolplugin as Luminosite
 import org.kde.plasma.private.mpris as Mpris
-import org.kde.plasma.private.volume as Volume
 import org.kde.plasma.workspace.dbus as DBus
 
 Item {
@@ -122,28 +122,23 @@ Item {
 
     // --- Son ------------------------------------------------------------
 
-    readonly property var sortie: Volume.PreferredDevice.sink
-    readonly property bool sonDisponible: sortie !== null && sortie.name !== "auto_null"
-    readonly property int volume: sortie ? Math.round(sortie.volume / Volume.PulseAudio.NormalVolume * 100) : 0
-    readonly property bool muet: sortie ? sortie.muted : true
-    readonly property string iconeSon: Volume.AudioIcon.forVolume(volume, muet, "")
-    readonly property var sorties: modeleSorties
+    readonly property var sortie: son.sortie
+    readonly property bool sonDisponible: son.disponible
+    readonly property int volume: son.volume
+    readonly property bool muet: son.muet
+    readonly property string iconeSon: son.icone
+    readonly property var sorties: son.sorties
 
     function regler(pourcent: int): void {
-        if (sortie) {
-            sortie.volume = Math.round(Volume.PulseAudio.NormalVolume * Math.max(0, Math.min(100, pourcent)) / 100);
-            sortie.muted = pourcent === 0;
-        }
+        son.regler(pourcent);
     }
 
     function basculerMuet(): void {
-        if (sortie) {
-            sortie.muted = !sortie.muted;
-        }
+        son.basculerMuet();
     }
 
-    Volume.SinkModel {
-        id: modeleSorties
+    Son {
+        id: son
     }
 
     // --- Luminosité, éclairage nocturne, mode sombre ----------------------
