@@ -184,6 +184,15 @@ banc_reglages() {
     if valeur=$(banc_reglage kwinrc TabBox LayoutName thumbnail_grid); then
         banc_noter alttab.paquet "$valeur"
     fi
+    # Vue des tâches d'Ankh (lot 7b) : effet allumé ([Plugins] de kwinrc,
+    # src/effect/effectloader.cpp de KWin) et sa touche (kglobalshortcutsrc :
+    # « touches actives, par défaut, nom »)
+    if valeur=$(banc_reglage kwinrc Plugins org.ankh.vuetachesEnabled false); then
+        banc_noter vuetaches.effet "$valeur"
+    fi
+    if valeur=$(banc_reglage kglobalshortcutsrc kwin AnkhVueTaches none); then
+        banc_noter vuetaches.raccourci "${valeur%%,*}"
+    fi
     # PopupPosition (libnotificationmanager/kcfg/notificationsettings.kcfg de plasma-workspace)
     if valeur=$(banc_reglage plasmanotifyrc Notifications PopupPosition CloseToWidget); then
         banc_noter notifications.position "$valeur"
@@ -361,6 +370,14 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             qmp_entree touche relache alt
             sleep 2
             ;;
+        vue-taches)
+            # Vue des tâches d'Ankh (lot 7b) : Windows+Tab, Échap la ferme
+            monitor 'sendkey meta_l-tab'
+            sleep 3
+            screenshot "$nom"
+            monitor 'sendkey esc'
+            sleep 2
+            ;;
         vue-ensemble)
             banc_essayer "vue d'ensemble" banc_session org.kde.kglobalaccel /component/kwin org.kde.kglobalaccel.Component invokeShortcut s Overview
             sleep 3
@@ -534,11 +551,11 @@ banc_pixels() {
         echo "(Démarrer : journal de la session illisible)"
     fi
     # Avertissements QML de tout ce qu'Ankh ajoute à Plasma et à KWin (applets,
-    # Alt+Tab, module commun), depuis l'ouverture de la session, toutes
-    # surfaces montrées : au lot 6a, un bouton vide n'avait laissé de trace
-    # que là
+    # Alt+Tab, vue des tâches, module commun), depuis l'ouverture de la
+    # session, toutes surfaces montrées : au lot 6a, un bouton vide n'avait
+    # laissé de trace que là
     if erreurs_qml=$(vm "set -o pipefail; journalctl --no-pager -b _UID=$(vm id -u "$banc_compte") --output cat \
-        | { grep -E '((plasmoids|tabbox)/org\.ankh\.[a-z]+|org/ankh/commun)/[^ ]*\.qml:[0-9]+' || [ \$? -eq 1 ]; }"); then
+        | { grep -E '((plasmoids|tabbox|effects)/org\.ankh\.[a-z]+|org/ankh/commun)/[^ ]*\.qml:[0-9]+' || [ \$? -eq 1 ]; }"); then
         if [[ -n $erreurs_qml ]]; then
             echo "Avertissements QML d'Ankh :"
             echo "$erreurs_qml"
@@ -607,6 +624,19 @@ banc_pixels() {
     done <<< "$volets"
     monitor 'sendkey esc'
     sleep 2
+    # Vue des tâches d'Ankh (lot 7b) : Windows+Tab l'ouvre-t-il ? KWin dit si
+    # l'effet est actif (isEffectActive, src/scripting/workspace_wrapper.h)
+    monitor 'sendkey meta_l-tab'
+    sleep 3
+    if valeur=$(banc_kwin ankh-banc-vuetaches ANKH-BANC-VUE \
+        'console.warn("ANKH-BANC-VUE " + (workspace.isEffectActive("org.ankh.vuetaches") ? "oui" : "non"));') \
+        && [[ -n $valeur ]]; then
+        banc_noter vuetaches.ouverte "$valeur"
+    else
+        echo "(vue des tâches : état de l'effet illisible)"
+    fi
+    monitor 'sendkey esc'
+    sleep 2
     banc_bureau non
     # Contrôles de la zone noire de la galerie
     galerie=$(banc_galerie_devant)
@@ -649,7 +679,7 @@ check_interface() {
     banc_galerie
     banc_dolphin 200 120 880 520
     for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages konsole galerie \
-        notification volume parametres-rapides calendrier infobulle alt-tab vue-ensemble recherche deconnexion; do
+        notification volume parametres-rapides calendrier infobulle alt-tab vue-taches vue-ensemble recherche deconnexion; do
         banc_surface ui-sombre-100 "$surface" "$barre"
     done
     banc_pixels
@@ -658,7 +688,7 @@ check_interface() {
     sleep 10
     banc_dolphin 200 120 880 520
     for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages galerie notification \
-        parametres-rapides calendrier; do
+        parametres-rapides calendrier alt-tab vue-taches; do
         banc_surface ui-clair-100 "$surface" "$barre"
     done
     banc_essayer "thème sombre" in_session "$banc_compte" plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop

@@ -576,3 +576,26 @@ libelle = "Sélecteur de fenêtres d'Alt+Tab ([TabBox] LayoutName de kwinrc)"
 cible = "org.ankh.alttab"
 lot = 7
 source = "Mon choix du 2026-10-23 : Alt+Tab comme Windows 11, sélecteur d'Ankh pour KWin"
+
+# --- Lot 7b : vue des tâches -------------------------------------------------
+
+[[mesure]]
+id = "vuetaches.effet"
+libelle = "Vue des tâches d'Ankh allumée ([Plugins] org.ankh.vuetachesEnabled de kwinrc)"
+cible = "true"
+lot = 7
+source = "Mon choix du 2026-10-23 : vue des tâches comme Windows 11, effet d'Ankh pour KWin"
+
+[[mesure]]
+id = "vuetaches.raccourci"
+libelle = "Touche de la vue des tâches (kglobalshortcutsrc, [kwin] AnkhVueTaches)"
+cible = "Meta+Tab"
+lot = 7
+source = "Windows+Tab ouvre la vue des tâches dans Windows 11"
+
+[[mesure]]
+id = "vuetaches.ouverte"
+libelle = "Windows+Tab ouvre la vue des tâches (isEffectActive de KWin)"
+cible = "oui"
+lot = 7
+source = "Windows+Tab ouvre la vue des tâches dans Windows 11"

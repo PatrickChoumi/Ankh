@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "KWin/Effect",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "Window Management",
+        "Description": "Les fenêtres ouvertes et les bureaux virtuels, comme la vue des tâches de Windows 11",
+        "EnabledByDefault": true,
+        "Id": "org.ankh.vuetaches",
+        "License": "GPL-2.0-or-later",
+        "Name": "Vue des tâches d'Ankh"
+    },
+    "X-KDE-Ordering": 60,
+    "X-Plasma-API": "declarativescript"
+}

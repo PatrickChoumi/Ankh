@@ -111,6 +111,19 @@ done
 grep -q '"KPackageStructure": "KWin/WindowSwitcher"' /usr/share/kwin-wayland/tabbox/org.ankh.alttab/metadata.json \
     || echec "Alt+Tab d'Ankh : metadata.json n'est pas celui d'un sélecteur de fenêtres"
 attendu "Sélecteur de fenêtres" org.ankh.alttab --file kwinrc --group TabBox --key LayoutName
+# D-052, lot 7b : vue des tâches d'Ankh, effet de KWin allumé, et Windows+Tab
+# à elle pour chaque nouveau compte, Alt+Tab gardant Alt
+for fichier in metadata.json contents/ui/main.qml contents/ui/VueTaches.qml; do
+    [[ -f "/usr/share/kwin-wayland/effects/org.ankh.vuetaches/${fichier}" ]] || echec "vue des tâches d'Ankh : ${fichier} absent"
+done
+grep -q '"KPackageStructure": "KWin/Effect"' /usr/share/kwin-wayland/effects/org.ankh.vuetaches/metadata.json \
+    || echec "vue des tâches d'Ankh : metadata.json n'est pas celui d'un effet de KWin"
+attendu "Vue des tâches allumée" true --file kwinrc --group Plugins --key org.ankh.vuetachesEnabled
+for ligne in 'AnkhVueTaches=Meta+Tab,none,Vue des tâches' \
+    'Walk Through Windows=Alt+Tab,Alt+Tab\tMeta+Tab,Walk Through Windows'; do
+    grep -qxF "${ligne}" /etc/skel/.config/kglobalshortcutsrc \
+        || echec "raccourcis des nouveaux comptes : « ${ligne} » absent de /etc/skel/.config/kglobalshortcutsrc"
+done
 # D-052, lot 7d : sons réduits, son de connexion
 attendu "Son de connexion" Sound --file plasma_workspace.notifyrc --group Event/startkde --key Action
 attendu "Son de la corbeille" None --file plasma_workspace.notifyrc --group "Event/Trash: emptied" --key Action
