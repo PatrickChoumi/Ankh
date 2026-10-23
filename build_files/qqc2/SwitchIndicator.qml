@@ -14,8 +14,10 @@
 // - éteint : piste voilée (ControlAltFillColor), bord et pastille marqués
 //   (ControlStrongStrokeColorDefault, TextFillColorSecondary) ;
 // - allumé : piste et bord de la couleur d'accent, plus légère au survol et
-//   à l'appui (AccentFillColorSecondary et Tertiary), pastille de la couleur
-//   prévue sur l'accent (TextOnAccentFillColorPrimary) ;
+//   à l'appui (AccentFillColorSecondary et Tertiary), pastille blanche ou
+//   noire, la plus contrastée sur l'accent (TextOnAccentFillColorPrimary) ;
+//   l'accent est l'accent exact (focusColor), et non la sélection de KDE,
+//   comme dans le style d'Ankh (accentColor de ankhhelper.h) ;
 // - pastille de 12 px, 14 au survol, 17×14 à l'appui, centrée à 10 px du
 //   bord de départ puis de celui d'arrivée.
 
@@ -50,11 +52,19 @@ Item {
             : (sombre ? "#19000000" : "#06000000")
         readonly property color bordEteint: active ? (sombre ? "#8bffffff" : "#72000000") : (sombre ? "#28ffffff" : "#37000000")
         readonly property color pastilleEteinte: active ? (sombre ? "#c5ffffff" : "#9e000000") : (sombre ? "#5dffffff" : "#5c000000")
+        readonly property color accentExact: Kirigami.Theme.focusColor
+        // Blanc ou noir sur l'accent, le plus contrasté (luminance relative
+        // du W3C), comme onAccentColor du style d'Ankh
+        readonly property color surAccent: {
+            const lineaire = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+            const l = 0.2126 * lineaire(accentExact.r) + 0.7152 * lineaire(accentExact.g) + 0.0722 * lineaire(accentExact.b);
+            return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? "#ffffff" : "#000000";
+        }
         readonly property color accent: !active ? (sombre ? "#28ffffff" : "#37000000")
-            : appui ? Qt.alpha(Kirigami.Theme.highlightColor, 0.8)
-            : survol ? Qt.alpha(Kirigami.Theme.highlightColor, 0.9)
-            : Kirigami.Theme.highlightColor
-        readonly property color pastilleAllumee: active ? Kirigami.Theme.highlightedTextColor : (sombre ? "#87ffffff" : "#ffffff")
+            : appui ? Qt.alpha(accentExact, 0.8)
+            : survol ? Qt.alpha(accentExact, 0.9)
+            : accentExact
+        readonly property color pastilleAllumee: active ? surAccent : (sombre ? "#87ffffff" : "#ffffff")
     }
 
     Rectangle {

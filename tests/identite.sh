@@ -129,6 +129,10 @@ done
 grep -q 'ListViewItemMinHeight' "${qqc2}/ItemDelegate.qml" || echec "style QtQuick : élément de liste de moins de 40 px"
 grep -q 'font: Kirigami.Theme.smallFont' "${qqc2}/ToolTip.qml" || echec "style QtQuick : infobulle en police normale"
 grep -q '__ankhAccent' "${qqc2}/Button.qml" || echec "style QtQuick : bouton mis en avant sans accent"
+# Accent exact (focusColor) et blanc ou noir posé dessus, comme le style
+# d'Ankh, et non la sélection de KDE (mon choix du 2026-10-23, D-052)
+grep -q '__ankhSurAccent' "${qqc2}/Button.qml" || echec "style QtQuick : icône du bouton mis en avant sans couleur sur l'accent"
+grep -q 'Kirigami.Theme.focusColor' "${qqc2}/private/SwitchIndicator.qml" || echec "style QtQuick : interrupteur à la couleur de sélection, et non à l'accent"
 # Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
 # nouveaux comptes et dans les réglages de GNOME lus sous Wayland
 for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do
