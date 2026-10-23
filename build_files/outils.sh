@@ -70,7 +70,7 @@ echo "== Démarrer d'Ankh : vérifications"
 echo "== Paramètres rapides d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-reglages.sh"
 echo "== Applets d'Ankh dans plasmawindowed"
-for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages; do
+for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages org.ankh.horloge; do
     "$(dirname "$(readlink -f "$0")")/plasma/verifier-applet-plasma.sh" "${applet}"
 done
 

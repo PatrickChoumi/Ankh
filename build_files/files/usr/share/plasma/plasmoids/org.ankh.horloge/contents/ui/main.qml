@@ -103,12 +103,14 @@ PlasmoidItem {
         margeBas: cadre.fixedMargins.bottom
         nePasDeranger: racine.nePasDeranger
         onBasculerNePasDeranger: racine.basculerNePasDeranger()
-        Layout.minimumWidth: width
-        Layout.maximumWidth: width
-        Layout.preferredWidth: width
-        Layout.minimumHeight: height
-        Layout.maximumHeight: height
-        Layout.preferredHeight: height
+        // Taille fixe, comme le Démarrer : lue sur width et height, elle suivait
+        // celle que Plasma impose au volet (vu en VM : volet de 568 × 12)
+        Layout.minimumWidth: centre.largeurContenu
+        Layout.maximumWidth: centre.largeurContenu
+        Layout.preferredWidth: centre.largeurContenu
+        Layout.minimumHeight: centre.hauteurContenu
+        Layout.maximumHeight: centre.hauteurContenu
+        Layout.preferredHeight: centre.hauteurContenu
 
         // À chaque ouverture, le calendrier revient au mois du jour
         Connections {

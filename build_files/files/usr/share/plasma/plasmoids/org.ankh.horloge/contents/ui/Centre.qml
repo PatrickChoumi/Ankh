@@ -35,8 +35,12 @@ Item {
     readonly property int hauteurListe: liste.count === 0 ? 96 : Math.min(420, liste.contentHeight + 8)
     readonly property int hauteurVisible: 48 + hauteurListe + 1 + calendrier.implicitHeight
 
-    width: largeurVisible - margeGauche - margeDroite
-    height: hauteurVisible - margeHaut - margeBas
+    // Taille demandée à Plasma (Layout de main.qml) : calculée, et non lue sur
+    // width et height, que Plasma impose ensuite au volet
+    readonly property int largeurContenu: largeurVisible - margeGauche - margeDroite
+    readonly property int hauteurContenu: hauteurVisible - margeHaut - margeBas
+    width: largeurContenu
+    height: hauteurContenu
 
     // « Tout effacer », comme Windows 11 : l'historique (comme l'applet des
     // notifications, ClearExpired), puis les notifications encore en bulle
