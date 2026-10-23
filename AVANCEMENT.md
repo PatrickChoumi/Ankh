@@ -345,6 +345,7 @@
 - **Mes choix du 2026-10-22** (D-052) : le Démarrer classique de Windows 11 plutôt que celui de fin 2025 ; les volets flottants.
 - **Lot 5, le Démarrer d'Ankh** (commencé le 2026-10-22, branche `claude/lot-5-demarrer`) : recherche faite (le module des menus de KDE se charge depuis un paquet QML ; mesures relevées sur des images officielles de Microsoft : volet de 640×726, cellules de 96×84, icônes de 32). Écrit : le Démarrer classique de Windows 11 (recherche, épingles, « Toutes les applications », « Recommandé », compte et alimentation), dérivé de Kickoff, avec un bouton du même dessin que ceux des applications. La construction échoue s'il casse (version de Plasma, qmllint, sonde hors écran). Vérifié hors écran ; construction et VM en cours.
 - **Lot 6a, les paramètres rapides** (commencé le 2026-10-23, branche `claude/lot-6-reglages`) : mes choix du 2026-10-22 (un seul bouton Wi-Fi, son et batterie ; le volet de Windows 11 avec le mode sombre ; le lecteur multimédia au-dessus). Écrit : le bouton dans la barre, le volet (tuiles, curseurs, lecteur, batterie, réglages) et les pages Wi-Fi, Bluetooth et sorties son, aux mesures relevées sur une image officielle de Microsoft ; Windows+A l'ouvre. La construction échoue s'il casse. Vérifié hors écran ; construction et VM en cours.
+- **Lot 6b, l'horloge, les notifications et le calendrier** (commencé le 2026-10-23, branche `claude/lot-6b-horloge`) : mon choix du 2026-10-22 (« Notifications + calendrier »). Écrit : l'horloge d'Ankh dans la barre (heure, date dessous, cloche), qui remplace celle de Plasma ; un clic ou Windows+N ouvre un seul volet, avec les notifications en haut (cartes, Ne pas déranger, « Tout effacer ») et le calendrier en bas. La cloche de Plasma quitte la zone de notification ; son applet reste chargée, cachée, pour afficher les bulles. La construction échoue s'il casse. Vérifié hors écran, avec de vraies notifications, en français, en sombre et en clair ; test en VM à venir.
 
 ---
 
@@ -368,7 +369,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 4. Shell : barre, style Plasma, volets flottants. Vert en VM ; sa PR suivra celle du lot 3. Limites : icônes de la zone de notification à 22 px (16 dans Windows 11), fixé dans le code de Plasma ; la météo à gauche de la barre (idée d'AnduinOS) reste à faire.
    - Les applications GTK en Flatpak ne voient pas le thème Fluent d'Ankh : à traiter avec le lot 8 (applications).
 5. Démarrer d'Ankh : le Démarrer classique de Windows 11 (mon choix du 2026-10-22). En cours.
-6. Paramètres rapides, calendrier, notifications.
+6. Paramètres rapides (6a), puis horloge avec notifications et calendrier (6b) : écrits, vérifiés hors écran ; VM en cours pour 6a, à venir pour 6b.
 7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons.
 8. Applications : Dolphin, réglages, Discover, Konsole, Chrome, VS Code, GTK, libadwaita, Electron ; plus de fenêtre de KDE Wallet.
 9. Icônes et curseurs.

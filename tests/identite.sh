@@ -174,7 +174,10 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
     if [[ -e "${barre}" ]]; then
         if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = false' "${barre}" \
             && grep -q '^panel.height = 48$' "${barre}" && grep -q '^panel.opacity = "translucent"' "${barre}" \
-            && grep -q '^horloge.writeConfig("dateDisplayFormat", 2)' "${barre}" \
+            && grep -q '^var horloge = panel.addWidget("org.ankh.horloge")' "${barre}" \
+            && grep -q '^horloge.globalShortcut = "Meta+N"' "${barre}" \
+            && ! grep -q 'org.kde.plasma.digitalclock' "${barre}" \
+            && grep -q 'zone.writeConfig("hiddenItems", cachees.concat(\["org.kde.plasma.notifications"\]))' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}" \
             && grep -q '^taches.writeConfig("fill", false)' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
@@ -204,6 +207,14 @@ for fichier in metadata.json contents/ui/main.qml contents/ui/Etat.qml contents/
 done
 grep -q '"Id": "org.ankh.reglages"' /usr/share/plasma/plasmoids/org.ankh.reglages/metadata.json \
     || echec "paramètres rapides d'Ankh : identifiant de l'applet"
+# Horloge d'Ankh (D-052, lot 6b) : heure, date, cloche ; notifications et
+# calendrier dans son volet
+for fichier in metadata.json contents/ui/main.qml contents/ui/Horloge.qml contents/ui/Centre.qml \
+    contents/ui/Notification.qml contents/ui/Calendrier.qml; do
+    [[ -f "/usr/share/plasma/plasmoids/org.ankh.horloge/${fichier}" ]] || echec "horloge d'Ankh : ${fichier} absent"
+done
+grep -q '"Id": "org.ankh.horloge"' /usr/share/plasma/plasmoids/org.ankh.horloge/metadata.json \
+    || echec "horloge d'Ankh : identifiant de l'applet"
 # Module QML commun d'Ankh (couleurs de WinUI, flèche, boutons, interrupteur,
 # curseur), dont se servent les applets d'Ankh
 for type in Couleurs Chevron BoutonDiscret Interrupteur Curseur; do

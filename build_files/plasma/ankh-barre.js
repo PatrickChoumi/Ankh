@@ -64,8 +64,10 @@ if (langIds.indexOf(languageId) != -1) {
 // les ajoute plus d'elle-même (knownItems et extraItems,
 // applets/systemtray/main.xml et plasmoidregistry.cpp de plasma-workspace).
 // Les touches de volume et de luminosité restent gérées par les services de
-// Plasma (kded de plasma-pa, powerdevil). Les notifications restent : leur
-// applet porte aussi les bulles.
+// Plasma (kded de plasma-pa, powerdevil). L'applet des notifications reste
+// chargée, car elle affiche les bulles, mais cachée (hiddenItems : rangée
+// dans la flèche de la zone) : la cloche et l'historique sont dans l'horloge
+// d'Ankh (lot 6b).
 var zone = panel.addWidget("org.kde.plasma.systemtray")
 zone.currentConfigGroup = ["General"]
 var remplacees = ["org.kde.plasma.networkmanagement", "org.kde.plasma.volume", "org.kde.plasma.bluetooth",
@@ -74,15 +76,19 @@ var connues = zone.readConfig("knownItems", [])
 var actives = zone.readConfig("extraItems", [])
 zone.writeConfig("knownItems", connues.concat(remplacees.filter(function (p) { return connues.indexOf(p) < 0 })))
 zone.writeConfig("extraItems", actives.filter(function (p) { return remplacees.indexOf(p) < 0 }))
+var cachees = zone.readConfig("hiddenItems", [])
+if (cachees.indexOf("org.kde.plasma.notifications") < 0) {
+    zone.writeConfig("hiddenItems", cachees.concat(["org.kde.plasma.notifications"]))
+}
 // Paramètres rapides d'Ankh : un seul bouton (réseau, son, batterie), entre
 // la zone de notification et l'heure, et Windows+A, comme Windows 11
 var reglages = panel.addWidget("org.ankh.reglages")
 reglages.globalShortcut = "Meta+A"
-// Heure, et date en dessous, comme Windows 11 (dateDisplayFormat : 2,
-// « BelowTime », applets/digital-clock/main.xml de plasma-workspace)
-var horloge = panel.addWidget("org.kde.plasma.digitalclock")
-horloge.currentConfigGroup = ["Appearance"]
-horloge.writeConfig("dateDisplayFormat", 2)
+// Horloge d'Ankh, comme Windows 11 (lot 6b) : l'heure, la date en dessous
+// et une cloche ; un clic ou Windows+N ouvre les notifications et le
+// calendrier
+var horloge = panel.addWidget("org.ankh.horloge")
+horloge.globalShortcut = "Meta+N"
 // Fine bande « Afficher le bureau », comme Windows 11 (D-052, lot 4)
 panel.addWidget("org.ankh.bureau")
 

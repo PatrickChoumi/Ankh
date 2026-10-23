@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "Date and Time",
+        "Description": "L'heure et la date dans la barre ; un clic ouvre les notifications et le calendrier, comme dans Windows 11 (D-052, lot 6b).",
+        "Icon": "preferences-system-time",
+        "Id": "org.ankh.horloge",
+        "License": "GPL-2.0-or-later",
+        "Name": "Horloge (Ankh)",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

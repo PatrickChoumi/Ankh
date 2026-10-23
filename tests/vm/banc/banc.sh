@@ -185,10 +185,13 @@ banc_reglages() {
     fi
     # Barre des tâches et horloge, telles que Plasma les a (dateDisplayFormat :
     # applets/digital-clock/main.xml de plasma-workspace, 0 par défaut).
+    # L'horloge d'Ankh (lot 6b) n'a pas ce réglage : sa date est toujours sous
+    # l'heure (Horloge.qml), elle compte donc pour 2.
     if panneau=$(banc_plasma 'var p = panels()[0];
 var c = p.widgets("org.kde.plasma.digitalclock")[0];
 var date = "absente";
 if (c) { c.currentConfigGroup = ["Appearance"]; date = c.readConfig("dateDisplayFormat", "0"); }
+if (p.widgets("org.ankh.horloge").length > 0) { date = "2"; }
 print([p.height, p.floating ? "oui" : "non", p.location, date].join(" "));'); then
         echo "Barre des tâches : $panneau"
         read -r hauteur flottante position date <<< "$panneau"
@@ -302,9 +305,13 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             screenshot "$nom"
             ;;
         notification)
+            # Envoyée au nom de Discover (desktop-entry) : Plasma garde hors de
+            # l'historique les notifications sans application connue
+            # (plasmanotifyrc de libnotificationmanager, « @other »), et
+            # l'horloge d'Ankh (lot 6b) la montre ensuite dans son volet
             banc_essayer "notification" banc_session org.freedesktop.Notifications /org/freedesktop/Notifications \
                 org.freedesktop.Notifications Notify 'susssasa{sv}i' Ankh 0 ankh-logo "Mise à jour prête" \
-                "Elle s'appliquera au prochain redémarrage que vous choisirez." 0 0 8000
+                "Elle s'appliquera au prochain redémarrage que vous choisirez." 0 1 desktop-entry s org.kde.discover 8000
             sleep 2
             screenshot "$nom"
             ;;
@@ -322,7 +329,8 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             sleep 1
             ;;
         calendrier)
-            # Horloge : à droite de la barre, avant « Afficher le bureau »
+            # Horloge : à droite de la barre, avant « Afficher le bureau » ; celle
+            # d'Ankh (lot 6b) ouvre les notifications et le calendrier
             souris clic 1200 $((800 - barre / 2))
             sleep 3
             screenshot "$nom"
@@ -550,6 +558,34 @@ banc_pixels() {
     done <<< "$volets"
     monitor 'sendkey esc'
     sleep 2
+    # Horloge d'Ankh (lot 6b) : Windows+N ouvre les notifications et le
+    # calendrier, mesurés de la même façon
+    monitor 'sendkey meta_l-n'
+    for essai in 1 2 3; do
+        sleep 3
+        volets=$(banc_kwin ankh-banc-horloge ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
+    const f = w.frameGeometry;
+    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.normalWindow ? 'fenetre' : 'autre'));
+    console.warn('ANKH-BANC-VOLET ' + w.resourceClass + ' ' + type + ' ' + [f.x, f.y, f.width, f.height].map(Math.round).join(' '));
+}")
+        if grep -q 'plasmashell autre' <<< "$volets"; then
+            break
+        fi
+    done
+    echo "Fenêtres vues par KWin, horloge ouverte :"
+    echo "$volets"
+    while read -r classe type vx vy vw vh; do
+        if [[ $classe == *plasmashell && $type == autre && ${vh:-0} -gt 100 ]]; then
+            banc_noter horloge.largeur "$vw"
+            banc_noter horloge.bord_droit $((1280 - vx - vw))
+            if [[ -n $haut_barre ]]; then
+                banc_noter horloge.ecart_barre $((haut_barre - vy - vh))
+            fi
+            break
+        fi
+    done <<< "$volets"
+    monitor 'sendkey esc'
+    sleep 2
     banc_bureau non
     # Contrôles de la zone noire de la galerie
     galerie=$(banc_galerie_devant)
@@ -601,7 +637,7 @@ check_interface() {
     sleep 10
     banc_dolphin 200 120 880 520
     for surface in bureau demarrer menu-bureau dolphin menu-application dialogue reglages galerie notification \
-        parametres-rapides; do
+        parametres-rapides calendrier; do
         banc_surface ui-clair-100 "$surface" "$barre"
     done
     banc_essayer "thème sombre" in_session "$banc_compte" plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop

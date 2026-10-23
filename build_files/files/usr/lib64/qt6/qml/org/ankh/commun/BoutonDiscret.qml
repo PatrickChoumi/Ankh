@@ -19,13 +19,15 @@ Rectangle {
     property string icone
     property bool fleche: false
     property string infobulle
+    // Enfoncé : un réglage allumé (Ne pas déranger…), le fond de l'appui
+    property bool enfonce: false
 
     signal clique()
 
     implicitWidth: fleche ? 44 : 32
     implicitHeight: 32
     radius: 4
-    color: zone.pressed ? couleurs.discretAppui : (zone.containsMouse ? couleurs.discretSurvol : "transparent")
+    color: zone.pressed || enfonce ? couleurs.discretAppui : (zone.containsMouse ? couleurs.discretSurvol : "transparent")
 
     Accessible.role: Accessible.Button
     Accessible.name: infobulle

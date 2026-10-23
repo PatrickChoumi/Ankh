@@ -530,3 +530,32 @@ tolerance = 0
 unite = "px"
 lot = 6
 source = "Volets flottants à 12 px des bords (lot 4, mon choix du 2026-10-22)"
+
+# --- Lot 6b : horloge, notifications et calendrier --------------------------
+
+[[mesure]]
+id = "horloge.largeur"
+libelle = "Largeur du volet de l'horloge (notifications et calendrier)"
+cible = 364
+tolerance = 2
+unite = "px"
+lot = 6
+source = "Centre de notifications de Windows 11 : 364 de large, observé seulement (recherche de D-052, À VALIDER)"
+
+[[mesure]]
+id = "horloge.ecart_barre"
+libelle = "Écart entre le volet de l'horloge et la barre"
+cible = 12
+tolerance = 0
+unite = "px"
+lot = 6
+source = "Comme volet.ecart_barre : volets flottants (mon choix du 2026-10-22)"
+
+[[mesure]]
+id = "horloge.bord_droit"
+libelle = "Écart entre le volet de l'horloge et le bord droit de l'écran"
+cible = 12
+tolerance = 0
+unite = "px"
+lot = 6
+source = "Volets flottants à 12 px des bords (lot 4, mon choix du 2026-10-22)"
