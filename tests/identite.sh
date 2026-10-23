@@ -180,7 +180,7 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
             && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
             && ! grep -q 'org.kde.plasma.kickoff' "${barre}" \
             && grep -q '^var reglages = panel.addWidget("org.ankh.reglages")' "${barre}" \
-            && grep -q '^reglages.globalShortcut = "Meta+A"' "${barre}" \
+            && ! grep -q 'globalShortcut' "${barre}" \
             && grep -q '"org.kde.plasma.networkmanagement", "org.kde.plasma.volume"' "${barre}"; then
             barres=$((barres + 1))
         else

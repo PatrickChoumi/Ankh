@@ -75,9 +75,10 @@ var actives = zone.readConfig("extraItems", [])
 zone.writeConfig("knownItems", connues.concat(remplacees.filter(function (p) { return connues.indexOf(p) < 0 })))
 zone.writeConfig("extraItems", actives.filter(function (p) { return remplacees.indexOf(p) < 0 }))
 // Paramètres rapides d'Ankh : un seul bouton (réseau, son, batterie), entre
-// la zone de notification et l'heure, et Windows+A, comme Windows 11
+// la zone de notification et l'heure, comme Windows 11. Sans raccourci :
+// Ankh garde ceux de KDE (mon choix du 2026-10-23 ; Meta+A y passe d'une
+// activité à l'autre)
 var reglages = panel.addWidget("org.ankh.reglages")
-reglages.globalShortcut = "Meta+A"
 // Heure, et date en dessous, comme Windows 11 (dateDisplayFormat : 2,
 // « BelowTime », applets/digital-clock/main.xml de plasma-workspace)
 var horloge = panel.addWidget("org.kde.plasma.digitalclock")
