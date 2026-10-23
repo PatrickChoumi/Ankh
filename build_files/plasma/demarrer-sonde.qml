@@ -21,6 +21,8 @@ Item {
     id: sonde
 
     property var erreurs: []
+    // Code de sortie, rendu quand la recherche est terminée (fin, plus bas)
+    property int codeSortie: 0
 
     width: 640
     height: 726
@@ -150,10 +152,33 @@ Item {
             for (const erreur of erreurs) {
                 console.warn("SONDE ÉCHEC : " + erreur);
             }
-            Qt.exit(1);
+            codeSortie = 1;
         } else {
             console.warn("SONDE OK : " + lignes.join(", "));
-            Qt.exit(0);
+        }
+        fin.start();
+    }
+
+    // Les lanceurs de KRunner cherchent dans leurs propres fils d'exécution :
+    // quitter pendant la recherche lancée plus haut fait planter qml à sa
+    // fermeture (« dumped core », après « SONDE OK », run 39840151935). La
+    // sonde attend donc la fin de la recherche ; une recherche qui ne se
+    // termine pas en 30 secondes est une erreur.
+    Timer {
+        id: fin
+        interval: 250
+        repeat: true
+        property int tours: 0
+        onTriggered: {
+            tours++;
+            if (!modeles.resultats.querying && tours >= 4) {
+                stop();
+                Qt.exit(sonde.codeSortie);
+            } else if (tours >= 120) {
+                stop();
+                console.warn("SONDE ÉCHEC : la recherche de KRunner ne se termine pas en 30 secondes");
+                Qt.exit(1);
+            }
         }
     }
 }
