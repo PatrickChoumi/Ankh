@@ -76,12 +76,14 @@ PlasmoidItem {
         margeHaut: cadre.fixedMargins.top
         margeDroite: cadre.fixedMargins.right
         margeBas: cadre.fixedMargins.bottom
-        Layout.minimumWidth: width
-        Layout.maximumWidth: width
-        Layout.preferredWidth: width
-        Layout.minimumHeight: height
-        Layout.maximumHeight: height
-        Layout.preferredHeight: height
+        // Taille fixe, comme le Démarrer : lue sur width et height, elle suivait
+        // celle que Plasma impose au volet (vu en VM : volet de 568 × 12)
+        Layout.minimumWidth: volet.largeurContenu
+        Layout.maximumWidth: volet.largeurContenu
+        Layout.preferredWidth: volet.largeurContenu
+        Layout.minimumHeight: volet.hauteurContenu
+        Layout.maximumHeight: volet.hauteurContenu
+        Layout.preferredHeight: volet.hauteurContenu
 
         // Le volet revient à l'accueil à chaque ouverture
         Connections {
