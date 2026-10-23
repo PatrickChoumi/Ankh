@@ -93,12 +93,22 @@ banc_dolphin() {
         launch_in_session "$banc_compte" dolphin "/home/$banc_compte"
         sleep 10
     fi
+    # Dolphin seule devant le fond noir : les autres fenêtres sont réduites
+    # (la galerie, ouverte juste au-dessus de Dolphin, empêchait de trouver
+    # son bord haut, et donc le rayon de ses coins : runs 39424185717 et
+    # 39575978529). banc_bureau non les rend ensuite.
     banc_kwin ankh-banc-placer ANKH-BANC-PLACEE "for (const w of workspace.windowList()) {
-    if (w.normalWindow && String(w.desktopFileName) === 'org.kde.dolphin') {
+    if (!w.normalWindow) {
+        continue;
+    }
+    if (String(w.desktopFileName) === 'org.kde.dolphin') {
+        w.minimized = false;
         w.setMaximize(false, false);
         w.frameGeometry = {x: $1, y: $2, width: $3, height: $4};
         workspace.activeWindow = w;
         console.warn('ANKH-BANC-PLACEE ' + w.caption);
+    } else {
+        w.minimized = true;
     }
 }"
     sleep 3
@@ -124,6 +134,7 @@ console.warn('ANKH-BANC-BUREAU $1');" > /dev/null
 banc_galerie_devant() {
     banc_kwin ankh-banc-galerie ANKH-BANC-GALERIE "for (const w of workspace.windowList()) {
     if (w.normalWindow && String(w.resourceClass).includes('plasmawindowed')) {
+        w.minimized = false;
         workspace.activeWindow = w;
         const c = w.clientGeometry;
         console.warn('ANKH-BANC-GALERIE ' + [c.x, c.y, c.width, c.height].map(Math.round).join(' '));
@@ -134,7 +145,7 @@ banc_galerie_devant() {
 
 # 1. Réglages lus dans la session (valeurs par défaut de KDE s'ils sont absents).
 banc_reglages() {
-    local valeur alignement panneau hauteur flottante position date
+    local valeur alignement decoration panneau hauteur flottante position date
     log "Banc de l'interface (D-052) : réglages"
     if valeur=$(banc_reglage kcminputrc Mouse cursorTheme breeze_cursors); then
         banc_noter curseur.theme "$valeur"
@@ -145,8 +156,15 @@ banc_reglages() {
     if valeur=$(banc_reglage kdeglobals KDE AnimationDurationFactor 1); then
         banc_noter animations.facteur "$valeur"
     fi
-    # TitleAlignment de Breeze (kdecoration/breezesettingsdata.kcfg de breeze)
-    if alignement=$(banc_reglage breezerc Windeco TitleAlignment AlignCenterFullWidth); then
+    # Décoration des fenêtres : celle d'Ankh (D-052, lot 2) aligne toujours
+    # le titre à gauche ; Breeze suit son réglage TitleAlignment
+    # (kdecoration/breezesettingsdata.kcfg de breeze)
+    if decoration=$(banc_reglage kwinrc org.kde.kdecoration2 library org.kde.breeze); then
+        echo "Décoration des fenêtres : $decoration"
+    fi
+    if [[ ${decoration:-} == org.ankh.decoration ]]; then
+        banc_noter fenetre.titre.alignement gauche
+    elif alignement=$(banc_reglage breezerc Windeco TitleAlignment AlignCenterFullWidth); then
         case $alignement in
             AlignLeft) valeur=gauche ;;
             AlignRight) valeur=droite ;;
