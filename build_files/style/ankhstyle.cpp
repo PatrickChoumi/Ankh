@@ -5404,7 +5404,7 @@ bool Style::drawPushButtonLabelControl(const QStyleOption *option, QPainter *pai
     // jeu de couleurs serait illisible sur l'accent.
     const bool accentButton(!flat && enabled && (buttonOption->features & QStyleOptionButton::DefaultButton));
     if (accentButton) {
-        const QColor onAccent(palette.color(QPalette::Active, QPalette::HighlightedText));
+        const QColor onAccent(_helper->onAccentColor(_helper->accentColor(palette, QPalette::Active)));
         for (const auto role : {QPalette::HighlightedText, QPalette::WindowText, QPalette::ButtonText, QPalette::Text}) {
             palette.setColor(role, onAccent);
         }
@@ -6331,8 +6331,9 @@ bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter 
     if (busy) {
         const int progress(_animations->busyIndicatorEngine().value());
 
-        const auto &first = palette.color(HighlightColor);
-        const auto second(KColorUtils::mix(palette.color(HighlightColor), palette.color(QPalette::Window), 0.7));
+        // Ankh : l'accent exact (accentColor), comme la barre de Windows 11
+        const auto first = _helper->accentColor(palette);
+        const auto second(KColorUtils::mix(first, palette.color(QPalette::Window), 0.7));
         _helper->renderProgressBarBusyContents(painter, rect, first, second, horizontal, reverse, progress);
 
     } else {
@@ -6358,7 +6359,7 @@ bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter 
             }
         }
 
-        auto contentsColor(option->state.testFlag(QStyle::State_Selected) ? palette.color(QPalette::HighlightedText) : palette.color(HighlightColor));
+        auto contentsColor(option->state.testFlag(QStyle::State_Selected) ? palette.color(QPalette::HighlightedText) : _helper->accentColor(palette));
 
         _helper->renderProgressBarGroove(painter, rect, contentsColor, palette.color(QPalette::Window));
         painter->setClipRegion(oldClipRegion);
@@ -8115,7 +8116,7 @@ bool Style::drawSliderComplexControl(const QStyleOptionComplex *option, QPainter
             // colors
             const auto reverse(option->direction == Qt::RightToLeft);
             const auto base(_helper->separatorColor(palette));
-            const auto &highlight = hasHighlightNeutral(widget, option, mouseOver, hasFocus) ? _helper->neutralText(palette) : palette.color(HighlightColor);
+            const auto highlight = hasHighlightNeutral(widget, option, mouseOver, hasFocus) ? _helper->neutralText(palette) : _helper->accentColor(palette);
 
             while (current <= sliderOption->maximum) {
                 // adjust color
@@ -8149,7 +8150,7 @@ bool Style::drawSliderComplexControl(const QStyleOptionComplex *option, QPainter
             const bool upsideDown(sliderOption->upsideDown);
 
             // highlight color
-            const auto &highlight = hasHighlightNeutral(widget, option, mouseOver, hasFocus) ? _helper->neutralText(palette) : palette.color(HighlightColor);
+            const auto highlight = hasHighlightNeutral(widget, option, mouseOver, hasFocus) ? _helper->neutralText(palette) : _helper->accentColor(palette);
 
             if (sliderOption->orientation == Qt::Horizontal) {
                 auto leftRect(grooveRect);
@@ -8210,7 +8211,7 @@ bool Style::drawSliderComplexControl(const QStyleOptionComplex *option, QPainter
         const qreal point = sunken ? Metrics::Slider_InnerThumbSize - 2 : (handleActive && mouseOver) ? Metrics::Slider_InnerThumbSize + 2 : Metrics::Slider_InnerThumbSize;
 
         // render
-        _helper->renderSliderHandle(painter, handleRect, background, outline, shadow, sunken, palette.color(QPalette::Highlight), point);
+        _helper->renderSliderHandle(painter, handleRect, background, outline, shadow, sunken, _helper->accentColor(palette), point);
     }
 
     return true;
@@ -8251,7 +8252,7 @@ bool Style::drawDialComplexControl(const QStyleOptionComplex *option, QPainter *
 
         if (enabled) {
             // highlight
-            const auto &highlight = palette.color(HighlightColor);
+            const auto highlight = _helper->accentColor(palette);
 
             // angles
             const qreal second(dialAngle(sliderOption, sliderOption->sliderPosition));
