@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-21** (PR #16, #17 et #18 fusionnées ; chantier Interface au pixel près de Windows 11 décidé, D-052 ; lot 0, le banc de mesure, fusionné ; suite Craft d'ArtCraft à la place d'OnlyOffice fusionnée, D-053 ; accent qui suit le fond d'écran, D-054).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-23** (chantier Interface : lots 1 et 2 fusionnés, PR #19 et #20 ; lot 3 vérifié en VM, sa PR ouverte).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -13,7 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
-| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lot 0 fusionné ; lot 1 vérifié en VM, PR ouverte ; lots 2 et 3 écrits |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0, 1 et 2 fusionnés ; lot 3 vert en VM, PR ouverte |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -335,6 +335,9 @@
   - icônes : Breeze, Fluent, Papirus, dans un explorateur, Démarrer et la barre des tâches.
 - **Inspiration AnduinOS** (2026-10-15, D-052) : distribution Ubuntu qui ressemble à Windows 11 ; ses sources lues par Claude. Elle confirme nos choix (icônes Fluent, barre de 48 px, Démarrer de Windows 11) et donne ses valeurs pour la barre. Mes choix : curseurs Fluent blancs à l'anneau violet, thème GTK Fluent violet, polices en niveaux de gris ; JetBrains Mono gardée pour le terminal.
 - **Lot 0, le banc de mesure** (2026-10-15, D-052) : 47 mesures comparées à Windows 11, une galerie des contrôles, et des captures de chaque surface en sombre, en clair, à 100, 125 et 150 %. Premier passage en VM vert ([run 38695602550](https://github.com/PatrickChoumi/Ankh/actions/runs/38695602550)) : 46 mesures prises ; 7 conformes, 27 écarts, 12 relevés. Les plus grands écarts : barre de titre de 28 px (32), coins de 5 px (8 et 4), bouton Fermer rond de 16 px (46×32), barres de défilement de 21 px (12), texte de 13 px (14). Quatre défauts du banc, vus sur les captures, sont corrigés et vérifiés au second passage ([run 38702400701](https://github.com/PatrickChoumi/Ankh/actions/runs/38702400701)) ; le rayon du menu reste à vérifier.
+- **Lot 1, les fondations** (fusionné le 2026-10-22, PR [#19](https://github.com/PatrickChoumi/Ankh/pull/19)) : police Selawik (14 et 12 px), rendu en niveaux de gris, couleurs par couches, animations de Windows 11, curseurs Fluent blancs à l'anneau violet. Premier passage : fontconfig ne trouvait pas Selawik ; corrigé et vérifié en VM.
+- **Lot 2, les fenêtres** (2026-10-16 → 2026-10-22, fusionné le 2026-10-23, PR [#20](https://github.com/PatrickChoumi/Ankh/pull/20)) : décoration « Ankh », dérivée de Breeze : barre de 32 px, titre à gauche, boutons de 46×32, Fermer rouge au survol, coins de 8, ombre de Windows. Relecture du code (huit points corrigés : bande de redimensionnement sous les boutons, fenêtre agrandie sans ombre, traits nets à 125 et 150 %…). Premier passage en VM : 9 mesures sur 11 ; les deux défauts corrigés, puis **vérifié en VM le 2026-10-22 : les 11 mesures conformes** (Fermer de 46×32, coins de 8,2 px).
+- **Lot 3, les contrôles** (2026-10-21 → 2026-10-22, branche `claude/lot-3-controles`, PR ouverte le 2026-10-23) : style Qt « Ankh », dérivé de Breeze, aux mesures et au dessin de Windows 11 (contrôles de 32, coins de 4, cases et boutons radio d'accent, bouton principal d'accent, barre de défilement de 12) ; contrôles QtQuick des applications de KDE adaptés (interrupteur de 40×20, éléments de liste de 40, infobulles de 12) ; thème GTK Fluent au violet d'Ankh. Relecture du code : neuf points, sept corrigés. **Vérifié en VM deux fois : toutes ses mesures conformes**, devenues obligatoires.
 - **Accent qui suit le fond d'écran** (2026-10-16, D-054, ma demande) : ce n'était pas prévu (D-037 fixait le violet). Plasma 6.7 sait le faire ; Ankh l'active par défaut, et ses fonds désignent le violet d'Ankh. Vérifié en VM le 2026-10-20.
 
 ---
