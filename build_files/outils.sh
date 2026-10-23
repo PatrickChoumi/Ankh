@@ -26,7 +26,8 @@
 # (lot 7a) est vérifié par build_files/plasma/verifier-alttab.sh, la vue des
 # tâches d'Ankh (lot 7b) par build_files/plasma/verifier-vuetaches.sh, l'écran
 # de verrouillage d'Ankh (lot 7c) par build_files/plasma/verifier-verrouillage.sh
-# (kscreenlocker_greet en mode test).
+# (kscreenlocker_greet en mode test), son écran de déconnexion par
+# build_files/plasma/verifier-deconnexion.sh (ksmserver-logout-greeter).
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
 # build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style et themes.
@@ -79,6 +80,8 @@ echo "== Vue des tâches d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-vuetaches.sh"
 echo "== Écran de verrouillage d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-verrouillage.sh"
+echo "== Écran de déconnexion d'Ankh : vérifications"
+"$(dirname "$(readlink -f "$0")")/plasma/verifier-deconnexion.sh"
 echo "== Applets d'Ankh dans plasmawindowed"
 for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages org.ankh.horloge; do
     "$(dirname "$(readlink -f "$0")")/plasma/verifier-applet-plasma.sh" "${applet}"

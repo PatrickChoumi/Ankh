@@ -642,6 +642,19 @@ for dossier in "${themes[@]}"; do
         install -m 0644 /usr/share/icons/hicolor/scalable/apps/ankh-logo.svg "${dossier}/contents/splash/images/ankh-logo.svg"
         echo "Écran de chargement d'Ankh : $(basename "${dossier}")"
     fi
+    # D-052, lot 7c : écran de déconnexion au dessin de la connexion d'Ankh
+    # (build_files/plasma/adapter-deconnexion.py, vérifié dans l'étape
+    # « outils » par verifier-deconnexion.sh) ; ses actions restent celles de KDE
+    if [[ -e "${dossier}/contents/logout/Logout.qml" ]]; then
+        deconnexion="$(mktemp)"
+        cp "${dossier}/contents/logout/Logout.qml" "${deconnexion}"
+        python3 /ctx/plasma/adapter-deconnexion.py "${deconnexion}"
+        rm "${dossier}/contents/logout/Logout.qml" "${dossier}/contents/logout/LogoutButton.qml"
+        install -m 0644 "${deconnexion}" "${dossier}/contents/logout/Logout.qml"
+        install -m 0644 /ctx/plasma/deconnexion/LogoutButton.qml "${dossier}/contents/logout/LogoutButton.qml"
+        rm "${deconnexion}"
+        echo "Écran de déconnexion d'Ankh : $(basename "${dossier}")"
+    fi
 done
 # Chaque thème de Fedora désigne son propre écran de chargement, devenu celui
 # d'Ankh ; Fedora y désignait celui de KDE (ksplashrc dans contents/defaults ;

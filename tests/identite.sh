@@ -129,6 +129,14 @@ attendu "Son de connexion" Sound --file plasma_workspace.notifyrc --group Event/
 attendu "Son de la corbeille" None --file plasma_workspace.notifyrc --group "Event/Trash: emptied" --key Action
 attendu "Son du chargeur branché" None --file powerdevil.notifyrc --group Event/pluggedin --key Action
 attendu "Son des avertissements" Popup --file plasma_workspace.notifyrc --group Event/warning --key Action
+# D-052, lot 7c : écran de déconnexion au dessin de la connexion d'Ankh, dans
+# chaque thème global qui en a un (voile d'Ankh, boutons ronds d'Ankh)
+for deconnexion in /usr/share/plasma/look-and-feel/*/contents/logout; do
+    grep -q 'color: "#0d1117"' "${deconnexion}/Logout.qml" \
+        || echec "écran de déconnexion de KDE sans le voile d'Ankh : ${deconnexion}/Logout.qml"
+    grep -q 'Bouton de l.écran de déconnexion d.Ankh' "${deconnexion}/LogoutButton.qml" \
+        || echec "boutons de déconnexion de KDE au lieu de ceux d'Ankh : ${deconnexion}/LogoutButton.qml"
+done
 # D-052, lot 7c : écran de verrouillage au dessin de la connexion d'Ankh
 # (adapter-plasma.py), l'authentification de KDE intacte
 verrou=/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen
