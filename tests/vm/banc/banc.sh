@@ -72,6 +72,25 @@ banc_session() { # méthode D-Bus de la session : busctl --user call …
     in_session "$banc_compte" busctl --user call "$@" > /dev/null
 }
 
+# Ouvre (ou referme) le volet d'une applet de la barre sans touche du
+# clavier : Ankh ne leur donne pas de raccourci et garde ceux de KDE (mon
+# choix du 2026-10-23). Le banc pose un raccourci de test sur l'applet, le
+# temps de l'appeler par son nom dans kglobalaccel (« activate widget <id> »,
+# Applet::setGlobalShortcut de libplasma), puis banc_rendre_applet le retire.
+banc_ouvrir_applet() { # $1 : greffon de l'applet
+    local id
+    id=$(banc_plasma "var w = panels()[0].widgets(\"$1\")[0];
+if (w) { w.globalShortcut = \"Ctrl+Alt+Shift+F12\"; print(w.id); }") || return 1
+    [[ $id =~ ^[0-9]+$ ]] || return 1
+    sleep 1
+    banc_session org.kde.kglobalaccel /component/plasmashell org.kde.kglobalaccel.Component \
+        invokeShortcut s "activate widget $id"
+}
+
+banc_rendre_applet() { # $1 : greffon de l'applet
+    banc_plasma "var w = panels()[0].widgets(\"$1\")[0]; if (w) { w.globalShortcut = \"\"; }" > /dev/null
+}
+
 banc_mesurer() {
     python3 "$banc_dossier/mesurer.py" "$@"
 }
@@ -335,12 +354,13 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             screenshot "$nom"
             ;;
         parametres-rapides)
-            # Paramètres rapides d'Ankh (D-052, lot 6a) : Windows+A
-            monitor 'sendkey meta_l-a'
+            # Paramètres rapides d'Ankh (D-052, lot 6a), ouverts sans touche
+            banc_essayer "paramètres rapides" banc_ouvrir_applet org.ankh.reglages
             sleep 3
             screenshot "$nom"
             monitor 'sendkey esc'
             sleep 1
+            banc_essayer "raccourci de test retiré" banc_rendre_applet org.ankh.reglages
             ;;
         calendrier)
             # Horloge : à droite de la barre, avant « Afficher le bureau » ; celle
@@ -568,9 +588,9 @@ banc_pixels() {
     fi
     monitor 'sendkey esc'
     sleep 2
-    # Paramètres rapides d'Ankh (lot 6a) : Windows+A, puis la fenêtre de
-    # plasmashell qui n'est ni la barre ni le bureau, comme pour le menu
-    monitor 'sendkey meta_l-a'
+    # Paramètres rapides d'Ankh (lot 6a), ouverts sans touche, puis la fenêtre
+    # de plasmashell qui n'est ni la barre ni le bureau, comme pour le menu
+    banc_essayer "paramètres rapides" banc_ouvrir_applet org.ankh.reglages
     for essai in 1 2 3; do
         sleep 3
         volets=$(banc_kwin ankh-banc-reglages ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
@@ -596,9 +616,10 @@ banc_pixels() {
     done <<< "$volets"
     monitor 'sendkey esc'
     sleep 2
-    # Horloge d'Ankh (lot 6b) : Windows+N ouvre les notifications et le
-    # calendrier, mesurés de la même façon
-    monitor 'sendkey meta_l-n'
+    banc_essayer "raccourci de test retiré" banc_rendre_applet org.ankh.reglages
+    # Horloge d'Ankh (lot 6b) : les notifications et le calendrier, ouverts
+    # sans touche et mesurés de la même façon
+    banc_essayer "horloge" banc_ouvrir_applet org.ankh.horloge
     for essai in 1 2 3; do
         sleep 3
         volets=$(banc_kwin ankh-banc-horloge ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
@@ -624,6 +645,7 @@ banc_pixels() {
     done <<< "$volets"
     monitor 'sendkey esc'
     sleep 2
+    banc_essayer "raccourci de test retiré" banc_rendre_applet org.ankh.horloge
     # Vue des tâches d'Ankh (lot 7b) : Windows+Tab l'ouvre-t-il ? KWin dit si
     # l'effet est actif (isEffectActive, src/scripting/workspace_wrapper.h)
     monitor 'sendkey meta_l-tab'

@@ -81,14 +81,14 @@ if (cachees.indexOf("org.kde.plasma.notifications") < 0) {
     zone.writeConfig("hiddenItems", cachees.concat(["org.kde.plasma.notifications"]))
 }
 // Paramètres rapides d'Ankh : un seul bouton (réseau, son, batterie), entre
-// la zone de notification et l'heure, et Windows+A, comme Windows 11
+// la zone de notification et l'heure, comme Windows 11. Sans raccourci :
+// Ankh garde ceux de KDE (mon choix du 2026-10-23 ; Meta+A y passe d'une
+// activité à l'autre)
 var reglages = panel.addWidget("org.ankh.reglages")
-reglages.globalShortcut = "Meta+A"
 // Horloge d'Ankh, comme Windows 11 (lot 6b) : l'heure, la date en dessous
-// et une cloche ; un clic ou Windows+N ouvre les notifications et le
-// calendrier
+// et une cloche ; un clic ouvre les notifications et le calendrier. Sans
+// raccourci, comme les paramètres rapides
 var horloge = panel.addWidget("org.ankh.horloge")
-horloge.globalShortcut = "Meta+N"
 // Fine bande « Afficher le bureau », comme Windows 11 (D-052, lot 4)
 panel.addWidget("org.ankh.bureau")
 
