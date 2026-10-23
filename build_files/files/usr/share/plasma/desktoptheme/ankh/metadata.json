@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "",
+        "Description": "Style Plasma d'Ankh, aux mesures de Windows 11 (D-052, lot 4) ; le reste vient de Breeze",
+        "Description[fr]": "Style Plasma d'Ankh, aux mesures de Windows 11 (D-052, lot 4) ; le reste vient de Breeze",
+        "EnabledByDefault": true,
+        "Id": "ankh",
+        "License": "LGPL",
+        "Name": "Ankh",
+        "Name[fr]": "Ankh",
+        "Version": "1.0",
+        "Website": "https://github.com/PatrickChoumi/Ankh"
+    },
+    "X-Plasma-API": "5.0"
+}

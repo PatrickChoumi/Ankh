@@ -608,7 +608,12 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key AnimationDurationFact
 # Plasma prend sa couleur dominante.
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key accentColorFromWallpaper true
 
-# Barre flottante en bas, menu et applications au centre (build_files/plasma/ankh-barre.js),
+# D-052, lot 4 : notifications en bas à droite, au-dessus de la barre, comme
+# Windows 11 (PopupPosition, CloseToWidget par défaut :
+# libnotificationmanager/kcfg/notificationsettings.kcfg de plasma-workspace)
+kwriteconfig6 --file /etc/xdg/plasmanotifyrc --group Notifications --key PopupPosition BottomRight
+
+# Barre collée en bas, de 48 px, menu et applications au centre (build_files/plasma/ankh-barre.js),
 # et écran de chargement de la session d'Ankh (build_files/plasma/ankh-splash.qml),
 # dans tous les thèmes globaux : ceux de Fedora (renommés « Ankh ») et ceux de
 # KDE (Breeze). L'assistant de premier démarrage applique un thème Breeze si
@@ -763,6 +768,34 @@ done
 # qu'il remplace et échoue si KDE l'a changé (build_files/qqc2/adapter.py).
 python3 /ctx/qqc2/adapter.py /usr/lib64/qt6/qml/org/kde/desktop /ctx/qqc2/SwitchIndicator.qml
 echo "Style QtQuick de KDE adapté : kf6-qqc2-desktop-style $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-qqc2-desktop-style)"
+
+# D-052, lot 4 : style Plasma « Ankh » (volets et menus aux coins de 8, barre
+# translucide, boutons de la barre des tâches et infobulles de Windows 11).
+# Ses SVG sont écrits ici depuis ceux de Breeze installés dans l'image, dont
+# ils gardent les ombres (build_files/plasma/style-ankh.py) ; le reste vient
+# de Breeze (FallbackTheme). Choisi par défaut, et dans chaque thème global,
+# dont les réglages passent avant /etc/xdg quand on en applique un.
+style_plasma=/usr/share/plasma/desktoptheme/ankh
+test -f "${style_plasma}/metadata.json"
+test -f /usr/share/plasma/desktoptheme/default/dialogs/background.svgz
+python3 /ctx/plasma/style-ankh.py /usr/share/plasma/desktoptheme/default "${style_plasma}"
+chmod -R u=rwX,go=rX "${style_plasma}"
+kwriteconfig6 --file /etc/xdg/plasmarc --group Theme --key name ankh
+for dossier in "${themes[@]}"; do
+    defauts="${dossier}/contents/defaults"
+    if [[ -e "${defauts}" ]]; then
+        avant="$(kreadconfig6 --file "${defauts}" --group plasmarc --group Theme --key name)"
+        kwriteconfig6 --file "${defauts}" --group plasmarc --group Theme --key name ankh
+        chmod 0644 "${defauts}"
+        echo "Style Plasma d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucun} »)"
+    fi
+done
+
+# D-052, lot 4 : volets de la barre flottants, à 12 px de la barre, avec leurs
+# quatre coins (mon choix du 2026-10-22, build_files/plasma/adapter-plasma.py)
+coque=/usr/share/plasma/shells/org.kde.plasma.desktop
+python3 /ctx/plasma/adapter-plasma.py "${coque}"
+echo "Coque de Plasma adaptée : plasma-desktop $(rpm -q --qf '%{VERSION}-%{RELEASE}' plasma-desktop)"
 
 # D-052, lot 3 : thème GTK Fluent au violet d'Ankh (mon choix du 2026-10-15,
 # confirmé le 2026-10-21), construit dans l'étape « outils ». Clair, avec sa

@@ -39,7 +39,9 @@
   - Lot 0, le banc de mesure : fusionné ([#17](https://github.com/PatrickChoumi/Ankh/pull/17), 2026-10-15).
   - Lot 1, les fondations (Selawik, couleurs par couches, curseurs blancs, animations), avec l'accent qui suit le fond (D-054) : fusionné ([#19](https://github.com/PatrickChoumi/Ankh/pull/19), 2026-10-22).
   - Lot 2, les fenêtres (décoration « Ankh ») : fusionné ([#20](https://github.com/PatrickChoumi/Ankh/pull/20), 2026-10-23).
-  - Lot 3, les contrôles (style Qt « Ankh », QtQuick, GTK) : vérifié par la CI et en VM le 2026-10-22, ses mesures conformes ; sa PR attend mon accord. Lots 4 (barre et style Plasma) et 5 (Démarrer), chacun sur sa branche, leur PR après celle du précédent.
+  - Lot 3, les contrôles (style Qt « Ankh », QtQuick, GTK), avec l'accent exact (mon choix du 2026-10-23) : fusionné ([#21](https://github.com/PatrickChoumi/Ankh/pull/21), 2026-10-23).
+  - Lot 4, le shell (barre collée de 48 px, style Plasma « Ankh », volets flottants, icônes des applications à 32 px) : vérifié en VM le 2026-10-22 (41 mesures conformes) ; sa PR ouverte le 2026-10-23. Lot 5 (Démarrer) ensuite, sur sa branche.
+  - Lot 5, le Démarrer d'Ankh : le Démarrer classique de Windows 11 (mon choix du 2026-10-22), dérivé de Kickoff ; en cours.
 - **Suite Craft d'ArtCraft (D-053), décidée le 2026-10-15** : OnlyOffice retiré ; WordCraft, GridCraft et DeckCraft toujours là (Simple), les sept clones d'Adobe dans une nouvelle option « Création ». Applications en alpha, en Flatpak préparé au premier clic, versions et empreintes figées dans l'image ; nouvelle version proposée à l'ouverture de la session.
   - Mise en œuvre le 2026-10-15 ; CI et VM vertes (dix applications au premier clic, notification d'une nouvelle version visible) ; fusionnée le 2026-10-16 ([#18](https://github.com/PatrickChoumi/Ankh/pull/18)).
 - **Phase 3 terminée le 2026-10-13** : son critère est rempli (Chrome par défaut, VLC et OnlyOffice, choix des options pour Simple et Dev, mises à jour dans Discover, VS Code et le conteneur de dev recréés depuis le dépôt au premier clic, tout testé en CI et en VM cloud). Détail :

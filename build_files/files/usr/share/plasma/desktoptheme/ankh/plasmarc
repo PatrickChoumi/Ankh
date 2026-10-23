@@ -1,0 +1,7 @@
+# Style Plasma d'Ankh (D-052, lot 4) : ses SVG sont écrits à la construction
+# par build_files/plasma/style-ankh.py ; ceux qui manquent viennent de Breeze.
+[Settings]
+FallbackTheme=default
+
+[AdaptiveTransparency]
+enabled=true

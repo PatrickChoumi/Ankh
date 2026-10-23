@@ -162,16 +162,20 @@ nom="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["KPlugin
 attendu "Jeu de couleurs du thème global" Ankh --file "${sombre}/contents/defaults" --group kdeglobals --group General --key ColorScheme
 attendu "Jeu de couleurs Ankh présent" Ankh --file /usr/share/color-schemes/Ankh.colors --group General --key ColorScheme
 
-# Barre flottante (menu et applications centrés entre deux espaceurs) et écran
-# de chargement d'Ankh, dans tous les thèmes globaux qui en ont un : ceux de
+# Barre d'Ankh (D-052, lot 4 : collée, 48 px, translucide, menu et
+# applications centrés entre deux espaceurs, date sous l'heure) et écran de
+# chargement d'Ankh, dans tous les thèmes globaux qui en ont un : ceux de
 # Fedora renommés « Ankh » et ceux de KDE (Breeze)
 barres=0
 for dossier in /usr/share/plasma/look-and-feel/*/; do
     theme="$(basename "${dossier}")"
     barre="${dossier}contents/layouts/org.kde.plasma.desktop-layout.js"
     if [[ -e "${barre}" ]]; then
-        if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = true' "${barre}" \
-            && grep -q '^panel.opacity = "translucent"' "${barre}"; then
+        if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = false' "${barre}" \
+            && grep -q '^panel.height = 48$' "${barre}" && grep -q '^panel.opacity = "translucent"' "${barre}" \
+            && grep -q '^horloge.writeConfig("dateDisplayFormat", 2)' "${barre}" \
+            && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}" \
+            && grep -q '^taches.writeConfig("fill", false)' "${barre}"; then
             barres=$((barres + 1))
         else
             echec "barre de ${theme} : pas celle d'Ankh"
@@ -186,6 +190,37 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
     fi
 done
 echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
+attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
+[[ -f /usr/share/plasma/plasmoids/org.ankh.bureau/contents/ui/main.qml ]] || echec "bande « Afficher le bureau » d'Ankh absente"
+grep -q 'margin: Plasmoid.location === PlasmaCore.Types.Floating ? 0 : 12' \
+    /usr/share/plasma/shells/org.kde.plasma.desktop/contents/applet/CompactApplet.qml \
+    || echec "volets de la barre collés à la barre, et non à 12 px"
+# Style Plasma d'Ankh (D-052, lot 4) : ses SVG, lisibles, choisi par défaut et
+# dans chaque thème global
+for svg in dialogs/background translucent/dialogs/background solid/dialogs/background widgets/tooltip \
+    solid/widgets/tooltip widgets/panel-background solid/widgets/panel-background widgets/tasks; do
+    fichier="/usr/share/plasma/desktoptheme/ankh/${svg}.svg"
+    if [[ ! -s "${fichier}" ]] || ! python3 -I -c 'import sys, xml.etree.ElementTree as ET; ET.parse(sys.argv[1])' "${fichier}"; then
+        echec "style Plasma d'Ankh : ${svg} absent ou illisible"
+    fi
+done
+grep -q 'id="focus-bottom"' /usr/share/plasma/desktoptheme/ankh/widgets/tasks.svg || echec "style Plasma d'Ankh : bouton de l'application active absent"
+# Icônes des applications de 32 px dans la barre de 48 (mon choix du
+# 2026-10-22) : Plasma leur donne la hauteur du bouton moins les marges du
+# haut et du bas de widgets/tasks (iconBox de Task.qml, plasma-desktop)
+icone_tache="$(python3 -I -c '
+import sys, xml.etree.ElementTree as ET
+racine = ET.parse(sys.argv[1]).getroot()
+hauteurs = {e.get("id"): float(e.get("height")) for e in racine.iter() if "hint" in e.get("id", "")}
+print(round(48 - hauteurs["normal-hint-top-margin"] - hauteurs["normal-hint-bottom-margin"]))
+' /usr/share/plasma/desktoptheme/ankh/widgets/tasks.svg)" || echec "style Plasma d'Ankh : marges des boutons de la barre illisibles"
+[[ ${icone_tache} == 32 ]] || echec "icônes des applications de ${icone_tache} px dans la barre, au lieu de 32"
+grep -q 'id="shadow-top"' /usr/share/plasma/desktoptheme/ankh/dialogs/background.svg || echec "style Plasma d'Ankh : ombre des volets absente"
+attendu "Style Plasma" ankh --file plasmarc --group Theme --key name
+for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
+    attendu "Style Plasma de $(basename "$(dirname "$(dirname "${defauts}")")")" ankh \
+        --file "${defauts}" --group plasmarc --group Theme --key name
+done
 ((barres >= 6)) || echec "barre d'Ankh dans ${barres} thème(s) global(aux) seulement (6 attendus : 3 de Fedora, 3 de KDE)"
 for theme in fedora fedoradark fedoralight; do
     dossier="/usr/share/plasma/look-and-feel/org.fedoraproject.${theme}.desktop"

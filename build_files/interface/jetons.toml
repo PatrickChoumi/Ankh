@@ -22,7 +22,7 @@
 # Une mesure devient obligatoire quand son lot figure dans lots_termines :
 # un écart fait alors échouer le test en VM. Chaque PR de lot ajoute son
 # numéro ici, avec les mesures qu'elle atteint.
-lots_termines = [1, 2, 3]
+lots_termines = [1, 2, 3, 4]
 
 # --- Lot 1 : fondations ---------------------------------------------------
 
@@ -395,6 +395,48 @@ lot = 4
 source = "Windows 11 : heure et date sur deux lignes (D-052)"
 
 [[mesure]]
+id = "barre.tache.trait.longueur"
+libelle = "Trait d'accent sous l'application active : longueur"
+cible = 16
+tolerance = 1
+unite = "px"
+lot = 4
+source = "Observé sous Windows 11, sans source publiée (À VALIDER) ; D-052"
+
+[[mesure]]
+id = "barre.tache.trait.epaisseur"
+libelle = "Trait d'accent sous l'application active : épaisseur"
+cible = 3
+tolerance = 0
+unite = "px"
+lot = 4
+source = "Observé sous Windows 11, sans source publiée (À VALIDER) ; D-052"
+
+[[mesure]]
+id = "barre.tache.rectangle.largeur"
+libelle = "Rectangle de l'application active : largeur"
+cible = 48
+tolerance = 1
+unite = "px"
+lot = 4
+source = "Mon choix du 2026-10-22 : icônes de 32 px, comme avant le lot 4 ; rectangle à 8 px de l'icône (Windows 11 : environ 44×40 pour des icônes de 24, observé, À VALIDER)"
+
+[[mesure]]
+id = "barre.tache.rectangle.hauteur"
+libelle = "Rectangle de l'application active : hauteur"
+cible = 44
+tolerance = 1
+unite = "px"
+lot = 4
+source = "Comme barre.tache.rectangle.largeur"
+
+[[mesure]]
+id = "barre.tache.icone.dessin"
+libelle = "Dessin de l'icône de Dolphin dans la barre (largeur × hauteur ; icône de 32 réglée par le style)"
+lot = 4
+source = "Relevé seulement : le dessin d'une icône ne remplit pas son carré"
+
+[[mesure]]
 id = "volet.rayon"
 libelle = "Rayon des coins du menu de Plasma (volet)"
 cible = 8
@@ -402,6 +444,15 @@ tolerance = 0.75
 unite = "px"
 lot = 4
 source = "WinUI CommonStyles/CornerRadius_themeresources.xaml, OverlayCornerRadius"
+
+[[mesure]]
+id = "volet.ecart_barre"
+libelle = "Écart entre le menu et la barre des tâches"
+cible = 12
+tolerance = 0
+unite = "px"
+lot = 4
+source = "Mesuré sur des images officielles de Microsoft (Démarrer de Windows 11, recherche du lot 5, 2026-10-22, À VALIDER à 100 %) ; mon choix du 2026-10-22 : volets flottants"
 
 [[mesure]]
 id = "notifications.position"
