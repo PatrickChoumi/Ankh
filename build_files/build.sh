@@ -725,6 +725,74 @@ for dossier in "${themes[@]}"; do
     fi
 done
 
+# D-052, lot 3 : style des contrôles d'Ankh, aux mesures et au dessin des
+# contrôles de Windows 11 (coins de 4, hauteur de 32, cases et boutons radio
+# remplis de la couleur d'accent, bouton principal d'accent…). Dérivé de
+# celui de Breeze, ses sources sont dans build_files/style ; compilé dans
+# l'étape « outils » du Containerfile (build_files/outils.sh).
+plugins_styles=/usr/lib64/qt6/plugins/styles
+test -f "${plugins_styles}/breeze6.so"
+install -m 0755 /outils/style/ankh6.so "${plugins_styles}/ankh6.so"
+install -m 0644 /outils/style/ankh.themerc /usr/share/kstyle/themes/ankh.themerc
+# Comme la décoration : bibliothèques et symboles présents, ldd réussi
+if ! liens="$(ldd -r "${plugins_styles}/ankh6.so" 2>&1)" \
+    || grep -E 'not found|undefined symbol' <<< "${liens}"; then
+    printf '%s\n' "${liens}" >&2
+    echo "Le style d'Ankh ne trouve pas ses bibliothèques dans l'image" >&2
+    exit 1
+fi
+echo "Style d'Ankh : $(grep -c '=>' <<< "${liens}") bibliothèques trouvées"
+# Style des applications (widgetStyle, kconfigwidgets/src/kstylemanager.cpp de
+# KDE), aussi dans chaque thème global, dont les réglages sont recopiés à
+# chaque session avant /etc/xdg
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key widgetStyle Ankh
+for dossier in "${themes[@]}"; do
+    defauts="${dossier}/contents/defaults"
+    if [[ -e "${defauts}" ]]; then
+        avant="$(kreadconfig6 --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle)"
+        kwriteconfig6 --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle Ankh
+        chmod 0644 "${defauts}"
+        echo "Style d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucun} »)"
+    fi
+done
+
+# D-052, lot 3 : les contrôles écrits en QML dans le style QtQuick de KDE
+# (org.kde.desktop, qqc2-desktop-style), aux mesures de Windows 11 :
+# interrupteur de 40×20, case de 32, élément de liste de 40, infobulle de
+# 12 px, bouton mis en avant rempli d'accent. Le script vérifie chaque texte
+# qu'il remplace et échoue si KDE l'a changé (build_files/qqc2/adapter.py).
+python3 /ctx/qqc2/adapter.py /usr/lib64/qt6/qml/org/kde/desktop /ctx/qqc2/SwitchIndicator.qml
+echo "Style QtQuick de KDE adapté : kf6-qqc2-desktop-style $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-qqc2-desktop-style)"
+
+# D-052, lot 3 : thème GTK Fluent au violet d'Ankh (mon choix du 2026-10-15,
+# confirmé le 2026-10-21), construit dans l'étape « outils ». Clair, avec sa
+# feuille sombre, prise quand KDE demande le sombre.
+test ! -e /usr/share/themes/Fluent-Ankh
+cp -r /outils/themes/Fluent-Ankh /usr/share/themes/Fluent-Ankh
+chmod -R u=rwX,go=rX /usr/share/themes/Fluent-Ankh
+# Thème des nouveaux comptes. KDE ne l'écrit qu'une fois, à la première
+# session, et seulement s'il est vide (Breeze sinon : kconf_update/gtktheme.cpp
+# de kde-gtk-config) ; il ne le change ensuite qu'à un choix fait dans les
+# réglages. Sous Wayland, GTK 3 le lit aussi dans les réglages de GNOME
+# (org.gnome.desktop.interface gtk-theme), dont la valeur par défaut devient
+# celle d'Ankh.
+for version in 3.0 4.0; do
+    install -d -m 0755 "/etc/skel/.config/gtk-${version}"
+    printf '[Settings]\ngtk-theme-name=Fluent-Ankh\n' > "/etc/skel/.config/gtk-${version}/settings.ini"
+    chmod 0644 "/etc/skel/.config/gtk-${version}/settings.ini"
+done
+printf 'gtk-theme-name="Fluent-Ankh"\n' > /etc/skel/.gtkrc-2.0
+chmod 0644 /etc/skel/.gtkrc-2.0
+test -f /usr/share/glib-2.0/schemas/org.gnome.desktop.interface.gschema.xml
+printf "[org.gnome.desktop.interface]\ngtk-theme='Fluent-Ankh'\n" > /usr/share/glib-2.0/schemas/90_ankh.gschema.override
+glib-compile-schemas --strict /usr/share/glib-2.0/schemas
+theme_gtk="$(GSETTINGS_BACKEND=memory gsettings get org.gnome.desktop.interface gtk-theme)"
+if [[ "${theme_gtk}" != "'Fluent-Ankh'" ]]; then
+    echo "Thème GTK par défaut : ${theme_gtk} au lieu de 'Fluent-Ankh'" >&2
+    exit 1
+fi
+echo "Thème GTK par défaut : ${theme_gtk}"
+
 # Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
 # d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup).
 # Le fond d'Ankh y est mis, aux noms attendus
@@ -772,6 +840,14 @@ fi
 kwriteconfig6 --file /etc/xdg/breezerc --group Style --key MenuOpacity 85
 kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowSize ShadowVeryLarge
 kwriteconfig6 --file /etc/xdg/breezerc --group Common --key ShadowStrength 160
+# Le style d'Ankh (D-052, lot 3) lit les mêmes réglages dans ankhrc
+if [[ -e /etc/xdg/ankhrc ]]; then
+    echo "/etc/xdg/ankhrc existe déjà dans la base : réglage à fusionner à la main" >&2
+    exit 1
+fi
+kwriteconfig6 --file /etc/xdg/ankhrc --group Style --key MenuOpacity 85
+kwriteconfig6 --file /etc/xdg/ankhrc --group Common --key ShadowSize ShadowVeryLarge
+kwriteconfig6 --file /etc/xdg/ankhrc --group Common --key ShadowStrength 160
 # Konsole s'ouvre avec le profil Ankh. /etc/xdg/konsolerc vient du paquet
 # konsole-part de Fedora (barre de menus masquée, historique) : il est gardé,
 # le profil par défaut y est seulement ajouté, s'il n'en fixe pas déjà un.
@@ -787,7 +863,7 @@ fi
 kwriteconfig6 --file /etc/xdg/konsolerc --group 'Desktop Entry' --key DefaultProfile Ankh.profile
 # Lisibles par tous les comptes : KConfig peut créer ses fichiers pour leur
 # seul propriétaire (root ici).
-chmod 0644 /etc/xdg/kdeglobals /etc/xdg/breezerc /etc/xdg/konsolerc "${sombre}/contents/defaults"
+chmod 0644 /etc/xdg/kdeglobals /etc/xdg/breezerc /etc/xdg/ankhrc /etc/xdg/konsolerc "${sombre}/contents/defaults"
 
 # Le premier terminal n'affiche plus le message de Fedora qui conseille Toolbx
 # et DNF (contraire à D-009 et D-036). /etc/profile.d/toolbox.sh (paquet

@@ -1,0 +1,6 @@
+File=ankh.kcfg
+ClassName=StyleConfigData
+NameSpace=Ankh
+Singleton=true
+Mutators=true
+GlobalEnums=true

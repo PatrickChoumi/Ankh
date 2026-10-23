@@ -1,0 +1,5 @@
+[Misc]
+Name=Ankh
+Comment=Style des contrôles d'Ankh, aux mesures de Windows 11 (D-052, lot 3)
+[KDE]
+WidgetStyle=Ankh

@@ -18,7 +18,8 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     dnf5 -y --setopt=install_weak_deps=False install fontmake xcursorgen librsvg2-tools git-core \
         cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel kdecoration-devel kf6-kcolorscheme-devel \
-        kf6-kconfig-devel kf6-kcoreaddons-devel kf6-kguiaddons-devel kf6-kiconthemes-devel && \
+        kf6-kconfig-devel kf6-kcoreaddons-devel kf6-kguiaddons-devel kf6-kiconthemes-devel \
+        kf6-frameworkintegration-devel kf6-kwindowsystem-devel qt6-qtdeclarative-devel sassc && \
     /ctx/outils.sh /sortie
 
 FROM ${BASE_IMAGE}

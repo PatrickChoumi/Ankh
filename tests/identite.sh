@@ -101,6 +101,53 @@ for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
     attendu "Décoration de $(basename "$(dirname "$(dirname "${defauts}")")")" org.ankh.decoration \
         --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library
 done
+# D-052, lot 3 : style des contrôles d'Ankh, ses bibliothèques trouvées, chargé
+# sous son nom, choisi par défaut et dans chaque thème global
+style=/usr/lib64/qt6/plugins/styles/ankh6.so
+[[ -f "${style}" ]] || echec "style d'Ankh absent"
+if ldd -r "${style}" 2>&1 | grep -E 'not found|undefined symbol'; then
+    echec "le style d'Ankh ne trouve pas ses bibliothèques"
+fi
+attendu "Fiche du style d'Ankh" Ankh --file /usr/share/kstyle/themes/ankh.themerc --group KDE --key WidgetStyle
+attendu "Style des applications" Ankh --group KDE --key widgetStyle
+for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
+    attendu "Style de $(basename "$(dirname "$(dirname "${defauts}")")")" Ankh \
+        --file "${defauts}" --group kdeglobals --group KDE --key widgetStyle
+done
+attendu "Opacité des menus du style d'Ankh" 85 --file ankhrc --group Style --key MenuOpacity
+# Style QtQuick de KDE adapté (build_files/qqc2/adapter.py) : fichiers lus sur
+# le disque et non dans le greffon compilé, et chaque adaptation présente
+qqc2=/usr/lib64/qt6/qml/org/kde/desktop
+if grep -n '^prefer ' "${qqc2}/qmldir" "${qqc2}/private/qmldir"; then
+    echec "style QtQuick : la copie compilée passe encore avant les fichiers adaptés"
+fi
+grep -q "Interrupteur d'Ankh" "${qqc2}/private/SwitchIndicator.qml" || echec "style QtQuick : interrupteur de KDE, et non celui d'Ankh"
+for fichier in CheckBox RadioButton Switch; do
+    grep -q 'implicitIndicatorHeight - topPadding - contentHeight' "${qqc2}/${fichier}.qml" \
+        || echec "style QtQuick : hauteur de ${fichier} non adaptée"
+done
+grep -q 'ListViewItemMinHeight' "${qqc2}/ItemDelegate.qml" || echec "style QtQuick : élément de liste de moins de 40 px"
+grep -q 'font: Kirigami.Theme.smallFont' "${qqc2}/ToolTip.qml" || echec "style QtQuick : infobulle en police normale"
+grep -q '__ankhAccent' "${qqc2}/Button.qml" || echec "style QtQuick : bouton mis en avant sans accent"
+# Accent exact (focusColor) et blanc ou noir posé dessus, comme le style
+# d'Ankh, et non la sélection de KDE (mon choix du 2026-10-23, D-052)
+grep -q '__ankhSurAccent' "${qqc2}/Button.qml" || echec "style QtQuick : icône du bouton mis en avant sans couleur sur l'accent"
+grep -q 'Kirigami.Theme.focusColor' "${qqc2}/private/SwitchIndicator.qml" || echec "style QtQuick : interrupteur à la couleur de sélection, et non à l'accent"
+# Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
+# nouveaux comptes et dans les réglages de GNOME lus sous Wayland
+for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do
+    [[ -f "/usr/share/themes/Fluent-Ankh/${feuille}" ]] || echec "thème GTK Fluent-Ankh : ${feuille} absente"
+done
+grep -qi '#7c3aed' /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk.css || echec "thème GTK clair : violet d'Ankh absent"
+grep -qi '#a78bfa' /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk-dark.css || echec "thème GTK sombre : violet d'Ankh absent"
+attendu "Thème GTK 3 des nouveaux comptes" Fluent-Ankh --file /etc/skel/.config/gtk-3.0/settings.ini --group Settings --key gtk-theme-name
+attendu "Thème GTK 4 des nouveaux comptes" Fluent-Ankh --file /etc/skel/.config/gtk-4.0/settings.ini --group Settings --key gtk-theme-name
+theme_gtk="$(GSETTINGS_BACKEND=memory gsettings get org.gnome.desktop.interface gtk-theme)"
+if [[ "${theme_gtk}" == "'Fluent-Ankh'" ]]; then
+    echo "Thème GTK dans les réglages de GNOME : ${theme_gtk}"
+else
+    echec "thème GTK dans les réglages de GNOME : ${theme_gtk}"
+fi
 attendu "Taille des curseurs" 24 --file kcminputrc --group Mouse --key cursorSize
 for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
     attendu "Curseurs de $(basename "$(dirname "$(dirname "${defauts}")")")" Ankh-curseurs \

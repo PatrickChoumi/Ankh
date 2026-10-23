@@ -22,7 +22,7 @@
 # Une mesure devient obligatoire quand son lot figure dans lots_termines :
 # un écart fait alors échouer le test en VM. Chaque PR de lot ajoute son
 # numéro ici, avec les mesures qu'elle atteint.
-lots_termines = [1, 2]
+lots_termines = [1, 2, 3]
 
 # --- Lot 1 : fondations ---------------------------------------------------
 
@@ -303,7 +303,7 @@ source = "WinUI CommonStyles/Slider_themeresources.xaml, SliderHorizontalThumbWi
 
 [[mesure]]
 id = "controle.progression.hauteur"
-libelle = "Hauteur d'une barre de progression"
+libelle = "Épaisseur de la barre de progression dessinée (sans les marges de 8 px que KDE met au-dessus et au-dessous)"
 cible = 3
 tolerance = 0
 unite = "px"

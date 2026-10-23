@@ -1,0 +1,7 @@
+File=ankhsettingsdata.kcfg
+ClassName=InternalSettings
+NameSpace=Ankh
+Singleton=false
+Mutators=true
+GlobalEnums=true
+Notifiers=OutlineCloseButton
