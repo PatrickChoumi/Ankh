@@ -175,7 +175,6 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
         if [[ "$(grep -c '"org.kde.plasma.panelspacer"' "${barre}")" == 2 ]] && grep -q '^panel.floating = false' "${barre}" \
             && grep -q '^panel.height = 48$' "${barre}" && grep -q '^panel.opacity = "translucent"' "${barre}" \
             && grep -q '^var horloge = panel.addWidget("org.ankh.horloge")' "${barre}" \
-            && grep -q '^horloge.globalShortcut = "Meta+N"' "${barre}" \
             && ! grep -q 'org.kde.plasma.digitalclock' "${barre}" \
             && grep -q 'zone.writeConfig("hiddenItems", cachees.concat(\["org.kde.plasma.notifications"\]))' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}" \
@@ -183,7 +182,7 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
             && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
             && ! grep -q 'org.kde.plasma.kickoff' "${barre}" \
             && grep -q '^var reglages = panel.addWidget("org.ankh.reglages")' "${barre}" \
-            && grep -q '^reglages.globalShortcut = "Meta+A"' "${barre}" \
+            && ! grep -q 'globalShortcut' "${barre}" \
             && grep -q '"org.kde.plasma.networkmanagement", "org.kde.plasma.volume"' "${barre}"; then
             barres=$((barres + 1))
         else

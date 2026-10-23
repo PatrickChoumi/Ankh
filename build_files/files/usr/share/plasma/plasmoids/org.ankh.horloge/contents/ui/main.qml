@@ -6,9 +6,9 @@
 */
 
 // Horloge d'Ankh (D-052, lot 6b ; mon choix du 2026-10-22) : dans la barre,
-// l'heure, la date et une cloche, comme Windows 11 ; un clic ou Windows+N
-// ouvre un seul volet, avec les notifications en haut et le calendrier en
-// bas. Elle remplace l'horloge de Plasma dans la barre d'Ankh
+// l'heure, la date et une cloche, comme Windows 11 ; un clic ouvre un seul
+// volet, avec les notifications en haut et le calendrier en bas. Elle
+// remplace l'horloge de Plasma dans la barre d'Ankh
 // (build_files/plasma/ankh-barre.js) ; l'applet des notifications de Plasma
 // reste chargée, cachée : c'est elle qui affiche les bulles.
 
