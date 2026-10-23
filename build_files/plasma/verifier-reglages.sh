@@ -19,6 +19,9 @@ set -euo pipefail
 
 ici="$(dirname "$(readlink -f "$0")")"
 paquet="$(readlink -f "${1:-${ici}/../files/usr/share/plasma/plasmoids/org.ankh.reglages}")"
+# Module QML commun d'Ankh (org.ankh.commun : couleurs, flèche, boutons,
+# interrupteur, curseur), installé avec l'image dans /usr/lib64/qt6/qml
+modules="$(readlink -f "${ici}/../files/usr/lib64/qt6/qml")"
 readonly PLASMA_ATTENDU=6.7.5
 readonly QT_BIN=/usr/lib64/qt6/bin
 
@@ -51,12 +54,12 @@ PYTHON
 # 2. qmllint : modules, types et imports. Son.qml est laissé de côté :
 # plasma-pa enregistre ses types dans son code, sans fichier de description,
 # et qmllint ne les voit pas ; la sonde le crée avec les vrais types.
-mapfile -t fichiers < <(find "${paquet}/contents/ui" -maxdepth 1 -name '*.qml' ! -name Son.qml | sort)
+mapfile -t fichiers < <(find "${paquet}/contents/ui" "${modules}/org/ankh/commun" -maxdepth 1 -name '*.qml' ! -name Son.qml | sort)
 if [[ ${#fichiers[@]} -eq 0 ]]; then
     echo "Paramètres rapides d'Ankh : aucun fichier QML dans ${paquet}/contents/ui" >&2
     exit 1
 fi
-if ! "${QT_BIN}/qmllint" -I /usr/lib64/qt6/qml --unqualified disable --missing-property disable \
+if ! "${QT_BIN}/qmllint" -I "${modules}" -I /usr/lib64/qt6/qml --unqualified disable --missing-property disable \
     --unused-imports disable --import error --missing-type error --unresolved-type error "${fichiers[@]}"; then
     echo "Paramètres rapides d'Ankh : qmllint a trouvé un module, un type ou un import introuvable (lignes ci-dessus)" >&2
     exit 1
@@ -73,7 +76,7 @@ journal="${travail}/sonde.log"
 if env HOME="${travail}/maison" XDG_RUNTIME_DIR="${travail}/run" XDG_CONFIG_HOME="${travail}/maison/.config" \
     XDG_CACHE_HOME="${travail}/maison/.cache" XDG_DATA_HOME="${travail}/maison/.local/share" \
     LANG=C.UTF-8 QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software QT_FORCE_STDERR_LOGGING=1 \
-    timeout 120 "${QT_BIN}/qml" "${travail}/sonde.qml" > "${journal}" 2>&1; then
+    QML_IMPORT_PATH="${modules}" timeout 120 "${QT_BIN}/qml" "${travail}/sonde.qml" > "${journal}" 2>&1; then
     code=0
 else
     code=$?

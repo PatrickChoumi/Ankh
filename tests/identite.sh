@@ -204,6 +204,12 @@ for fichier in metadata.json contents/ui/main.qml contents/ui/Etat.qml contents/
 done
 grep -q '"Id": "org.ankh.reglages"' /usr/share/plasma/plasmoids/org.ankh.reglages/metadata.json \
     || echec "paramètres rapides d'Ankh : identifiant de l'applet"
+# Module QML commun d'Ankh (couleurs de WinUI, flèche, boutons, interrupteur,
+# curseur), dont se servent les applets d'Ankh
+for type in Couleurs Chevron BoutonDiscret Interrupteur Curseur; do
+    grep -q "^${type} 1.0 ${type}.qml$" /usr/lib64/qt6/qml/org/ankh/commun/qmldir \
+        && [[ -f "/usr/lib64/qt6/qml/org/ankh/commun/${type}.qml" ]] || echec "module org.ankh.commun : ${type} absent"
+done
 # Démarrer d'Ankh (D-052, lot 5) : paquet QML dérivé de Kickoff, ouvert par
 # la touche Méta (X-Plasma-Provides), avec ses singletons déclarés (qmldir).
 # Ses imports, ses types et les modèles de Kicker sont vérifiés à la

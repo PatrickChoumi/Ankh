@@ -1,0 +1,6 @@
+module org.ankh.commun
+Couleurs 1.0 Couleurs.qml
+Chevron 1.0 Chevron.qml
+BoutonDiscret 1.0 BoutonDiscret.qml
+Interrupteur 1.0 Interrupteur.qml
+Curseur 1.0 Curseur.qml

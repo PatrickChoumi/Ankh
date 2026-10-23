@@ -24,6 +24,7 @@
 import QtQuick
 
 import org.kde.kirigami as Kirigami
+import org.ankh.commun
 
 Item {
     id: volet
