@@ -84,11 +84,15 @@ PlasmoidItem {
         imagePath: "dialogs/background"
     }
 
+    // Un clic sur l'heure, volet ouvert, le ferme : l'état est lu à l'appui,
+    // car le volet se ferme déjà en perdant le focus, avant le clic
     compactRepresentation: Horloge {
+        property bool etaitOuvert: false
         ouvert: racine.expanded
         maintenant: racine.maintenant
         nePasDeranger: racine.nePasDeranger
-        onClicked: racine.expanded = !racine.expanded
+        onPressed: etaitOuvert = racine.expanded
+        onClicked: racine.expanded = !etaitOuvert
     }
 
     fullRepresentation: Centre {
