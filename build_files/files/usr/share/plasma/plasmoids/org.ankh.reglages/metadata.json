@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "Un seul bouton (réseau, son, batterie) qui ouvre les paramètres rapides, comme dans Windows 11 (D-052, lot 6a).",
+        "Icon": "configure",
+        "Id": "org.ankh.reglages",
+        "License": "GPL-2.0-or-later",
+        "Name": "Paramètres rapides (Ankh)",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
