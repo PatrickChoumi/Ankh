@@ -11,7 +11,9 @@ COPY build_files /
 # fenêtres d'Ankh (lot 2), compilés depuis leurs sources (build_files/outils.sh).
 # Leurs outils de compilation restent dans cette étape : seul le résultat,
 # /sortie, entre dans l'image. Le Démarrer d'Ankh (lot 5) y est vérifié sur le
-# Plasma de la même base (qmllint et qml de qt6-qtdeclarative-devel).
+# Plasma de la même base (qmllint et qml de qt6-qtdeclarative-devel), et
+# chaque applet d'Ankh est lancée dans plasmawindowed, dans une session D-Bus
+# à elle (dbus-run-session de dbus-daemon).
 FROM ${BASE_IMAGE} AS outils
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
@@ -20,7 +22,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     dnf5 -y --setopt=install_weak_deps=False install fontmake xcursorgen librsvg2-tools git-core \
         cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel kdecoration-devel kf6-kcolorscheme-devel \
         kf6-kconfig-devel kf6-kcoreaddons-devel kf6-kguiaddons-devel kf6-kiconthemes-devel \
-        kf6-frameworkintegration-devel kf6-kwindowsystem-devel qt6-qtdeclarative-devel sassc && \
+        kf6-frameworkintegration-devel kf6-kwindowsystem-devel qt6-qtdeclarative-devel sassc dbus-daemon && \
     /ctx/outils.sh /sortie
 
 FROM ${BASE_IMAGE}

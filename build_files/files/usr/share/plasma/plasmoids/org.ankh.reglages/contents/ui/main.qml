@@ -26,19 +26,29 @@ PlasmoidItem {
 
     // Toute la hauteur de la barre, comme les boutons des applications
     Plasmoid.constraintHints: Plasmoid.CanFillArea
-    Plasmoid.icon: etat.iconeReseau
+    Plasmoid.icon: racine.etat ? racine.etat.iconeReseau : "network-wired"
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.hasConfigurationInterface: false
     preferredRepresentation: compactRepresentation
 
     toolTipMainText: "Paramètres rapides"
-    toolTipSubText: (etat.wifiDisponible ? (etat.wifiActif ? "Wi-Fi activé" : "Wi-Fi désactivé") + "\n" : "")
-        + (etat.sonDisponible ? (etat.muet ? "Son coupé" : "Volume : " + etat.volume + " %") : "")
-        + (etat.batterieDisponible ? "\nBatterie : " + etat.batteriePourcent + " %" : "")
-
-    Etat {
-        id: etat
+    toolTipSubText: {
+        const etat = racine.etat;
+        if (!etat) {
+            return "";
+        }
+        return (etat.wifiDisponible ? (etat.wifiActif ? "Wi-Fi activé" : "Wi-Fi désactivé") + "\n" : "")
+            + (etat.sonDisponible ? (etat.muet ? "Son coupé" : "Volume : " + etat.volume + " %") : "")
+            + (etat.batterieDisponible ? "\nBatterie : " + etat.batteriePourcent + " %" : "");
     }
+
+    // L'état du système, en propriété de la racine : Plasma crée le bouton de
+    // la barre et lit les liaisons de la racine avant de lui donner ses
+    // valeurs ; un id (« etat ») lu à ce moment vaut undefined pour de bon,
+    // une propriété prévient de son changement. Ce qui la lit tôt la teste
+    // d'abord (vu en VM et dans plasmawindowed : « Cannot read property
+    // 'iconeReseau' of undefined »)
+    readonly property Etat etat: Etat {}
 
     // Marges du cadre des volets du style Plasma (dialogs/background) : le
     // volet visible garde les mesures de Windows 11
@@ -53,7 +63,7 @@ PlasmoidItem {
     // dans le Démarrer et les applets de Plasma
     compactRepresentation: Bouton {
         property bool etaitOuvert: false
-        etat: etat
+        etat: racine.etat
         ouvert: racine.expanded
         onPressed: etaitOuvert = racine.expanded
         onClicked: racine.expanded = !etaitOuvert
@@ -61,7 +71,7 @@ PlasmoidItem {
 
     fullRepresentation: Volet {
         id: volet
-        etat: etat
+        etat: racine.etat
         margeGauche: cadre.fixedMargins.left
         margeHaut: cadre.fixedMargins.top
         margeDroite: cadre.fixedMargins.right

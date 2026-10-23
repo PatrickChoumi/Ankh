@@ -20,7 +20,9 @@
 # vérifié sur le Plasma de cette image de base (build_files/plasma/verifier-demarrer.sh :
 # version de Plasma, qmllint, sonde hors écran) ; rien n'en sort dans /sortie.
 # Les paramètres rapides d'Ankh (lot 6a) le sont de même
-# (build_files/plasma/verifier-reglages.sh).
+# (build_files/plasma/verifier-reglages.sh). Puis chaque applet d'Ankh est
+# lancée dans plasmawindowed, le vrai contexte de Plasma, sans avertissement
+# QML permis (build_files/plasma/verifier-applet-plasma.sh).
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
 # build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style et themes.
@@ -67,6 +69,10 @@ echo "== Démarrer d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-demarrer.sh"
 echo "== Paramètres rapides d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-reglages.sh"
+echo "== Applets d'Ankh dans plasmawindowed"
+for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages; do
+    "$(dirname "$(readlink -f "$0")")/plasma/verifier-applet-plasma.sh" "${applet}"
+done
 
 echo "== Police Selawik"
 recuperer "${SELAWIK_DEPOT}" "${SELAWIK_COMMIT}" "${travail}/selawik" "Source files/UFO"
