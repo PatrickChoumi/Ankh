@@ -48,10 +48,15 @@ PlasmoidItem {
         imagePath: "dialogs/background"
     }
 
+    // Un clic sur le bouton, volet ouvert, le ferme : le volet se ferme déjà
+    // en perdant le focus, avant le clic ; l'état est donc lu à l'appui, comme
+    // dans le Démarrer et les applets de Plasma
     compactRepresentation: Bouton {
+        property bool etaitOuvert: false
         etat: etat
         ouvert: racine.expanded
-        onClicked: racine.expanded = !racine.expanded
+        onPressed: etaitOuvert = racine.expanded
+        onClicked: racine.expanded = !etaitOuvert
     }
 
     fullRepresentation: Volet {
