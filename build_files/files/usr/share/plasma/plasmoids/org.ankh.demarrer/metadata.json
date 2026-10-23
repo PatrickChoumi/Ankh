@@ -1,0 +1,21 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "Application Launchers",
+        "Description": "Le Démarrer de Windows 11 aux couleurs d'Ankh : recherche, épingles, toutes les applications, recommandations, compte et alimentation (D-052, lot 5). Dérivé de Kickoff, de KDE.",
+        "Icon": "ankh-logo",
+        "Id": "org.ankh.demarrer",
+        "License": "GPL-2.0-or-later",
+        "Name": "Démarrer",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-Provides": [
+        "org.kde.plasma.launchermenu"
+    ]
+}

@@ -1889,6 +1889,38 @@
 - **Questions et mes réponses (2026-10-22)**, après la recherche du lot 5 (rapport de Claude : le module privé `org.kde.plasma.private.kicker` se charge depuis un paquet QML ; mesures du Démarrer relevées au pixel sur des images officielles de Microsoft) :
   1. **Démarrer** : « Celui de D-052 (Recommandé) » : le Démarrer de Windows 11 tel qu'il était jusqu'en 2025 (épingles en grille, bouton « Toutes les applications », « Recommandé », compte et alimentation en bas), entièrement mesuré (volet de 640×726, cellules de 96×84, icônes de 32, coins de 8). Plutôt que le nouveau Démarrer livré depuis fin 2025 (une seule page qui défile, 8 colonnes, mesuré sur une seule maquette de Microsoft).
   2. **Volets de la barre** : « Oui, volets flottants (Recommandé) » : le Démarrer, l'horloge, la zone de notification et les autres volets flottent à 12 px de la barre avec leurs quatre coins, comme Windows 11, au prix d'un fichier de Plasma modifié dans l'image. Plutôt que des volets collés à la barre, sans coins de ce côté.
+- **Lot 5, le Démarrer d'Ankh (commencé le 2026-10-22, branche `claude/lot-5-demarrer`)**. C'est le Démarrer classique de Windows 11 (mon choix du 2026-10-22, ci-dessus) :
+  - **paquet QML** `org.ankh.demarrer` (`build_files/files/usr/share/plasma/plasmoids/`) :
+    - dérivé de Kickoff (plasma-desktop 6.7.5, GPL-2.0-or-later) ; les en-têtes de KDE sont gardés, et les textes sont en français, au vouvoiement ;
+    - il se sert du module privé `org.kde.plasma.private.kicker` (plasma-workspace 6.7.5) pour les épingles, toutes les applications, la recherche (lanceurs de KRunner), les documents récents et les actions de session ;
+    - il déclare `X-Plasma-Provides: org.kde.plasma.launchermenu` : la touche Méta et `activateLauncherMenu` l'ouvrent, comme Kickoff ;
+  - **disposition** : celle mesurée sur les images officielles de Microsoft (recherche du lot 5) :
+    - volet de 640×726 ;
+    - champ de recherche en haut, à 32 px des bords, de 576×40 ;
+    - « Épinglé » en grille de 6 colonnes, cellules de 96×84, icônes de 32 ;
+    - bouton « Toutes les applications › » ;
+    - « Recommandé » : les applications ajoutées récemment, puis les documents récents ;
+    - en bas : le compte et le bouton d'alimentation ;
+    - « Toutes les applications » : liste alphabétique, avec la grille des lettres pour sauter à l'une d'elles ;
+  - **épingles** : celles d'Ankh (`kicker-extra-favoritesrc`), reprises au premier lancement comme dans Kickoff. Elles sont partagées avec les menus de KDE ; leur ordre est propre au Démarrer (`org.ankh.demarrer.favorites.instance-<id>`, sans tiret : `kastatsfavoritesmodel.cpp` découpe le nom au tiret) ;
+  - **bouton dans la barre** : le même dessin que les boutons des applications du lot 4 (`widgets/tasks`, préfixe `hover`, au survol et volet ouvert) ; 56 px de large, logo d'Ankh de 32 px. Il remplace Kickoff dans `ankh-barre.js`. `ankh-lanceur.js` lui donne aussi le logo ;
+  - **la construction échoue si le Démarrer casse** (`build_files/plasma/verifier-demarrer.sh`, appelé par `build_files/outils.sh`, dans l'étape « outils » du `Containerfile`, sur le Plasma de la même image de base) :
+    - si plasma-workspace ou plasma-desktop ne sont plus en 6.7.5 (règle de D-052 : les changements de Kickoff et de Kicker sont reportés d'abord, avec un message qui dit quoi et où) ;
+    - si `metadata.json` ou les singletons du `qmldir` changent ;
+    - si qmllint trouve un module, un type ou un import introuvable ;
+    - si la sonde hors écran (`build_files/plasma/demarrer-sonde.qml`), qui crée les vrais modèles de Kicker et le volet entier, échoue ou écrit un avertissement QML. Une erreur QML ne fait pas tomber Plasma : le menu s'afficherait à moitié sans que rien n'échoue ;
+  - **vérifié hors écran** dans un conteneur Fedora 44 (Plasma 6.7.5, Qt 6.11.2), par l'agent du lot 5 :
+    - la vérification passe : qmllint sans erreur sur 19 fichiers, « SONDE OK » ;
+    - sept copies volontairement cassées sont toutes refusées : type, valeur d'énumération, propriété, singleton, interface, `X-Plasma-Provides`, version de Plasma ;
+    - avec une vraie session D-Bus et kactivitymanagerd, les épingles sont reprises dans l'ordre et leur ordre est enregistré ;
+    - dans `plasmawindowed`, le volet fait 640×726, sans avertissement QML ;
+    - le bouton fait 56×48, le logo 32×32 en (12, 7), le rectangle de survol 48×44 ;
+  - **banc** : `demarrer.largeur` (640 ± 2), `demarrer.hauteur` (726 ± 2), `demarrer.erreurs_qml` (0, lu dans le journal de la session) et un relevé, `demarrer.decalage_centre`. Ces mesures deviendront obligatoires après le passage en VM ;
+  - **limites** :
+    - un compte créé avant le lot 5 garde Kickoff : Plasma ne relance pas la disposition de la barre (sans effet pour moi : l'installation se fait en phase 9) ;
+    - Selawik n'est compilée qu'en Light, Regular et Bold : le semi-gras des titres sera sans doute rendu en gras (À VALIDER) ;
+    - les valeurs relevées sur une seule image restent À VALIDER : titres de 14 px, marges des cellules, points des pages, lignes de liste de 40, grille des lettres de 72×56 ;
+  - **reste à vérifier en VM** : ouverture par la touche Méta, placement à 12 px de la barre, centrage, menus contextuels, compte et alimentation, glisser-déposer, lanceurs de KRunner en français.
 - **Lot 6, paramètres rapides, notifications et calendrier : recherche (2026-10-22)**, dans le code de Plasma 6.7.5 : plasma-nm `v6.7.5` (`af9d0f5`), plasma-pa (`b763114`), bluedevil (`7abbf39`), powerdevil (`5627bac`) ; plasma-workspace `Plasma/6.7` (`60a25d0`) :
   - les applets de Plasma pour le réseau, le son, le Bluetooth, la batterie, la luminosité, l'horloge et les notifications sont compilées (`plasma_add_applet` avec `QML_SOURCES`). On ne peut pas modifier leur QML dans l'image, comme on l'a fait pour `CompactApplet.qml` ;
   - leurs modules QML, eux, sont installés à part. Un paquet QML d'Ankh peut s'en servir, comme le Démarrer se sert du module de Kicker :

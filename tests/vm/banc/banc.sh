@@ -472,10 +472,12 @@ banc_pixels() {
         fi
     done
     image=$(banc_image volet)
-    local haut_barre=""
+    local haut_barre="" centre_barre="" erreurs_qml
     while read -r classe type vx vy vw vh; do
         if [[ $classe == *plasmashell && $type == barre ]]; then
             haut_barre=$vy
+            # La barre couvre toute la largeur de l'écran (lot 4)
+            centre_barre=$((vx + vw / 2))
         fi
     done <<< "$volets"
     while read -r classe type vx vy vw vh; do
@@ -485,9 +487,31 @@ banc_pixels() {
             if [[ -n $haut_barre ]]; then
                 banc_noter volet.ecart_barre $((haut_barre - vy - vh))
             fi
+            # Démarrer d'Ankh (lot 5) : taille du volet visible, et place de
+            # son centre par rapport à celui de l'écran
+            banc_noter demarrer.largeur "$vw"
+            banc_noter demarrer.hauteur "$vh"
+            if [[ -n $centre_barre ]]; then
+                banc_noter demarrer.decalage_centre $((vx + vw / 2 - centre_barre))
+            fi
             break
         fi
     done <<< "$volets"
+    # Avertissements QML du Démarrer dans le journal de la session : une
+    # erreur QML ne fait pas tomber Plasma (recherche du lot 5, § 4). grep ne
+    # rend 1 que s'il ne trouve rien, ce qui n'est pas une erreur ici.
+    if erreurs_qml=$(vm "set -o pipefail; journalctl --no-pager -b _UID=$(vm id -u "$banc_compte") --output cat \
+        | { grep -E 'plasmoids/org\.ankh\.demarrer/[^ ]*\.qml:[0-9]+' || [ \$? -eq 1 ]; }"); then
+        if [[ -n $erreurs_qml ]]; then
+            echo "Avertissements QML du Démarrer :"
+            echo "$erreurs_qml"
+            banc_noter demarrer.erreurs_qml "$(wc -l <<< "$erreurs_qml")"
+        else
+            banc_noter demarrer.erreurs_qml 0
+        fi
+    else
+        echo "(Démarrer : journal de la session illisible)"
+    fi
     monitor 'sendkey esc'
     sleep 2
     banc_bureau non

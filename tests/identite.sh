@@ -163,9 +163,10 @@ attendu "Jeu de couleurs du thème global" Ankh --file "${sombre}/contents/defau
 attendu "Jeu de couleurs Ankh présent" Ankh --file /usr/share/color-schemes/Ankh.colors --group General --key ColorScheme
 
 # Barre d'Ankh (D-052, lot 4 : collée, 48 px, translucide, menu et
-# applications centrés entre deux espaceurs, date sous l'heure) et écran de
-# chargement d'Ankh, dans tous les thèmes globaux qui en ont un : ceux de
-# Fedora renommés « Ankh » et ceux de KDE (Breeze)
+# applications centrés entre deux espaceurs, date sous l'heure ; lot 5 : le
+# Démarrer d'Ankh à la place de Kickoff) et écran de chargement d'Ankh, dans
+# tous les thèmes globaux qui en ont un : ceux de Fedora renommés « Ankh » et
+# ceux de KDE (Breeze)
 barres=0
 for dossier in /usr/share/plasma/look-and-feel/*/; do
     theme="$(basename "${dossier}")"
@@ -175,7 +176,9 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
             && grep -q '^panel.height = 48$' "${barre}" && grep -q '^panel.opacity = "translucent"' "${barre}" \
             && grep -q '^horloge.writeConfig("dateDisplayFormat", 2)' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.bureau")' "${barre}" \
-            && grep -q '^taches.writeConfig("fill", false)' "${barre}"; then
+            && grep -q '^taches.writeConfig("fill", false)' "${barre}" \
+            && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
+            && ! grep -q 'org.kde.plasma.kickoff' "${barre}"; then
             barres=$((barres + 1))
         else
             echec "barre de ${theme} : pas celle d'Ankh"
@@ -192,6 +195,26 @@ done
 echo "Barre d'Ankh dans ${barres} thème(s) global(aux)"
 attendu "Place des notifications" BottomRight --file plasmanotifyrc --group Notifications --key PopupPosition
 [[ -f /usr/share/plasma/plasmoids/org.ankh.bureau/contents/ui/main.qml ]] || echec "bande « Afficher le bureau » d'Ankh absente"
+# Démarrer d'Ankh (D-052, lot 5) : paquet QML dérivé de Kickoff, ouvert par
+# la touche Méta (X-Plasma-Provides), avec ses singletons déclarés (qmldir).
+# Ses imports, ses types et les modèles de Kicker sont vérifiés à la
+# construction (build_files/plasma/verifier-demarrer.sh).
+demarrer=/usr/share/plasma/plasmoids/org.ankh.demarrer
+if python3 -I -c 'import json, sys
+meta = json.load(open(sys.argv[1], encoding="utf-8"))
+sys.exit(meta["KPlugin"]["Id"] != "org.ankh.demarrer" or "org.kde.plasma.launchermenu" not in meta.get("X-Plasma-Provides", []))' \
+    "${demarrer}/metadata.json" 2> /dev/null; then
+    echo "Démarrer d'Ankh : présent, menu des applications de Plasma"
+else
+    echec "Démarrer d'Ankh absent, ou sans X-Plasma-Provides org.kde.plasma.launchermenu (${demarrer}/metadata.json)"
+fi
+for fichier in contents/ui/main.qml contents/ui/Demarrer.qml contents/ui/Modeles.qml contents/config/main.xml; do
+    [[ -s "${demarrer}/${fichier}" ]] || echec "Démarrer d'Ankh : ${fichier} absent"
+done
+for singleton in Mesures ActionMenu; do
+    grep -qx "singleton ${singleton} ${singleton}.qml" "${demarrer}/contents/ui/qmldir" \
+        || echec "Démarrer d'Ankh : singleton ${singleton} non déclaré dans qmldir"
+done
 grep -q 'margin: Plasmoid.location === PlasmaCore.Types.Floating ? 0 : 12' \
     /usr/share/plasma/shells/org.kde.plasma.desktop/contents/applet/CompactApplet.qml \
     || echec "volets de la barre collés à la barre, et non à 12 px"
@@ -300,6 +323,7 @@ if LC_ALL=C.UTF-8 grep -nE "(\"|=)[^\"]*\<(tu|ton|ta|tes|toi|te)\>" /usr/share/p
     /usr/share/plasma/plasma-welcome/extra-pages/*.qml "${module}/contents/ui/main.qml" \
     /usr/share/plasma/packages/org.ankh.plasmasetup.options/contents/ui/main.qml \
     /usr/lib64/qt6/qml/org/ankh/composants/*.qml /usr/share/plasma/plasmoids/org.ankh.options/contents/ui/*.qml \
+    /usr/share/plasma/plasmoids/org.ankh.demarrer/contents/ui/*.qml /usr/share/plasma/plasmoids/org.ankh.demarrer/contents/ui/code/*.js \
     /usr/share/applications/ankh-options.desktop /usr/libexec/ankh-options-reglages \
     /usr/share/ankh/options/gaming/applications/*.desktop /usr/share/ankh/options/gaming/wayland-sessions/*.desktop \
     /usr/libexec/ankh-flatpak /usr/share/applications/ai.storyteller.*.desktop \

@@ -10,7 +10,8 @@ COPY build_files /
 # D-052 : la police Selawik et les curseurs d'Ankh (lot 1), la décoration des
 # fenêtres d'Ankh (lot 2), compilés depuis leurs sources (build_files/outils.sh).
 # Leurs outils de compilation restent dans cette étape : seul le résultat,
-# /sortie, entre dans l'image.
+# /sortie, entre dans l'image. Le Démarrer d'Ankh (lot 5) y est vérifié sur le
+# Plasma de la même base (qmllint et qml de qt6-qtdeclarative-devel).
 FROM ${BASE_IMAGE} AS outils
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \

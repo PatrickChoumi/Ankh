@@ -20,7 +20,9 @@ panel.opacity = "translucent"
 // Deux espaceurs extensibles centrent sur la barre ce qui est entre eux
 // (optimalSize de applets/panelspacer/main.qml, plasma-workspace).
 panel.addWidget("org.kde.plasma.panelspacer")
-panel.addWidget("org.kde.plasma.kickoff")
+// Démarrer d'Ankh (D-052, lot 5), à la place de Kickoff : le Démarrer de
+// Windows 11, dérivé de Kickoff (build_files/files/usr/share/plasma/plasmoids/org.ankh.demarrer)
+panel.addWidget("org.ankh.demarrer")
 // Applications épinglées (D-042) : fichiers, navigateur, VS Code, Steam,
 // terminal, Discover et réglages. Les deux premières sont les applications
 // par défaut du système (preferred://, applets/taskmanager/main.xml de
