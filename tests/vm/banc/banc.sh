@@ -179,6 +179,11 @@ banc_reglages() {
     if valeur=$(banc_reglage kwinrc org.kde.kdecoration2 ButtonsOnRight HIAX); then
         banc_noter fenetre.boutons.droite "$valeur"
     fi
+    # Sélecteur de fenêtres d'Alt+Tab ([TabBox] LayoutName, src/tabbox/tabbox.cpp
+    # de KWin, thumbnail_grid par défaut)
+    if valeur=$(banc_reglage kwinrc TabBox LayoutName thumbnail_grid); then
+        banc_noter alttab.paquet "$valeur"
+    fi
     # PopupPosition (libnotificationmanager/kcfg/notificationsettings.kcfg de plasma-workspace)
     if valeur=$(banc_reglage plasmanotifyrc Notifications PopupPosition CloseToWidget); then
         banc_noter notifications.position "$valeur"
@@ -527,6 +532,22 @@ banc_pixels() {
         fi
     else
         echo "(Démarrer : journal de la session illisible)"
+    fi
+    # Avertissements QML de tout ce qu'Ankh ajoute à Plasma et à KWin (applets,
+    # Alt+Tab, module commun), depuis l'ouverture de la session, toutes
+    # surfaces montrées : au lot 6a, un bouton vide n'avait laissé de trace
+    # que là
+    if erreurs_qml=$(vm "set -o pipefail; journalctl --no-pager -b _UID=$(vm id -u "$banc_compte") --output cat \
+        | { grep -E '((plasmoids|tabbox)/org\.ankh\.[a-z]+|org/ankh/commun)/[^ ]*\.qml:[0-9]+' || [ \$? -eq 1 ]; }"); then
+        if [[ -n $erreurs_qml ]]; then
+            echo "Avertissements QML d'Ankh :"
+            echo "$erreurs_qml"
+            banc_noter ankh.erreurs_qml "$(wc -l <<< "$erreurs_qml")"
+        else
+            banc_noter ankh.erreurs_qml 0
+        fi
+    else
+        echo "(Ankh : journal de la session illisible)"
     fi
     monitor 'sendkey esc'
     sleep 2

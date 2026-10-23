@@ -100,7 +100,18 @@ attendu "Boutons à droite" IAX --file kwinrc --group org.kde.kdecoration2 --key
 for defauts in /usr/share/plasma/look-and-feel/*/contents/defaults; do
     attendu "Décoration de $(basename "$(dirname "$(dirname "${defauts}")")")" org.ankh.decoration \
         --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library
+    attendu "Alt+Tab de $(basename "$(dirname "$(dirname "${defauts}")")")" org.ankh.alttab \
+        --file "${defauts}" --group kwinrc --group WindowSwitcher --key LayoutName
 done
+# D-052, lot 7a : Alt+Tab d'Ankh, sélecteur de fenêtres de KWin, sans mise en
+# avant de la fenêtre choisie
+for fichier in metadata.json contents/ui/main.qml contents/ui/Selecteur.qml; do
+    [[ -f "/usr/share/kwin-wayland/tabbox/org.ankh.alttab/${fichier}" ]] || echec "Alt+Tab d'Ankh : ${fichier} absent"
+done
+grep -q '"KPackageStructure": "KWin/WindowSwitcher"' /usr/share/kwin-wayland/tabbox/org.ankh.alttab/metadata.json \
+    || echec "Alt+Tab d'Ankh : metadata.json n'est pas celui d'un sélecteur de fenêtres"
+attendu "Sélecteur de fenêtres" org.ankh.alttab --file kwinrc --group TabBox --key LayoutName
+attendu "Fenêtre choisie mise en avant" false --file kwinrc --group TabBox --key HighlightWindows
 # D-052, lot 3 : style des contrôles d'Ankh, ses bibliothèques trouvées, chargé
 # sous son nom, choisi par défaut et dans chaque thème global
 style=/usr/lib64/qt6/plugins/styles/ankh6.so

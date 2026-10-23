@@ -715,6 +715,13 @@ kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key ButtonsO
 kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key ButtonsOnRight IAX
 kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key BorderSize None
 kwriteconfig6 --file /etc/xdg/kwinrc --group org.kde.kdecoration2 --key BorderSizeAuto false
+# D-052, lot 7a : Alt+Tab d'Ankh (paquet KWin/WindowSwitcher, posé avec les
+# fichiers de build_files/files dans /usr/share/kwin-wayland/tabbox), et pas
+# de mise en avant de la fenêtre choisie (les autres ne s'effacent pas,
+# comme dans Windows 11) : [TabBox], src/tabbox/tabbox.cpp de KWin
+test -f /usr/share/kwin-wayland/tabbox/org.ankh.alttab/contents/ui/main.qml
+kwriteconfig6 --file /etc/xdg/kwinrc --group TabBox --key LayoutName org.ankh.alttab
+kwriteconfig6 --file /etc/xdg/kwinrc --group TabBox --key HighlightWindows --type bool false
 chmod 0644 /etc/xdg/kwinrc
 # Chaque thème global désigne aussi sa décoration (kwinrc, dans
 # contents/defaults), recopiée à chaque session avant /etc/xdg, comme le
@@ -725,6 +732,9 @@ for dossier in "${themes[@]}"; do
         avant="$(kreadconfig6 --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library)"
         kwriteconfig6 --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key library org.ankh.decoration
         kwriteconfig6 --file "${defauts}" --group kwinrc --group org.kde.kdecoration2 --key theme --delete
+        # Alt+Tab d'Ankh aussi quand on applique le thème
+        # (libklookandfeel/klookandfeelmanager.cpp : [kwinrc][WindowSwitcher])
+        kwriteconfig6 --file "${defauts}" --group kwinrc --group WindowSwitcher --key LayoutName org.ankh.alttab
         chmod 0644 "${defauts}"
         echo "Décoration d'Ankh : $(basename "${dossier}") (au lieu de « ${avant:-aucune} »)"
     fi

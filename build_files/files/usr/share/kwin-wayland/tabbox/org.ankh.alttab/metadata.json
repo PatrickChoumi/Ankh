@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "KWin/WindowSwitcher",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Description": "Les fenêtres ouvertes en vignettes dans un panneau centré, comme Alt+Tab dans Windows 11 (D-052, lot 7a).",
+        "Icon": "preferences-system-windows-switcher-thumbnail-grid",
+        "Id": "org.ankh.alttab",
+        "License": "GPL-2.0-or-later",
+        "Name": "Alt+Tab d'Ankh"
+    },
+    "X-Plasma-API": "declarativeappletscript"
+}

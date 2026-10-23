@@ -559,3 +559,20 @@ tolerance = 0
 unite = "px"
 lot = 6
 source = "Volets flottants à 12 px des bords (lot 4, mon choix du 2026-10-22)"
+
+[[mesure]]
+id = "ankh.erreurs_qml"
+libelle = "Avertissements QML de tout ce qu'Ankh ajoute à Plasma et à KWin, dans le journal de la session"
+cible = 0
+tolerance = 0
+lot = 6
+source = "Lot 6a : un bouton vide dans la barre n'avait laissé de trace que dans le journal de la session"
+
+# --- Lot 7a : Alt+Tab -------------------------------------------------------
+
+[[mesure]]
+id = "alttab.paquet"
+libelle = "Sélecteur de fenêtres d'Alt+Tab ([TabBox] LayoutName de kwinrc)"
+cible = "org.ankh.alttab"
+lot = 7
+source = "Mon choix du 2026-10-23 : Alt+Tab comme Windows 11, sélecteur d'Ankh pour KWin"
