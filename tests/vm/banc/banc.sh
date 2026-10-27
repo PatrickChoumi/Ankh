@@ -164,7 +164,7 @@ banc_galerie_devant() {
 
 # 1. Réglages lus dans la session (valeurs par défaut de KDE s'ils sont absents).
 banc_reglages() {
-    local valeur alignement decoration panneau hauteur flottante position date
+    local valeur alignement decoration panneau hauteur flottante position date ligne
     log "Banc de l'interface (D-052) : réglages"
     if valeur=$(banc_reglage kcminputrc Mouse cursorTheme breeze_cursors); then
         banc_noter curseur.theme "$valeur"
@@ -216,6 +216,16 @@ banc_reglages() {
     # de Konsole), qui porte le jeu de couleurs Ankh et JetBrains Mono
     if valeur=$(banc_reglage konsolerc 'Desktop Entry' DefaultProfile ''); then
         banc_noter konsole.profil "$valeur"
+    fi
+    # Thème GTK que le portail des réglages donne aux applications Flatpak
+    # (lot 8d) : org.gnome.desktop.interface gtk-theme, par le portail de GTK
+    # (kde-portals.conf). Le thème lui-même entre par l'extension
+    # org.gtk.Gtk3theme.Fluent-Ankh (vérifiée par tests/vm/run.sh)
+    if ligne=$(in_session "$banc_compte" busctl --user --json=short call org.freedesktop.portal.Desktop \
+        /org/freedesktop/portal/desktop org.freedesktop.portal.Settings ReadOne ss org.gnome.desktop.interface gtk-theme); then
+        banc_noter flatpak.theme_gtk "$(jq -r '.data[0].data' <<< "$ligne")"
+    else
+        echo "(portail des réglages : thème GTK illisible)"
     fi
     # PopupPosition (libnotificationmanager/kcfg/notificationsettings.kcfg de plasma-workspace)
     if valeur=$(banc_reglage plasmanotifyrc Notifications PopupPosition CloseToWidget); then

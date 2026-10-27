@@ -915,6 +915,23 @@ if [[ "${theme_gtk}" != "'Fluent-Ankh'" ]]; then
     exit 1
 fi
 echo "Thème GTK par défaut : ${theme_gtk}"
+# D-052, lot 8d : les applications Flatpak en GTK 3 lisent ce thème, en lecture
+# seule, comme extension org.gtk.Gtk3theme posée par le système
+# (/usr/lib/tmpfiles.d/ankh-theme-flatpak.conf, qui explique le mécanisme).
+# Elles en reçoivent le nom par le portail des réglages : celui de KDE le
+# laisse à celui de GTK (org.freedesktop.impl.portal.Settings=kde;gtk de
+# kde-portals.conf), qui lit org.gnome.desktop.interface gtk-theme, ci-dessus.
+test -f /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk.css
+test -f /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk-dark.css
+# Dans l'application, seul ce dossier existe : un lien vers un chemin absolu
+# ou hors de lui n'y mènerait nulle part
+if find /usr/share/themes/Fluent-Ankh/gtk-3.0 -type l | grep .; then
+    echo "Thème GTK Fluent-Ankh : liens dans gtk-3.0, illisibles depuis les applications Flatpak" >&2
+    exit 1
+fi
+rpm -q xdg-desktop-portal-gtk
+grep -Eq '^org\.freedesktop\.impl\.portal\.Settings=kde;gtk;?$' /usr/share/xdg-desktop-portal/kde-portals.conf
+test -f /usr/lib/tmpfiles.d/ankh-theme-flatpak.conf
 
 # Assistant de premier démarrage (D-037) : son fond est cherché dans le fond
 # d'écran « Next » de KDE (src/qml/LandingComponent.qml de plasma-setup).

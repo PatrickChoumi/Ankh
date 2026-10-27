@@ -1173,6 +1173,22 @@ check_craft() {
     echo "polkit, démarrer ankh-options@simple.service : $reponse"
     [[ $reponse != "(bba{ss}) true"* ]] || die "la règle de la suite Craft autorise un autre service (D-053)"
     craft_premier_clic wordcraft
+    # D-052, lot 8d : le thème GTK d'Ankh entre dans les applications Flatpak,
+    # en lecture seule (extension org.gtk.Gtk3theme.Fluent-Ankh posée par
+    # /usr/lib/tmpfiles.d/ankh-theme-flatpak.conf). Son nom leur vient du
+    # portail des réglages : mesure flatpak.theme_gtk du banc.
+    echo "Point d'extension des thèmes GTK du runtime de WordCraft :"
+    if ! vm "flatpak info --system --show-metadata \$(flatpak info --system --show-runtime ai.storyteller.wordcraft) | grep -A6 -F '[Extension org.gtk.Gtk3theme]'"; then
+        echo "(pas de point d'extension org.gtk.Gtk3theme dans ce runtime)"
+    fi
+    in_session "$user" flatpak run --command=test ai.storyteller.wordcraft \
+        -f /usr/share/runtime/share/themes/Fluent-Ankh/gtk-3.0/gtk.css ||
+        die "le thème GTK Fluent-Ankh n'est pas visible dans une application Flatpak (D-052, lot 8d)"
+    if in_session "$user" flatpak run --command=touch ai.storyteller.wordcraft \
+        /usr/share/runtime/share/themes/Fluent-Ankh/gtk-3.0/ankh-ecriture 2> /dev/null; then
+        die "le thème GTK Fluent-Ankh est modifiable depuis une application Flatpak (D-052, lot 8d)"
+    fi
+    echo "Thème GTK Fluent-Ankh visible, en lecture seule, dans ai.storyteller.wordcraft"
     # Formats : la bureautique à WordCraft ; le reste aux applications de l'image
     for t in application/vnd.openxmlformats-officedocument.wordprocessingml.document text/plain application/pdf image/png; do
         echo "$t : $(in_session "$user" env XDG_CURRENT_DESKTOP=KDE gio mime "$t" | head -n 1)"

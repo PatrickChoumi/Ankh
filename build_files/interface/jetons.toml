@@ -637,3 +637,12 @@ libelle = "Profil par défaut de Konsole ([Desktop Entry] DefaultProfile de kons
 cible = "Ankh.profile"
 lot = 8
 source = "Mon choix du 2026-10-24 : la disposition de KDE, le jeu de couleurs d'Ankh (D-037), JetBrains Mono gardée"
+
+# --- Lot 8d : thème GTK des applications Flatpak -----------------------------
+
+[[mesure]]
+id = "flatpak.theme_gtk"
+libelle = "Thème GTK donné aux applications Flatpak par le portail des réglages (org.gnome.desktop.interface gtk-theme)"
+cible = "Fluent-Ankh"
+lot = 8
+source = "Mon choix du 2026-10-24 : les Flatpak lisent le thème Fluent-Ankh, en lecture seule"

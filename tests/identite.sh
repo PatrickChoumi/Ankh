@@ -196,6 +196,16 @@ grep -q 'iconText="Trier"' "${barres_dolphin}" || echec "Dolphin : bouton Trier 
 grep -q '<MenuBar' "${barres_dolphin}" || echec "Dolphin : fichier des barres sans les menus de Dolphin"
 [[ ! -e /etc/skel/.local/share/kxmlgui5/dolphin/dolphinui.rc ]] \
     || echec "Dolphin : un fichier de barres dans /etc/skel passerait avant celui d'Ankh"
+# D-052, lot 8d : le thème GTK des applications Flatpak, en lecture seule (le
+# lien que systemd-tmpfiles crée au démarrage, essayé dans un dossier vide)
+racine_tmpfiles="$(mktemp -d)"
+systemd-tmpfiles --root="${racine_tmpfiles}" --create /usr/lib/tmpfiles.d/ankh-theme-flatpak.conf \
+    || echec "thème GTK des Flatpak : règle de systemd-tmpfiles refusée"
+lien_theme="${racine_tmpfiles}/var/lib/flatpak/extension/org.gtk.Gtk3theme.Fluent-Ankh/x86_64/3.22"
+[[ "$(readlink "${lien_theme}")" == /usr/share/themes/Fluent-Ankh/gtk-3.0 ]] \
+    || echec "thème GTK des Flatpak : extension org.gtk.Gtk3theme.Fluent-Ankh absente"
+rm -rf "${racine_tmpfiles}"
+[[ -f /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk.css ]] || echec "thème GTK des Flatpak : gtk-3.0 absent"
 # Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
 # nouveaux comptes et dans les réglages de GNOME lus sous Wayland
 for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do
