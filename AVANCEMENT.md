@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-23** (chantier Interface : lots 1, 2 et 3 fusionnés, PR #19, #20 et #21 ; lot 4 vérifié en VM, sa PR ouverte ; lot 5 vérifié en VM ; lot 6 écrit, en VM).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-27** (chantier Interface : lots 1, 2 et 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a et 6b verts en VM ; lot 7 en VM ; lot 8 écrit, en VM).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -13,7 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
-| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0, 1 et 2 fusionnés ; lot 3 vert en VM, PR ouverte ; lot 4 vert en VM ; lot 5 écrit, en test |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0 à 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a et 6b verts en VM ; lot 7 en VM ; lot 8 écrit, en VM |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -346,6 +346,17 @@
 - **Lot 5, le Démarrer d'Ankh** (commencé le 2026-10-22, branche `claude/lot-5-demarrer`) : recherche faite (le module des menus de KDE se charge depuis un paquet QML ; mesures relevées sur des images officielles de Microsoft : volet de 640×726, cellules de 96×84, icônes de 32). Écrit : le Démarrer classique de Windows 11 (recherche, épingles, « Toutes les applications », « Recommandé », compte et alimentation), dérivé de Kickoff, avec un bouton du même dessin que ceux des applications. La construction échoue s'il casse (version de Plasma, qmllint, sonde hors écran). **Vérifié en VM le 2026-10-23 : 44 mesures conformes, aucun écart** (Démarrer de 640×726, à 12 px de la barre, sans avertissement QML) ; ses mesures deviennent obligatoires. Écart connu : Plasma centre le volet sur son bouton, Windows 11 sur l'écran.
 - **Lot 6a, les paramètres rapides** (commencé le 2026-10-23, branche `claude/lot-6-reglages`) : mes choix du 2026-10-22 (un seul bouton Wi-Fi, son et batterie ; le volet de Windows 11 avec le mode sombre ; le lecteur multimédia au-dessus). Écrit : le bouton dans la barre, le volet (tuiles, curseurs, lecteur, batterie, réglages) et les pages Wi-Fi, Bluetooth et sorties son, aux mesures relevées sur une image officielle de Microsoft ; il s'ouvre au clic. La construction échoue s'il casse. Vérifié hors écran ; en VM le 2026-10-23, le bouton s'affiche. Windows+A n'ouvrait rien (la touche va aux activités de KDE) : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows (mon choix du 2026-10-23), le volet n'a plus de raccourci.
 - **Lot 6b, l'horloge, les notifications et le calendrier** (commencé le 2026-10-23, branche `claude/lot-6b-horloge`) : mon choix du 2026-10-22 (« Notifications + calendrier »). Écrit : l'horloge d'Ankh dans la barre (heure, date dessous, cloche), qui remplace celle de Plasma ; un clic ouvre un seul volet, avec les notifications en haut (cartes, Ne pas déranger, « Tout effacer ») et le calendrier en bas. La cloche de Plasma quitte la zone de notification ; son applet reste chargée, cachée, pour afficher les bulles. La construction échoue s'il casse. Vérifié hors écran, avec de vraies notifications, en français, en sombre et en clair. En VM le 2026-10-23, le volet fait 364 px, à 12 px de la barre et du bord, comme Windows 11. Sans raccourci : Ankh garde ceux de KDE (mon choix du 2026-10-23).
+- **Mon choix du 2026-10-23 (le soir)** : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows. Plus de Windows+A, Windows+N ni Windows+Tab ajoutés par Ankh ; l'arrêt garde la confirmation de KDE.
+- **Lot 7, la navigation** (2026-10-23, branche `claude/lot-7-navigation`) : mes choix du 2026-10-23.
+  - 7a, Alt+Tab d'Ankh : les fenêtres dans un panneau en verre, avec leur icône, leur titre et leur vignette vivante. **Vérifié en VM le 2026-10-23.**
+  - 7b, la vue des tâches d'Ankh : un effet de KWin, ouvert par le bouton « Vue des tâches » de la barre, à droite du Démarrer (sans raccourci). En VM le 2026-10-23 : 55 mesures conformes, la vue s'ouvre ; mais le bouton était vide dans la barre (Plasma ne crée jamais la représentation compacte d'une applet sans volet). Corrigé, et la construction refuse maintenant ce défaut ; nouveau passage en VM en cours.
+  - 7c, l'écran de verrouillage et l'écran de déconnexion au dessin de la connexion d'Ankh ; 7d, les sons de KDE réduits. Écrits et vérifiés hors écran ; à voir sur les captures en VM.
+- **Lot 8, les applications** (mes choix du 2026-10-24, branche `claude/lot-8-applications`) :
+  - 8a, la sélection dans les listes comme les applications de Windows 11 : fond discret, trait d'accent de 3×16 à gauche, texte et icônes inchangés. Pour les applications Qt (Dolphin…) et QtQuick (Réglages, Discover). Vérifié hors écran ; nouvelle mesure du banc.
+  - 8b, Dolphin disposé comme l'Explorateur : une barre précédent, suivant, dossier parent, actualiser, adresse et recherche, puis une barre de commandes (Nouveau, couper, copier, coller, renommer, supprimer, Trier, Afficher). La construction fusionne les barres d'Ankh dans le fichier du Dolphin de l'image, puis vérifie que Dolphin les lit. Vérifié dans le conteneur, aperçu avant et après.
+  - 8c, Konsole : il avait déjà les couleurs d'Ankh (D-037) ; le terminal intégré de Dolphin (F4) les prend aussi.
+  - 8d, le thème GTK d'Ankh dans les applications Flatpak, en lecture seule. Seul le dossier du thème y entre ; aucune permission ne change. À relire. Vérification en VM : le thème lisible et non modifiable dans WordCraft.
+  - Chrome, VS Code et les applications Electron dessinent leur propre barre de titre, comme sous Windows 11 : rien à y faire.
 
 ---
 
@@ -364,14 +375,13 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 
 0. **Banc de mesure** (fusionné le 2026-10-15, PR [#17](https://github.com/PatrickChoumi/Ankh/pull/17) ; rayon du menu corrigé ensuite, à vérifier en VM) : fichier des valeurs de référence ; mesures automatiques en VM ; captures de chaque surface en sombre et en clair, à 100, 125 et 150 %.
 1. Fondations, avec l'accent qui suit le fond d'écran (D-054) : **fusionné** le 2026-10-22 (PR [#19](https://github.com/PatrickChoumi/Ankh/pull/19)).
-2. Fenêtres : décoration « Ankh ». Verte en VM ; sa PR attend mon accord.
+2. Fenêtres : décoration « Ankh ». **Fusionné** le 2026-10-23 (PR [#20](https://github.com/PatrickChoumi/Ankh/pull/20)).
 3. Contrôles : style Qt, contrôles QtQuick, thème GTK, accent exact. **Fusionné** le 2026-10-23 (PR [#21](https://github.com/PatrickChoumi/Ankh/pull/21)).
-4. Shell : barre, style Plasma, volets flottants, icônes de 32 px. Vert en VM ; sa PR ouverte le 2026-10-23. Limites : icônes de la zone de notification à 22 px (16 dans Windows 11), fixé dans le code de Plasma ; la météo à gauche de la barre (idée d'AnduinOS) reste à faire.
-   - Les applications GTK en Flatpak ne voient pas le thème Fluent d'Ankh : à traiter avec le lot 8 (applications).
+4. Shell : barre, style Plasma, volets flottants, icônes de 32 px. Vert en VM ; sa PR [#22](https://github.com/PatrickChoumi/Ankh/pull/22) ouverte le 2026-10-23, attend ma fusion. Limites : icônes de la zone de notification à 22 px (16 dans Windows 11), fixé dans le code de Plasma ; la météo à gauche de la barre (idée d'AnduinOS) reste à faire.
 5. Démarrer d'Ankh : le Démarrer classique de Windows 11 (mon choix du 2026-10-22). Vert en VM ; sa PR suivra celle du lot 4.
-6. Paramètres rapides (6a), puis horloge avec notifications et calendrier (6b) : écrits, vérifiés hors écran ; VM en cours pour 6a, à venir pour 6b.
-7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons. Mes choix du 2026-10-23 : Alt+Tab et vue des tâches comme Windows 11, verrouillage au dessin de la connexion d'Ankh, sons de KDE réduits ; puis, le soir : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows (Windows+Tab reste à Alt+Tab). 7a (Alt+Tab) vérifié en VM le 2026-10-23 : le sélecteur d'Ankh, avec les vraies vignettes. 7b (vue des tâches, ouverte par le bouton « Vue des tâches » de la barre, à droite du Démarrer), 7c (écran de verrouillage et déconnexion au dessin de la connexion d'Ankh) et 7d (sons) écrits et vérifiés hors écran ; VM en cours.
-8. Applications : Dolphin, réglages, Discover, Konsole, Chrome, VS Code, GTK, libadwaita, Electron ; plus de fenêtre de KDE Wallet.
+6. Paramètres rapides (6a), puis horloge avec notifications et calendrier (6b) : verts en VM le 2026-10-23 (6a : 47 mesures conformes ; 6b : volet de 364 px, à 12 px de la barre et du bord). Leurs PR suivront celle du lot 5.
+7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons. Mes choix du 2026-10-23 : Alt+Tab et vue des tâches comme Windows 11, verrouillage au dessin de la connexion d'Ankh, sons de KDE réduits ; puis, le soir : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows (Windows+Tab reste à Alt+Tab). 7a (Alt+Tab) vérifié en VM le 2026-10-23. 7b (vue des tâches, par le bouton de la barre) : 55 mesures conformes en VM, le bouton vide corrigé, nouveau passage en cours. 7c (verrouillage et déconnexion) et 7d (sons) : à voir sur les captures de ce passage.
+8. Applications (mes choix du 2026-10-24) : 8a sélection des listes, 8b Dolphin comme l'Explorateur, 8c Konsole et le terminal de Dolphin, 8d thème GTK dans les Flatpak. Écrits et vérifiés hors écran ; VM en cours. Chrome, VS Code et Electron : rien à faire. La fenêtre de KDE Wallet vient de la VM (compte sans mot de passe) : hors du lot.
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
 
@@ -432,13 +442,15 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 - **Suite Craft** (D-053) : ses documents de bureau sur de vrais fichiers, sur ma machine (phase 9) ; garder des copies tant que les applications sont en alpha.
 - **Indicateur sous l'application active** (lot 4) : sa place exacte (1 px au-dessus du bas du rectangle) vient de captures de Windows 11, sans valeur publiée. Les icônes de 32 px s'écartent de Windows 11 (24) par mon choix du 2026-10-22.
 - **Icônes des boutons QtQuick** (lot 3) : hors d'une session Plasma, les icônes monochromes des boutons restent sombres, avec Breeze comme avec Ankh ; à regarder sur les captures en VM.
+- **Textes des boutons de Dolphin** (lot 8b) : « Nouveau », « Trier » et « Afficher », ceux de l'Explorateur en français, pris de mémoire.
+- **Thème sombre dans les applications Flatpak en GTK** (lot 8d) : il dépend de la préférence que GTK 3 lit par le portail ; à regarder sur la capture de Lutris au prochain test complet.
 - **« Options d'Ankh »** (D-046) : non testés en VM, le mot de passe refusé ou non donné, et les boutons « Supprimer » et « Garder » eux-mêmes (leur commande est testée). Limite connue : seule la barre du compte qui ouvre la fenêtre suit ; un autre compte de la machine garderait VS Code épinglé.
 
 ---
 
 ## Ce que je dois faire
 
-1. **PR des lots 2, 3 et 4** : tous verts en VM ; donner mon accord pour ouvrir la PR du lot 2, puis les suivantes une à la fois, et les fusionner si les captures me conviennent.
+1. **PR du lot 4** ([#22](https://github.com/PatrickChoumi/Ankh/pull/22)) : verte en VM ; la fusionner si les captures me conviennent. Claude ouvre ensuite les PR des lots 5, 6a, 6b, 7 et 8, une à la fois.
 2. **Lire [VISION.md](VISION.md)** et dire à Claude si c'est bien ma vision, ou ce qui manque (D-045).
 3. **Regarder les captures des sept autres applications Gaming**, envoyées le 2026-10-14, et dire à Claude ce qui ne va pas (D-050). Les PR [#15](https://github.com/PatrickChoumi/Ankh/pull/15) et [#16](https://github.com/PatrickChoumi/Ankh/pull/16) sont fusionnées.
 4. **Renovate** : dans <https://developer.mend.io/github/PatrickChoumi/Ankh>, ouvrir une exécution (par exemple la plus récente) et chercher `dryRun` dans le journal. Si le mot y est, passer le dépôt, ou toute l'organisation, du mode « Silent » au mode « Interactive » dans les réglages.
