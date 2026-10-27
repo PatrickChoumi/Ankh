@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-27** (chantier Interface : lots 1, 2 et 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a et 6b verts en VM ; lot 7 en VM ; lot 8 écrit, en VM).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-27** (chantier Interface : lots 1, 2 et 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a, 6b et 7 verts en VM ; lot 8 écrit, en VM).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -13,7 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
-| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0 à 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a et 6b verts en VM ; lot 7 en VM ; lot 8 écrit, en VM |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0 à 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a, 6b et 7 verts en VM ; lot 8 écrit, en VM |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -349,8 +349,8 @@
 - **Mon choix du 2026-10-23 (le soir)** : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows. Plus de Windows+A, Windows+N ni Windows+Tab ajoutés par Ankh ; l'arrêt garde la confirmation de KDE.
 - **Lot 7, la navigation** (2026-10-23, branche `claude/lot-7-navigation`) : mes choix du 2026-10-23.
   - 7a, Alt+Tab d'Ankh : les fenêtres dans un panneau en verre, avec leur icône, leur titre et leur vignette vivante. **Vérifié en VM le 2026-10-23.**
-  - 7b, la vue des tâches d'Ankh : un effet de KWin, ouvert par le bouton « Vue des tâches » de la barre, à droite du Démarrer (sans raccourci). En VM le 2026-10-23 : 55 mesures conformes, la vue s'ouvre ; mais le bouton était vide dans la barre (Plasma ne crée jamais la représentation compacte d'une applet sans volet). Corrigé, et la construction refuse maintenant ce défaut ; nouveau passage en VM en cours.
-  - 7c, l'écran de verrouillage et l'écran de déconnexion au dessin de la connexion d'Ankh ; 7d, les sons de KDE réduits. Écrits et vérifiés hors écran ; à voir sur les captures en VM.
+  - 7b, la vue des tâches d'Ankh : un effet de KWin, ouvert par le bouton « Vue des tâches » de la barre, à droite du Démarrer (sans raccourci). En VM le 2026-10-23 : 55 mesures conformes, la vue s'ouvre ; mais le bouton était vide dans la barre (Plasma ne crée jamais la représentation compacte d'une applet sans volet). Corrigé, et la construction refuse maintenant ce défaut. **Second passage en VM le 2026-10-27 : 55 mesures conformes, aucun écart** ; le bouton montre son symbole et ouvre la vue.
+  - 7c, l'écran de verrouillage et l'écran de déconnexion au dessin de la connexion d'Ankh : **vus sur les captures en VM le 2026-10-27**. 7d, les sons de KDE réduits (la VM n'a pas de sortie son).
 - **Lot 8, les applications** (mes choix du 2026-10-24, branche `claude/lot-8-applications`) :
   - 8a, la sélection dans les listes comme les applications de Windows 11 : fond discret, trait d'accent de 3×16 à gauche, texte et icônes inchangés. Pour les applications Qt (Dolphin…) et QtQuick (Réglages, Discover). Vérifié hors écran ; nouvelle mesure du banc.
   - 8b, Dolphin disposé comme l'Explorateur : une barre précédent, suivant, dossier parent, actualiser, adresse et recherche, puis une barre de commandes (Nouveau, couper, copier, coller, renommer, supprimer, Trier, Afficher). La construction fusionne les barres d'Ankh dans le fichier du Dolphin de l'image, puis vérifie que Dolphin les lit. Vérifié dans le conteneur, aperçu avant et après.
@@ -380,7 +380,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 4. Shell : barre, style Plasma, volets flottants, icônes de 32 px. Vert en VM ; sa PR [#22](https://github.com/PatrickChoumi/Ankh/pull/22) ouverte le 2026-10-23, attend ma fusion. Limites : icônes de la zone de notification à 22 px (16 dans Windows 11), fixé dans le code de Plasma ; la météo à gauche de la barre (idée d'AnduinOS) reste à faire.
 5. Démarrer d'Ankh : le Démarrer classique de Windows 11 (mon choix du 2026-10-22). Vert en VM ; sa PR suivra celle du lot 4.
 6. Paramètres rapides (6a), puis horloge avec notifications et calendrier (6b) : verts en VM le 2026-10-23 (6a : 47 mesures conformes ; 6b : volet de 364 px, à 12 px de la barre et du bord). Leurs PR suivront celle du lot 5.
-7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons. Mes choix du 2026-10-23 : Alt+Tab et vue des tâches comme Windows 11, verrouillage au dessin de la connexion d'Ankh, sons de KDE réduits ; puis, le soir : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows (Windows+Tab reste à Alt+Tab). 7a (Alt+Tab) vérifié en VM le 2026-10-23. 7b (vue des tâches, par le bouton de la barre) : 55 mesures conformes en VM, le bouton vide corrigé, nouveau passage en cours. 7c (verrouillage et déconnexion) et 7d (sons) : à voir sur les captures de ce passage.
+7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons. Mes choix du 2026-10-23 : Alt+Tab et vue des tâches comme Windows 11, verrouillage au dessin de la connexion d'Ankh, sons de KDE réduits ; puis, le soir : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows (Windows+Tab reste à Alt+Tab). 7a (Alt+Tab) vérifié en VM le 2026-10-23. 7b (vue des tâches, par le bouton de la barre) et 7c (verrouillage et déconnexion) : **verts en VM le 2026-10-27**, 55 mesures conformes, aucun écart. 7d (sons) : écrit ; la VM n'a pas de sortie son. Sa PR suivra celles des lots 5, 6a et 6b.
 8. Applications (mes choix du 2026-10-24) : 8a sélection des listes, 8b Dolphin comme l'Explorateur, 8c Konsole et le terminal de Dolphin, 8d thème GTK dans les Flatpak. Écrits et vérifiés hors écran ; VM en cours. Chrome, VS Code et Electron : rien à faire. La fenêtre de KDE Wallet vient de la VM (compte sans mot de passe) : hors du lot.
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
