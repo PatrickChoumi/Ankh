@@ -22,6 +22,18 @@ if [[ ! -f "${applets}/${applet}/metadata.json" ]]; then
     exit 1
 fi
 
+# Une applet sans volet (fullRepresentation) est toujours dépliée : Plasma
+# montre le contenu de sa racine et ne crée jamais sa représentation compacte
+# (appletShouldBeExpanded, src/plasmaquick/appletquickitem.cpp de libplasma
+# 6.7). Le bouton « Vue des tâches » (lot 7b) est ainsi resté vide en VM, sans
+# avertissement : plasmawindowed ne le voit pas.
+racine_qml="${applets}/${applet}/contents/ui/main.qml"
+if grep -q '^    compactRepresentation:' "${racine_qml}" && ! grep -q '^    fullRepresentation:' "${racine_qml}"; then
+    echo "Applet ${applet} : représentation compacte sans volet (fullRepresentation) ; Plasma ne la montrera jamais." >&2
+    echo "Mettre le bouton dans la racine, avec preferredRepresentation: fullRepresentation (comme org.ankh.bureau)." >&2
+    exit 1
+fi
+
 travail="$(mktemp -d)"
 trap 'rm -rf "${travail}"' EXIT
 install -d -m 0700 "${travail}/run"

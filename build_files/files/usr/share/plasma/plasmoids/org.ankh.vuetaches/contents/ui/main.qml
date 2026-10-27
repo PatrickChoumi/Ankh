@@ -47,8 +47,25 @@ PlasmoidItem {
     Plasmoid.title: "Vue des tâches"
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.hasConfigurationInterface: false
+    Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     Plasmoid.constraintHints: Plasmoid.CanFillArea
-    preferredRepresentation: compactRepresentation
+    // Sans volet, Plasma montre toujours le contenu de la racine
+    // (appletShouldBeExpanded, src/plasmaquick/appletquickitem.cpp de
+    // libplasma 6.7) : une représentation compacte n'y serait jamais créée,
+    // et le bouton resterait vide (vu en VM, run 40014608085). Comme la bande
+    // « Afficher le bureau » (org.ankh.bureau), le bouton est donc la racine.
+    preferredRepresentation: fullRepresentation
+
+    // La hauteur de la barre plus les marges de côté du dessin, comme le
+    // Démarrer et les boutons des applications
+    Layout.minimumWidth: vertical ? -1 : height + cadreBouton.margins.left + cadreBouton.margins.right
+    Layout.preferredWidth: Layout.minimumWidth
+    Layout.maximumWidth: Layout.minimumWidth
+    Layout.minimumHeight: vertical ? width + cadreBouton.margins.top + cadreBouton.margins.bottom : -1
+    Layout.preferredHeight: Layout.minimumHeight
+    Layout.maximumHeight: Layout.minimumHeight
+    Layout.fillHeight: !vertical
+    Layout.fillWidth: vertical
 
     toolTipMainText: "Vue des tâches"
     toolTipSubText: ""
@@ -61,15 +78,10 @@ PlasmoidItem {
         }
     }
 
-    compactRepresentation: MouseArea {
+    MouseArea {
         id: bouton
 
-        Layout.minimumWidth: racine.vertical ? -1 : height + cadreBouton.margins.left + cadreBouton.margins.right
-        Layout.preferredWidth: Layout.minimumWidth
-        Layout.maximumWidth: Layout.minimumWidth
-        Layout.minimumHeight: racine.vertical ? width + cadreBouton.margins.top + cadreBouton.margins.bottom : -1
-        Layout.preferredHeight: Layout.minimumHeight
-        Layout.maximumHeight: Layout.minimumHeight
+        anchors.fill: parent
         hoverEnabled: true
         Accessible.name: Plasmoid.title
         Accessible.role: Accessible.Button
