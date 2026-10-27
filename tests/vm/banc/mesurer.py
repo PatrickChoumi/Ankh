@@ -23,6 +23,10 @@ Usage :
                                            largeur et hauteur du dessin de
                                            l'icône
   mesurer.py couleur IMAGE X Y             couleur d'un pixel
+  mesurer.py trait IMAGE X Y L H           trait d'accent d'un élément de
+                                           liste choisi (place X Y L H) :
+                                           largeur, hauteur et couleur des
+                                           pixels colorés de son bord gauche
   mesurer.py rapport JETONS MESURES SORTIE compare les mesures (lignes
                                            « id<TAB>valeur ») aux cibles de
                                            JETONS ; écrit le rapport SORTIE
@@ -146,6 +150,29 @@ def zone_rouge(image, x0, y0, x1, y1):
         comptes[p] = comptes.get(p, 0) + 1
     couleur = max(comptes, key=comptes.get)
     return max(xs) - min(xs) + 1, max(ys) - min(ys) + 1, hexa(couleur)
+
+
+def trait(image, x, y, largeur, hauteur):
+    # Le trait d'accent est au bord gauche de l'élément, sur un fond gris :
+    # ce sont les premières colonnes colorées (écart entre composantes),
+    # contiguës ; une icône colorée vient après un vide, et n'en fait pas
+    # partie.
+    colores = [(i, j) for j in range(y, y + hauteur) for i in range(x, x + min(24, largeur))
+               if max(p := image.px(i, j)) - min(p) >= 60]
+    if not colores:
+        return None
+    colonnes = sorted({i for i, _ in colores})
+    fin = colonnes[0]
+    while fin + 1 in colonnes:
+        fin += 1
+    colores = [(i, j) for i, j in colores if i <= fin]
+    xs = [i for i, _ in colores]
+    ys = [j for _, j in colores]
+    comptes = {}
+    for i, j in colores:
+        p = image.px(i, j)
+        comptes[p] = comptes.get(p, 0) + 1
+    return max(xs) - min(xs) + 1, max(ys) - min(ys) + 1, hexa(max(comptes, key=comptes.get))
 
 
 def barre(image, x):
@@ -334,6 +361,9 @@ def main(arguments):
     elif commande == "tache" and len(reste) == 2:
         t = tache(lire_ppm(reste[0]), int(reste[1]))
         print("? ? ? ? ? ?" if t is None else "%d %d %d %d %d %d" % t)
+    elif commande == "trait" and len(reste) == 5:
+        t = trait(lire_ppm(reste[0]), *map(int, reste[1:]))
+        print("? ? ?" if t is None else "%d %d %s" % t)
     elif commande == "couleur" and len(reste) == 3:
         print(hexa(lire_ppm(reste[0]).px(int(reste[1]), int(reste[2]))))
     elif commande == "rapport" and len(reste) == 3:

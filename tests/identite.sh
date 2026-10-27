@@ -176,6 +176,18 @@ grep -q '__ankhAccent' "${qqc2}/Button.qml" || echec "style QtQuick : bouton mis
 # d'Ankh, et non la sélection de KDE (mon choix du 2026-10-23, D-052)
 grep -q '__ankhSurAccent' "${qqc2}/Button.qml" || echec "style QtQuick : icône du bouton mis en avant sans couleur sur l'accent"
 grep -q 'Kirigami.Theme.focusColor' "${qqc2}/private/SwitchIndicator.qml" || echec "style QtQuick : interrupteur à la couleur de sélection, et non à l'accent"
+# D-052, lot 8 : élément de liste choisi, texte et icônes inchangés (qqc2 et
+# Kirigami), sur le fond discret du style d'Ankh
+for fichier in ItemDelegate SwipeDelegate CheckDelegate RadioDelegate; do
+    grep -q 'texte inchangé sur l.élément choisi' "${qqc2}/${fichier}.qml" \
+        || echec "style QtQuick : ${fichier} prend encore la couleur posée sur l'accent"
+done
+delegues=/usr/lib64/qt6/qml/org/kde/kirigami/delegates
+if grep -n '^prefer ' "${delegues}/qmldir"; then
+    echec "éléments de liste de Kirigami : copie compilée préférée aux fichiers adaptés"
+fi
+grep -q 'property color color: Platform.Theme.textColor' "${delegues}/TitleSubtitle.qml" \
+    || echec "éléments de liste de Kirigami : texte de l'élément choisi sur l'accent"
 # Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
 # nouveaux comptes et dans les réglages de GNOME lus sous Wayland
 for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do

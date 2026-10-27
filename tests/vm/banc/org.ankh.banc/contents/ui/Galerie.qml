@@ -81,6 +81,11 @@ Item {
         console.warn("ANKH-BANC-STYLE fond du bouton : " + boutonMesure.background);
         placer("bouton", boutonMesure);
         placer("champ", champMesure);
+        // Élément de liste choisi (lot 8) : son trait d'accent est mesuré à
+        // part, sur un fond gris (il n'est pas dans la zone noire)
+        const e = element.mapToItem(null, 0, 0);
+        console.warn("ANKH-BANC-ELEMENT " + Math.round(e.x) + " " + Math.round(e.y)
+                     + " " + Math.round(element.width) + " " + Math.round(element.height));
         console.warn("ANKH-BANC-FIN");
     }
 

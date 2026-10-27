@@ -1424,6 +1424,27 @@ bool Style::drawWidgetPrimitive(const QStyleOption *option, QPainter *painter, c
 //______________________________________________________________
 void Style::drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
+    // Ankh (D-052, lot 8) : dans les listes de Windows 11, l'élément choisi
+    // garde son texte et ses icônes (ListViewItemForegroundSelected :
+    // TextFillColorPrimary). Le fond choisi est dessiné d'abord ; le contenu
+    // l'est ensuite comme celui d'un élément non choisi, sans fond : sinon
+    // Qt prendrait la couleur du texte sur l'accent (HighlightedText) et les
+    // icônes en mode « choisi ».
+    if (element == CE_ItemViewItem) {
+        const auto viewItemOption = qstyleoption_cast<const QStyleOptionViewItem *>(option);
+        if (viewItemOption && (viewItemOption->state & State_Selected)) {
+            painter->save();
+            proxy()->drawPrimitive(PE_PanelItemViewItem, viewItemOption, painter, widget);
+            QStyleOptionViewItem contenu(*viewItemOption);
+            contenu.state &= ~(State_Selected | State_MouseOver);
+            contenu.features &= ~QStyleOptionViewItem::Alternate;
+            contenu.backgroundBrush = Qt::NoBrush;
+            ParentStyleClass::drawControl(element, &contenu, painter, widget);
+            painter->restore();
+            return;
+        }
+    }
+
     StyleControl fcn;
 
 #if ANKH_HAVE_KSTYLE
@@ -4917,38 +4938,58 @@ bool Style::drawPanelItemViewItemPrimitive(const QStyleOption *option, QPainter 
         return true;
     }
 
-    // render selection
-    // define color
-    QColor color;
-    if (hasCustomBackground && hasSolidBackground) {
-        color = viewItemOption->backgroundBrush.color();
-    } else {
-        color = palette.color(colorGroup, QPalette::Highlight);
-    }
-
-    // change color to implement mouse over
-    if (mouseOver && !hasCustomBackground) {
-        if (!selected) {
-            color.setAlphaF(Metrics::Blend_Value);
-        } else {
-            color = color.lighter(Metrics::Focus_LightenColorValue);
-        }
-    }
-
-    // Focus decoration
-    QColor focusColor = color;
-    if (!hasCustomBackground) {
-        focusColor.setAlphaF(selected ? 1.0 : 0.8);
-    }
-
-    // render
-    painter->setBrush(color);
     const auto isTable = qobject_cast<const QTableView *>(viewItemOption->widget);
-    // We want table cells to not be rounded
-    if (isTable) {
-        _helper->renderViewItemPosition(painter, QStyleOptionViewItem::ViewItemPosition::Invalid, viewItemOption->direction, rect, color, focusColor);
+
+    // render custom solid background
+    if (hasCustomBackground) {
+        const QColor color = viewItemOption->backgroundBrush.color();
+        if (isTable) {
+            _helper->renderViewItemPosition(painter, QStyleOptionViewItem::ViewItemPosition::Invalid, viewItemOption->direction, rect, color, color);
+        } else {
+            _helper->renderViewItemPosition(painter, viewItemPosition, viewItemOption->direction, rect, color, color);
+        }
+        return true;
+    }
+
+    // Ankh (D-052, lot 8 ; mon choix du 2026-10-24, « Applis Windows 11 ») :
+    // la sélection des listes de WinUI (ListViewItem_themeresources.xaml,
+    // commit 566a040 de microsoft-ui-xaml) : un fond discret, le même au
+    // survol (SubtleFillColorSecondary : blanc à 6 % en sombre, noir à 4 % en
+    // clair), plus léger quand on survole un élément choisi
+    // (SubtleFillColorTertiary), et le texte inchangé (CE_ItemViewItem). Un
+    // trait d'accent de 3 × 16 aux coins de 1,5 (ListViewItemSelectionIndicator,
+    // AccentFillColorDefault) marque l'élément choisi, à gauche des lignes ;
+    // les vignettes (vue en icônes) n'en ont pas.
+    const bool sombre(KColorUtils::luma(palette.color(colorGroup, QPalette::Base)) < 0.5);
+    QColor color(sombre ? Qt::white : Qt::black);
+    if (selected && mouseOver) {
+        color.setAlpha(sombre ? 0x0A : 0x06);
     } else {
-        _helper->renderViewItemPosition(painter, viewItemPosition, viewItemOption->direction, rect, color, focusColor);
+        color.setAlpha(sombre ? 0x0F : 0x09);
+    }
+
+    // render : sans contour (un contour de la même couleur translucide se
+    // verrait plus foncé sur le bord), mais un contour valide, transparent,
+    // pour garder les coins arrondis (renderFocusRect)
+    if (isTable) {
+        // We want table cells to not be rounded
+        _helper->renderViewItemPosition(painter, QStyleOptionViewItem::ViewItemPosition::Invalid, viewItemOption->direction, rect, color, Qt::transparent);
+    } else {
+        _helper->renderViewItemPosition(painter, viewItemPosition, viewItemOption->direction, rect, color, Qt::transparent);
+    }
+
+    const bool premiereColonne(viewItemPosition == QStyleOptionViewItem::OnlyOne || viewItemPosition == QStyleOptionViewItem::Beginning);
+    const bool ligne(rect.width() >= 2 * rect.height());
+    if (selected && !isTable && premiereColonne && ligne) {
+        const qreal hauteur(qMin<qreal>(16, rect.height() - 4));
+        const bool reverse(viewItemOption->direction == Qt::RightToLeft);
+        const QRectF trait(reverse ? rect.right() + 1 - 3 : rect.left(), rect.top() + (rect.height() - hauteur) / 2, 3, hauteur);
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(enabled ? _helper->accentColor(palette, colorGroup) : palette.color(QPalette::Disabled, QPalette::Text));
+        painter->drawRoundedRect(trait, 1.5, 1.5);
+        painter->restore();
     }
 
     return true;

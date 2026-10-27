@@ -832,6 +832,14 @@ done
 # qu'il remplace et échoue si KDE l'a changé (build_files/qqc2/adapter.py).
 python3 /ctx/qqc2/adapter.py /usr/lib64/qt6/qml/org/kde/desktop /ctx/qqc2/SwitchIndicator.qml
 echo "Style QtQuick de KDE adapté : kf6-qqc2-desktop-style $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-qqc2-desktop-style)"
+# D-052, lot 8 : dans les listes de Windows 11, l'élément choisi garde son
+# texte et ses icônes, sur le fond discret que le style d'Ankh dessine. Les
+# éléments de liste de Kirigami (Réglages, Discover…) prenaient la couleur
+# posée sur l'accent (build_files/qqc2/adapter-kirigami.py, qui vérifie
+# chaque texte qu'il remplace) ; ceux de qqc2-desktop-style sont adaptés par
+# adapter.py, ci-dessus.
+python3 /ctx/qqc2/adapter-kirigami.py /usr/lib64/qt6/qml/org/kde/kirigami/delegates
+echo "Éléments de liste de Kirigami adaptés : kf6-kirigami $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-kirigami)"
 
 # D-052, lot 4 : style Plasma « Ankh » (volets et menus aux coins de 8, barre
 # translucide, boutons de la barre des tâches et infobulles de Windows 11).

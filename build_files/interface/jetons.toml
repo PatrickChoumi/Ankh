@@ -599,3 +599,23 @@ libelle = "Le bouton « Vue des tâches » ouvre la vue (isEffectActive de KWin)
 cible = "oui"
 lot = 7
 source = "Le bouton « Vue des tâches » de la barre de Windows 11 ouvre la vue des tâches"
+
+# --- Lot 8 : les applications ------------------------------------------------
+
+[[mesure]]
+id = "liste.trait.largeur"
+libelle = "Trait d'accent de l'élément de liste choisi : largeur"
+cible = 3
+tolerance = 1
+unite = "px"
+lot = 8
+source = "WinUI : indicateur de sélection des listes, 3 × 16 (NavigationViewSelectionIndicatorWidth, commit 566a040 de microsoft-ui-xaml) ; mon choix du 2026-10-24"
+
+[[mesure]]
+id = "liste.trait.hauteur"
+libelle = "Trait d'accent de l'élément de liste choisi : hauteur"
+cible = 16
+tolerance = 1
+unite = "px"
+lot = 8
+source = "WinUI : indicateur de sélection des listes, 3 × 16 (NavigationViewSelectionIndicatorHeight, commit 566a040 de microsoft-ui-xaml) ; mon choix du 2026-10-24"

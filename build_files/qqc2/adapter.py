@@ -17,7 +17,9 @@ dans l'image, à leur place :
   ToolTipContentThemeFontSize) ;
 - un bouton mis en avant (highlighted) est rempli de la couleur d'accent,
   comme le bouton par défaut, et ses icônes sont blanches ou noires, les plus
-  contrastées sur l'accent exact (comme onAccentColor du style d'Ankh).
+  contrastées sur l'accent exact (comme onAccentColor du style d'Ankh) ;
+- un élément de liste choisi garde son texte et ses icônes, sur le fond
+  discret que le style d'Ankh dessine (lot 8).
 
 Ces fichiers QML sont aussi compilés dans le greffon du module : la ligne
 « prefer » de leur qmldir fait charger cette copie compilée. Elle est
@@ -123,4 +125,35 @@ remplacer(
     "            \"iconColor\": Qt.colorEqual(controlRoot.icon.color, \"transparent\")\n"
     "                ? (controlRoot.__ankhAccent ? controlRoot.__ankhSurAccent : Kirigami.Theme.textColor)\n"
     "                : controlRoot.icon.color,\n",
+)
+
+# Éléments de liste choisis : texte et icônes inchangés, sur le fond discret
+# que le style d'Ankh dessine (ListViewItemForegroundSelected de Windows 11 :
+# TextFillColorPrimary ; D-052, lot 8)
+for fichier in ("ItemDelegate.qml", "SwipeDelegate.qml"):
+    remplacer(
+        fichier,
+        "            selected: controlRoot.highlighted || controlRoot.down\n",
+        "            // Ankh : icône inchangée sur l'élément choisi (D-052, lot 8)\n"
+        "            selected: false\n",
+    )
+    remplacer(
+        fichier,
+        "            color: controlRoot.highlighted || controlRoot.down\n"
+        "                ? Kirigami.Theme.highlightedTextColor\n"
+        "                : (controlRoot.enabled ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor)\n",
+        "            // Ankh : texte inchangé sur l'élément choisi (D-052, lot 8)\n"
+        "            color: controlRoot.enabled ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor\n",
+    )
+remplacer(
+    "CheckDelegate.qml",
+    "            color: (((controlRoot.pressed && !controlRoot.checked) || controlRoot.highlighted) && !controlRoot.sectionDelegate) ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor\n",
+    "            // Ankh : texte inchangé sur l'élément choisi (D-052, lot 8)\n"
+    "            color: Kirigami.Theme.textColor\n",
+)
+remplacer(
+    "RadioDelegate.qml",
+    "            color: (controlRoot.pressed && !controlRoot.checked && !controlRoot.sectionDelegate) ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor\n",
+    "            // Ankh : texte inchangé sur l'élément choisi (D-052, lot 8)\n"
+    "            color: Kirigami.Theme.textColor\n",
 )

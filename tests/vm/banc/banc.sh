@@ -672,6 +672,17 @@ banc_pixels() {
                 banc_noter "controle.$nom.rayon" "$(banc_mesurer coin "$image" $((gx + x)) $((gy + y)) "$l" "$h")"
             fi
         done < "$banc_galerie_journal"
+        # Trait d'accent de l'élément de liste choisi (lot 8) : la place
+        # donnée par la galerie (ANKH-BANC-ELEMENT X Y L H)
+        if read -r _ x y l h < <(grep '^ANKH-BANC-ELEMENT ' "$banc_galerie_journal"); then
+            if read -r tl th tc <<< "$(banc_mesurer trait "$image" $((gx + x)) $((gy + y)) "$l" "$h")" && [[ $tl != "?" ]]; then
+                banc_noter liste.trait.largeur "$tl"
+                banc_noter liste.trait.hauteur "$th"
+                echo "Trait d'accent de l'élément de liste choisi : ${tl}×${th}, $tc"
+            else
+                echo "(liste : trait d'accent introuvable)"
+            fi
+        fi
     else
         echo "(galerie : fenêtre introuvable)"
     fi
