@@ -460,6 +460,16 @@ banc_pixels() {
     souris survol 1279 400
     # Fenêtre : Dolphin, à une place connue
     banc_dolphin 200 120 880 520
+    # Barre de commandes de Dolphin (lot 8b) : le texte de son bouton Trier,
+    # que seul le fichier des barres d'Ankh lui donne (iconText de l'action
+    # « sort », lu par D-Bus comme à la construction : build_files/dolphin)
+    if nom=$(vm pgrep -u "$banc_compte" -x -o dolphin) \
+        && ligne=$(in_session "$banc_compte" busctl --user --json=short get-property "org.kde.dolphin-$nom" \
+            /dolphin/Dolphin_1/actions/sort org.qtproject.Qt.QAction iconText); then
+        banc_noter dolphin.commandes "$(jq -r '.data' <<< "$ligne")"
+    else
+        echo "(Dolphin : texte du bouton Trier illisible)"
+    fi
     geometrie=$(banc_kwin ankh-banc-geometrie ANKH-BANC-FENETRE "for (const w of workspace.windowList()) {
     if (w.normalWindow && String(w.desktopFileName) === 'org.kde.dolphin') {
         const f = w.frameGeometry, c = w.clientGeometry;

@@ -13,7 +13,8 @@ COPY build_files /
 # /sortie, entre dans l'image. Le Démarrer d'Ankh (lot 5) y est vérifié sur le
 # Plasma de la même base (qmllint et qml de qt6-qtdeclarative-devel), et
 # chaque applet d'Ankh est lancée dans plasmawindowed, dans une session D-Bus
-# à elle (dbus-run-session de dbus-daemon).
+# à elle (dbus-run-session de dbus-daemon). Les barres de Dolphin (lot 8b) y
+# sont écrites par le Dolphin de la même base, lancé de même.
 FROM ${BASE_IMAGE} AS outils
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \

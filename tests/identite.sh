@@ -188,6 +188,14 @@ if grep -n '^prefer ' "${delegues}/qmldir"; then
 fi
 grep -q 'property color color: Platform.Theme.textColor' "${delegues}/TitleSubtitle.qml" \
     || echec "éléments de liste de Kirigami : texte de l'élément choisi sur l'accent"
+# D-052, lot 8b : Dolphin disposé comme l'Explorateur (barre de commandes,
+# boutons Trier et Afficher), sans fichier de barres dans les nouveaux comptes
+barres_dolphin=/usr/share/kxmlgui5/dolphin/dolphinui.rc
+grep -q 'name="ankhCommandes"' "${barres_dolphin}" || echec "Dolphin : barre de commandes absente"
+grep -q 'iconText="Trier"' "${barres_dolphin}" || echec "Dolphin : bouton Trier sans son texte"
+grep -q '<MenuBar' "${barres_dolphin}" || echec "Dolphin : fichier des barres sans les menus de Dolphin"
+[[ ! -e /etc/skel/.local/share/kxmlgui5/dolphin/dolphinui.rc ]] \
+    || echec "Dolphin : un fichier de barres dans /etc/skel passerait avant celui d'Ankh"
 # Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
 # nouveaux comptes et dans les réglages de GNOME lus sous Wayland
 for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do

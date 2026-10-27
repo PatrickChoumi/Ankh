@@ -28,9 +28,13 @@
 # de verrouillage d'Ankh (lot 7c) par build_files/plasma/verifier-verrouillage.sh
 # (kscreenlocker_greet en mode test), son écran de déconnexion par
 # build_files/plasma/verifier-deconnexion.sh (ksmserver-logout-greeter).
+# Les barres de Dolphin disposées comme l'Explorateur (lot 8b) sont fusionnées
+# dans le fichier de ce Dolphin, puis vérifiées par Dolphin lui-même
+# (build_files/dolphin/generer-dolphinui.sh) : résultat dans dolphin.
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
-# build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style et themes.
+# build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style, themes
+# et dolphin.
 set -euo pipefail
 
 sortie=${1:-/sortie}
@@ -86,6 +90,8 @@ echo "== Applets d'Ankh dans plasmawindowed"
 for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages org.ankh.horloge org.ankh.vuetaches; do
     "$(dirname "$(readlink -f "$0")")/plasma/verifier-applet-plasma.sh" "${applet}"
 done
+echo "== Barres de Dolphin (comme l'Explorateur)"
+"$(dirname "$(readlink -f "$0")")/dolphin/generer-dolphinui.sh" "${sortie}/dolphin"
 
 echo "== Police Selawik"
 recuperer "${SELAWIK_DEPOT}" "${SELAWIK_COMMIT}" "${travail}/selawik" "Source files/UFO"

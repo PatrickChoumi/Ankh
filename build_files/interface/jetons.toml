@@ -619,3 +619,12 @@ tolerance = 1
 unite = "px"
 lot = 8
 source = "WinUI : indicateur de sélection des listes, 3 × 16 (NavigationViewSelectionIndicatorHeight, commit 566a040 de microsoft-ui-xaml) ; mon choix du 2026-10-24"
+
+# --- Lot 8b : Dolphin disposé comme l'Explorateur ----------------------------
+
+[[mesure]]
+id = "dolphin.commandes"
+libelle = "Barre de commandes de Dolphin : texte du bouton Trier (iconText de l'action sort)"
+cible = "Trier"
+lot = 8
+source = "La barre de commandes de l'Explorateur de Windows 11 (Nouveau, couper, copier, coller, renommer, supprimer, Trier, Afficher) ; mon choix du 2026-10-24"

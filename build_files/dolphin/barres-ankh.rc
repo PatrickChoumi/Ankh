@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!DOCTYPE gui SYSTEM "kpartgui.dtd">
+<gui name="dolphin" version="1">
+    <!--
+    D-052, lot 8b : les barres de Dolphin disposées comme celles de l'Explorateur
+    de Windows 11 (mon choix du 2026-10-24). Fragment fusionné dans le fichier de
+    Dolphin par KXMLGUI au moment de la construction (generer-dolphinui.sh) :
+    seules les barres d'outils et les propriétés des actions (ActionProperties)
+    en sont prises, les menus restent ceux de Dolphin. La version 1 est plus
+    petite que celle de Dolphin : c'est elle qui force la fusion.
+
+    1. Précédent, suivant, dossier parent, actualiser, adresse, recherche. Le menu
+       de Dolphin (« hamburger ») reste au bout de cette barre : au premier
+       lancement, Dolphin l'ajoute à sa barre principale s'il n'y est pas
+       (addHamburgerMenuToToolbar, dolphinmainwindow.cpp de Dolphin 26.08.1).
+    2. La barre de commandes : Nouveau, couper, copier, coller, renommer,
+       supprimer (vers la corbeille), Trier, Afficher. Le texte seulement pour
+       Nouveau, Trier et Afficher, comme dans l'Explorateur.
+
+    Icônes de 16, celles de l'Explorateur. Les deux barres ont newline : chacune
+    commence sa ligne, quel que soit l'ordre où KXMLGUI les crée. Les actions et
+    leurs raccourcis restent ceux de KDE.
+    Ce commentaire suit la balise gui : KXMLGUI lit la version au premier
+    « version » écrit après « gui » (KXMLGUIClient::findVersionNumber).
+    -->
+    <ToolBar noMerge="1" name="mainToolBar" newline="true" iconSize="16">
+        <text context="@title:menu">Main Toolbar</text>
+        <Action name="go_back" />
+        <Action name="go_forward" />
+        <Action name="go_up" />
+        <Action name="view_redisplay" />
+        <Action name="url_navigators" />
+        <Action name="toggle_search" />
+        <Action name="hamburger_menu" />
+    </ToolBar>
+    <ToolBar noMerge="1" name="ankhCommandes" newline="true" iconSize="16" iconText="textbesideicon">
+        <text>Barre de commandes</text>
+        <Action name="new_menu" />
+        <Separator />
+        <Action name="edit_cut" />
+        <Action name="edit_copy" />
+        <Action name="edit_paste" />
+        <Action name="renamefile" />
+        <Action name="movetotrash" />
+        <Separator />
+        <Action name="sort" />
+        <Action name="view_settings" />
+    </ToolBar>
+    <!-- Priorité 0 (QAction::LowPriority) : l'icône seule à côté du texte des
+         autres ; 128 (NormalPriority) : l'icône et son texte. iconText : le
+         texte du bouton seul, les menus gardent celui de KDE. -->
+    <ActionProperties scheme="Default">
+        <Action priority="0" name="view_redisplay" />
+        <Action priority="128" name="new_menu" iconText="Nouveau" />
+        <Action priority="0" name="renamefile" />
+        <Action priority="0" name="movetotrash" />
+        <Action priority="128" name="sort" iconText="Trier" />
+        <Action priority="128" name="view_settings" iconText="Afficher" />
+    </ActionProperties>
+</gui>

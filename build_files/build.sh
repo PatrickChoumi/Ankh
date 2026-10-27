@@ -841,6 +841,21 @@ echo "Style QtQuick de KDE adapté : kf6-qqc2-desktop-style $(rpm -q --qf '%{VER
 python3 /ctx/qqc2/adapter-kirigami.py /usr/lib64/qt6/qml/org/kde/kirigami/delegates
 echo "Éléments de liste de Kirigami adaptés : kf6-kirigami $(rpm -q --qf '%{VERSION}-%{RELEASE}' kf6-kirigami)"
 
+# D-052, lot 8b : Dolphin disposé comme l'Explorateur de Windows 11 (mon choix
+# du 2026-10-24) : une barre précédent, suivant, dossier parent, actualiser,
+# adresse et recherche, puis une barre de commandes. Le fichier des barres est
+# écrit et vérifié par Dolphin lui-même dans l'étape « outils » du
+# Containerfile (build_files/dolphin/generer-dolphinui.sh), à la version du
+# fichier compilé dans ce Dolphin : il ne vaut que pour lui. KXMLGUI le
+# préfère à celui du programme ; un fichier du compte passe avant lui.
+dolphin_image="$(rpm -q --qf '%{VERSION}-%{RELEASE}' dolphin)"
+if [[ "${dolphin_image}" != "$(cat /outils/dolphin/version)" ]]; then
+    echo "Barres de Dolphin écrites pour Dolphin $(cat /outils/dolphin/version), l'image a ${dolphin_image}" >&2
+    exit 1
+fi
+install -D -m 0644 /outils/dolphin/dolphinui.rc /usr/share/kxmlgui5/dolphin/dolphinui.rc
+echo "Barres de Dolphin (comme l'Explorateur) : Dolphin ${dolphin_image}"
+
 # D-052, lot 4 : style Plasma « Ankh » (volets et menus aux coins de 8, barre
 # translucide, boutons de la barre des tâches et infobulles de Windows 11).
 # Ses SVG sont écrits ici depuis ceux de Breeze installés dans l'image, dont
