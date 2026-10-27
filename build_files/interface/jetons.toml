@@ -628,3 +628,12 @@ libelle = "Barre de commandes de Dolphin : texte du bouton Trier (iconText de l'
 cible = "Trier"
 lot = 8
 source = "La barre de commandes de l'Explorateur de Windows 11 (Nouveau, couper, copier, coller, renommer, supprimer, Trier, Afficher) ; mon choix du 2026-10-24"
+
+# --- Lot 8c : Konsole aux couleurs d'Ankh -----------------------------------
+
+[[mesure]]
+id = "konsole.profil"
+libelle = "Profil par défaut de Konsole ([Desktop Entry] DefaultProfile de konsolerc)"
+cible = "Ankh.profile"
+lot = 8
+source = "Mon choix du 2026-10-24 : la disposition de KDE, le jeu de couleurs d'Ankh (D-037), JetBrains Mono gardée"

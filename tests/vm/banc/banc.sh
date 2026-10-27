@@ -211,6 +211,12 @@ banc_reglages() {
     if valeur=$(banc_plasma 'print(panels()[0].widgets("org.ankh.vuetaches").length > 0 ? "oui" : "non");'); then
         banc_noter vuetaches.bouton "$valeur"
     fi
+    # Konsole aux couleurs d'Ankh (lot 8c) : son profil par défaut
+    # ([Desktop Entry] DefaultProfile de konsolerc, src/profile/ProfileManager.cpp
+    # de Konsole), qui porte le jeu de couleurs Ankh et JetBrains Mono
+    if valeur=$(banc_reglage konsolerc 'Desktop Entry' DefaultProfile ''); then
+        banc_noter konsole.profil "$valeur"
+    fi
     # PopupPosition (libnotificationmanager/kcfg/notificationsettings.kcfg de plasma-workspace)
     if valeur=$(banc_reglage plasmanotifyrc Notifications PopupPosition CloseToWidget); then
         banc_noter notifications.position "$valeur"

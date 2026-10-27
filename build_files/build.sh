@@ -984,9 +984,19 @@ if [[ -e /etc/xdg/konsolerc ]]; then
     fi
 fi
 kwriteconfig6 --file /etc/xdg/konsolerc --group 'Desktop Entry' --key DefaultProfile Ankh.profile
+# D-052, lot 8c : le terminal intégré de Dolphin (F4) est la partie de
+# Konsole ; elle lit son profil par défaut dans le fichier de Dolphin,
+# dolphinrc, et non dans konsolerc (src/profile/ProfileManager.cpp de Konsole
+# 26.08.1). Sans ce réglage, il garde les couleurs de Breeze (vu dans le
+# conteneur Fedora 44).
+if [[ -n "$(kreadconfig6 --file /etc/xdg/dolphinrc --group 'Desktop Entry' --key DefaultProfile)" ]]; then
+    echo "/etc/xdg/dolphinrc fixe déjà un profil de terminal : réglage à fusionner à la main" >&2
+    exit 1
+fi
+kwriteconfig6 --file /etc/xdg/dolphinrc --group 'Desktop Entry' --key DefaultProfile Ankh.profile
 # Lisibles par tous les comptes : KConfig peut créer ses fichiers pour leur
 # seul propriétaire (root ici).
-chmod 0644 /etc/xdg/kdeglobals /etc/xdg/breezerc /etc/xdg/ankhrc /etc/xdg/konsolerc "${sombre}/contents/defaults"
+chmod 0644 /etc/xdg/kdeglobals /etc/xdg/breezerc /etc/xdg/ankhrc /etc/xdg/konsolerc /etc/xdg/dolphinrc "${sombre}/contents/defaults"
 
 # Le premier terminal n'affiche plus le message de Fedora qui conseille Toolbx
 # et DNF (contraire à D-009 et D-036). /etc/profile.d/toolbox.sh (paquet

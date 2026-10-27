@@ -2073,6 +2073,11 @@
   - **banc** : `dolphin.commandes` (texte du bouton Trier, lu par D-Bus dans la session), cible « Trier », lot 8 ; la capture `dolphin` montre les deux barres ;
   - **choix de KDE gardé** : un fichier du compte, écrit par « Configurer les barres d'outils », passe avant celui d'Ankh ;
   - **limites** : la recherche reste le bouton de Dolphin, qui ouvre sa barre sous l'adresse, et non un champ dans la barre ; pas de bouton Partager (Dolphin n'en a pas dans ses barres) ; les onglets restent sous les barres, pas dans la barre de titre.
+- **Lot 8c, Konsole aux couleurs d'Ankh (2026-10-27)** :
+  - **déjà fait** depuis D-037 et D-039 : profil `Ankh` par défaut (`/etc/xdg/konsolerc`), jeu de couleurs `Ankh` (fond du logo `#0d1117`, texte `#e6edf3`, violet d'Ankh pour le magenta, fond translucide et flouté), JetBrains Mono, marge de 12. C'est l'option choisie : la disposition de KDE, le jeu de couleurs d'Ankh ; rien n'y change ;
+  - **ajouté** : le terminal intégré de Dolphin (F4) est la partie de Konsole, qui lit son profil par défaut dans `dolphinrc` et non dans `konsolerc` (`src/profile/ProfileManager.cpp` de Konsole 26.08.1). Il gardait les couleurs de Breeze ; vu dans le conteneur Fedora 44, sous Xvfb, avant et après le réglage `[Desktop Entry] DefaultProfile=Ankh.profile` dans `/etc/xdg/dolphinrc` (`build_files/build.sh`, qui refuse une base où ce fichier fixe déjà un profil) ; test d'identité ;
+  - **banc** : `konsole.profil` (profil par défaut lu dans la session), cible `Ankh.profile`, lot 8 ; la capture `konsole` le montre ;
+  - **limite** : Konsole 26.08 ne sait pas suivre le thème clair ou sombre (pas de jeu de couleurs du système) : le terminal reste sombre en thème clair.
 - **Modifiée par D-054 (2026-10-16)** : l'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh. Les curseurs gardent leur anneau violet (images figées). Pour les icônes Fluent (lot 9) et le thème GTK (lot 3 ; « lot 9 » écrit ici par erreur à l'origine), suivre l'accent comme le reste : à étudier. Pour le thème GTK, réponse le 2026-10-21 : il garde le violet d'Ankh (voir le lot 3).
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)
