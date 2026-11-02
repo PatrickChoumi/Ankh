@@ -205,6 +205,13 @@ croix="$(dirname "$(readlink -f "$0")")/icones/croix-fluent.py"
 symbolique="${base}/symbolic/actions/window-close-symbolic.svg"
 python3 "${croix}" "${symbolique}" '#363636' "${base}"/{16,22,24,32}/actions
 python3 "${croix}" "${symbolique}" '#dedede' "${icones}/.Fluent-Ankh-dark-base"/{16,22,24,32}/actions
+# Lot 10i : les icônes symboliques de Fluent ont une couleur figée, sans la
+# feuille de KDE : Plasma ne pouvait pas les recolorer (pictogramme gris sur
+# une tuile allumée). Elles suivent maintenant les couleurs de KDE ; la
+# construction échoue s'il reste un élément de la couleur figée
+symboliques="$(dirname "$(readlink -f "$0")")/icones/symboliques-fluent.py"
+python3 "${symboliques}" '#363636' "${base}/symbolic"
+python3 "${symboliques}" '#dedede' "${icones}/.Fluent-Ankh-dark-base/symbolic"
 # KDE ne recolore que les icônes d'un thème qui le demande (FollowsColorScheme
 # de kicontheme.cpp de KIconThemes) : Fluent le fait déjà. Ce qui manque à
 # Fluent vient de Breeze, dans sa variante claire ou sombre, puis de hicolor

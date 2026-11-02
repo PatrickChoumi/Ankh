@@ -227,6 +227,11 @@ fi
 grep -q 'ColorScheme-Text' /usr/share/icons/.Fluent-Ankh-dark-base/16/actions/window-close.svg \
     || echec "icônes Fluent : croix de fermeture encore rouge"
 attendu "Icônes par défaut" Fluent-Ankh-dark --group Icons --key Theme
+# Lot 10i : icônes symboliques recolorables par KDE (tuiles des paramètres rapides)
+for icone in symbolic/actions/dark-mode-symbolic.svg symbolic/status/night-light-symbolic.svg symbolic/status/airplane-mode-symbolic.svg; do
+    grep -q 'class="ColorScheme-Text"' "/usr/share/icons/.Fluent-Ankh-dark-base/${icone}" \
+        || echec "icônes Fluent : ${icone} ne suit pas les couleurs de KDE"
+done
 # D-052, lot 10 : les animations d'Ankh suivent la vitesse des animations de
 # KDE (unités de Kirigami), jusqu'à les couper ; aucune durée en dur (l'écran
 # de connexion, hors de la session, mis à part)

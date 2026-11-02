@@ -27,6 +27,8 @@ Item {
     required property string texte
     required property string icone
     property bool active: false
+    property string iconeSecours: ""
+    property int tailleIcone: 16
     property bool fleche: false
     property bool disponible: true
 
@@ -63,10 +65,11 @@ Item {
             anchors.centerIn: parent
             spacing: 10
             Kirigami.Icon {
-                width: 16
-                height: 16
+                width: tuile.tailleIcone
+                height: tuile.tailleIcone
                 anchors.verticalCenter: parent.verticalCenter
                 source: tuile.icone
+                fallback: tuile.iconeSecours
                 isMask: true
                 color: tuile.active ? couleurs.surAccent : (tuile.disponible ? Kirigami.Theme.textColor : couleurs.texteInactif)
             }

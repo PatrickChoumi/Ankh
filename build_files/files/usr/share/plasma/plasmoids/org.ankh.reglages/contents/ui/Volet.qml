@@ -60,7 +60,9 @@ Item {
     readonly property int hautTuiles: 32
     readonly property int traitY: hautTuiles + rangees * 96
     readonly property int hautCurseurs: traitY + 1 + 18
-    readonly property int piedY: hautCurseurs + curseurs * 40 + (curseurs > 0 ? 14 : 0)
+    // Sans curseur (ni son ni luminosité), ni trait ni bande vide : le pied
+    // suit les tuiles, à 16 px sous la dernière rangée (lot 10i)
+    readonly property int piedY: curseurs > 0 ? hautCurseurs + curseurs * 40 + 14 : traitY + 16
     readonly property int hauteurVisible: hauteurLecteur + piedY + 40
 
     // Taille demandée à Plasma (Layout de main.qml) : calculée, et non lue sur
@@ -86,7 +88,23 @@ Item {
         }[nom];
     }
 
+    // Pictogrammes dessinés pour 16 px (dossiers symbolic et 16 de
+    // Fluent-Ankh), comme les glyphes de 16 px de Windows 11 : un pictogramme
+    // dessiné pour 22 px, réduit à 16, tombe à 12 px et pâlit (lot 10i)
     function icone(nom: string): string {
+        return {
+            wifi: etat.wifiActif ? "network-wireless-symbolic" : "network-wireless-disconnected-symbolic",
+            bluetooth: etat.btActif ? "bluetooth-active-symbolic" : "bluetooth-disabled-symbolic",
+            avion: "airplane-mode-symbolic",
+            economie: "battery-profile-powersave-symbolic",
+            nuit: "night-light-symbolic",
+            nePasDeranger: "notifications-disabled",
+            sombre: "dark-mode-symbolic"
+        }[nom];
+    }
+
+    // Noms de Breeze, si le thème d'icônes choisi n'a pas ceux de Fluent
+    function iconeSecours(nom: string): string {
         return {
             wifi: etat.wifiActif ? "network-wireless-symbolic" : "network-wireless-disconnected-symbolic",
             bluetooth: etat.btActif ? "network-bluetooth-symbolic" : "network-bluetooth-inactive-symbolic",
@@ -96,6 +114,12 @@ Item {
             nePasDeranger: "notifications-disabled",
             sombre: "contrast"
         }[nom];
+    }
+
+    // La feuille de l'économie d'énergie n'existe qu'en 22 px dans Fluent :
+    // dessin de 16 px dans une marge de 3, affichée à sa taille
+    function tailleIcone(nom: string): int {
+        return nom === "economie" ? 22 : 16;
     }
 
     function active(nom: string): bool {
@@ -156,6 +180,8 @@ Item {
                     y: volet.hautTuiles + Math.floor(index / 3) * 96
                     texte: volet.texte(modelData)
                     icone: volet.icone(modelData)
+                    iconeSecours: volet.iconeSecours(modelData)
+                    tailleIcone: volet.tailleIcone(modelData)
                     active: volet.active(modelData)
                     fleche: modelData === "wifi" || modelData === "bluetooth"
                     onBasculee: volet.basculer(modelData)
@@ -165,6 +191,7 @@ Item {
 
             // Trait de séparation
             Rectangle {
+                visible: volet.curseurs > 0
                 y: volet.traitY
                 width: parent.width
                 height: 1
@@ -185,7 +212,8 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 16
                         height: 16
-                        source: "brightness-high"
+                        source: "display-brightness-symbolic"
+                        fallback: "brightness-high"
                         isMask: true
                         color: Kirigami.Theme.textColor
                     }
