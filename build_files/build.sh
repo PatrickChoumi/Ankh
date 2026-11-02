@@ -726,10 +726,11 @@ chmod -R u=rwX,go=rX /usr/share/icons/.Fluent-Ankh-base /usr/share/icons/.Fluent
 for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
     gtk-update-icon-cache --force --quiet "/usr/share/icons/${variante}"
 done
-for icone in folder user-home google-chrome; do
-    test -e "/usr/share/icons/Fluent-Ankh-dark/scalable/places/${icone}.svg" \
-        || test -e "/usr/share/icons/Fluent-Ankh-dark/scalable/apps/${icone}.svg"
+for icone in folder user-home; do
+    test -e "/usr/share/icons/Fluent-Ankh-dark/scalable/places/${icone}.svg"
 done
+# Lot 10g : les applications gardent leur icône (Breeze ou la leur)
+test ! -e /usr/share/icons/Fluent-Ankh-dark/scalable/apps/google-chrome.svg
 kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Fluent-Ankh-dark
 for dossier in "${themes[@]}"; do
     defauts="${dossier}/contents/defaults"
