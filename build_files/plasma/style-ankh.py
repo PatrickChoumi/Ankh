@@ -256,23 +256,27 @@ def taches():
     trait = 3      # épaisseur du trait sous l'icône
 
     def cadre(prefixe, fond, classe_fond, longueur_trait, classe_trait, opacite_trait):
-        # Bords : le rectangle arrondi tient dans les coins. Le trait est au
-        # milieu du bord bas : sa partie droite s'étire avec le bouton, et
-        # ses bouts arrondis, fixes, sont dans les coins, 2 px avant leur
-        # bord. Dans un bouton de TACHE_LARGEUR, il fait longueur_trait de
-        # bout en bout ; s'il manque de place, Plasma rétrécit les boutons
-        # et le trait raccourcit d'autant.
-        debord = 2
-        cote = (TACHE_LARGEUR - longueur_trait) // 2 + debord if longueur_trait else retrait_x + r
+        # Bords : le rectangle arrondi tient dans les coins. Le trait, bouts
+        # arrondis compris, est tout entier dans le morceau du milieu du bord
+        # bas, aussi large que lui : le cadre fait TACHE_LARGEUR, le trait y
+        # fait longueur_trait de bout en bout, et suit le bouton s'il manque
+        # de place. Lot 10 : il était coupé entre les coins et 2 px de
+        # milieu ; à 125 et 150 %, Plasma arrondit la taille des coins et ce
+        # milieu disparaissait : le tiret devenait un point, puis deux.
+        if longueur_trait:
+            cote = (TACHE_LARGEUR - longueur_trait) // 2
+            milieu = TACHE_LARGEUR - 2 * cote
+        else:
+            cote, milieu = retrait_x + r, 4
         haut, bas = retrait_y + r, retrait_y + r + 4
-        L, H = 2 * cote + 4, haut + bas + 4
+        L, H = 2 * cote + milieu, haut + bas + milieu
         formes = []
         if fond:
             formes.append(([arrondi(retrait_x, retrait_y, L - retrait_x, H - retrait_y, r)], classe_fond, fond))
         if longueur_trait:
             y1 = H - retrait_y - 1
-            formes.append(([pastille(cote - debord, y1 - trait, L - cote + debord, y1)], classe_trait, opacite_trait))
-        planche.cadre(prefixe, cote, haut, cote, bas, formes)
+            formes.append(([pastille(cote, y1 - trait, cote + longueur_trait, y1)], classe_trait, opacite_trait))
+        planche.cadre(prefixe, cote, haut, cote, bas, formes, milieu)
         planche.marges(prefixe, TACHE_MARGES["haut"], TACHE_MARGES["bas"], TACHE_MARGES["gauche"], TACHE_MARGES["droite"])
 
     survol, actif, actif_survol = 0.06, 0.045, 0.08
