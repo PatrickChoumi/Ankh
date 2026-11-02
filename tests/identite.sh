@@ -221,6 +221,13 @@ fi
 grep -q 'ColorScheme-Text' /usr/share/icons/.Fluent-Ankh-dark-base/16/actions/window-close.svg \
     || echec "icônes Fluent : croix de fermeture encore rouge"
 attendu "Icônes par défaut" Fluent-Ankh-dark --group Icons --key Theme
+# D-052, lot 10 : les animations d'Ankh suivent la vitesse des animations de
+# KDE (unités de Kirigami), jusqu'à les couper ; aucune durée en dur (l'écran
+# de connexion, hors de la session, mis à part)
+if grep -rnE 'duration: *[0-9]' /usr/lib64/qt6/qml/org/ankh /usr/share/plasma/plasmoids/org.ankh.* \
+    /usr/share/kwin-wayland/effects/org.ankh.* /usr/share/kwin-wayland/tabbox/org.ankh.* 2> /dev/null; then
+    echec "animations d'Ankh : durées en dur (ci-dessus), qui ignorent la vitesse des animations"
+fi
 attendu "Icônes du thème global sombre" Fluent-Ankh-dark --file /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/contents/defaults --group kdeglobals --group Icons --key Theme
 attendu "Icônes du thème global clair" Fluent-Ankh-light --file /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/contents/defaults --group kdeglobals --group Icons --key Theme
 attendu "Icônes GTK des nouveaux comptes" Fluent-Ankh-dark --file /etc/skel/.config/gtk-3.0/settings.ini --group Settings --key gtk-icon-theme-name

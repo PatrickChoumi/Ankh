@@ -52,10 +52,10 @@ Item {
         radius: height / 2
         color: interrupteur.allume ? couleurs.surAccent : (couleurs.sombre ? "#c5ffffff" : "#9e000000")
         Behavior on x {
-            NumberAnimation { duration: 167; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Kirigami.Units.longDuration; easing.type: Easing.OutCubic }
         }
         Behavior on width {
-            NumberAnimation { duration: 83 }
+            NumberAnimation { duration: Kirigami.Units.shortDuration }
         }
     }
 

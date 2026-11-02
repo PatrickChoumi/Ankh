@@ -2119,6 +2119,11 @@
   - **corrigé**, sans changer de teinte : rouge négatif du sombre `248,81,73` → `249,97,90` (`#f9615a`, de 4,53 à 6,20), aussi pour le message d'erreur de l'écran de connexion d'Ankh ; orange neutre du clair `154,103,0` → `151,101,0` (`#976500`, de 4,57 à 5,03) ;
   - **la construction échoue** si une paire repasse sous 4,5 (`build_files/interface/contrastes.py`, appelé par `build.sh` sur les fichiers de l'image) ; vérifié : refuse les anciennes couleurs (quatre paires), accepte les nouvelles (au plus bas 4,53 et 4,57) ;
   - **limite** : les autres couleurs du groupe Selection (lien, négatif… posés sur la sélection) restent celles de Breeze et ne sont pas auditées : depuis le lot 8, le texte d'un élément choisi garde sa couleur, sur un fond discret.
+- **Lot 10b, les animations réduites (2026-11-02)** :
+  - **source** : la vitesse des animations de KDE (`[KDE] AnimationDurationFactor` de `kdeglobals`, 5/6 dans Ankh depuis le lot 1) règle les durées de Kirigami ; mesuré dans le conteneur Fedora 44 (Kirigami 6.31) : 41, 83 et 167 ms (`veryShortDuration`, `shortDuration`, `longDuration`) au facteur d'Ankh, 0, 0 et 1 ms au facteur 0, celui de « Animations : aucune » ;
+  - **corrigé** : le curseur et l'interrupteur communs d'Ankh (`org.ankh.commun`, paramètres rapides et galerie) avaient leurs durées en dur (83 et 167 ms) et animaient même sans animations ; ils prennent `Kirigami.Units.shortDuration` et `longDuration`, aux mêmes durées par défaut ;
+  - **test d'identité** : aucune durée en dur dans les composants, applets, effets et Alt+Tab d'Ankh ;
+  - **limite** : l'écran de connexion (SDDM) tourne hors de la session, sans ce réglage : ses animations restent.
 - **Modifiée par D-054 (2026-10-16)** : l'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh. Les curseurs gardent leur anneau violet (images figées). Pour les icônes Fluent (lot 9) et le thème GTK (lot 3 ; « lot 9 » écrit ici par erreur à l'origine), suivre l'accent comme le reste : à étudier. Pour le thème GTK, réponse le 2026-10-21 : il garde le violet d'Ankh (voir le lot 3).
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)

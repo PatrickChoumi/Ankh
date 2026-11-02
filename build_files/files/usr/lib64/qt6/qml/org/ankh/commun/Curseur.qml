@@ -83,10 +83,10 @@ Item {
             radius: taille / 2
             color: curseur.actif ? couleurs.accent : couleurs.texteInactif
             Behavior on width {
-                NumberAnimation { duration: 83 }
+                NumberAnimation { duration: Kirigami.Units.shortDuration }
             }
             Behavior on height {
-                NumberAnimation { duration: 83 }
+                NumberAnimation { duration: Kirigami.Units.shortDuration }
             }
         }
     }
