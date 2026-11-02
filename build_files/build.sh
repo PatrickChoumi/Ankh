@@ -723,6 +723,32 @@ done
 chmod -R u=rwX,go=rX /usr/share/icons/.Fluent-Ankh-base /usr/share/icons/.Fluent-Ankh-dark-base \
     /usr/share/icons/.Fluent-Ankh-light-base /usr/share/icons/Fluent-Ankh /usr/share/icons/Fluent-Ankh-dark \
     /usr/share/icons/Fluent-Ankh-light
+# Lot 10n : chaque application garde son icône (10g), même quand Fluent a une
+# icône d'action du même nom : utilities-terminal (Konsole) et
+# preferences-system (Configuration du système) étaient des contours blancs,
+# car KDE prend le nom dans le thème choisi avant le thème hérité (Breeze).
+# Les icônes de Fluent qui portent le nom de l'icône d'une application
+# visible sont retirées, sauf les dossiers (places) ; Breeze ou l'application
+# prennent le relais, comme dans KDE.
+bases_fluent=(/usr/share/icons/.Fluent-Ankh-base /usr/share/icons/.Fluent-Ankh-dark-base /usr/share/icons/.Fluent-Ankh-light-base)
+for lanceur in /usr/share/applications/*.desktop; do
+    if grep -qiE '^(NoDisplay|Hidden)=true' "${lanceur}"; then
+        continue
+    fi
+    nom="$(sed -n 's/^Icon=//p' "${lanceur}" | head -n 1)"
+    if [[ -z "${nom}" || "${nom}" == */* ]]; then
+        continue
+    fi
+    retirees="$(find "${bases_fluent[@]}" -name "${nom}.svg" -not -path '*/places/*' -print -delete | wc -l)"
+    if (( retirees > 0 )); then
+        echo "Icônes d'Ankh : ${nom} (${lanceur##*/}) vient de Breeze ou de l'application (${retirees} dessins de Fluent retirés)"
+    fi
+done
+# Liens de Fluent laissés sans cible par ce retrait : leurs noms aussi
+# viennent de Breeze
+echo "Icônes d'Ankh : $(find "${bases_fluent[@]}" -xtype l -print -delete | wc -l) liens de Fluent sans cible retirés"
+test ! -e /usr/share/icons/.Fluent-Ankh-base/24/actions/utilities-terminal.svg
+test ! -e /usr/share/icons/.Fluent-Ankh-dark-base/16/actions/preferences-system.svg
 for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
     gtk-update-icon-cache --force --quiet "/usr/share/icons/${variante}"
 done
