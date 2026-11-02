@@ -1,6 +1,6 @@
 # AVANCEMENT — Ce qui est fait, ce qui reste
 
-> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-27** (chantier Interface : lots 1, 2 et 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a, 6b et 7 verts en VM ; lot 8 écrit, en VM).
+> Mis à jour à chaque compte rendu (D-029). Dernière mise à jour : **2026-10-27** (chantier Interface : lots 1, 2 et 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5 à 8 verts en VM).
 > Ce fichier résume et renvoie aux décisions (`D-xxx`, dans [DECISIONS.md](DECISIONS.md)). Il ne les recopie pas.
 > L'état courant tient en quelques lignes dans [CLAUDE.md §2](CLAUDE.md#2-état-actuel).
 
@@ -13,7 +13,7 @@
 | 2. Premier démarrage en VM, dans le cloud | ✅ Terminée le 2026-10-07 |
 | 3. Applications et dev | ✅ Terminée le 2026-10-13 |
 | 5. Gaming | ⏳ En cours depuis le 2026-10-13 (D-041, D-050) |
-| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0 à 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5, 6a, 6b et 7 verts en VM ; lot 8 écrit, en VM |
+| Chantier Interface, en parallèle (D-052) | ⏳ Commencé le 2026-10-14 : lots 0 à 3 fusionnés ; lot 4 vert en VM, PR #22 ouverte ; lots 5 à 8 verts en VM, leurs PR une à une ; lot 9 en préparation |
 | 6. Cyber (Kali isolé) | À faire (questions à répondre avant) |
 | 7. Labs (VMs isolées) | À faire (questions à répondre avant) |
 | 8. Sauvegarde et récupération | À faire |
@@ -357,6 +357,7 @@
   - 8c, Konsole : il avait déjà les couleurs d'Ankh (D-037) ; le terminal intégré de Dolphin (F4) les prend aussi.
   - 8d, le thème GTK d'Ankh dans les applications Flatpak, en lecture seule. Seul le dossier du thème y entre ; aucune permission ne change. À relire. Vérification en VM : le thème lisible et non modifiable dans WordCraft.
   - Chrome, VS Code et les applications Electron dessinent leur propre barre de titre, comme sous Windows 11 : rien à y faire.
+  - **Vert en VM le 2026-10-27 : 60 mesures conformes, aucun écart** (lots 1 à 8). Dolphin a ses deux barres, la liste son trait d'accent, et le thème GTK est lisible, en lecture seule, dans WordCraft. Les mesures des lots 6, 7 et 8 deviennent obligatoires.
 
 ---
 
@@ -381,7 +382,7 @@ Onze lots, chacun dans sa PR, avec captures avant et après, et les mesures du b
 5. Démarrer d'Ankh : le Démarrer classique de Windows 11 (mon choix du 2026-10-22). Vert en VM ; sa PR suivra celle du lot 4.
 6. Paramètres rapides (6a), puis horloge avec notifications et calendrier (6b) : verts en VM le 2026-10-23 (6a : 47 mesures conformes ; 6b : volet de 364 px, à 12 px de la barre et du bord). Leurs PR suivront celle du lot 5.
 7. Alt+Tab, vue d'ensemble, déconnexion, verrouillage, sons. Mes choix du 2026-10-23 : Alt+Tab et vue des tâches comme Windows 11, verrouillage au dessin de la connexion d'Ankh, sons de KDE réduits ; puis, le soir : Ankh garde tous les raccourcis de KDE et ne prend que l'aspect de Windows (Windows+Tab reste à Alt+Tab). 7a (Alt+Tab) vérifié en VM le 2026-10-23. 7b (vue des tâches, par le bouton de la barre) et 7c (verrouillage et déconnexion) : **verts en VM le 2026-10-27**, 55 mesures conformes, aucun écart. 7d (sons) : écrit ; la VM n'a pas de sortie son. Sa PR suivra celles des lots 5, 6a et 6b.
-8. Applications (mes choix du 2026-10-24) : 8a sélection des listes, 8b Dolphin comme l'Explorateur, 8c Konsole et le terminal de Dolphin, 8d thème GTK dans les Flatpak. Écrits et vérifiés hors écran ; VM en cours. Chrome, VS Code et Electron : rien à faire. La fenêtre de KDE Wallet vient de la VM (compte sans mot de passe) : hors du lot.
+8. Applications (mes choix du 2026-10-24) : 8a sélection des listes, 8b Dolphin comme l'Explorateur, 8c Konsole et le terminal de Dolphin, 8d thème GTK dans les Flatpak. **Verts en VM le 2026-10-27** (60 mesures conformes). Chrome, VS Code et Electron : rien à faire. La fenêtre de KDE Wallet vient de la VM (compte sans mot de passe) : hors du lot.
 9. Icônes et curseurs.
 10. Finitions : hautes résolutions, thème clair, accessibilité, toutes les mesures obligatoires.
 
