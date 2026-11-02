@@ -2111,6 +2111,14 @@
     - l'entrée « Ankh-dev » au logo de Fedora dans « Recommandé » du Démarrer, déjà là au lot 8 : elle vient de distrobox, pas des icônes. Corrigée dans D-036 ;
   - les mesures du lot 9 deviennent obligatoires (`lots_termines`) ;
   - **À VALIDER** : les icônes dans les applications Flatpak (Steam, Lutris), à voir au prochain test complet ; la taille de l'image (+ 85 Mo avant compression).
+- **Lot 10a, les contrastes (2026-11-02)**, branche `claude/lot-10-finitions` :
+  - **source** : WCAG 2.2, critère 1.4.3 (contraste minimal, niveau AA) : 4,5 pour le texte courant ; luminance relative et rapport de contraste de ses définitions ;
+  - **audit** des deux jeux de couleurs d'Ankh (`Ankh.colors`, `AnkhClair.colors`) : chaque couleur de texte (normale, secondaire, lien, lien visité, négative, neutre, positive) sur le fond de son groupe (fenêtre, contenu, bouton, infobulle, en-tête, complémentaire), et le texte principal de la sélection (menus survolés). Le texte principal passait partout (de 11,7 à 16) ; quatre paires passaient sous 4,5 :
+    - sombre : le rouge « négatif » sur les boutons (4,12) et les infobulles (4,18) ;
+    - clair : l'orange « neutre » sur la fenêtre et les en-têtes (4,42) ;
+  - **corrigé**, sans changer de teinte : rouge négatif du sombre `248,81,73` → `249,97,90` (`#f9615a`, de 4,53 à 6,20), aussi pour le message d'erreur de l'écran de connexion d'Ankh ; orange neutre du clair `154,103,0` → `151,101,0` (`#976500`, de 4,57 à 5,03) ;
+  - **la construction échoue** si une paire repasse sous 4,5 (`build_files/interface/contrastes.py`, appelé par `build.sh` sur les fichiers de l'image) ; vérifié : refuse les anciennes couleurs (quatre paires), accepte les nouvelles (au plus bas 4,53 et 4,57) ;
+  - **limite** : les autres couleurs du groupe Selection (lien, négatif… posés sur la sélection) restent celles de Breeze et ne sont pas auditées : depuis le lot 8, le texte d'un élément choisi garde sa couleur, sur un fond discret.
 - **Modifiée par D-054 (2026-10-16)** : l'accent suit le fond d'écran ; les fonds d'Ankh gardent le violet d'Ankh. Les curseurs gardent leur anneau violet (images figées). Pour les icônes Fluent (lot 9) et le thème GTK (lot 3 ; « lot 9 » écrit ici par erreur à l'origine), suivre l'accent comme le reste : à étudier. Pour le thème GTK, réponse le 2026-10-21 : il garde le violet d'Ankh (voir le lot 3).
 
 ## D-053 — La suite Craft d'ArtCraft remplace OnlyOffice : bureautique dans Simple, clones d'Adobe dans une option « Création » (modifie D-024, D-035 et D-046)

@@ -31,7 +31,7 @@ Rectangle {
     readonly property color texteDiscret: Qt.rgba(230 / 255, 237 / 255, 243 / 255, 0.70)
     readonly property color violet: "#a78bfa"
     readonly property color violetPlein: "#8455f0"
-    readonly property color erreur: "#f85149"
+    readonly property color erreur: "#f9615a"
     readonly property string police: "Inter"
     // Tailles proportionnelles à la hauteur de l'écran (800 pixels de référence)
     readonly property real k: Math.max(0.75, height / 800)

@@ -573,6 +573,10 @@ if [[ "${couleurs}" != BreezeDark ]]; then
     exit 1
 fi
 kwriteconfig6 --file "${sombre}/contents/defaults" --group kdeglobals --group General --key ColorScheme Ankh
+# D-052, lot 10 : chaque texte des jeux de couleurs d'Ankh se lit sur son fond
+# avec un contraste d'au moins 4,5 (seuil AA du W3C) ; sinon, la
+# construction échoue (build_files/interface/contrastes.py)
+python3 /ctx/interface/contrastes.py /usr/share/color-schemes/Ankh.colors /usr/share/color-schemes/AnkhClair.colors
 # /etc/xdg/kdeglobals (créé plus haut, D-023) passe avant les réglages de Fedora
 # (XDG_CONFIG_DIRS=/etc/xdg:/usr/share/kde-settings/kde-profile/default/xdg,
 # plasma-workspace/env/env.sh du paquet kde-settings-plasma).
