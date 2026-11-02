@@ -237,8 +237,12 @@ ToolButtonMenuArrowStyle toolButtonMenuArrowStyle(const QStyleOption *option)
         return ToolButtonMenuArrowStyle::SubControl;
     }
 
+    // D-052, lot 10j : pas de petite flèche pour un menu à retardement
+    // (Précédent et Suivant de Dolphin, historique) : les boutons de
+    // l'Explorateur de Windows 11 n'en ont pas ; le menu s'ouvre toujours par
+    // un appui long ou un clic droit
     if (hasDelayedMenu) {
-        return ToolButtonMenuArrowStyle::InlineSmall;
+        return ToolButtonMenuArrowStyle::None;
     }
 
     if (hasInlineIndicator && !iconOnly) {
