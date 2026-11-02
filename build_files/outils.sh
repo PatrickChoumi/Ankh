@@ -175,11 +175,26 @@ for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
     test -f "${icones}/${variante}/index.theme"
 done
 base="${icones}/.Fluent-Ankh-base"
-# Dossiers, icônes d'applications et d'applets suivent l'accent, comme ceux de
-# Breeze (D-054 ; mon choix du 2026-11-02) ; violet d'Ankh hors de KDE
+# Lot 10g : chaque application garde sa propre icône, comme dans Windows 11 ;
+# celles que Fluent redessine (Steam, Konsole, Discover, Réglages…) étaient
+# pâles et méconnaissables sur les captures en VM. Sans scalable/apps, elles
+# viennent de Breeze ou de l'application (Inherits, plus bas) ; Fluent garde
+# le système : dossiers, fichiers, actions, barre
+rm -r "${base}/scalable/apps"
+for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
+    index="${icones}/${variante}/index.theme"
+    grep -q 'scalable/apps' "${index}"
+    sed -i 's#,scalable\(@[23]x\)\?/apps##g' "${index}"
+    if grep -q '^Directories=.*scalable[^,]*/apps' "${index}"; then
+        echo "Icônes Fluent : ${variante} déclare encore scalable/apps" >&2
+        exit 1
+    fi
+done
+# Dossiers et icônes d'applets suivent l'accent, comme ceux de Breeze (D-054 ;
+# mon choix du 2026-11-02) ; violet d'Ankh hors de KDE
 python3 "$(dirname "$(readlink -f "$0")")/icones/adapter-fluent.py" '#8455f0' \
-    "${base}/scalable/places" "${base}/scalable/apps" "${base}/256/applets"
-if grep -rli '#198ee6' "${base}/scalable/places" "${base}/scalable/apps" "${base}/256/applets"; then
+    "${base}/scalable/places" "${base}/256/applets"
+if grep -rli '#198ee6' "${base}/scalable/places" "${base}/256/applets"; then
     echo "Icônes Fluent : le bleu de Fluent est resté (fichiers ci-dessus)" >&2
     exit 1
 fi
@@ -200,21 +215,11 @@ for variante in Fluent-Ankh:breeze Fluent-Ankh-dark:breeze-dark Fluent-Ankh-ligh
     sed -i -e "s/^Inherits=hicolor$/Inherits=${variante##*:},hicolor/" \
         -e "s/^Name=.*/Name=${variante%%:*}/" "${index}"
 done
-# Tout lien doit mener à une icône ou un dossier du thème. Seul défaut connu
-# de Fluent (commit c8a244f) : dix noms d'applications de recherche (kfind,
-# strigi…) mènent à search.svg, absent de scalable/apps ; ces liens sont
-# retirés, et l'application garde l'icône de Breeze
-retires=0
-while IFS= read -r -d '' lien; do
-    if [[ "$(readlink "${lien}")" == search.svg && "$(dirname "${lien}")" == "${base}/scalable/apps" ]]; then
-        rm "${lien}"
-        retires=$((retires + 1))
-    else
-        echo "Icônes Fluent : lien sans cible ${lien} -> $(readlink "${lien}")" >&2
-        exit 1
-    fi
-done < <(find "${icones}" -xtype l -print0)
-echo "Icônes Fluent : ${retires} liens vers search.svg (absent) retirés"
+# Tout lien doit mener à une icône ou un dossier du thème
+if find "${icones}" -xtype l | grep .; then
+    echo "Icônes Fluent : liens sans cible (ci-dessus)" >&2
+    exit 1
+fi
 cp -a "${icones}/." "${sortie}/icones/"
 install -m 0644 "${travail}/fluent/COPYING" "${sortie}/icones/.Fluent-Ankh-base/COPYING"
 echo "Icônes Fluent-Ankh : $(find "${base}" -type f -name '*.svg' | wc -l) dessins, $(du -sh "${icones}" | cut -f1)"

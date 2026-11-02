@@ -455,9 +455,9 @@ source = "Comme barre.tache.rectangle.largeur"
 [[mesure]]
 id = "barre.tache.icone.dessin"
 libelle = "Dessin de l'icône de Dolphin dans la barre (largeur × hauteur ; icône de 32 réglée par le style)"
-cible = "30×24"
+cible = "30×26"
 lot = 4
-source = "dessin de l'icône Fluent de Dolphin à 32 px (lots 4 et 9), relevé (lot 10 : cible posée)"
+source = "dessin de l'icône de Dolphin de Breeze à 32 px (lot 4) ; les applications gardent leur icône depuis le lot 10g (relevé en VM le 2026-10-27, Breeze)"
 
 [[mesure]]
 id = "volet.rayon"

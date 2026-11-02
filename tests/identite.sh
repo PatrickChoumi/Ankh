@@ -215,7 +215,13 @@ for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
 done
 grep -q 'class="ColorScheme-Accent"' "$(readlink -f /usr/share/icons/Fluent-Ankh-dark/scalable/places/folder.svg)" \
     || echec "icônes Fluent : dossiers sans l'accent"
-if grep -rlqi '#198ee6' /usr/share/icons/.Fluent-Ankh-base/scalable/places /usr/share/icons/.Fluent-Ankh-base/scalable/apps; then
+# Lot 10g : les applications gardent leur icône (pas d'icônes d'applications
+# dans Fluent-Ankh)
+[[ ! -e /usr/share/icons/.Fluent-Ankh-base/scalable/apps ]] || echec "icônes Fluent : icônes d'applications encore là"
+if grep -q '^Directories=.*scalable[^,]*/apps' /usr/share/icons/Fluent-Ankh-dark/index.theme; then
+    echec "icônes Fluent : Fluent-Ankh-dark déclare encore des icônes d'applications"
+fi
+if grep -rlqi '#198ee6' /usr/share/icons/.Fluent-Ankh-base/scalable/places; then
     echec "icônes Fluent : le bleu de Fluent est resté"
 fi
 grep -q 'ColorScheme-Text' /usr/share/icons/.Fluent-Ankh-dark-base/16/actions/window-close.svg \
