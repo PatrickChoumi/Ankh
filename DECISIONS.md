@@ -2110,6 +2110,7 @@
     - la croix de fermeture des notifications et des bandeaux était un rond rouge : Fluent dessine `window-close` comme un rond plein de la couleur « négative » de KDE. Corrigé par `build_files/icones/croix-fluent.py` : la croix symbolique de Fluent, dans chaque taille (16 à 32), de la couleur du texte, comme Windows 11 et Breeze ; la construction échoue si le dessin de Fluent change ; test d'identité ;
     - l'entrée « Ankh-dev » au logo de Fedora dans « Recommandé » du Démarrer, déjà là au lot 8 : elle vient de distrobox, pas des icônes. Corrigée dans D-036 ;
   - les mesures du lot 9 deviennent obligatoires (`lots_termines`) ;
+  - **second passage en VM, le 2026-11-02** (`370aec9` ; [VM 41472016767](https://github.com/PatrickChoumi/Ankh/actions/runs/41472016767), verte) : 61 mesures conformes, aucun écart, avec les lots 1 à 9 obligatoires. Captures : la croix de fermeture des notifications est une croix simple ; « Recommandé » du Démarrer n'a plus l'entrée « Ankh-dev » ;
   - **À VALIDER** : les icônes dans les applications Flatpak (Steam, Lutris), à voir au prochain test complet ; la taille de l'image (+ 85 Mo avant compression).
 - **Lot 10a, les contrastes (2026-11-02)**, branche `claude/lot-10-finitions` :
   - **source** : WCAG 2.2, critère 1.4.3 (contraste minimal, niveau AA) : 4,5 pour le texte courant ; luminance relative et rapport de contraste de ses définitions ;
