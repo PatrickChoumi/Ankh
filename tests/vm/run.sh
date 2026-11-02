@@ -1268,7 +1268,7 @@ check_identity() {
     log "Interface d'Ankh dans la session du compte de test (D-037, D-039)"
     identity_setting "$user" "Jeu de couleurs" Ankh --group General --key ColorScheme
     identity_setting "$user" "Thème global" org.fedoraproject.fedoradark.desktop --group KDE --key LookAndFeelPackage
-    identity_setting "$user" "Icônes" breeze-dark --group Icons --key Theme
+    identity_setting "$user" "Icônes (D-052, lot 9)" Fluent-Ankh-dark --group Icons --key Theme
     identity_setting "$user" "Police de l'interface" 'Selawik,10.5,-1,5,50,0,0,0,0,0' --group General --key font
     identity_setting "$user" "Curseurs (D-052)" Ankh-curseurs --file kcminputrc --group Mouse --key cursorTheme
     identity_setting "$user" "Décoration des fenêtres (D-052)" org.ankh.decoration --file kwinrc --group org.kde.kdecoration2 --key library

@@ -646,3 +646,12 @@ libelle = "Thème GTK donné aux applications Flatpak par le portail des réglag
 cible = "Fluent-Ankh"
 lot = 8
 source = "Mon choix du 2026-10-24 : les Flatpak lisent le thème Fluent-Ankh, en lecture seule"
+
+# --- Lot 9 : icônes et curseurs ---------------------------------------------
+
+[[mesure]]
+id = "icones.theme"
+libelle = "Thème d'icônes ([Icons] Theme de kdeglobals)"
+cible = "Fluent-Ankh-dark"
+lot = 9
+source = "Mes choix du 2026-10-15 (icônes Fluent au violet d'Ankh) et du 2026-11-02 (dossiers qui suivent l'accent, icônes d'applications de Fluent)"

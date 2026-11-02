@@ -206,6 +206,22 @@ lien_theme="${racine_tmpfiles}/var/lib/flatpak/extension/org.gtk.Gtk3theme.Fluen
     || echec "thème GTK des Flatpak : extension org.gtk.Gtk3theme.Fluent-Ankh absente"
 rm -rf "${racine_tmpfiles}"
 [[ -f /usr/share/themes/Fluent-Ankh/gtk-3.0/gtk.css ]] || echec "thème GTK des Flatpak : gtk-3.0 absent"
+# D-052, lot 9 : icônes Fluent d'Ankh, dans chaque variante ; dossiers à
+# l'accent (feuille current-color-scheme de KDE), plus de bleu de Fluent
+for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
+    [[ -f "/usr/share/icons/${variante}/index.theme" ]] || echec "icônes ${variante} absentes"
+    grep -q '^FollowsColorScheme=true$' "/usr/share/icons/${variante}/index.theme" \
+        || echec "icônes ${variante} : KDE ne les recolore pas"
+done
+grep -q 'class="ColorScheme-Accent"' "$(readlink -f /usr/share/icons/Fluent-Ankh-dark/scalable/places/folder.svg)" \
+    || echec "icônes Fluent : dossiers sans l'accent"
+if grep -rlqi '#198ee6' /usr/share/icons/.Fluent-Ankh-base/scalable/places /usr/share/icons/.Fluent-Ankh-base/scalable/apps; then
+    echec "icônes Fluent : le bleu de Fluent est resté"
+fi
+attendu "Icônes par défaut" Fluent-Ankh-dark --group Icons --key Theme
+attendu "Icônes du thème global sombre" Fluent-Ankh-dark --file /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/contents/defaults --group kdeglobals --group Icons --key Theme
+attendu "Icônes du thème global clair" Fluent-Ankh-light --file /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/contents/defaults --group kdeglobals --group Icons --key Theme
+attendu "Icônes GTK des nouveaux comptes" Fluent-Ankh-dark --file /etc/skel/.config/gtk-3.0/settings.ini --group Settings --key gtk-icon-theme-name
 # Thème GTK Fluent au violet d'Ankh, clair et sombre, par défaut pour les
 # nouveaux comptes et dans les réglages de GNOME lus sous Wayland
 for feuille in gtk-3.0/gtk.css gtk-3.0/gtk-dark.css gtk-4.0/gtk.css gtk-4.0/gtk-dark.css; do

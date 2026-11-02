@@ -217,6 +217,11 @@ banc_reglages() {
     if valeur=$(banc_reglage konsolerc 'Desktop Entry' DefaultProfile ''); then
         banc_noter konsole.profil "$valeur"
     fi
+    # Thème d'icônes (lot 9) : [Icons] Theme de kdeglobals (KIconThemes),
+    # Fluent-Ankh-dark par le thème global sombre d'Ankh
+    if valeur=$(banc_reglage kdeglobals Icons Theme breeze); then
+        banc_noter icones.theme "$valeur"
+    fi
     # Thème GTK que le portail des réglages donne aux applications Flatpak
     # (lot 8d) : org.gnome.desktop.interface gtk-theme, par le portail de GTK
     # (kde-portals.conf). Le thème lui-même entre par l'extension

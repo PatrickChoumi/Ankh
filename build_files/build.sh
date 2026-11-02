@@ -700,6 +700,56 @@ for dossier in "${themes[@]}"; do
     fi
 done
 
+# D-052, lot 9 : icônes Fluent (mes choix du 2026-10-15 et du 2026-11-02),
+# construites dans l'étape « outils » du Containerfile (build_files/outils.sh).
+# Dossiers et icônes d'applications suivent l'accent, comme ceux de Breeze
+# (D-054). Trois variantes, chacune désignée par les thèmes globaux qui ont la
+# même variante de Breeze (kdeglobals, groupe Icons, dans contents/defaults,
+# que Plasma recopie à chaque session et que la bascule clair/sombre applique,
+# applets/brightness/plugin/darkmodecontrol.cpp de powerdevil) :
+# Fluent-Ankh-dark pour breeze-dark, Fluent-Ankh-light pour breeze, et
+# Fluent-Ankh (barre sombre, applications claires) pour Breeze crépuscule.
+# Les applications Flatpak les voient aussi : Flatpak monte /usr/share/icons
+# dans /run/host/share/icons, que les runtimes de Flathub cherchent
+# (XDG_DATA_DIRS ; add_icon_path_args, common/flatpak-run.c de Flatpak 1.18).
+for dossier in .Fluent-Ankh-base .Fluent-Ankh-dark-base .Fluent-Ankh-light-base Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
+    test ! -e "/usr/share/icons/${dossier}"
+    cp -a --no-preserve=ownership "/outils/icones/${dossier}" "/usr/share/icons/${dossier}"
+done
+chmod -R u=rwX,go=rX /usr/share/icons/.Fluent-Ankh-base /usr/share/icons/.Fluent-Ankh-dark-base \
+    /usr/share/icons/.Fluent-Ankh-light-base /usr/share/icons/Fluent-Ankh /usr/share/icons/Fluent-Ankh-dark \
+    /usr/share/icons/Fluent-Ankh-light
+for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
+    gtk-update-icon-cache --force --quiet "/usr/share/icons/${variante}"
+done
+for icone in folder user-home google-chrome; do
+    test -e "/usr/share/icons/Fluent-Ankh-dark/scalable/places/${icone}.svg" \
+        || test -e "/usr/share/icons/Fluent-Ankh-dark/scalable/apps/${icone}.svg"
+done
+kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Fluent-Ankh-dark
+for dossier in "${themes[@]}"; do
+    defauts="${dossier}/contents/defaults"
+    [[ -e "${defauts}" ]] || continue
+    avant="$(kreadconfig6 --file "${defauts}" --group kdeglobals --group Icons --key Theme)"
+    case "${avant}" in
+        breeze-dark) apres=Fluent-Ankh-dark ;;
+        breeze)
+            if [[ "$(basename "${dossier}")" == org.kde.breezetwilight.desktop ]]; then
+                apres=Fluent-Ankh
+            else
+                apres=Fluent-Ankh-light
+            fi
+            ;;
+        *)
+            echo "Thème global $(basename "${dossier}") : icônes « ${avant} » inattendues" >&2
+            exit 1
+            ;;
+    esac
+    kwriteconfig6 --file "${defauts}" --group kdeglobals --group Icons --key Theme "${apres}"
+    chmod 0644 "${defauts}"
+    echo "Icônes d'Ankh : $(basename "${dossier}") : ${apres} (au lieu de « ${avant} »)"
+done
+
 # D-052, lot 2 : décoration des fenêtres d'Ankh, aux mesures de Windows 11 :
 # barre de titre de 32 px de la couleur de la fenêtre, icône et titre à
 # gauche, boutons de 46×32 (Fermer rouge #C42B1C au survol), coins de 8 px,
@@ -901,13 +951,15 @@ chmod -R u=rwX,go=rX /usr/share/themes/Fluent-Ankh
 # celle d'Ankh.
 for version in 3.0 4.0; do
     install -d -m 0755 "/etc/skel/.config/gtk-${version}"
-    printf '[Settings]\ngtk-theme-name=Fluent-Ankh\n' > "/etc/skel/.config/gtk-${version}/settings.ini"
+    printf '[Settings]\ngtk-theme-name=Fluent-Ankh\ngtk-icon-theme-name=Fluent-Ankh-dark\n' > "/etc/skel/.config/gtk-${version}/settings.ini"
     chmod 0644 "/etc/skel/.config/gtk-${version}/settings.ini"
 done
-printf 'gtk-theme-name="Fluent-Ankh"\n' > /etc/skel/.gtkrc-2.0
+printf 'gtk-theme-name="Fluent-Ankh"\ngtk-icon-theme-name="Fluent-Ankh-dark"\n' > /etc/skel/.gtkrc-2.0
 chmod 0644 /etc/skel/.gtkrc-2.0
 test -f /usr/share/glib-2.0/schemas/org.gnome.desktop.interface.gschema.xml
-printf "[org.gnome.desktop.interface]\ngtk-theme='Fluent-Ankh'\n" > /usr/share/glib-2.0/schemas/90_ankh.gschema.override
+# Lot 9 : leurs icônes, celles d'Ankh en sombre (la variante de départ) ;
+# kde-gtk-config les suit ensuite à chaque changement de thème global
+printf "[org.gnome.desktop.interface]\ngtk-theme='Fluent-Ankh'\nicon-theme='Fluent-Ankh-dark'\n" > /usr/share/glib-2.0/schemas/90_ankh.gschema.override
 glib-compile-schemas --strict /usr/share/glib-2.0/schemas
 theme_gtk="$(GSETTINGS_BACKEND=memory gsettings get org.gnome.desktop.interface gtk-theme)"
 if [[ "${theme_gtk}" != "'Fluent-Ankh'" ]]; then
@@ -915,6 +967,11 @@ if [[ "${theme_gtk}" != "'Fluent-Ankh'" ]]; then
     exit 1
 fi
 echo "Thème GTK par défaut : ${theme_gtk}"
+icones_gtk="$(GSETTINGS_BACKEND=memory gsettings get org.gnome.desktop.interface icon-theme)"
+if [[ "${icones_gtk}" != "'Fluent-Ankh-dark'" ]]; then
+    echo "Icônes GTK par défaut : ${icones_gtk} au lieu de 'Fluent-Ankh-dark'" >&2
+    exit 1
+fi
 # D-052, lot 8d : les applications Flatpak en GTK 3 lisent ce thème, en lecture
 # seule, comme extension org.gtk.Gtk3theme posée par le système
 # (/usr/lib/tmpfiles.d/ankh-theme-flatpak.conf, qui explique le mécanisme).

@@ -33,8 +33,8 @@
 # (build_files/dolphin/generer-dolphinui.sh) : résultat dans dolphin.
 # Chaque source est prise à un commit figé, vérifié après le téléchargement.
 # Résultat dans le dossier donné (par défaut /sortie), copié dans l'image par
-# build.sh : polices/selawik, icones/Ankh-curseurs, decoration, style, themes
-# et dolphin.
+# build.sh : polices/selawik, icones/Ankh-curseurs, icones/Fluent-Ankh (et ses
+# variantes), decoration, style, themes et dolphin.
 set -euo pipefail
 
 sortie=${1:-/sortie}
@@ -108,7 +108,7 @@ install -m 0644 "${travail}/selawik/LICENSE.txt" "${polices}/OFL.txt"
 ls -l "${polices}"
 
 echo "== Curseurs Ankh-curseurs"
-recuperer "${FLUENT_DEPOT}" "${FLUENT_COMMIT}" "${travail}/fluent" cursors
+recuperer "${FLUENT_DEPOT}" "${FLUENT_COMMIT}" "${travail}/fluent" cursors src links
 source_curseurs="${travail}/fluent/cursors/src"
 dessins="${travail}/dessins"
 cp -r "${source_curseurs}/svg-white" "${dessins}"
@@ -160,6 +160,57 @@ Inherits=breeze_cursors
 THEME
 install -m 0644 "${travail}/fluent/cursors/LICENSE" "${theme}/LICENSE"
 echo "$(find "${theme}/cursors" -type f | wc -l) curseurs, $(find "${theme}/cursors" -type l | wc -l) autres noms"
+
+# D-052, lot 9 : icônes Fluent (mes choix du 2026-10-15 et du 2026-11-02),
+# du même commit que les curseurs. Son install.sh écrit trois thèmes et leurs
+# fonds partagés (dossiers cachés, liés par des liens relatifs) :
+# « Fluent-Ankh » (barre sombre, applications claires), « Fluent-Ankh-dark »
+# (tout sombre) et « Fluent-Ankh-light » (tout clair). Chaque thème global
+# d'Ankh désigne le sien (build.sh).
+echo "== Icônes Fluent-Ankh"
+icones="${travail}/icones-fluent"
+mkdir -p "${icones}"
+(cd "${travail}/fluent" && bash ./install.sh --dest "${icones}" --name Fluent-Ankh standard)
+for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
+    test -f "${icones}/${variante}/index.theme"
+done
+base="${icones}/.Fluent-Ankh-base"
+# Dossiers, icônes d'applications et d'applets suivent l'accent, comme ceux de
+# Breeze (D-054 ; mon choix du 2026-11-02) ; violet d'Ankh hors de KDE
+python3 "$(dirname "$(readlink -f "$0")")/icones/adapter-fluent.py" '#8455f0' \
+    "${base}/scalable/places" "${base}/scalable/apps" "${base}/256/applets"
+if grep -rli '#198ee6' "${base}/scalable/places" "${base}/scalable/apps" "${base}/256/applets"; then
+    echo "Icônes Fluent : le bleu de Fluent est resté (fichiers ci-dessus)" >&2
+    exit 1
+fi
+# KDE ne recolore que les icônes d'un thème qui le demande (FollowsColorScheme
+# de kicontheme.cpp de KIconThemes) : Fluent le fait déjà. Ce qui manque à
+# Fluent vient de Breeze, dans sa variante claire ou sombre, puis de hicolor
+for variante in Fluent-Ankh:breeze Fluent-Ankh-dark:breeze-dark Fluent-Ankh-light:breeze; do
+    index="${icones}/${variante%%:*}/index.theme"
+    grep -q '^FollowsColorScheme=true$' "${index}"
+    grep -q '^Inherits=hicolor$' "${index}"
+    sed -i -e "s/^Inherits=hicolor$/Inherits=${variante##*:},hicolor/" \
+        -e "s/^Name=.*/Name=${variante%%:*}/" "${index}"
+done
+# Tout lien doit mener à une icône ou un dossier du thème. Seul défaut connu
+# de Fluent (commit c8a244f) : dix noms d'applications de recherche (kfind,
+# strigi…) mènent à search.svg, absent de scalable/apps ; ces liens sont
+# retirés, et l'application garde l'icône de Breeze
+retires=0
+while IFS= read -r -d '' lien; do
+    if [[ "$(readlink "${lien}")" == search.svg && "$(dirname "${lien}")" == "${base}/scalable/apps" ]]; then
+        rm "${lien}"
+        retires=$((retires + 1))
+    else
+        echo "Icônes Fluent : lien sans cible ${lien} -> $(readlink "${lien}")" >&2
+        exit 1
+    fi
+done < <(find "${icones}" -xtype l -print0)
+echo "Icônes Fluent : ${retires} liens vers search.svg (absent) retirés"
+cp -a "${icones}/." "${sortie}/icones/"
+install -m 0644 "${travail}/fluent/COPYING" "${sortie}/icones/.Fluent-Ankh-base/COPYING"
+echo "Icônes Fluent-Ankh : $(find "${base}" -type f -name '*.svg' | wc -l) dessins, $(du -sh "${icones}" | cut -f1)"
 
 echo "== Décoration des fenêtres d'Ankh"
 sources="$(dirname "$(readlink -f "$0")")/decoration"
