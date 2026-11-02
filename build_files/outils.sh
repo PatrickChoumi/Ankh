@@ -183,6 +183,13 @@ if grep -rli '#198ee6' "${base}/scalable/places" "${base}/scalable/apps" "${base
     echo "Icônes Fluent : le bleu de Fluent est resté (fichiers ci-dessus)" >&2
     exit 1
 fi
+# Croix de fermeture simple, de la couleur du texte, comme Windows 11 et Breeze,
+# au lieu du rond rouge de Fluent (notifications, bandeaux) : sa croix
+# symbolique, dans chaque taille, claire dans la variante sombre
+croix="$(dirname "$(readlink -f "$0")")/icones/croix-fluent.py"
+symbolique="${base}/symbolic/actions/window-close-symbolic.svg"
+python3 "${croix}" "${symbolique}" '#363636' "${base}"/{16,22,24,32}/actions
+python3 "${croix}" "${symbolique}" '#dedede' "${icones}/.Fluent-Ankh-dark-base"/{16,22,24,32}/actions
 # KDE ne recolore que les icônes d'un thème qui le demande (FollowsColorScheme
 # de kicontheme.cpp de KIconThemes) : Fluent le fait déjà. Ce qui manque à
 # Fluent vient de Breeze, dans sa variante claire ou sombre, puis de hicolor

@@ -218,6 +218,8 @@ grep -q 'class="ColorScheme-Accent"' "$(readlink -f /usr/share/icons/Fluent-Ankh
 if grep -rlqi '#198ee6' /usr/share/icons/.Fluent-Ankh-base/scalable/places /usr/share/icons/.Fluent-Ankh-base/scalable/apps; then
     echec "icônes Fluent : le bleu de Fluent est resté"
 fi
+grep -q 'ColorScheme-Text' /usr/share/icons/.Fluent-Ankh-dark-base/16/actions/window-close.svg \
+    || echec "icônes Fluent : croix de fermeture encore rouge"
 attendu "Icônes par défaut" Fluent-Ankh-dark --group Icons --key Theme
 attendu "Icônes du thème global sombre" Fluent-Ankh-dark --file /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/contents/defaults --group kdeglobals --group Icons --key Theme
 attendu "Icônes du thème global clair" Fluent-Ankh-light --file /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/contents/defaults --group kdeglobals --group Icons --key Theme
