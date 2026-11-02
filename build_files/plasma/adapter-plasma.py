@@ -54,6 +54,37 @@ remplacer(
     "        margin: Plasmoid.location === PlasmaCore.Types.Floating ? 0 : 12\n",
 )
 
+# D-052, lot 10e : le Démarrer d'Ankh s'ouvre centré sur l'écran, comme celui
+# de Windows 11, et non sur son bouton. libplasma place le volet au-dessus du
+# centre de son parent visuel (PopupPlasmaWindowPrivate::updatePosition,
+# src/plasmaquick/popupplasmawindow.cpp de libplasma 6.7) : pour le Démarrer
+# d'Ankh, ce parent est un repère posé au milieu de la fenêtre de la barre,
+# qui couvre toute la largeur de l'écran (lot 4). Les autres volets restent
+# sur leur bouton, comme dans Windows 11.
+remplacer(
+    "contents/applet/CompactApplet.qml",
+    "        visualParent: root.compactRepresentation\n",
+    "        visualParent: Plasmoid.pluginName === \"org.ankh.demarrer\" && !root.vertical ? centreBarre : root.compactRepresentation\n",
+)
+remplacer(
+    "contents/applet/CompactApplet.qml",
+    "    PlasmaCore.AppletPopup {\n"
+    "        id: dialog\n",
+    "    // Ankh (D-052, lot 10e) : repère au milieu de la fenêtre de la barre,\n"
+    "    // sur lequel le Démarrer d'Ankh centre son volet\n"
+    "    Item {\n"
+    "        id: centreBarre\n"
+    "        parent: root.Window.contentItem ? root.Window.contentItem : root\n"
+    "        width: 2\n"
+    "        height: 2\n"
+    "        x: Math.round(parent.width / 2) - 1\n"
+    "        y: 0\n"
+    "    }\n"
+    "\n"
+    "    PlasmaCore.AppletPopup {\n"
+    "        id: dialog\n",
+)
+
 # Écran de verrouillage : l'horloge d'Ankh, en haut de l'écran comme à la
 # connexion (9 % de la hauteur), au lieu de celle de KDE entre le haut et le
 # compte

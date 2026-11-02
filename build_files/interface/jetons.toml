@@ -513,11 +513,11 @@ source = "Images officielles de Microsoft : 662 sans champ de recherche (1324 px
 [[mesure]]
 id = "demarrer.decalage_centre"
 libelle = "Écart entre le centre du Démarrer et celui de l'écran"
-cible = -279
+cible = 0
 tolerance = 2
 unite = "px"
 lot = 5
-source = "limite connue (lot 5) : Plasma centre le Démarrer sur son bouton, Windows 11 sur l'écran ; écran de la VM de 1280 px (lot 10 : cible posée)"
+source = "Windows 11 : le Démarrer centré sur l'écran, au-dessus de la barre centrée ; lot 10e : volet du Démarrer d'Ankh centré sur la barre (adapter-plasma.py)"
 
 [[mesure]]
 id = "demarrer.erreurs_qml"
