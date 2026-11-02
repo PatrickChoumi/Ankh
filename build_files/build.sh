@@ -796,6 +796,7 @@ kwriteconfig6 --file /etc/xdg/kwinrc --group TabBox --key HighlightWindows --typ
 # 2026-10-23).
 test -f /usr/share/kwin-wayland/effects/org.ankh.vuetaches/contents/ui/main.qml
 test -f /usr/share/plasma/plasmoids/org.ankh.vuetaches/contents/ui/main.qml
+test -f /usr/share/plasma/plasmoids/org.ankh.recherche/contents/ui/main.qml
 kwriteconfig6 --file /etc/xdg/kwinrc --group Plugins --key org.ankh.vuetachesEnabled --type bool true
 chmod 0644 /etc/xdg/kwinrc
 

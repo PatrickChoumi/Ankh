@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "Application Launchers",
+        "Description": "Le bouton « Rechercher » de Windows 11 : il ouvre le Démarrer d'Ankh, prêt à chercher (D-052, lot 10h).",
+        "Icon": "search",
+        "Id": "org.ankh.recherche",
+        "License": "GPL-2.0-or-later",
+        "Name": "Rechercher (Ankh)",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

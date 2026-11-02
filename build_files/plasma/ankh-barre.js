@@ -23,6 +23,10 @@ panel.addWidget("org.kde.plasma.panelspacer")
 // Démarrer d'Ankh (D-052, lot 5), à la place de Kickoff : le Démarrer de
 // Windows 11, dérivé de Kickoff (build_files/files/usr/share/plasma/plasmoids/org.ankh.demarrer)
 panel.addWidget("org.ankh.demarrer")
+// Bouton « Rechercher », entre le Démarrer et la vue des tâches comme dans
+// Windows 11 (D-052, lot 10h) : il ouvre le Démarrer, prêt à chercher
+// (build_files/files/usr/share/plasma/plasmoids/org.ankh.recherche)
+panel.addWidget("org.ankh.recherche")
 // Bouton « Vue des tâches », à droite du Démarrer comme dans Windows 11
 // (D-052, lot 7b) : il ouvre la vue des tâches d'Ankh, sans raccourci
 // (build_files/files/usr/share/plasma/plasmoids/org.ankh.vuetaches)

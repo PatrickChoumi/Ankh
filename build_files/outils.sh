@@ -87,7 +87,7 @@ echo "== Écran de verrouillage d'Ankh : vérifications"
 echo "== Écran de déconnexion d'Ankh : vérifications"
 "$(dirname "$(readlink -f "$0")")/plasma/verifier-deconnexion.sh"
 echo "== Applets d'Ankh dans plasmawindowed"
-for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages org.ankh.horloge org.ankh.vuetaches; do
+for applet in org.ankh.bureau org.ankh.demarrer org.ankh.reglages org.ankh.horloge org.ankh.vuetaches org.ankh.recherche; do
     "$(dirname "$(readlink -f "$0")")/plasma/verifier-applet-plasma.sh" "${applet}"
 done
 echo "== Barres de Dolphin (comme l'Explorateur)"

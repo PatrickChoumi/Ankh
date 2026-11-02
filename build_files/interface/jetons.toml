@@ -680,3 +680,12 @@ libelle = "Thème d'icônes ([Icons] Theme de kdeglobals)"
 cible = "Fluent-Ankh-dark"
 lot = 9
 source = "Mes choix du 2026-10-15 (icônes Fluent au violet d'Ankh) et du 2026-11-02 (dossiers qui suivent l'accent, icônes d'applications de Fluent)"
+
+# --- Lot 10 : finitions -------------------------------------------------------
+
+[[mesure]]
+id = "recherche.bouton"
+libelle = "Bouton « Rechercher » dans la barre (org.ankh.recherche)"
+cible = "oui"
+lot = 10
+source = "La barre de Windows 11 : Démarrer, Rechercher, Vue des tâches ; lot 10h"

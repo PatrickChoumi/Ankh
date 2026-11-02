@@ -211,6 +211,10 @@ banc_reglages() {
     if valeur=$(banc_plasma 'print(panels()[0].widgets("org.ankh.vuetaches").length > 0 ? "oui" : "non");'); then
         banc_noter vuetaches.bouton "$valeur"
     fi
+    # Bouton « Rechercher » dans la barre (lot 10h)
+    if valeur=$(banc_plasma 'print(panels()[0].widgets("org.ankh.recherche").length > 0 ? "oui" : "non");'); then
+        banc_noter recherche.bouton "$valeur"
+    fi
     # Konsole aux couleurs d'Ankh (lot 8c) : son profil par défaut
     # ([Desktop Entry] DefaultProfile de konsolerc, src/profile/ProfileManager.cpp
     # de Konsole), qui porte le jeu de couleurs Ankh et JetBrains Mono

@@ -285,6 +285,7 @@ for dossier in /usr/share/plasma/look-and-feel/*/; do
             && grep -q '^taches.writeConfig("fill", false)' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.demarrer")' "${barre}" \
             && grep -q '^panel.addWidget("org.ankh.vuetaches")' "${barre}" \
+            && grep -q '^panel.addWidget("org.ankh.recherche")' "${barre}" \
             && ! grep -q 'org.kde.plasma.kickoff' "${barre}" \
             && grep -q '^var reglages = panel.addWidget("org.ankh.reglages")' "${barre}" \
             && ! grep -q 'globalShortcut' "${barre}" \
