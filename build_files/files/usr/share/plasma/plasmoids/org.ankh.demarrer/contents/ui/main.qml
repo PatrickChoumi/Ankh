@@ -48,7 +48,7 @@ PlasmoidItem {
         onFavorisRepris: Plasmoid.configuration.favoritesPortedToKAstats = true
     }
 
-    // Marges du cadre des volets (style Plasma d'Ankh : 4 de chaque côté).
+    // Marges du cadre des volets (style Plasma d'Ankh : 12 de chaque côté depuis le lot 10l).
     // La fenêtre du volet mesure le contenu plus ces marges
     // (PlasmaWindow::padding, fixedMargins de dialogs/background, libplasma
     // 6.7.5).

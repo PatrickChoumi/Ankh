@@ -311,15 +311,18 @@ def ecrire(chemin, texte):
 def main(breeze, sortie):
     # Variantes : translucent/ quand le flou est actif ; solid/ pour les
     # volets qui demandent un fond plein (Dialog::SolidBackground de libplasma)
-    for nom, rayon, opacite in (("dialogs/background", 8, 0.95),
-                                ("translucent/dialogs/background", 8, 0.85),
-                                ("solid/dialogs/background", 8, 1),
-                                ("widgets/tooltip", 4, 0.95),
-                                ("solid/widgets/tooltip", 4, 1)):
+    # Marge intérieure : 12 pour les volets (lot 10l), comme ceux de Windows 11
+    # (bulles de notification, volets restés à KDE ; ceux d'Ankh la
+    # compensent par fixedMargins), 4 pour les infobulles
+    for nom, rayon, opacite, marge in (("dialogs/background", 8, 0.95, 12),
+                                       ("translucent/dialogs/background", 8, 0.85, 12),
+                                       ("solid/dialogs/background", 8, 1, 12),
+                                       ("widgets/tooltip", 4, 0.95, 4),
+                                       ("solid/widgets/tooltip", 4, 1, 4)):
         defs, ombres, largeur, hauteur = ombres_de_breeze(breeze / (nom + ".svgz"))
-        planche = volet(rayon, opacite, 4, hauteur + 8)
+        planche = volet(rayon, opacite, marge, hauteur + 8)
         ecrire(sortie / (nom + ".svg"), planche.texte(defs, ombres, largeur))
-        print(f"Style Plasma d'Ankh : {nom} (coins de {rayon}, fond à {opacite:g}, ombres de Breeze)")
+        print(f"Style Plasma d'Ankh : {nom} (coins de {rayon}, marges de {marge}, fond à {opacite:g}, ombres de Breeze)")
     ecrire(sortie / "widgets/panel-background.svg", barre(0.6).texte())
     # Barre opaque (réglage « opaque » de la barre)
     ecrire(sortie / "solid/widgets/panel-background.svg", barre(1).texte())
