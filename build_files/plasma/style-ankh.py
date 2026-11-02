@@ -256,18 +256,16 @@ def taches():
     trait = 3      # épaisseur du trait sous l'icône
 
     def cadre(prefixe, fond, classe_fond, longueur_trait, classe_trait, opacite_trait):
-        # Bords : le rectangle arrondi tient dans les coins. Le trait, bouts
-        # arrondis compris, est tout entier dans le morceau du milieu du bord
-        # bas, aussi large que lui : le cadre fait TACHE_LARGEUR, le trait y
-        # fait longueur_trait de bout en bout, et suit le bouton s'il manque
-        # de place. Lot 10 : il était coupé entre les coins et 2 px de
-        # milieu ; à 125 et 150 %, Plasma arrondit la taille des coins et ce
-        # milieu disparaissait : le tiret devenait un point, puis deux.
-        if longueur_trait:
-            cote = (TACHE_LARGEUR - longueur_trait) // 2
-            milieu = TACHE_LARGEUR - 2 * cote
-        else:
-            cote, milieu = retrait_x + r, 4
+        # Bords : le rectangle arrondi tient dans les coins, aussi étroits
+        # que lui (8). Le trait, bouts arrondis compris, est au centre du
+        # morceau du milieu du bord bas (40 dans un bouton de TACHE_LARGEUR) :
+        # il fait longueur_trait à 100 %, et s'étire ou rétrécit avec le
+        # bouton. Lot 10 : il était coupé entre des coins de 25 et 2 px de
+        # milieu ; à 125 et 150 %, dans un écran étroit, Plasma rétrécit les
+        # boutons sous la largeur des coins (42 en VM à 150 %) : le milieu,
+        # et le tiret avec lui, disparaissait.
+        cote = retrait_x + r
+        milieu = TACHE_LARGEUR - 2 * cote if longueur_trait else 4
         haut, bas = retrait_y + r, retrait_y + r + 4
         L, H = 2 * cote + milieu, haut + bas + milieu
         formes = []
@@ -275,8 +273,15 @@ def taches():
             formes.append(([arrondi(retrait_x, retrait_y, L - retrait_x, H - retrait_y, r)], classe_fond, fond))
         if longueur_trait:
             y1 = H - retrait_y - 1
-            formes.append(([pastille(cote, y1 - trait, cote + longueur_trait, y1)], classe_trait, opacite_trait))
+            debut = cote + (milieu - longueur_trait) / 2
+            formes.append(([pastille(debut, y1 - trait, debut + longueur_trait, y1)], classe_trait, opacite_trait))
         planche.cadre(prefixe, cote, haut, cote, bas, formes, milieu)
+        if longueur_trait:
+            # KSvg répète les bords en mosaïque, sauf avec cette indication
+            # (paintBorder, framesvg.cpp de KSvg 6.31) : un bord bas plus
+            # étroit rognait le trait au lieu de le rétrécir
+            ox, oy = planche.place(1, 1)
+            planche.ajouter(f'<rect id="{prefixe}-hint-stretch-borders" x="{ox}" y="{oy}" width="1" height="1" fill="none"/>')
         planche.marges(prefixe, TACHE_MARGES["haut"], TACHE_MARGES["bas"], TACHE_MARGES["gauche"], TACHE_MARGES["droite"])
 
     survol, actif, actif_survol = 0.06, 0.045, 0.08
