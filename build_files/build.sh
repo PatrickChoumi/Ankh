@@ -939,6 +939,7 @@ done
 # du 2026-10-23), son horloge posée avec les fichiers de l'image
 coque=/usr/share/plasma/shells/org.kde.plasma.desktop
 test -f "${coque}/contents/lockscreen/HorlogeAnkh.qml"
+test -f "${coque}/contents/lockscreen/BoutonAnkh.qml"
 python3 /ctx/plasma/adapter-plasma.py "${coque}"
 echo "Coque de Plasma adaptée : plasma-desktop $(rpm -q --qf '%{VERSION}-%{RELEASE}' plasma-desktop)"
 

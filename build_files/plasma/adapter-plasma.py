@@ -136,6 +136,18 @@ remplacer(
     "            }\n",
 )
 
+# Lot 10k : Veille, Hibernation et Changer d'utilisateur prennent le bouton
+# rond translucide de la connexion et de la déconnexion d'Ankh (BoutonAnkh.qml,
+# posé avec les fichiers de l'image), au lieu des icônes en couleur de Fluent
+for libelle in ("Slee&p", "&Hibernate", "Switch &User"):
+    remplacer(
+        "contents/lockscreen/LockScreenUi.qml",
+        "                    ActionButton {\n"
+        f"                        text: i18ndc(\"plasma_shell_org.kde.plasma.desktop\", \"@action:button\", \"{libelle}\")\n",
+        "                    BoutonAnkh {\n"
+        f"                        text: i18ndc(\"plasma_shell_org.kde.plasma.desktop\", \"@action:button\", \"{libelle}\")\n",
+    )
+
 # Le bouton de déverrouillage, rond, à l'accent, comme celui de la connexion
 remplacer(
     "contents/lockscreen/MainBlock.qml",

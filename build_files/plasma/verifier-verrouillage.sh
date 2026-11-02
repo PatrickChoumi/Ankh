@@ -33,7 +33,10 @@ cp -r "${COQUE}" "${copie}"
 # 1. L'adaptation, sur une copie de la coque, comme build.sh dans l'image
 python3 "${ici}/adapter-plasma.py" "${copie}"
 install -m 0644 "${fichiers}${COQUE}/contents/lockscreen/HorlogeAnkh.qml" "${copie}/contents/lockscreen/"
+install -m 0644 "${fichiers}${COQUE}/contents/lockscreen/BoutonAnkh.qml" "${copie}/contents/lockscreen/"
 grep -q 'HorlogeAnkh {' "${copie}/contents/lockscreen/LockScreenUi.qml"
+# Lot 10k : les trois boutons d'action ont le dessin d'Ankh
+[[ "$(grep -c 'BoutonAnkh {' "${copie}/contents/lockscreen/LockScreenUi.qml")" == 3 ]]
 
 # 2. L'écran de verrouillage, dans la copie adaptée (KPackage la préfère à
 # celle du système, car elle est dans le compte)

@@ -141,6 +141,8 @@ done
 verrou=/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen
 [[ -f "${verrou}/HorlogeAnkh.qml" ]] || echec "écran de verrouillage : horloge d'Ankh absente"
 grep -q '^        HorlogeAnkh {$' "${verrou}/LockScreenUi.qml" || echec "écran de verrouillage : horloge de KDE"
+[[ "$(grep -c '^                    BoutonAnkh {$' "${verrou}/LockScreenUi.qml")" == 3 ]] \
+    || echec "écran de verrouillage : boutons d'action de KDE (lot 10k)"
 grep -q 'background.visible: false' "${verrou}/MainBlock.qml" || echec "écran de verrouillage : champ de mot de passe de KDE"
 grep -q 'authenticator.respond(password)' "${verrou}/LockScreenUi.qml" || echec "écran de verrouillage : réponse à l'authentification absente"
 attendu "Fenêtre choisie mise en avant" false --file kwinrc --group TabBox --key HighlightWindows
