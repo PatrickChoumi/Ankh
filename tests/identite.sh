@@ -371,6 +371,9 @@ for svg in dialogs/background translucent/dialogs/background solid/dialogs/backg
     grep -q 'id="hint-left-margin"[^>]*width="12"' "/usr/share/plasma/desktoptheme/ankh/${svg}.svg" \
         || echec "style Plasma d'Ankh : ${svg} sans marge de 12"
 done
+# Lot 10m : lignes des listes de Plasma comme celles de Windows 11
+grep -q 'id="selected-left"' /usr/share/plasma/desktoptheme/ankh/widgets/viewitem.svg \
+    || echec "style Plasma d'Ankh : lignes des listes de Breeze"
 # Icônes des applications de 32 px dans la barre de 48 (mon choix du
 # 2026-10-22) : Plasma leur donne la hauteur du bouton moins les marges du
 # haut et du bas de widgets/tasks (iconBox de Task.qml, plasma-desktop)

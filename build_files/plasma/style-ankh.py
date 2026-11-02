@@ -213,6 +213,32 @@ def volet(rayon, opacite, marge, y0):
     return planche
 
 
+def element_liste():
+    """Lignes des listes de Plasma (widgets/viewitem : KRunner, listes des
+    volets restés à KDE), comme les listes de Windows 11 et le style Qt
+    d'Ankh (lot 8a) : coins de 4, fond discret au survol (SubtleFillColor
+    de WinUI), et pour l'élément choisi un fond un peu plus marqué et un
+    trait d'accent de 3 px à gauche, centré. Marges de 5, celles de Breeze :
+    la hauteur des lignes ne change pas (lot 10m)."""
+    planche = Planche()
+    r = 4
+    cote, haut = 4, 10
+    milieu = 4
+    L, H = 2 * cote + milieu, 2 * haut + milieu
+    fond = arrondi(0, 0, L, H, r)
+    # Trait vertical aux bouts arrondis : les bouts tiennent dans les coins,
+    # la partie droite s'étire avec la hauteur de la ligne (ligne de 34 :
+    # trait de 17)
+    trait = arrondi(0, haut - 1.5, 3, haut + milieu + 1.5, 1.5)
+    planche.cadre("normal", cote, haut, cote, haut, [], milieu)
+    planche.cadre("hover", cote, haut, cote, haut, [([fond], "Text", 0.06)], milieu)
+    planche.cadre("selected", cote, haut, cote, haut, [([fond], "Text", 0.09), ([trait], "Highlight", 1)], milieu)
+    planche.cadre("selected+hover", cote, haut, cote, haut, [([fond], "Text", 0.11), ([trait], "Highlight", 1)], milieu)
+    for prefixe in ("normal", "hover", "selected", "selected+hover"):
+        planche.marges(prefixe, 5, 5, 5, 5)
+    return planche
+
+
 def barre(opacite):
     """Barre des tâches : translucide, un trait de 1 px en haut, coins de 8
     si elle flotte (collée, Plasma n'en dessine que le bord haut)."""
@@ -327,6 +353,8 @@ def main(breeze, sortie):
     # Barre opaque (réglage « opaque » de la barre)
     ecrire(sortie / "solid/widgets/panel-background.svg", barre(1).texte())
     print("Style Plasma d'Ankh : widgets/panel-background (fond à 0,6, opaque dans solid/, trait de 1 px en haut, sans ombre)")
+    ecrire(sortie / "widgets/viewitem.svg", element_liste().texte())
+    print("Style Plasma d'Ankh : widgets/viewitem (coins de 4, fond discret, trait d'accent de 3 px à gauche pour l'élément choisi, marges de 5)")
     ecrire(sortie / "widgets/tasks.svg", taches().texte())
     print(f"Style Plasma d'Ankh : widgets/tasks (boutons de {TACHE_LARGEUR}×{TACHE_HAUTEUR}, rectangle de 48×44, "
           f"trait d'accent de 16×3, tiret de 6×3, icônes de {TACHE_ICONE})")
