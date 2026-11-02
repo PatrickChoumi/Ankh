@@ -22,7 +22,7 @@
 # Une mesure devient obligatoire quand son lot figure dans lots_termines :
 # un écart fait alors échouer le test en VM. Chaque PR de lot ajoute son
 # numéro ici, avec les mesures qu'elle atteint.
-lots_termines = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+lots_termines = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 # --- Lot 1 : fondations ---------------------------------------------------
 
@@ -54,9 +54,11 @@ source = "WinUI CommonStyles/TextBlock_themeresources.xaml, CaptionTextBlockFont
 [[mesure]]
 id = "police.corps.interligne"
 libelle = "Hauteur d'une ligne de texte courant"
+cible = 16.78125
+tolerance = 0.5
 unite = "px"
 lot = 1
-source = "Windows : 20 px pour un texte de 14 px (doc signature-experiences/typography) ; dépend de la police"
+source = "valeur d'Ankh : interligne de Selawik à 14 px, relevé en VM du 2026-10-27 au 2026-11-02 (Windows 11 pose 20 px de ligne dans ses blocs de texte : choix des applications, pas de la police) (lot 10 : cible posée)"
 
 [[mesure]]
 id = "curseur.theme"
@@ -77,40 +79,52 @@ source = "Taille de Plasma, gardée (D-052)"
 [[mesure]]
 id = "animations.facteur"
 libelle = "Facteur de durée des animations de KDE"
+cible = 0.8333333
+tolerance = 0.001
 lot = 1
-source = "Relevé ; les durées de Windows sont 83, 167, 250 et 333 ms (doc signature-experiences/motion)"
+source = "lot 1 : facteur 5/6, qui donne les durées de Windows 11 (83 et 167 ms, mesurées au lot 10) (lot 10 : cible posée)"
 
 [[mesure]]
 id = "kirigami.rayon"
 libelle = "Rayon des coins de Kirigami (applications QML)"
+cible = 5
+tolerance = 0
 unite = "px"
 lot = 3
-source = "Relevé (Kirigami.Units.cornerRadius) ; Windows : 4 pour les contrôles, 8 pour les volets"
+source = "valeur de Kirigami 6.31, relevée ; limite connue : 4 dans Windows 11, fixé dans le code de Kirigami (lot 3) (lot 10 : cible posée)"
 
 [[mesure]]
 id = "kirigami.unite"
 libelle = "Unité de grille de Kirigami"
+cible = 18
+tolerance = 0
 unite = "px"
 lot = 1
-source = "Relevé (Kirigami.Units.gridUnit) ; Windows place tout sur une grille de 4 px"
+source = "valeur de Kirigami avec Selawik à 14 px, relevée (lot 10 : cible posée)"
 
 [[mesure]]
 id = "couleur.fenetre"
 libelle = "Fond des fenêtres (Dolphin)"
+cible = "#181c23"
+tolerance = 4
 lot = 1
-source = "Relevé ; couleurs d'Ankh (D-037)"
+source = "couleurs par couches d'Ankh (lot 1) : contenu 24,28,35 (lot 10 : cible posée)"
 
 [[mesure]]
 id = "couleur.barre_de_titre"
 libelle = "Barre de titre de la fenêtre active"
+cible = "#1c2027"
+tolerance = 4
 lot = 1
-source = "Relevé ; couleurs d'Ankh (D-037)"
+source = "couleurs par couches d'Ankh (lot 1) : fenêtre et barre de titre 28,32,39 (lot 10 : cible posée)"
 
 [[mesure]]
 id = "couleur.barre"
 libelle = "Barre des tâches, sur fond noir"
+cible = "#121418"
+tolerance = 4
 lot = 4
-source = "Relevé ; couleurs d'Ankh (D-037)"
+source = "barre translucide à 60 % sur fond noir (lot 4), relevée (lot 10 : cible posée)"
 
 # --- Lot 2 : fenêtres -----------------------------------------------------
 
@@ -126,23 +140,29 @@ source = "WinUI TitleBar/TitleBar_themeresources.xaml, TitleBarCompactHeight ; d
 [[mesure]]
 id = "fenetre.bord.gauche"
 libelle = "Bord gauche de la décoration"
+cible = 0
+tolerance = 0
 unite = "px"
 lot = 2
-source = "Relevé ; Windows : contour de 1 px (doc signature-experiences/layering)"
+source = "Windows 11 : pas de bord visible, l'ombre seule (lot 2) (lot 10 : cible posée)"
 
 [[mesure]]
 id = "fenetre.bord.droit"
 libelle = "Bord droit de la décoration"
+cible = 0
+tolerance = 0
 unite = "px"
 lot = 2
-source = "Relevé ; Windows : contour de 1 px (doc signature-experiences/layering)"
+source = "Windows 11 : pas de bord visible, l'ombre seule (lot 2) (lot 10 : cible posée)"
 
 [[mesure]]
 id = "fenetre.bord.bas"
 libelle = "Bord bas de la décoration"
+cible = 0
+tolerance = 0
 unite = "px"
 lot = 2
-source = "Relevé ; Windows : contour de 1 px (doc signature-experiences/layering)"
+source = "Windows 11 : pas de bord visible, l'ombre seule (lot 2) (lot 10 : cible posée)"
 
 [[mesure]]
 id = "fenetre.coin.rayon"
@@ -331,9 +351,11 @@ source = "WinUI CommonStyles/ListViewItem_themeresources.xaml, ListViewItemMinHe
 [[mesure]]
 id = "controle.menu.element.hauteur"
 libelle = "Hauteur d'un élément de menu"
+cible = 29
+tolerance = 1
 unite = "px"
 lot = 3
-source = "Relevé ; Windows : marges 11,4,11,5 à la souris, 11,8,11,9 au toucher (WinUI CommonStyles/MenuFlyout_themeresources.xaml)"
+source = "valeur d'Ankh, relevée (lot 3) (lot 10 : cible posée)"
 
 [[mesure]]
 id = "controle.infobulle.px"
@@ -433,8 +455,9 @@ source = "Comme barre.tache.rectangle.largeur"
 [[mesure]]
 id = "barre.tache.icone.dessin"
 libelle = "Dessin de l'icône de Dolphin dans la barre (largeur × hauteur ; icône de 32 réglée par le style)"
+cible = "30×24"
 lot = 4
-source = "Relevé seulement : le dessin d'une icône ne remplit pas son carré"
+source = "dessin de l'icône Fluent de Dolphin à 32 px (lots 4 et 9), relevé (lot 10 : cible posée)"
 
 [[mesure]]
 id = "volet.rayon"
@@ -490,9 +513,11 @@ source = "Images officielles de Microsoft : 662 sans champ de recherche (1324 px
 [[mesure]]
 id = "demarrer.decalage_centre"
 libelle = "Écart entre le centre du Démarrer et celui de l'écran"
+cible = -279
+tolerance = 2
 unite = "px"
 lot = 5
-source = "Relevé : Windows 11 centre le Démarrer sur l'écran ; Plasma centre le volet sur son bouton (transientplacementhint.cpp de libplasma 6.7)"
+source = "limite connue (lot 5) : Plasma centre le Démarrer sur son bouton, Windows 11 sur l'écran ; écran de la VM de 1280 px (lot 10 : cible posée)"
 
 [[mesure]]
 id = "demarrer.erreurs_qml"
