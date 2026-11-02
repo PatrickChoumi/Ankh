@@ -21,9 +21,11 @@
 // Windows 11, sans image officielle mesurable (le blog des Windows Insiders
 // refuse les accès automatiques), À VALIDER : marge de 12, éléments espacés
 // de 8, rembourrés de 8, titre de 24 en 12 px, vignettes de 160 de haut au
-// plus, plus petites (96 au moins) pour tenir sur une rangée.
+// plus, plus petites (96 au moins) pour tenir sur une rangée. Vignettes aux
+// coins de 4 (lot 10f).
 
 import QtQuick
+import QtQuick.Effects
 
 import org.kde.kirigami as Kirigami
 
@@ -183,12 +185,31 @@ FocusScope {
                 }
             }
 
-            // Vignette vivante de la fenêtre
+            // Vignette vivante de la fenêtre, aux coins de 4 comme dans
+            // Windows 11 (ControlCornerRadius de WinUI ; lot 10f) : masquée
+            // par un rectangle arrondi (MultiEffect de Qt Quick)
+            Rectangle {
+                id: masqueVignette
+                x: selecteur.remplissage
+                y: selecteur.remplissage + selecteur.hauteurTitre + selecteur.ecartTitre
+                width: selecteur.largeurVignette
+                height: selecteur.hauteurVignette
+                radius: 4
+                visible: false
+                layer.enabled: true
+            }
             Item {
                 x: selecteur.remplissage
                 y: selecteur.remplissage + selecteur.hauteurTitre + selecteur.ecartTitre
                 width: selecteur.largeurVignette
                 height: selecteur.hauteurVignette
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    maskEnabled: true
+                    maskSource: masqueVignette
+                    maskThresholdMin: 0.5
+                    maskSpreadAtMin: 1.0
+                }
                 Loader {
                     anchors.fill: parent
                     sourceComponent: selecteur.vignette

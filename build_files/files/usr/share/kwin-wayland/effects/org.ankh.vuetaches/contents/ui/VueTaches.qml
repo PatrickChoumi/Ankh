@@ -28,6 +28,7 @@
 // (56 à 108) ; voile de l'arrière-plan à 75 %.
 
 import QtQuick
+import QtQuick.Effects
 
 import org.kde.kirigami as Kirigami
 
@@ -317,12 +318,32 @@ FocusScope {
                     }
                 }
 
+                // Vignette aux coins de 4, comme dans Windows 11
+                // (ControlCornerRadius de WinUI ; lot 10f) : masquée par un
+                // rectangle arrondi (MultiEffect de Qt Quick)
+                Rectangle {
+                    id: masqueVignette
+                    x: vue.remplissage
+                    y: vue.remplissage + vue.hauteurTitre + vue.ecartTitre
+                    width: vue.largeurVignette
+                    height: vue.hauteurVignette
+                    radius: 4
+                    visible: false
+                    layer.enabled: true
+                }
                 Item {
                     id: boiteVignette
                     x: vue.remplissage
                     y: vue.remplissage + vue.hauteurTitre + vue.ecartTitre
                     width: vue.largeurVignette
                     height: vue.hauteurVignette
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        maskEnabled: true
+                        maskSource: masqueVignette
+                        maskThresholdMin: 0.5
+                        maskSpreadAtMin: 1.0
+                    }
                     Component.onCompleted: {
                         if (vue.vignette) {
                             vue.vignette.createObject(boiteVignette, { fenetre: element.fenetre });
