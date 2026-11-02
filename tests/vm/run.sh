@@ -581,6 +581,10 @@ check_vscode() {
     sleep 45
     screenshot 1-vscode
     echo "VS Code ouvert au premier clic, environnement de dev préparé"
+    # D-034, D-036 : distrobox n'a pas ajouté l'entrée « Ankh-dev » au menu
+    if vm "ls /home/ankhvm/.local/share/applications/" | grep -i 'ankh-dev'; then
+        die "distrobox a ajouté l'entrée « Ankh-dev » au menu (D-034, D-036)"
+    fi
     show_windows
 }
 
