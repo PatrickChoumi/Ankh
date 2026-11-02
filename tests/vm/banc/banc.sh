@@ -544,7 +544,9 @@ banc_pixels() {
         banc_noter barre.tache.icone.dessin "${icone_l}×${icone_h}"
     fi
     # Volet du menu : la fenêtre de plasmashell qui n'est ni la barre ni le
-    # bureau. Les fenêtres sont d'abord réduites : le menu doit se détacher
+    # bureau, ni une bulle de notification (lot 10l : avec sa marge de 12, la
+    # bulle de la suite Craft, restée à l'écran, dépasse 100 px de haut et
+    # était prise pour le volet des paramètres rapides et de l'horloge). Les fenêtres sont d'abord réduites : le menu doit se détacher
     # sur le fond noir (Dolphin, derrière lui, faussait son bord haut : run
     # 38709938834).
     banc_bureau oui
@@ -556,7 +558,7 @@ banc_pixels() {
         sleep 4
         volets=$(banc_kwin ankh-banc-volets ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
     const f = w.frameGeometry;
-    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.normalWindow ? 'fenetre' : 'autre'));
+    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.notification || w.criticalNotification ? 'notification' : (w.normalWindow ? 'fenetre' : 'autre')));
     console.warn('ANKH-BANC-VOLET ' + w.resourceClass + ' ' + type + ' ' + [f.x, f.y, f.width, f.height].map(Math.round).join(' '));
 }")
         echo "Fenêtres vues par KWin, menu ouvert (essai $essai) :"
@@ -631,7 +633,7 @@ banc_pixels() {
         sleep 3
         volets=$(banc_kwin ankh-banc-reglages ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
     const f = w.frameGeometry;
-    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.normalWindow ? 'fenetre' : 'autre'));
+    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.notification || w.criticalNotification ? 'notification' : (w.normalWindow ? 'fenetre' : 'autre')));
     console.warn('ANKH-BANC-VOLET ' + w.resourceClass + ' ' + type + ' ' + [f.x, f.y, f.width, f.height].map(Math.round).join(' '));
 }")
         if grep -q 'plasmashell autre' <<< "$volets"; then
@@ -660,7 +662,7 @@ banc_pixels() {
         sleep 3
         volets=$(banc_kwin ankh-banc-horloge ANKH-BANC-VOLET "for (const w of workspace.windowList()) {
     const f = w.frameGeometry;
-    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.normalWindow ? 'fenetre' : 'autre'));
+    const type = w.dock ? 'barre' : (w.desktopWindow ? 'bureau' : (w.notification || w.criticalNotification ? 'notification' : (w.normalWindow ? 'fenetre' : 'autre')));
     console.warn('ANKH-BANC-VOLET ' + w.resourceClass + ' ' + type + ' ' + [f.x, f.y, f.width, f.height].map(Math.round).join(' '));
 }")
         if grep -q 'plasmashell autre' <<< "$volets"; then
