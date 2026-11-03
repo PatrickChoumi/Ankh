@@ -177,19 +177,12 @@ done
 base="${icones}/.Fluent-Ankh-base"
 # Lot 10g : chaque application garde sa propre icône, comme dans Windows 11 ;
 # celles que Fluent redessine (Steam, Konsole, Discover, Réglages…) étaient
-# pâles et méconnaissables sur les captures en VM. Sans scalable/apps, elles
-# viennent de Breeze ou de l'application (Inherits, plus bas) ; Fluent garde
-# le système : dossiers, fichiers, actions, barre
-rm -r "${base}/scalable/apps"
-for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
-    index="${icones}/${variante}/index.theme"
-    grep -q 'scalable/apps' "${index}"
-    sed -i 's#,scalable\(@[23]x\)\?/apps##g' "${index}"
-    if grep -q '^Directories=.*scalable[^,]*/apps' "${index}"; then
-        echo "Icônes Fluent : ${variante} déclare encore scalable/apps" >&2
-        exit 1
-    fi
-done
+# pâles et méconnaissables sur les captures en VM. Elles viennent de Breeze ou
+# de l'application (Inherits, plus bas) ; Fluent garde le système : dossiers,
+# fichiers, actions, barre, et (lot 10o) les icônes des pages de réglages
+# (preferences-*), sans lesquelles KDE prenait une icône d'action générique
+# de Fluent pour chaque page de la Configuration du système
+python3 "$(dirname "$(readlink -f "$0")")/icones/reglages-fluent.py" "${base}/scalable/apps"
 # Dossiers et icônes d'applets suivent l'accent, comme ceux de Breeze (D-054 ;
 # mon choix du 2026-11-02) ; violet d'Ankh hors de KDE
 python3 "$(dirname "$(readlink -f "$0")")/icones/adapter-fluent.py" '#8455f0' \

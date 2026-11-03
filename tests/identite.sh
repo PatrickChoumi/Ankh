@@ -217,12 +217,12 @@ for variante in Fluent-Ankh Fluent-Ankh-dark Fluent-Ankh-light; do
 done
 grep -q 'class="ColorScheme-Accent"' "$(readlink -f /usr/share/icons/Fluent-Ankh-dark/scalable/places/folder.svg)" \
     || echec "icônes Fluent : dossiers sans l'accent"
-# Lot 10g : les applications gardent leur icône (pas d'icônes d'applications
-# dans Fluent-Ankh)
-[[ ! -e /usr/share/icons/.Fluent-Ankh-base/scalable/apps ]] || echec "icônes Fluent : icônes d'applications encore là"
-if grep -q '^Directories=.*scalable[^,]*/apps' /usr/share/icons/Fluent-Ankh-dark/index.theme; then
-    echec "icônes Fluent : Fluent-Ankh-dark déclare encore des icônes d'applications"
+# Lots 10g et 10o : dans scalable/apps, seules les icônes des réglages restent
+if find /usr/share/icons/.Fluent-Ankh-base/scalable/apps -mindepth 1 -not -name 'preferences-*' | grep -q .; then
+    echec "icônes Fluent : icônes d'applications encore là"
 fi
+[[ -e /usr/share/icons/.Fluent-Ankh-base/scalable/apps/preferences-desktop-mouse.svg ]] \
+    || echec "icônes Fluent : icônes des réglages absentes (lot 10o)"
 if grep -rlqi '#198ee6' /usr/share/icons/.Fluent-Ankh-base/scalable/places; then
     echec "icônes Fluent : le bleu de Fluent est resté"
 fi
