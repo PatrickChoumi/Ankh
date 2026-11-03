@@ -825,6 +825,11 @@ test -f /usr/share/kwin-wayland/effects/org.ankh.vuetaches/contents/ui/main.qml
 test -f /usr/share/plasma/plasmoids/org.ankh.vuetaches/contents/ui/main.qml
 test -f /usr/share/plasma/plasmoids/org.ankh.recherche/contents/ui/main.qml
 kwriteconfig6 --file /etc/xdg/kwinrc --group Plugins --key org.ankh.vuetachesEnabled --type bool true
+# Lot 10p : l'affichage du volume en bas de l'écran, au-dessus de la barre,
+# comme Windows 11 (script de KWin, chargé par src/scripting/scripting.cpp
+# depuis /usr/share/kwin-wayland/scripts)
+test -f /usr/share/kwin-wayland/scripts/org.ankh.osd/contents/code/main.js
+kwriteconfig6 --file /etc/xdg/kwinrc --group Plugins --key org.ankh.osdEnabled --type bool true
 chmod 0644 /etc/xdg/kwinrc
 
 # D-052, lot 7d : sons de KDE (thème Océan) réduits aux événements où

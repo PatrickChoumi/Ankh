@@ -119,6 +119,10 @@ done
 grep -q '"KPackageStructure": "KWin/Effect"' /usr/share/kwin-wayland/effects/org.ankh.vuetaches/metadata.json \
     || echec "vue des tâches d'Ankh : metadata.json n'est pas celui d'un effet de KWin"
 attendu "Vue des tâches allumée" true --file kwinrc --group Plugins --key org.ankh.vuetachesEnabled
+# Lot 10p : affichage du volume au-dessus de la barre
+grep -q '"KPackageStructure": "KWin/Script"' /usr/share/kwin-wayland/scripts/org.ankh.osd/metadata.json \
+    || echec "affichage du volume d'Ankh : script de KWin absent"
+attendu "Affichage du volume d'Ankh allumé" true --file kwinrc --group Plugins --key org.ankh.osdEnabled
 [[ -f /usr/share/plasma/plasmoids/org.ankh.vuetaches/contents/ui/main.qml ]] \
     || echec "bouton « Vue des tâches » d'Ankh absent"
 [[ ! -e /etc/skel/.config/kglobalshortcutsrc ]] \

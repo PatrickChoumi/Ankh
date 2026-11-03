@@ -376,6 +376,22 @@ banc_surface() { # $1 : préfixe, $2 : surface, $3 : hauteur de la barre
             banc_essayer "volume" banc_session org.kde.plasmashell /org/kde/osdService org.kde.osdService volumeChanged i 60
             sleep 1
             screenshot "$nom"
+            # Lot 10p : place de l'affichage, relue par KWin juste après l'avoir
+            # rouvert (il se referme en moins de deux secondes) : écart à la
+            # zone de placement (au-dessus de la barre) et au centre
+            banc_essayer "volume" banc_session org.kde.plasmashell /org/kde/osdService org.kde.osdService volumeChanged i 60
+            if osd=$(banc_kwin ankh-banc-osd ANKH-BANC-OSD "for (const w of workspace.windowList()) {
+    if (w.onScreenDisplay) {
+        const z = workspace.clientArea(KWin.PlacementArea, w);
+        const f = w.frameGeometry;
+        console.warn('ANKH-BANC-OSD ' + Math.round(z.y + z.height - f.y - f.height) + ' ' + Math.round(f.x + f.width / 2 - (z.x + z.width / 2)));
+    }
+}") && read -r ecart decalage <<< "$(head -n 1 <<< "$osd")" && [[ -n ${decalage:-} ]]; then
+                banc_noter volume.ecart_barre "$ecart"
+                banc_noter volume.decalage_centre "$decalage"
+            else
+                echo "(volume : affichage introuvable pour KWin)"
+            fi
             ;;
         parametres-rapides)
             # Paramètres rapides d'Ankh (D-052, lot 6a), ouverts sans touche

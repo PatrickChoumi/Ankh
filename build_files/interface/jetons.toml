@@ -689,3 +689,21 @@ libelle = "Bouton « Rechercher » dans la barre (org.ankh.recherche)"
 cible = "oui"
 lot = 10
 source = "La barre de Windows 11 : Démarrer, Rechercher, Vue des tâches ; lot 10h"
+
+[[mesure]]
+id = "volume.ecart_barre"
+libelle = "Écart entre l'affichage du volume et la barre"
+cible = 12
+tolerance = 1
+unite = "px"
+lot = 10
+source = "Windows 11 : l'affichage du volume en bas de l'écran, au-dessus de la barre (À VALIDER : distance exacte) ; 12 comme les volets d'Ankh (lot 4, mon choix du 2026-10-22) ; lot 10p"
+
+[[mesure]]
+id = "volume.decalage_centre"
+libelle = "Écart entre le centre de l'affichage du volume et celui de l'écran"
+cible = 0
+tolerance = 2
+unite = "px"
+lot = 10
+source = "Windows 11 : l'affichage du volume centré en bas de l'écran ; lot 10p"

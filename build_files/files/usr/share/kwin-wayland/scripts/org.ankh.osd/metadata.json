@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Ankh"
+            }
+        ],
+        "Category": "Window Management",
+        "Description": "Le volume et la luminosité s'affichent en bas de l'écran, juste au-dessus de la barre, comme dans Windows 11",
+        "EnabledByDefault": true,
+        "Id": "org.ankh.osd",
+        "License": "GPL-2.0-or-later",
+        "Name": "Affichage du volume d'Ankh"
+    },
+    "X-Plasma-API": "javascript"
+}
